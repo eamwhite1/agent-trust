@@ -3,73 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentTrust | Autonomous Escrow & Audit</title>
+    <title>AgentTrust | The Protocol for Autonomous Trust</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #ededed; }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #ededed; scroll-behavior: smooth; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         .gradient-text { background: linear-gradient(90deg, #60a5fa, #2dd4bf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .tab-active { border-bottom: 2px solid #2dd4bf; color: #2dd4bf; }
+        .border-glow:focus { outline: none; border-color: #2dd4bf; box-shadow: 0 0 15px rgba(45, 212, 191, 0.2); }
     </style>
 </head>
 <body class="antialiased">
 
-    <nav class="w-full glass px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+    <nav class="fixed w-full z-50 glass px-6 py-4 flex justify-between items-center">
         <div class="text-2xl font-800 tracking-tighter gradient-text">AGENTTRUST</div>
-        <div class="text-[10px] mono text-gray-500 uppercase tracking-widest">v2.0 Protocol Active</div>
+        <div class="text-[10px] mono text-gray-500 uppercase tracking-widest">A2A Protocol v2.0</div>
     </nav>
 
-    <section class="max-w-4xl mx-auto py-16 px-6 text-center">
-        <h1 class="text-5xl font-800 mb-4 tracking-tight">The <span class="gradient-text">Black Box</span> Exchange</h1>
-        <p class="text-gray-400 max-w-xl mx-auto mb-10">Money is locked. Work is audited. Trust is automated.</p>
-
-        <div class="flex justify-center space-x-8 mb-12 border-b border-white/10">
-            <button onclick="showTab('buyer')" id="btn-buyer" class="pb-4 font-bold tab-active">BUYER (Lock Funds)</button>
-            <button onclick="showTab('worker')" id="btn-worker" class="pb-4 font-bold text-gray-500">WORKER (Submit Job)</button>
-        </div>
-
-        <div id="section-buyer" class="glass p-8 rounded-3xl text-left transition-all">
-            <h3 class="text-xl font-bold mb-6 italic">Phase 1: Secure the Funds</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Job Requirements (Task)</label>
-                    <textarea id="buyer-task" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm h-24" placeholder="Describe exactly what you are paying for..."></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Job Price (XRP)</label>
-                        <input type="number" id="buyer-price" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm" placeholder="e.g. 50">
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Worker's XRP Address</label>
-                        <input type="text" id="buyer-worker" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm mono" placeholder="rAddress...">
-                    </div>
-                </div>
-                <button onclick="triggerBuyer()" class="w-full py-4 bg-white text-black font-800 rounded-xl hover:bg-teal-400 transition">INITIATE ESCROW (+0.2 XRP FEE)</button>
-            </div>
-        </div>
-
-        <div id="section-worker" class="hidden glass p-8 rounded-3xl text-left transition-all">
-            <h3 class="text-xl font-bold mb-6 italic text-teal-400">Phase 2: Fulfill the Contract</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Escrow ID / Transaction Hash</label>
-                    <input type="text" id="worker-hash" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm mono" placeholder="Paste the Lock transaction hash...">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Submit Completed Work</label>
-                    <textarea id="worker-work" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm h-48" placeholder="Paste the work output or file link here..."></textarea>
-                </div>
-                <button onclick="triggerWorker()" class="w-full py-4 bg-teal-500 text-black font-800 rounded-xl hover:bg-teal-400 transition">SUBMIT TO REFEREE</button>
-            </div>
-        </div>
-
-        <div id="status-box" class="hidden mt-8 p-6 glass rounded-xl border-teal-500/30 text-teal-400 text-sm mono">
-            Processing on-chain logic...
+    <section class="relative pt-32 pb-12 px-6 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-6xl md:text-7xl font-800 mb-6 leading-tight tracking-tight">
+                Secure Work. <br><span class="gradient-text">Automate Trust.</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-12">
+                The world's first autonomous escrow layer for the Agent-to-Agent economy. 
+                Powered by the XRPL and the <strong>Referee Oracle.</strong>
+            </p>
         </div>
     </section>
+
+    <section id="interface" class="max-w-4xl mx-auto pb-24 px-6">
+        
+        <div class="flex justify-center space-x-12 mb-10 border-b border-white/10">
+            <button onclick="showTab('buyer')" id="btn-buyer" class="pb-4 text-sm font-800 uppercase tracking-widest tab-active transition-all">Buyer (Initiate)</button>
+            <button onclick="showTab('worker')" id="btn-worker" class="pb-4 text-sm font-800 uppercase tracking-widest text-gray-500 transition-all">Worker (Fulfill)</button>
+        </div>
+
+        <div id="section-buyer" class="glass p-10 rounded-3xl text-left border-teal-500/20 shadow-2xl shadow-teal-500/5">
+            <h3 class="text-2xl font-bold mb-2 italic">Phase 1: Lock the Escrow</h3>
+            <p class="text-gray-500 text-sm mb-8">Set the requirements and secure the funds on-chain.</p>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400 font-bold mb-2 block tracking-widest">Task Requirements</label>
+                    <textarea id="buyer-task" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm h-32 border-glow" placeholder="Define exactly what the agent must do..."></textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[10px] uppercase text-gray-400 font-bold mb-2 block tracking-widest">Job Price (XRP)</label>
+                        <input type="number" id="buyer-price" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm border-glow" placeholder="e.g. 50">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase text-gray-400 font-bold mb-2 block tracking-widest">Worker's XRP Wallet</label>
+                        <input type="text" id="buyer-worker" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm mono border-glow" placeholder="rAddress...">
+                    </div>
+                </div>
+                <button onclick="triggerBuyer()" class="w-full py-5 bg-white text-black font-900 rounded-xl hover:bg-teal-400 transition uppercase tracking-widest text-xs">Deploy Autonomous Escrow</button>
+            </div>
+        </div>
+
+        <div id="section-worker" class="hidden glass p-10 rounded-3xl text-left border-teal-500/20">
+            <h3 class="text-2xl font-bold mb-2 italic text-teal-400">Phase 2: Submit to Black Box</h3>
+            <p class="text-gray-500 text-sm mb-8">Upload work for Referee Audit. Funds released instantly upon approval.</p>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400 font-bold mb-2 block tracking-widest">Escrow Transaction Hash</label>
+                    <input type="text" id="worker-hash" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm mono border-glow" placeholder="Paste the Lock transaction hash...">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400 font-bold mb-2 block tracking-widest">Completed Work Output</label>
+                    <textarea id="worker-work" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm h-48 border-glow" placeholder="Paste the work to be audited..."></textarea>
+                </div>
+                <button onclick="triggerWorker()" class="w-full py-5 bg-teal-500 text-black font-900 rounded-xl hover:bg-teal-400 transition uppercase tracking-widest text-xs">Request Referee Verdict</button>
+            </div>
+        </div>
+
+        <div class="mt-12 grid md:grid-cols-3 gap-6">
+            <div class="p-6 glass rounded-2xl">
+                <p class="text-[10px] uppercase text-gray-500 font-bold mb-2">Worker Pay</p>
+                <p class="text-xl font-bold text-white uppercase tracking-tighter">Your Price</p>
+            </div>
+            <div class="p-6 border border-teal-500/30 bg-teal-500/5 rounded-2xl">
+                <p class="text-[10px] uppercase text-teal-500 font-bold mb-2">Audit Fee</p>
+                <p class="text-xl font-bold text-teal-400">+ 0.1 XRP</p>
+            </div>
+            <div class="p-6 border border-blue-500/30 bg-blue-500/5 rounded-2xl">
+                <p class="text-[10px] uppercase text-blue-500 font-bold mb-2">Protocol Fee</p>
+                <p class="text-xl font-bold text-blue-400">+ 0.1 XRP</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="max-w-4xl mx-auto py-20 px-6 text-center text-gray-600">
+        <p class="text-[10px] uppercase tracking-[0.2em]">&copy; 2026 AgentTrust Protocol • Secured by XRPL</p>
+    </footer>
 
     <script>
         function showTab(type) {
@@ -80,22 +110,17 @@
 
             if(type === 'buyer') {
                 b.classList.remove('hidden'); w.classList.add('hidden');
-                btnB.classList.add('tab-active'); btnW.classList.remove('tab-active');
+                btnB.classList.add('tab-active'); btnB.classList.remove('text-gray-500');
+                btnW.classList.remove('tab-active'); btnW.classList.add('text-gray-500');
             } else {
                 w.classList.remove('hidden'); b.classList.add('hidden');
-                btnW.classList.add('tab-active'); btnB.classList.remove('tab-active');
+                btnW.classList.add('tab-active'); btnW.classList.remove('text-gray-500');
+                btnB.classList.remove('tab-active'); btnB.classList.add('text-gray-500');
             }
         }
 
-        async function triggerBuyer() {
-            // This will call your n8n "Escrow Creator" Webhook
-            alert("Step 1: In n8n, we will create the Escrow now.");
-        }
-
-        async function triggerWorker() {
-            // This will call your n8n "Auditor" Webhook
-            alert("Step 2: n8n will now send this work to the Referee.");
-        }
+        async function triggerBuyer() { alert("Connecting to n8n Banker..."); }
+        async function triggerWorker() { alert("Sending to Black Box for Audit..."); }
     </script>
 </body>
 </html>
