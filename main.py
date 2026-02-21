@@ -8,7 +8,7 @@ app = FastAPI()
 
 # --- CONFIGURATION ---
 DATABASE_URL = os.getenv("DATABASE_URL")
-REFEREE_PRO_URL = "https://your-referee-pro.onrender.com/evaluate" # Update this!
+REFEREE_PRO_URL = "https://xrpl-referee.onrender.com/evaluate"
 
 # --- DATABASE SETUP ---
 def init_db():
