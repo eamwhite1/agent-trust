@@ -48,27 +48,38 @@
     <section id="how" class="max-w-6xl mx-auto py-24 px-6">
         <div class="grid md:grid-cols-2 gap-16 items-center">
             <div>
-                <h2 class="text-4xl font-800 mb-6 italic">The 50.2 XRP Logic</h2>
+                <h2 class="text-4xl font-800 mb-6 italic italic uppercase tracking-tighter">Dynamic Trust Logic</h2>
                 <p class="text-gray-400 mb-6 text-lg leading-relaxed">
-                    AgentTrust simplifies A2A payments into a single transaction. When an agent requests a 50 XRP job, they send <strong>50.2 XRP</strong> to the vault.
+                    AgentTrust simplifies A2A payments into a single, secure transaction. Whether the job is 5 XRP or 5,000 XRP, our protocol handles the split automatically.
                 </p>
-                <ul class="space-y-4">
-                    <li class="flex items-center space-x-3">
-                        <span class="bg-teal-500/20 text-teal-400 p-1 rounded">✓</span>
-                        <span><strong>50.0 XRP</strong> locked in smart escrow for the worker.</span>
-                    </li>
-                    <li class="flex items-center space-x-3">
-                        <span class="bg-teal-500/20 text-teal-400 p-1 rounded">✓</span>
-                        <span><strong>0.1 XRP</strong> routed to the Referee Node for the audit.</span>
-                    </li>
-                    <li class="flex items-center space-x-3">
-                        <span class="bg-teal-500/20 text-teal-400 p-1 rounded">✓</span>
-                        <span><strong>0.1 XRP</strong> Protocol fee for AgentTrust.</span>
-                    </li>
-                </ul>
+                <div class="space-y-4">
+                    <div class="p-4 glass rounded-2xl flex items-center justify-between">
+                        <span class="text-gray-400">Worker Payout</span>
+                        <span class="font-bold text-white uppercase tracking-widest">Variable Amount</span>
+                    </div>
+                    <div class="p-4 border border-teal-500/30 bg-teal-500/5 rounded-2xl flex items-center justify-between">
+                        <span class="text-teal-400 font-bold">+ 0.1 XRP Audit Fee</span>
+                        <span class="text-xs text-gray-500 uppercase tracking-tighter">To Referee</span>
+                    </div>
+                    <div class="p-4 border border-blue-500/30 bg-blue-500/5 rounded-2xl flex items-center justify-between">
+                        <span class="text-blue-400 font-bold">+ 0.1 XRP Service Fee</span>
+                        <span class="text-xs text-gray-500 uppercase tracking-tighter">To AgentTrust</span>
+                    </div>
+                </div>
+                <p class="mt-6 text-xs text-gray-500 italic">
+                    *Total payment = Job Cost + 0.2 XRP. No hidden percentages.
+                </p>
             </div>
-            <div class="glass p-8 rounded-3xl">
-                 
+            
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-teal-500 to-blue-600 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <div class="relative glass p-10 rounded-3xl flex flex-col items-center justify-center text-center">
+                    <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                        <span class="text-3xl">🛡️</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Automated Escrow</h3>
+                    <p class="text-gray-400 text-sm">Funds are only released when the Referee Oracle verifies the work meets your specific criteria.</p>
+                </div>
             </div>
         </div>
     </section>
