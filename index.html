@@ -101,7 +101,8 @@
         <p class="text-[10px] uppercase tracking-[0.2em]">&copy; 2026 AgentTrust Protocol • Secured by XRPL</p>
     </footer>
 
-    <script>
+<script>
+        // Tab Switching Logic
         function showTab(type) {
             const b = document.getElementById('section-buyer');
             const w = document.getElementById('section-worker');
@@ -119,8 +120,27 @@
             }
         }
 
-        async function triggerBuyer() { alert("Connecting to n8n Banker..."); }
-        async function triggerWorker() { alert("Sending to Black Box for Audit..."); }
-    </script>
+        // Phase 1: Buyer sends data to n8n
+        async function triggerBuyer() {
+            const task = document.getElementById('buyer-task').value;
+            const price = document.getElementById('buyer-price').value;
+            const worker = document.getElementById('buyer-worker').value;
+
+            // This is where we will eventually put your n8n URL
+            alert(`ESCROW INITIATED!\n\nBuyer, give this Escrow ID to your worker after you pay:\n[SIMULATED-TX-HASH-123]`);
+            
+            // In the next step, we'll make this actually send to n8n
+        }
+
+        // Phase 2: Worker sends work + ID to n8n
+        async function triggerWorker() {
+            const escrowId = document.getElementById('worker-hash').value;
+            const work = document.getElementById('worker-work').value;
+
+            if(!escrowId) return alert("Please enter the Escrow ID from the Buyer.");
+            
+            alert(`WORK SUBMITTED!\n\nChecking Escrow ID: ${escrowId} against the Referee...`);
+        }
+    </script>>
 </body>
 </html>
