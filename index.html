@@ -3,130 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentTrust | Autonomous Escrow</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>XRPL Referee Pro | Autonomous Escrow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0060ff;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at top right, #1a1a2e, #0f0f1a);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* --- COOL TRANSLUCENT HEADER --- */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(15, 15, 26, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, #0060ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #a0a0b0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- GLASS CARDS --- */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 { font-size: 1.5rem; margin-top: 0; color: var(--primary); }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            background: #0050d5;
+            transform: translateY(-2px);
+        }
+
+        .status-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success { background: rgba(0, 255, 100, 0.1); color: #00ff64; border: 1px solid rgba(0, 255, 100, 0.2); }
+        .error { background: rgba(255, 50, 50, 0.1); color: #ff3232; border: 1px solid rgba(255, 50, 50, 0.2); }
+    </style>
 </head>
-<body class="bg-slate-900 text-white font-sans min-h-screen">
+<body>
 
-    <div class="container mx-auto px-4 py-12 max-w-4xl">
-        <header class="text-center mb-12">
-            <h1 class="text-5xl font-extrabold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                AgentTrust
-            </h1>
-            <p class="text-slate-400">Secure AI-Governed Payments on XRPL</p>
-        </header>
+<header>
+    <div class="logo">REFEREE ORACLE</div>
+    <div style="color: #a0a0b0; font-size: 0.8rem;">XRPL TESTNET ACTIVE</div>
+</header>
 
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
-                <h2 class="text-2xl font-bold mb-6 text-blue-400">Buyer: Setup Task</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Task Description</label>
-                        <textarea id="taskDesc" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Write a 3-word poem about cats"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Job Price (XRP)</label>
-                        <input id="jobPrice" type="number" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="10">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Worker's XRP Address</label>
-                        <input id="workerAddr" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="rP...address">
-                    </div>
-                    <button onclick="initiateJob()" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold transition-all shadow-lg shadow-blue-900/20">
-                        Deploy Smart Escrow
-                    </button>
-                </div>
-            </div>
+<div class="container">
+    <section class="hero">
+        <h1>Secure Work.<br>Automate Trust.</h1>
+        <p>The world's first autonomous escrow layer for the Agent-to-Agent (A2A) economy. Powered by the XRPL and the Referee Oracle.</p>
+    </section>
 
-            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-400">Worker: Submit Work</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Escrow ID</label>
-                        <input id="escrowId" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Paste ID from Buyer">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-400 mb-1">Your Work Output</label>
-                        <textarea id="workOutput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 h-32" placeholder="Paste your completed work here..."></textarea>
-                    </div>
-                    <button onclick="settleJob()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-lg font-bold transition-all shadow-lg shadow-emerald-900/20">
-                        Request Referee Verdict
-                    </button>
-                </div>
-            </div>
+    <div class="card">
+        <h2>1. Create Escrow Job</h2>
+        <div class="input-group">
+            <label>Escrow ID (Unique Identifier)</label>
+            <input type="text" id="escrowId" placeholder="e.g. job_998">
         </div>
+        <div class="input-group">
+            <label>Task Description (For the AI Oracle)</label>
+            <textarea id="taskInput" rows="3" placeholder="Explain exactly what needs to be done..."></textarea>
+        </div>
+        <div class="input-group">
+            <label>Worker Wallet Address</label>
+            <input type="text" id="workerAddress" placeholder="rMixedCaseWorkerAddress...">
+        </div>
+        <div class="input-group">
+            <label>Amount (XRP)</label>
+            <input type="number" id="price" value="1.0">
+        </div>
+        <button onclick="initiateJob()">Initialize Escrow on Banker</button>
+        <div id="initStatus" class="status-box"></div>
     </div>
 
-    <script>
-        // CHANGE THIS to your actual Render Banker URL
-        const BANKER_URL = "https://agenttrust-banker.onrender.com";
+    <div class="card">
+        <h2>2. Submit Work & Audit</h2>
+        <div class="input-group">
+            <label>Work Performed (The Proof)</label>
+            <textarea id="workInput" rows="4" placeholder="Paste the code, text, or result here..."></textarea>
+        </div>
+        <div class="input-group">
+            <label style="color: #00ff64;">Payment Hash (0.1 XRP Audit Fee)</label>
+            <input type="text" id="paymentHash" placeholder="Paste TX Hash of 0.1 XRP sent to Referee">
+            <small style="color: #666; display: block; margin-top: 5px;">Send 0.1 XRP to: rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</small>
+        </div>
+        <button onclick="settleJob()" style="background: #222; border: 1px solid var(--primary);">Request AI Audit & Settlement</button>
+        <div id="settleStatus" class="status-box"></div>
+    </div>
+</div>
 
-        async function initiateJob() {
-            const task = document.getElementById('taskDesc').value;
-            const price = document.getElementById('jobPrice').value;
-            const worker = document.getElementById('workerAddr').value;
+<script>
+    const BANKER_URL = "https://your-banker-render-url.onrender.com"; // CHANGE THIS
+
+    async function initiateJob() {
+        const statusDiv = document.getElementById('initStatus');
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'status-box';
+        statusDiv.innerText = "Initiating...";
+
+        const payload = {
+            escrow_id: document.getElementById('escrowId').value,
+            task: document.getElementById('taskInput').value,
+            worker: document.getElementById('workerAddress').value,
+            price: parseFloat(document.getElementById('price').value),
+            buyer: "rBuyerWalletGoesHere"
+        };
+
+        try {
+            const res = await fetch(`${BANKER_URL}/initiate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            statusDiv.className = 'status-box success';
+            statusDiv.innerText = "Job Created! Escrow ID: " + data.escrow_id;
+        } catch (e) {
+            statusDiv.className = 'status-box error';
+            statusDiv.innerText = "Error: " + e.message;
+        }
+    }
+
+    async function settleJob() {
+        const statusDiv = document.getElementById('settleStatus');
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'status-box';
+        statusDiv.innerText = "AI Referee is auditing work...";
+
+        const payload = {
+            escrow_id: document.getElementById('escrowId').value,
+            work: document.getElementById('workInput').value,
+            payment_hash: document.getElementById('paymentHash').value // THE NEW DYNAMIC HASH
+        };
+
+        try {
+            const res = await fetch(`${BANKER_URL}/settle`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
             
-            // For now, we simulate a transaction hash
-            const simulatedId = "SIMULATED_HASH_" + Math.random().toString(36).substring(7).toUpperCase();
-
-            try {
-                const response = await fetch(`${BANKER_URL}/initiate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        escrow_id: simulatedId,
-                        task: task,
-                        price: parseFloat(price),
-                        worker: worker,
-                        buyer: "rSIMULATED_BUYER_ADDRESS"
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.status === "SUCCESS") {
-                    alert("SUCCESS! Give this ID to the worker: " + simulatedId);
-                    document.getElementById('escrowId').value = simulatedId;
-                } else {
-                    alert("BANKER ERROR: " + JSON.stringify(data));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Protocol Error: Check console for details.");
+            if (data.status === "success" || data.ai_verdict) {
+                statusDiv.className = 'status-box success';
+                statusDiv.innerText = "VERDICT: " + data.ai_verdict;
+            } else {
+                statusDiv.className = 'status-box error';
+                statusDiv.innerText = "Oracle Error: " + (data.detail || "Verification Failed");
             }
+        } catch (e) {
+            statusDiv.className = 'status-box error';
+            statusDiv.innerText = "Connection Error: " + e.message;
         }
+    }
+</script>
 
-        async function settleJob() {
-            const escrowId = document.getElementById('escrowId').value;
-            const work = document.getElementById('workOutput').value;
-
-            try {
-                const response = await fetch(`${BANKER_URL}/settle`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        escrow_id: escrowId,
-                        work: work
-                    })
-                });
-
-                const data = await response.json();
-                console.log("FULL DATA FROM BANKER/REFEREE:", data);
-
-                // Determine verdict by checking different possible JSON keys
-                const verdict = data.verdict || data.ai_verdict;
-                const reason = data.reason || data.explanation || "No reason provided by AI.";
-
-                if (verdict === "APPROVED" || verdict === "PASSED") {
-                    alert("✅ AUDIT PASSED!\n\nVerdict: " + verdict + "\nReason: " + reason);
-                } else {
-                    alert("❌ AUDIT FAILED\n\nVerdict: " + (verdict || "FAILED") + "\nReason: " + reason);
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Protocol Error: Check console for details.");
-            }
-        }
-    </script>
 </body>
 </html>
