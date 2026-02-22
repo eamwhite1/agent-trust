@@ -114,8 +114,8 @@ async def settle_job(data: JobSettle):
                 REFEREE_PRO_URL,
                 json={"task": original_task, "work": data.work},
                 headers={
-                    # REPLACE THIS HASH WITH A FRESH ONE EVERY TIME YOU TEST
-                    "x-payment-hash": "0792BA6AF9D3CC6D6069297D1EA31D146582460A65091D8161186C8AA95B4755" 
+                    # New hashes here
+                    "x-payment-hash": "5960A9024FFEC979DD9DD39CC7F807CD54F9024F941FE7896F7E02C6F8F07DC3"  
                 },
                 timeout=45.0
             )
