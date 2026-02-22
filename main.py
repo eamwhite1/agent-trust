@@ -54,7 +54,7 @@ def init_db():
 def startup_event():
     init_db()
 
-# --- 3. MODELS ---
+# --- 3. UPDATED MODELS ---
 class EscrowInitiate(BaseModel):
     escrow_id: str
     task: str
@@ -65,11 +65,12 @@ class EscrowInitiate(BaseModel):
 class JobSettle(BaseModel):
     escrow_id: str
     work: str
+    payment_hash: str  # <--- DYNAMIC HASH ADDED HERE
 
 # --- 4. ROUTES ---
 
 @app.get("/")
-@app.head("/")  # This tells FastAPI to allow UptimeRobot's "health checks"
+@app.head("/")
 def read_root():
     return {"status": "Banker is active and healthy."}
 
@@ -97,7 +98,7 @@ async def settle_job(data: JobSettle):
     conn = get_db_conn()
     if not conn: raise HTTPException(status_code=500, detail="DB Connection Failed")
     try:
-        # A. Fetch original task
+        # A. Fetch original task from DB
         cur = conn.cursor()
         cur.execute("SELECT task_description FROM active_jobs WHERE escrow_id = %s", (data.escrow_id,))
         row = cur.fetchone()
@@ -109,21 +110,20 @@ async def settle_job(data: JobSettle):
         
         original_task = row[0]
 
-        # B. Call Referee with fresh payment hash
+        # B. Call Referee with the hash sent from the FRONTEND
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 REFEREE_PRO_URL,
                 json={"task": original_task, "work": data.work},
                 headers={
-                    # New hashes here
-                    "x-payment-hash": "530B91C21AEC9649E0969B66844A9EDEAF71497B3DC94356D5DF708D56374F57"
+                    "x-payment-hash": data.payment_hash  # <--- DYNAMICALLY LOADED
                 },
                 timeout=45.0
             )
         
-        # Log the response so we can see it in Render logs
         print(f"DEBUG: Referee Status {response.status_code}, Body: {response.text}")
         
+        # C. Return the AI Verdict back to the frontend
         return response.json()
 
     except Exception as e:
