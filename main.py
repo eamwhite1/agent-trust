@@ -115,7 +115,7 @@ async def settle_job(data: JobSettle):
                 json={"task": original_task, "work": data.work},
                 headers={
                     # REPLACE THIS HASH WITH A FRESH ONE EVERY TIME YOU TEST
-                    "x-payment-hash": "REPLACE_WITH_FRESH_TESTNET_HASH" 
+                    "x-payment-hash": "0792BA6AF9D3CC6D6069297D1EA31D146582460A65091D8161186C8AA95B4755" 
                 },
                 timeout=45.0
             )
