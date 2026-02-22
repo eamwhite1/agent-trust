@@ -69,8 +69,9 @@ class JobSettle(BaseModel):
 # --- 4. ROUTES ---
 
 @app.get("/")
+@app.head("/")  # This tells FastAPI to allow UptimeRobot's "health checks"
 def read_root():
-    return {"status": "Banker is active."}
+    return {"status": "Banker is active and healthy."}
 
 @app.post("/initiate")
 async def initiate_escrow(data: EscrowInitiate):
