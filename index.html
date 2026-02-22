@@ -43,4 +43,90 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm text-slate-400 mb-1">Escrow ID</label>
-                        <input id="escrowId" type="text" class="w-full bg-slate-900 border border-slate-7
+                        <input id="escrowId" type="text" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3" placeholder="Paste ID from Buyer">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Your Work Output</label>
+                        <textarea id="workOutput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 h-32" placeholder="Paste your completed work here..."></textarea>
+                    </div>
+                    <button onclick="settleJob()" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-lg font-bold transition-all shadow-lg shadow-emerald-900/20">
+                        Request Referee Verdict
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CHANGE THIS to your actual Render Banker URL
+        const BANKER_URL = "https://agenttrust-banker.onrender.com";
+
+        async function initiateJob() {
+            const task = document.getElementById('taskDesc').value;
+            const price = document.getElementById('jobPrice').value;
+            const worker = document.getElementById('workerAddr').value;
+            
+            // For now, we simulate a transaction hash
+            const simulatedId = "SIMULATED_HASH_" + Math.random().toString(36).substring(7).toUpperCase();
+
+            try {
+                const response = await fetch(`${BANKER_URL}/initiate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        escrow_id: simulatedId,
+                        task: task,
+                        price: parseFloat(price),
+                        worker: worker,
+                        buyer: "rSIMULATED_BUYER_ADDRESS"
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === "SUCCESS") {
+                    alert("SUCCESS! Give this ID to the worker: " + simulatedId);
+                    document.getElementById('escrowId').value = simulatedId;
+                } else {
+                    alert("BANKER ERROR: " + JSON.stringify(data));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Protocol Error: Check console for details.");
+            }
+        }
+
+        async function settleJob() {
+            const escrowId = document.getElementById('escrowId').value;
+            const work = document.getElementById('workOutput').value;
+
+            try {
+                const response = await fetch(`${BANKER_URL}/settle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        escrow_id: escrowId,
+                        work: work
+                    })
+                });
+
+                const data = await response.json();
+                console.log("FULL DATA FROM BANKER/REFEREE:", data);
+
+                // Determine verdict by checking different possible JSON keys
+                const verdict = data.verdict || data.ai_verdict;
+                const reason = data.reason || data.explanation || "No reason provided by AI.";
+
+                if (verdict === "APPROVED" || verdict === "PASSED") {
+                    alert("✅ AUDIT PASSED!\n\nVerdict: " + verdict + "\nReason: " + reason);
+                } else {
+                    alert("❌ AUDIT FAILED\n\nVerdict: " + (verdict || "FAILED") + "\nReason: " + reason);
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Protocol Error: Check console for details.");
+            }
+        }
+    </script>
+</body>
+</html>
