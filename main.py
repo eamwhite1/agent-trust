@@ -13,10 +13,10 @@ from dotenv import load_dotenv
 
 # XRPL Imports - Use ASYNC versions
 from xrpl.wallet import Wallet
-from xrpl.clients import AsyncJsonRpcClient
+from xrpl.asyncio.clients import AsyncJsonRpcClient
 from xrpl.models.transactions import Payment
 from xrpl.utils import xrp_to_drops
-from xrpl.transaction import submit_and_wait
+from xrpl.asyncio.transaction import submit_and_wait
 
 # --- 1. INITIAL SETUP ---
 load_dotenv()
@@ -42,8 +42,8 @@ class EscrowJob(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- 2. CONFIG & WALLET ---
-# We use the Async client for FastAPI compatibility
 XRPL_URL = "https://s.altnet.rippletest.net:51234/"
+# Use the asyncio path here too
 async_client = AsyncJsonRpcClient(XRPL_URL)
 
 SHARED_SECRET = os.getenv("SHARED_SECRET", "change-me-locally").encode()
