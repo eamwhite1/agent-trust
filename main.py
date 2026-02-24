@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv  # <--- Make sure this is here!
 
 # XRPL Imports
 from xrpl.wallet import Wallet
@@ -17,6 +18,7 @@ from xrpl.utils import xrp_to_drops
 from xrpl.transaction import submit_and_wait
 
 # --- DATABASE SETUP ---
+load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL").replace("postgres://", "postgresql://", 1)
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
