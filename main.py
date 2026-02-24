@@ -45,7 +45,7 @@ XRPL_URL = "https://s.altnet.rippletest.net:51234/"
 client = JsonRpcClient(XRPL_URL)
 SHARED_SECRET = os.getenv("SHARED_SECRET", "change-me-locally").encode()
 REFEREE_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
-REVENUE_WALLET = os.getenv("rK3sZBhWUNs12jqXz54wgKThFyf6XFVbzM")
+REVENUE_WALLET = os.getenv("MY_REVENUE_WALLET")
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
