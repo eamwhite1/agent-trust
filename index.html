@@ -3,252 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XRPL Referee Pro | Autonomous Escrow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>REFEREE | Autonomous Oracle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0060ff;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #00f2ff;
+            --bg: #050508;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #00ff64;
+            --error: #ff3232;
         }
 
         body {
             margin: 0;
-            padding: 0;
-            background: radial-gradient(circle at top right, #1a1a2e, #0f0f1a);
-            color: white;
-            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
             min-height: 100vh;
-            line-height: 1.6;
         }
 
-        /* --- COOL TRANSLUCENT HEADER --- */
+        /* --- ANIMATED AMBIENT BACKGROUND --- */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(0, 96, 255, 0.12), transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(0, 242, 255, 0.08), transparent 40%);
+            z-index: -2;
+            animation: pulse 10s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black, transparent 85%);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
         header {
-            position: sticky;
-            top: 0;
-            background: rgba(15, 15, 26, 0.7);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 1rem 5%;
+            padding: 1.2rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
-            font-weight: 700;
-            font-size: 1.2rem;
-            letter-spacing: -1px;
-            background: linear-gradient(90deg, #fff, #0060ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 4rem auto;
-            padding: 0 2rem;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 5rem;
-        }
-
-        h1 {
-            font-size: 3.5rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
-            line-height: 1.1;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: #a0a0b0;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* --- GLASS CARDS --- */
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-        }
-
-        h2 { font-size: 1.5rem; margin-top: 0; color: var(--primary); }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: white;
-            font-family: inherit;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        button:hover {
-            background: #0050d5;
-            transform: translateY(-2px);
-        }
-
-        .status-box {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .success { background: rgba(0, 255, 100, 0.1); color: #00ff64; border: 1px solid rgba(0, 255, 100, 0.2); }
-        .error { background: rgba(255, 50, 50, 0.1); color: #ff3232; border: 1px solid rgba(255, 50, 50, 0.2); }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="logo">REFEREE ORACLE</div>
-    <div style="color: #a0a0b0; font-size: 0.8rem;">XRPL TESTNET ACTIVE</div>
-</header>
-
-<div class="container">
-    <section class="hero">
-        <h1>Secure Work.<br>Automate Trust.</h1>
-        <p>The world's first autonomous escrow layer for the Agent-to-Agent (A2A) economy. Powered by the XRPL and the Referee Oracle.</p>
-    </section>
-
-    <div class="card">
-        <h2>1. Create Escrow Job</h2>
-        <div class="input-group">
-            <label>Escrow ID (Unique Identifier)</label>
-            <input type="text" id="escrowId" placeholder="e.g. job_998">
-        </div>
-        <div class="input-group">
-            <label>Task Description (For the AI Oracle)</label>
-            <textarea id="taskInput" rows="3" placeholder="Explain exactly what needs to be done..."></textarea>
-        </div>
-        <div class="input-group">
-            <label>Worker Wallet Address</label>
-            <input type="text" id="workerAddress" placeholder="rMixedCaseWorkerAddress...">
-        </div>
-        <div class="input-group">
-            <label>Amount (XRP)</label>
-            <input type="number" id="price" value="1.0">
-        </div>
-        <button onclick="initiateJob()">Initialize Escrow on Banker</button>
-        <div id="initStatus" class="status-box"></div>
-    </div>
-
-    <div class="card">
-        <h2>2. Submit Work & Audit</h2>
-        <div class="input-group">
-            <label>Work Performed (The Proof)</label>
-            <textarea id="workInput" rows="4" placeholder="Paste the code, text, or result here..."></textarea>
-        </div>
-        <div class="input-group">
-            <label style="color: #00ff64;">Payment Hash (0.1 XRP Audit Fee)</label>
-            <input type="text" id="paymentHash" placeholder="Paste TX Hash of 0.1 XRP sent to Referee">
-            <small style="color: #666; display: block; margin-top: 5px;">Send 0.1 XRP to: rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</small>
-        </div>
-        <button onclick="settleJob()" style="background: #222; border: 1px solid var(--primary);">Request AI Audit & Settlement</button>
-        <div id="settleStatus" class="status-box"></div>
-    </div>
-</div>
-
-<script>
-    const BANKER_URL = "https://agenttrust-banker.onrender.com"; 
-
-    async function initiateJob() {
-        const statusDiv = document.getElementById('initStatus');
-        statusDiv.style.display = 'block';
-        statusDiv.className = 'status-box';
-        statusDiv.innerText = "Initiating...";
-
-        const payload = {
-            escrow_id: document.getElementById('escrowId').value,
-            task: document.getElementById('taskInput').value,
-            worker: document.getElementById('workerAddress').value,
-            price: parseFloat(document.getElementById('price').value),
-            buyer: "rBuyerWalletGoesHere"
-        };
-
-        try {
-            const res = await fetch(`${BANKER_URL}/initiate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            statusDiv.className = 'status-box success';
-            statusDiv.innerText = "Job Created! Escrow ID: " + data.escrow_id;
-        } catch (e) {
-            statusDiv.className = 'status-box error';
-            statusDiv.innerText = "Error: " + e.message;
-        }
-    }
-
-    async function settleJob() {
-        const statusDiv = document.getElementById('settleStatus');
-        statusDiv.style.display = 'block';
-        statusDiv.className = 'status-box';
-        statusDiv.innerText = "AI Referee is auditing work...";
-
-        const payload = {
-            escrow_id: document.getElementById('escrowId').value,
-            work: document.getElementById('workInput').value,
-            payment_hash: document.getElementById('paymentHash').value // THE NEW DYNAMIC HASH
-        };
-
-        try {
-            const res = await fetch(`${BANKER_URL}/settle`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            
-            if (data.status === "success" || data.ai_verdict) {
-                statusDiv.className = 'status-box success';
-                statusDiv.innerText = "VERDICT: " + data.ai_verdict;
-            } else {
-                statusDiv.className = 'status-box error';
-                statusDiv.innerText = "Oracle Error: " + (data.detail || "Verification Failed");
-            }
-        } catch (e) {
-            statusDiv.className = 'status-box error';
-            statusDiv.innerText = "Connection Error: " + e.message;
-        }
-    }
-</script>
-
-</body>
-</html>
+            font-size: 1.4rem;
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, #
