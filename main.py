@@ -2,6 +2,7 @@ import os
 import hmac
 import hashlib
 import logging
+import asyncio
 from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,21 +11,21 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-# XRPL Imports
+# XRPL Imports - Use ASYNC versions
 from xrpl.wallet import Wallet
-from xrpl.clients import JsonRpcClient
+from xrpl.clients import AsyncJsonRpcClient
 from xrpl.models.transactions import Payment
 from xrpl.utils import xrp_to_drops
 from xrpl.transaction import submit_and_wait
 
 # --- 1. INITIAL SETUP ---
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("BankerBot")
 
-# Safety check for Database URL
 db_url_raw = os.getenv("DATABASE_URL")
 if not db_url_raw:
-    raise ValueError("❌ DATABASE_URL is missing from environment variables!")
+    raise ValueError("❌ DATABASE_URL is missing!")
 DATABASE_URL = db_url_raw.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL)
@@ -41,8 +42,10 @@ class EscrowJob(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- 2. CONFIG & WALLET ---
+# We use the Async client for FastAPI compatibility
 XRPL_URL = "https://s.altnet.rippletest.net:51234/"
-client = JsonRpcClient(XRPL_URL)
+async_client = AsyncJsonRpcClient(XRPL_URL)
+
 SHARED_SECRET = os.getenv("SHARED_SECRET", "change-me-locally").encode()
 REFEREE_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
 REVENUE_WALLET = os.getenv("MY_REVENUE_WALLET")
@@ -50,14 +53,14 @@ REVENUE_WALLET = os.getenv("MY_REVENUE_WALLET")
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# Load Wallet with better error handling
 banker_seed = os.getenv("BANKER_SEED")
 if not banker_seed:
     logger.error("❌ BANKER_SEED is missing!")
     banker_wallet = None
 else:
     banker_wallet = Wallet.from_seed(banker_seed)
-    logger.info(f"💰 Banker Online: {banker_wallet.address}")
+    # This will show in your Render logs so you can see your Banker address!
+    logger.info(f"💰 BANKER LIVE AT: {banker_wallet.address}")
 
 # --- 3. SECURITY UTILITY ---
 def verify_signature(data: str, signature: str):
@@ -71,7 +74,6 @@ async def run_split_payment(worker_addr, total):
     if not REVENUE_WALLET:
         raise Exception("Revenue wallet address missing")
 
-    # 10% Fee logic: 5% to Referee, 5% to Platform
     ref_fee = round(total * 0.05, 6)
     my_fee = round(total * 0.05, 6)
     net_worker = round(total - ref_fee - my_fee, 6)
@@ -83,17 +85,23 @@ async def run_split_payment(worker_addr, total):
     ]
     
     for addr, amt in payouts:
+        # SKIP if the address is the banker itself (prevents 'same sender/dest' error)
+        if addr == banker_wallet.address:
+            logger.warning(f"⚠️ Skipping payment to {addr} (Destination is the Banker itself)")
+            continue
+
         try:
             pay_tx = Payment(
                 account=banker_wallet.address,
                 amount=xrp_to_drops(amt),
                 destination=addr
             )
-            submit_and_wait(pay_tx, client, banker_wallet)
-            logger.info(f"Sent {amt} XRP to {addr}")
+            # CRITICAL FIX: Use 'await' with the async_client
+            await submit_and_wait(pay_tx, async_client, banker_wallet)
+            logger.info(f"✅ Sent {amt} XRP to {addr}")
         except Exception as e:
-            logger.error(f"Failed to pay {addr}: {e}")
-            # In a real app, you'd want a retry logic here
+            logger.error(f"❌ Failed to pay {addr}: {e}")
+            
     return True
 
 # --- 5. ENDPOINTS ---
@@ -103,10 +111,9 @@ class InitJob(BaseModel):
     worker_address: str
     amount: float
 
-@app.head("/")
 @app.get("/")
 def health():
-    return {"status": "Online"}
+    return {"status": "Online", "banker_address": banker_wallet.address if banker_wallet else "None"}
 
 @app.post("/initialize")
 async def init_job(data: InitJob):
@@ -131,6 +138,7 @@ async def payout(escrow_id: str, x_signature: str = Header(None)):
     try:
         job = db.query(EscrowJob).filter(EscrowJob.escrow_id == escrow_id).first()
         if job and not job.is_settled:
+            # We await this call now
             await run_split_payment(job.worker_address, job.amount)
             job.is_settled = True
             db.commit()
