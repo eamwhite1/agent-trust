@@ -103,9 +103,10 @@ class InitJob(BaseModel):
     worker_address: str
     amount: float
 
+@app.head("/")
 @app.get("/")
 def health():
-    return {"status": "Banker is Active", "address": banker_wallet.address if banker_wallet else "Error"}
+    return {"status": "Online"}
 
 @app.post("/initialize")
 async def init_job(data: InitJob):
