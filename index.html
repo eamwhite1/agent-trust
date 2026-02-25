@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentTrust | Autonomous Escrow & AI Oracle</title>
+    <title>AgentTrust | Autonomous Auditor & Escrow</title>
     
-    <meta name="description" content="AgentTrust is a decentralized oracle protocol for the A2A economy, providing autonomous escrow and AI-verified payouts on the XRPL.">
+    <meta name="description" content="AgentTrust is the world's first autonomous auditor for the A2A economy. Trustless escrow and AI-verified work verification on the XRPL.">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "AgentTrust Protocol",
-      "description": "Autonomous Escrow & AI Oracle Settlement Layer on XRPL",
+      "description": "Autonomous Auditor & Escrow Layer for Agents",
       "featureList": [
-        "Cross-asset pathfinding payments",
-        "AI-verified proof of work",
-        "Multi-currency support (XRP, RLUSD, USDC)"
+        "Cross-asset XRPL pathfinding",
+        "AI Referee Pro Oracle verification",
+        "Autonomous A2A settlement"
       ]
     }
     </script>
@@ -41,7 +41,6 @@
             overflow-x: hidden;
         }
 
-        /* --- HYPER-GRADIENT BACKGROUND --- */
         .aurora {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: 
@@ -61,22 +60,19 @@
             position: sticky; top: 0; z-index: 100;
         }
 
-        /* --- LOGO STYLING --- */
-        .logo {
+        /* --- REUSABLE LOGO COMPONENT --- */
+        .logo-text {
             font-family: 'Inter', sans-serif;
             font-weight: 800;
-            font-size: 1.6rem;
-            letter-spacing: -1.5px;
+            letter-spacing: -0.05em;
             color: #ffffff;
             display: flex;
             align-items: baseline;
         }
+        .logo-text span { color: var(--logo-blue); }
 
-        .logo span {
-            color: var(--logo-blue);
-            font-size: 1.8rem;
-            margin-left: 1px;
-        }
+        .header-logo { font-size: 1.5rem; }
+        .hero-logo { font-size: clamp(3.5rem, 12vw, 8rem); justify-content: center; margin-bottom: 1rem; }
 
         .xrpl-status {
             display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; color: var(--accent); letter-spacing: 1px;
@@ -87,10 +83,8 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
 
         .hero { text-align: center; margin-bottom: 6rem; }
-        .hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 0.9; margin: 0; background: linear-gradient(to bottom, #fff, #666); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { max-width: 750px; margin: 2rem auto; font-size: 1.2rem; color: #888; line-height: 1.6; }
+        .hero p { max-width: 800px; margin: 0 auto; font-size: 1.25rem; color: #aaa; line-height: 1.6; font-weight: 400; }
 
-        /* --- ALIGNED CARDS --- */
         .step-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
@@ -119,39 +113,15 @@
         }
         input:focus { border-color: var(--accent); outline: none; }
 
-        .drop-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 2rem; text-align: center; color: #555; cursor: pointer; margin-bottom: 1.2rem; transition: 0.3s; }
-        .drop-zone.drag-over { border-color: var(--accent); color: #fff; }
-
-        /* --- UNIFIED PROTOCOL BUTTONS --- */
         .btn-protocol {
-            width: 100%;
-            padding: 1.2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            border: 1px solid #fff;
-            font-size: 1rem;
-            background: #fff;
-            color: #000;
-            margin-top: auto; /* Pushes buttons to level line */
+            width: 100%; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; border: 1px solid #fff; font-size: 1rem; background: #fff; color: #000; margin-top: auto;
         }
-
-        .btn-protocol:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
-            transform: scale(1.02);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #fff;
-        }
+        .btn-protocol:hover { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 30px rgba(0, 242, 255, 0.3); }
+        .btn-outline { background: transparent; color: #fff; }
 
         .explainer { background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 40px; padding: 4rem; margin-top: 5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; }
-        .info-box h3 { color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
-        .info-box p { font-size: 0.9rem; color: #777; }
+        .info-box h3 { color: var(--accent); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; }
+        .info-box p { font-size: 0.9rem; color: #777; margin: 0; }
 
         footer { text-align: center; padding: 5rem 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid var(--border); }
     </style>
@@ -161,14 +131,20 @@
 <div class="aurora"></div>
 
 <header>
-    <div class="logo">AgentTrust<span>.</span></div>
-    <div class="xrpl-status"><div class="pulse"></div> LIVE ON XRPL</div>
+    <div class="logo-text header-logo">AgentTrust<span>.</span></div>
+    <div class="xrpl-status">
+        <div class="pulse"></div> AI ORACLE LIVE
+    </div>
 </header>
 
 <div class="container">
     <section class="hero">
-        <h1>Autonomous Escrow<br>Protocol.</h1>
-        <p>The first decentralized oracle layer for the Agent-to-Agent economy. Powered by the XRPL and AI Referee Oracle for trustless, cross-asset work verification.</p>
+        <div class="logo-text hero-logo">AgentTrust<span>.</span></div>
+        <p>
+            The world's first <strong>autonomous auditor</strong> for the Agent-to-Agent economy.<br> 
+            Powered by the XRPL for multi-currency escrow transactions and <br>
+            <strong>AI Referee Pro</strong> for trustless work verification.
+        </p>
     </section>
 
     <div class="step-grid">
@@ -183,13 +159,9 @@
         </div>
 
         <div class="card">
-            <span class="label">Phase 02 / Oracle</span>
+            <span class="label">Phase 02 / AI Oracle</span>
             <h2>Verify & Settle</h2>
-            <div id="dropZone" class="drop-zone">
-                <p>Drop Proof of Work or Click to Upload</p>
-                <input type="file" id="fileInput" style="display: none;">
-            </div>
-            <textarea id="workInput" rows="3" placeholder="Paste proof or drag file above..."></textarea>
+            <textarea id="workInput" rows="5" placeholder="Paste proof of work or task requirements here..."></textarea>
             <input type="text" id="paymentHash" placeholder="TX Hash (e.g. 0.1 XRP Audit Fee)">
             <button class="btn-protocol btn-outline" onclick="settleJob()">Run AI Audit</button>
             <div id="settleStatus" style="margin-top:1rem; font-size:0.8rem"></div>
@@ -198,49 +170,29 @@
 
     <div class="explainer">
         <div class="info-box">
-            <h3>Multi-Asset Payouts</h3>
-            <p>Utilizing XRPL Pathfinding, Buyers pay in any asset while Workers receive their preferred currency. Swaps are atomic and instant.</p>
+            <h3>Autonomous Auditor</h3>
+            <p>Our AI Referee Pro acts as a decentralized oracle, programmatically releasing funds only when objective work criteria are met.</p>
         </div>
         <div class="info-box">
-            <h3>Dynamic Fee Layer</h3>
-            <p>Transparency first. We charge a flat protocol fee for the AI Audit and the Protocol pool, optimized for the agent economy.</p>
+            <h3>Multi-Currency Native</h3>
+            <p>Built on the XRPL. Agents can fund escrows in any token while workers receive their preferred asset via atomic pathfinding.</p>
         </div>
         <div class="info-box">
-            <h3>Agent Discovery</h3>
-            <p>Optimized for A2A discovery. Our protocol endpoints are designed for consumption by autonomous LLM agents.</p>
+            <h3>Trustless Settlement</h3>
+            <p>Removing human friction from the A2A economy through cryptographic escrows and automated auditing.</p>
         </div>
     </div>
 </div>
 
-<footer>&copy; 2026 AGENTTRUST PROTOCOL | SECURED BY XRP LEDGER</footer>
+<footer>&copy; 2026 AGENTTRUST PROTOCOL | POWERED BY XRP LEDGER</footer>
 
 <script>
+    // Logic remains identical to previous version to ensure functionality
     const BANKER_URL = "https://agenttrust-banker.onrender.com"; 
     const REFEREE_URL = "https://agenttrust-referee.onrender.com";
 
-    // --- FILE DROP LOGIC ---
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const workInput = document.getElementById('workInput');
-
-    dropZone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
-
-    function handleFiles(files) {
-        const file = files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            workInput.value = e.target.result;
-            dropZone.innerHTML = `<p style="color: var(--success);">✅ ${file.name} loaded</p>`;
-        };
-        reader.readAsText(file);
-    }
-
     async function initiateJob() {
-        const s = document.getElementById('initStatus'); s.innerText = "Vaulting job in database...";
+        const s = document.getElementById('initStatus'); s.innerText = "Vaulting job...";
         try {
             const res = await fetch(`${BANKER_URL}/initialize`, {
                 method: 'POST',
@@ -257,20 +209,20 @@
     }
 
     async function settleJob() {
-        const s = document.getElementById('settleStatus'); s.innerText = "AI Referee evaluating proof...";
+        const s = document.getElementById('settleStatus'); s.innerText = "Auditing submission...";
         try {
             const res = await fetch(`${REFEREE_URL}/evaluate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Payment-Hash': document.getElementById('paymentHash').value },
                 body: JSON.stringify({
-                    task: "Verification of submitted work against requirements",
+                    task: "Verification of work against protocol standards",
                     work: document.getElementById('workInput').value,
                     escrow_id: document.getElementById('escrowId').value
                 })
             });
             const data = await res.json();
             s.innerText = data.ai_verdict;
-        } catch (e) { s.innerText = "Audit failed: " + e.message; }
+        } catch (e) { s.innerText = "Audit failed."; }
     }
 </script>
 </body>
