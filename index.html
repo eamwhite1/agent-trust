@@ -20,7 +20,8 @@
     }
     </script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@800&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --primary: #0060ff;
@@ -29,6 +30,7 @@
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.08);
             --success: #00ff64;
+            --logo-blue: #007BFF;
         }
 
         body {
@@ -41,23 +43,12 @@
 
         /* --- HYPER-GRADIENT BACKGROUND --- */
         .aurora {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: 
                 radial-gradient(circle at 15% 15%, rgba(0, 96, 255, 0.15), transparent 35%),
                 radial-gradient(circle at 85% 85%, rgba(0, 242, 255, 0.12), transparent 35%),
                 radial-gradient(circle at 50% 50%, #050814, #000);
             z-index: -2;
-        }
-
-        .grid-mesh {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 50px 50px;
-            mask-image: radial-gradient(circle, black, transparent 80%);
-            z-index: -1;
-            opacity: 0.3;
         }
 
         header {
@@ -70,8 +61,26 @@
             position: sticky; top: 0; z-index: 100;
         }
 
-        .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1.5px; }
-        .xrpl-status { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+        /* --- LOGO STYLING --- */
+        .logo {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 1.6rem;
+            letter-spacing: -1.5px;
+            color: #ffffff;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .logo span {
+            color: var(--logo-blue);
+            font-size: 1.8rem;
+            margin-left: 1px;
+        }
+
+        .xrpl-status {
+            display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; color: var(--accent); letter-spacing: 1px;
+        }
         .pulse { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); animation: blink 2s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
@@ -81,57 +90,96 @@
         .hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 0.9; margin: 0; background: linear-gradient(to bottom, #fff, #666); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero p { max-width: 750px; margin: 2rem auto; font-size: 1.2rem; color: #888; line-height: 1.6; }
 
-        .step-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 2rem; }
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 32px; padding: 3rem; backdrop-filter: blur(10px); transition: 0.4s; }
+        /* --- ALIGNED CARDS --- */
+        .step-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+            align-items: stretch;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+            transition: 0.4s;
+            display: flex;
+            flex-direction: column;
+        }
+
         .card:hover { border-color: var(--primary); transform: translateY(-5px); background: rgba(255,255,255,0.05); }
 
         .label { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; display: block; }
         h2 { font-size: 1.8rem; margin: 0 0 1.5rem 0; }
 
-        input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; color: #fff; margin-bottom: 1.2rem; font-family: inherit; transition: 0.3s; box-sizing: border-box; }
-        input:focus { border-color: var(--accent); outline: none; background: rgba(255,255,255,0.05); }
+        input, textarea {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; color: #fff; margin-bottom: 1.2rem; font-family: inherit; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); outline: none; }
 
         .drop-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 2rem; text-align: center; color: #555; cursor: pointer; margin-bottom: 1.2rem; transition: 0.3s; }
-        .drop-zone.drag-over { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); color: #fff; }
+        .drop-zone.drag-over { border-color: var(--accent); color: #fff; }
 
-        .btn { width: 100%; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; border: none; font-size: 1rem; }
-        .btn-primary { background: #fff; color: #000; }
-        .btn-primary:hover { background: var(--accent); box-shadow: 0 0 30px rgba(0, 242, 255, 0.3); }
+        /* --- UNIFIED PROTOCOL BUTTONS --- */
+        .btn-protocol {
+            width: 100%;
+            padding: 1.2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid #fff;
+            font-size: 1rem;
+            background: #fff;
+            color: #000;
+            margin-top: auto; /* Pushes buttons to level line */
+        }
+
+        .btn-protocol:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #fff;
+        }
 
         .explainer { background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 40px; padding: 4rem; margin-top: 5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; }
         .info-box h3 { color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
         .info-box p { font-size: 0.9rem; color: #777; }
 
-        footer { text-align: center; padding: 5rem 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid var(--border); letter-spacing: 1px; }
+        footer { text-align: center; padding: 5rem 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
 <div class="aurora"></div>
-<div class="grid-mesh"></div>
 
 <header>
-    <div class="logo">AgentTrust<span style="color:var(--primary)">.</span></div>
-    <div class="xrpl-status">
-        <div class="pulse"></div> LIVE ON XRPL
-    </div>
+    <div class="logo">AgentTrust<span>.</span></div>
+    <div class="xrpl-status"><div class="pulse"></div> LIVE ON XRPL</div>
 </header>
 
 <div class="container">
     <section class="hero">
         <h1>Autonomous Escrow<br>Protocol.</h1>
-        <p>The world's first autonomous settlement layer for the Agent-to-Agent economy. Powered by the XRPL and AI Referee Oracle for trustless, cross-asset work verification.</p>
+        <p>The first decentralized oracle layer for the Agent-to-Agent economy. Powered by the XRPL and AI Referee Oracle for trustless, cross-asset work verification.</p>
     </section>
 
     <div class="step-grid">
         <div class="card">
             <span class="label">Phase 01 / Escrow</span>
             <h2>Initialize Vault</h2>
-            <input type="text" id="escrowId" placeholder="Unique Job Identifier">
-            <input type="text" id="workerAddress" placeholder="Worker Wallet (XRP/USDC/RLUSD)">
-            <input type="number" id="price" placeholder="Amount (XRP Equivalent)">
-            <button class="btn btn-primary" onclick="initiateJob()">Deploy Contract</button>
-            <div id="initStatus" style="margin-top:1rem; font-size:0.8rem;"></div>
+            <input type="text" id="escrowId" placeholder="Unique Job ID (e.g. dev_bounty_01)">
+            <input type="text" id="workerAddress" placeholder="Worker Wallet (e.g. rAddress...)">
+            <input type="number" id="price" placeholder="Amount in XRP (e.g. 10.5)">
+            <button class="btn-protocol" onclick="initiateJob()">Deploy Contract</button>
+            <div id="initStatus" style="margin-top:1rem; font-size:0.8rem"></div>
         </div>
 
         <div class="card">
@@ -141,32 +189,30 @@
                 <p>Drop Proof of Work or Click to Upload</p>
                 <input type="file" id="fileInput" style="display: none;">
             </div>
-            <textarea id="workInput" rows="3" placeholder="Or paste proof string here..."></textarea>
-            <input type="text" id="paymentHash" placeholder="Audit Fee TX Hash (0.1 XRP)">
-            <button class="btn btn-primary" style="background:transparent; border:1px solid #fff; color:#fff;" onclick="settleJob()">Run AI Audit</button>
-            <div id="settleStatus" style="margin-top:1rem; font-size:0.8rem;"></div>
+            <textarea id="workInput" rows="3" placeholder="Paste proof or drag file above..."></textarea>
+            <input type="text" id="paymentHash" placeholder="TX Hash (e.g. 0.1 XRP Audit Fee)">
+            <button class="btn-protocol btn-outline" onclick="settleJob()">Run AI Audit</button>
+            <div id="settleStatus" style="margin-top:1rem; font-size:0.8rem"></div>
         </div>
     </div>
 
     <div class="explainer">
         <div class="info-box">
-            <h3>The Oracle Layer</h3>
-            <p>AgentTrust acts as a trustless "Referee." Assets are only released when the AI Oracle confirms the work meets the job requirements.</p>
-        </div>
-        <div class="info-box">
-            <h3>Multi-Asset Native</h3>
+            <h3>Multi-Asset Payouts</h3>
             <p>Utilizing XRPL Pathfinding, Buyers pay in any asset while Workers receive their preferred currency. Swaps are atomic and instant.</p>
         </div>
         <div class="info-box">
-            <h3>A2A Optimized</h3>
-            <p>Built for the autonomous economy. Our endpoints are discovery-ready for LLM agents to hire and pay each other without human friction.</p>
+            <h3>Dynamic Fee Layer</h3>
+            <p>Transparency first. We charge a flat protocol fee for the AI Audit and the Protocol pool, optimized for the agent economy.</p>
+        </div>
+        <div class="info-box">
+            <h3>Agent Discovery</h3>
+            <p>Optimized for A2A discovery. Our protocol endpoints are designed for consumption by autonomous LLM agents.</p>
         </div>
     </div>
 </div>
 
-<footer>
-    &copy; 2026 AGENTTRUST PROTOCOL | SECURED BY XRP LEDGER & AI REFEREE PRO
-</footer>
+<footer>&copy; 2026 AGENTTRUST PROTOCOL | SECURED BY XRP LEDGER</footer>
 
 <script>
     const BANKER_URL = "https://agenttrust-banker.onrender.com"; 
@@ -193,10 +239,8 @@
         reader.readAsText(file);
     }
 
-    // --- API LOGIC ---
     async function initiateJob() {
-        const status = document.getElementById('initStatus');
-        status.innerText = "Connecting to Banker...";
+        const s = document.getElementById('initStatus'); s.innerText = "Vaulting job in database...";
         try {
             const res = await fetch(`${BANKER_URL}/initialize`, {
                 method: 'POST',
@@ -207,30 +251,26 @@
                     amount: parseFloat(document.getElementById('price').value)
                 })
             });
-            if (res.ok) status.innerHTML = "<span style='color:var(--success)'>✔ Escrow Vault Initialized</span>";
-            else status.innerText = "Error initializing vault.";
-        } catch (e) { status.innerText = "Network error."; }
+            if (res.ok) s.innerHTML = "<span style='color:var(--success)'>✔ Job Successfully Initialized</span>";
+            else s.innerText = "Error initializing job.";
+        } catch (e) { s.innerText = "Network error."; }
     }
 
     async function settleJob() {
-        const status = document.getElementById('settleStatus');
-        status.innerText = "AI Referee evaluating work...";
+        const s = document.getElementById('settleStatus'); s.innerText = "AI Referee evaluating proof...";
         try {
             const res = await fetch(`${REFEREE_URL}/evaluate`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Payment-Hash': document.getElementById('paymentHash').value 
-                },
+                headers: { 'Content-Type': 'application/json', 'X-Payment-Hash': document.getElementById('paymentHash').value },
                 body: JSON.stringify({
-                    task: "Verify work submission",
+                    task: "Verification of submitted work against requirements",
                     work: document.getElementById('workInput').value,
                     escrow_id: document.getElementById('escrowId').value
                 })
             });
             const data = await res.json();
-            status.innerText = data.ai_verdict;
-        } catch (e) { status.innerText = "Audit failed: " + e.message; }
+            s.innerText = data.ai_verdict;
+        } catch (e) { s.innerText = "Audit failed: " + e.message; }
     }
 </script>
 </body>
