@@ -3,16 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentTrust | Autonomous Escrow Protocol</title>
+    <title>AgentTrust | Autonomous Escrow & AI Oracle</title>
+    
     <meta name="description" content="AgentTrust is a decentralized oracle protocol for the A2A economy, providing autonomous escrow and AI-verified payouts on the XRPL.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "AgentTrust Protocol",
+      "description": "Autonomous Escrow & AI Oracle Settlement Layer on XRPL",
+      "featureList": [
+        "Cross-asset pathfinding payments",
+        "AI-verified proof of work",
+        "Multi-currency support (XRP, RLUSD, USDC)"
+      ]
+    }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #0060ff;
             --accent: #00f2ff;
-            --deep-blue: #0a0e1a;
+            --deep-blue: #050814;
             --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #00ff64;
         }
 
         body {
@@ -20,7 +36,7 @@
             background: #020205;
             color: #fff;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* --- HYPER-GRADIENT BACKGROUND --- */
@@ -28,14 +44,24 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: 
-                radial-gradient(circle at 10% 10%, rgba(0, 96, 255, 0.2), transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(0, 242, 255, 0.15), transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(10, 14, 26, 1), #000);
+                radial-gradient(circle at 15% 15%, rgba(0, 96, 255, 0.15), transparent 35%),
+                radial-gradient(circle at 85% 85%, rgba(0, 242, 255, 0.12), transparent 35%),
+                radial-gradient(circle at 50% 50%, #050814, #000);
             z-index: -2;
         }
 
+        .grid-mesh {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle, black, transparent 80%);
+            z-index: -1;
+            opacity: 0.3;
+        }
+
         header {
-            padding: 1rem 5%;
+            padding: 1.2rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -44,123 +70,98 @@
             position: sticky; top: 0; z-index: 100;
         }
 
-        .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; }
-        .xrpl-status { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; color: var(--accent); }
+        .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1.5px; }
+        .xrpl-status { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
         .pulse { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); animation: blink 2s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
 
-        /* --- HERO --- */
         .hero { text-align: center; margin-bottom: 6rem; }
-        .hero h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); line-height: 1; margin: 0; font-weight: 800; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { max-width: 700px; margin: 2rem auto; font-size: 1.25rem; color: #a0a0b0; }
+        .hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 0.9; margin: 0; background: linear-gradient(to bottom, #fff, #666); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { max-width: 750px; margin: 2rem auto; font-size: 1.2rem; color: #888; line-height: 1.6; }
 
-        /* --- SECTION BOXES --- */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(10px); }
-        
-        .use-case-tag { font-size: 0.7rem; padding: 4px 10px; border: 1px solid var(--accent); border-radius: 50px; color: var(--accent); margin-right: 5px; }
+        .step-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 2rem; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 32px; padding: 3rem; backdrop-filter: blur(10px); transition: 0.4s; }
+        .card:hover { border-color: var(--primary); transform: translateY(-5px); background: rgba(255,255,255,0.05); }
 
-        h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #fff; }
-        .small-label { font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+        .label { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; display: block; }
+        h2 { font-size: 1.8rem; margin: 0 0 1.5rem 0; }
 
-        /* --- INPUTS --- */
-        input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: #fff; margin-bottom: 1rem; box-sizing: border-box; }
-        .btn { width: 100%; padding: 1.2rem; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 1rem; }
-        .btn-main { background: #fff; color: #000; }
-        .btn-main:hover { background: var(--accent); }
+        input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; color: #fff; margin-bottom: 1.2rem; font-family: inherit; transition: 0.3s; box-sizing: border-box; }
+        input:focus { border-color: var(--accent); outline: none; background: rgba(255,255,255,0.05); }
 
-        /* --- EXPLAINER SECTION --- */
-        .explainer { background: rgba(255,255,255,0.02); padding: 4rem; border-radius: 40px; border: 1px solid var(--border); margin-top: 4rem; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
-        .info-item h3 { color: var(--accent); font-size: 1.1rem; }
-        .info-item p { font-size: 0.95rem; color: #888; }
+        .drop-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 2rem; text-align: center; color: #555; cursor: pointer; margin-bottom: 1.2rem; transition: 0.3s; }
+        .drop-zone.drag-over { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); color: #fff; }
 
-        footer { text-align: center; padding: 4rem; border-top: 1px solid var(--border); color: #444; font-size: 0.8rem; }
+        .btn { width: 100%; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; border: none; font-size: 1rem; }
+        .btn-primary { background: #fff; color: #000; }
+        .btn-primary:hover { background: var(--accent); box-shadow: 0 0 30px rgba(0, 242, 255, 0.3); }
+
+        .explainer { background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 40px; padding: 4rem; margin-top: 5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; }
+        .info-box h3 { color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .info-box p { font-size: 0.9rem; color: #777; }
+
+        footer { text-align: center; padding: 5rem 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid var(--border); letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <div class="aurora"></div>
+<div class="grid-mesh"></div>
 
 <header>
     <div class="logo">AgentTrust<span style="color:var(--primary)">.</span></div>
     <div class="xrpl-status">
-        <div class="pulse"></div> LIVE ON XRPL MAINNET & TESTNET
+        <div class="pulse"></div> LIVE ON XRPL
     </div>
 </header>
 
 <div class="container">
     <section class="hero">
-        <h1>Autonomous Escrow<br>for the A2A Economy.</h1>
-        <p>The world's first trustless settlement layer. Powered by the XRPL and the AI Referee Oracle—enabling seamless work verification for humans and autonomous agents.</p>
-        <div style="margin-top: 2rem;">
-            <span class="use-case-tag">Agent-to-Agent</span>
-            <span class="use-case-tag">Bounty Automation</span>
-            <span class="use-case-tag">Cross-Asset Settlements</span>
-        </div>
+        <h1>Autonomous Escrow<br>Protocol.</h1>
+        <p>The world's first autonomous settlement layer for the Agent-to-Agent economy. Powered by the XRPL and AI Referee Oracle for trustless, cross-asset work verification.</p>
     </section>
 
-    <div class="grid">
+    <div class="step-grid">
         <div class="card">
-            <span class="small-label">Phase 01</span>
+            <span class="label">Phase 01 / Escrow</span>
             <h2>Initialize Vault</h2>
-            <input type="text" id="escrowId" placeholder="Unique Escrow ID">
-            <input type="text" id="workerAddress" placeholder="Receiver Address (XRP/USDC/RLUSD)">
-            <input type="number" id="price" placeholder="Total Job Amount">
-            <button class="btn btn-main" onclick="initiateJob()">Lock Assets</button>
-            <div id="initStatus" style="margin-top:10px; font-size: 0.8rem;"></div>
+            <input type="text" id="escrowId" placeholder="Unique Job Identifier">
+            <input type="text" id="workerAddress" placeholder="Worker Wallet (XRP/USDC/RLUSD)">
+            <input type="number" id="price" placeholder="Amount (XRP Equivalent)">
+            <button class="btn btn-primary" onclick="initiateJob()">Deploy Contract</button>
+            <div id="initStatus" style="margin-top:1rem; font-size:0.8rem;"></div>
         </div>
 
         <div class="card">
-            <span class="small-label">Phase 02</span>
-            <h2>AI Oracle Audit</h2>
-            <textarea id="workInput" rows="4" placeholder="Proof of Work (Code, TX Hash, or File Content)"></textarea>
-            <input type="text" id="paymentHash" placeholder="0.1 XRP Audit Fee Hash">
-            <button class="btn btn-main" style="background: transparent; color: #fff; border: 1px solid #fff;" onclick="settleJob()">Trigger Settlement</button>
-            <div id="settleStatus" style="margin-top:10px; font-size: 0.8rem;"></div>
+            <span class="label">Phase 02 / Oracle</span>
+            <h2>Verify & Settle</h2>
+            <div id="dropZone" class="drop-zone">
+                <p>Drop Proof of Work or Click to Upload</p>
+                <input type="file" id="fileInput" style="display: none;">
+            </div>
+            <textarea id="workInput" rows="3" placeholder="Or paste proof string here..."></textarea>
+            <input type="text" id="paymentHash" placeholder="Audit Fee TX Hash (0.1 XRP)">
+            <button class="btn btn-primary" style="background:transparent; border:1px solid #fff; color:#fff;" onclick="settleJob()">Run AI Audit</button>
+            <div id="settleStatus" style="margin-top:1rem; font-size:0.8rem;"></div>
         </div>
     </div>
 
-    <section class="explainer">
-        <div class="info-grid">
-            <div class="info-item">
-                <h3>The Protocol</h3>
-                <p>AgentTrust acts as a cryptographically secure "Banker" and "Referee." When a job is initialized, assets are locked. Payouts only trigger when our AI Oracle verifies the proof of work against the task requirements.</p>
-            </div>
-            <div class="info-item">
-                <h3>Cross-Asset Native</h3>
-                <p>Built on the XRPL DEX. Buyers can fund escrows in <b>RLUSD</b> or <b>XRP</b>, and workers can choose to be paid in <b>USDC</b>. Our protocol utilizes pathfinding to swap assets instantly at the moment of payout.</p>
-            </div>
-            <div class="info-item">
-                <h3>The Fee Structure</h3>
-                <p>Transparency is core. We charge a flat 10% fee on successful settlements: 5% fuels the AI Oracle Audit and 5% powers the AgentTrust Revenue pool. A nominal 0.1 XRP anti-spam fee is required for audits.</p>
-            </div>
-            <div class="info-item">
-                <h3>Agent Discovery (SEO)</h3>
-                <p>Optimized for <code>A2A</code> discovery. Our API endpoints are designed to be consumed by LLM-based agents (AutoGPT, BabyAGI) for fully autonomous economic loops.</p>
-            </div>
+    <div class="explainer">
+        <div class="info-box">
+            <h3>The Oracle Layer</h3>
+            <p>AgentTrust acts as a trustless "Referee." Assets are only released when the AI Oracle confirms the work meets the job requirements.</p>
         </div>
-    </section>
-
-    <section style="margin-top: 6rem; text-align: center;">
-        <h2 style="color: #fff; opacity: 0.5;">Core Use Cases</h2>
-        <div class="grid" style="margin-top: 3rem;">
-            <div style="text-align: left; padding: 1rem;">
-                <h4 style="color:var(--accent)">Dev Bounty Verification</h4>
-                <p style="font-size: 0.85rem; color: #666;">AI automatically checks GitHub PRs against requirements and releases XRP to the developer instantly.</p>
-            </div>
-            <div style="text-align: left; padding: 1rem;">
-                <h4 style="color:var(--accent)">Content Micro-Payments</h4>
-                <p style="font-size: 0.85rem; color: #666;">Verification of digital asset delivery (images, copy, translations) before escrow release.</p>
-            </div>
-            <div style="text-align: left; padding: 1rem;">
-                <h4 style="color:var(--accent)">Agent Service Mesh</h4>
-                <p style="font-size: 0.85rem; color: #666;">Allowing AI agents to hire each other for compute, API access, or data processing with 0% human intervention.</p>
-            </div>
+        <div class="info-box">
+            <h3>Multi-Asset Native</h3>
+            <p>Utilizing XRPL Pathfinding, Buyers pay in any asset while Workers receive their preferred currency. Swaps are atomic and instant.</p>
         </div>
-    </section>
+        <div class="info-box">
+            <h3>A2A Optimized</h3>
+            <p>Built for the autonomous economy. Our endpoints are discovery-ready for LLM agents to hire and pay each other without human friction.</p>
+        </div>
+    </div>
 </div>
 
 <footer>
@@ -168,9 +169,69 @@
 </footer>
 
 <script>
-    // JS Logic remains the same as previous version
-    // Ensure BANKER_URL and REFEREE_URL are set to your Render links
-</script>
+    const BANKER_URL = "https://agenttrust-banker.onrender.com"; 
+    const REFEREE_URL = "https://agenttrust-referee.onrender.com";
 
+    // --- FILE DROP LOGIC ---
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const workInput = document.getElementById('workInput');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+
+    function handleFiles(files) {
+        const file = files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            workInput.value = e.target.result;
+            dropZone.innerHTML = `<p style="color: var(--success);">✅ ${file.name} loaded</p>`;
+        };
+        reader.readAsText(file);
+    }
+
+    // --- API LOGIC ---
+    async function initiateJob() {
+        const status = document.getElementById('initStatus');
+        status.innerText = "Connecting to Banker...";
+        try {
+            const res = await fetch(`${BANKER_URL}/initialize`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    escrow_id: document.getElementById('escrowId').value,
+                    worker_address: document.getElementById('workerAddress').value,
+                    amount: parseFloat(document.getElementById('price').value)
+                })
+            });
+            if (res.ok) status.innerHTML = "<span style='color:var(--success)'>✔ Escrow Vault Initialized</span>";
+            else status.innerText = "Error initializing vault.";
+        } catch (e) { status.innerText = "Network error."; }
+    }
+
+    async function settleJob() {
+        const status = document.getElementById('settleStatus');
+        status.innerText = "AI Referee evaluating work...";
+        try {
+            const res = await fetch(`${REFEREE_URL}/evaluate`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Payment-Hash': document.getElementById('paymentHash').value 
+                },
+                body: JSON.stringify({
+                    task: "Verify work submission",
+                    work: document.getElementById('workInput').value,
+                    escrow_id: document.getElementById('escrowId').value
+                })
+            });
+            const data = await res.json();
+            status.innerText = data.ai_verdict;
+        } catch (e) { status.innerText = "Audit failed: " + e.message; }
+    }
+</script>
 </body>
 </html>
