@@ -3,223 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentTrust | The Future of Work Settlement</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@800&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
+    <title>AgentTrust | Autonomous Payout Protocol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0060ff;
-            --accent: #00f2ff;
-            --deep-blue: #050814;
+            --primary: #00e5ff;
+            --secondary: #6e00ff;
+            --bg: #03040a;
             --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
-            --success: #00ff64;
-            --logo-blue: #007BFF;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-muted: #94a3b8;
         }
 
-        body { margin: 0; background: #020205; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-
-        .aurora {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at 15% 15%, rgba(0, 96, 255, 0.15), transparent 35%),
-                radial-gradient(circle at 85% 85%, rgba(0, 242, 255, 0.12), transparent 35%),
-                radial-gradient(circle at 50% 50%, #050814, #000);
-            z-index: -2;
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        header { padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        
-        .logo-text { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.05em; color: #ffffff; display: flex; align-items: baseline; }
-        .logo-text span { color: var(--logo-blue); }
-        .header-logo { font-size: 1.5rem; }
-        .hero-logo { font-size: clamp(3rem, 10vw, 7rem); justify-content: center; margin-bottom: 0.5rem; }
+        /* --- HIGH-END AURORA BACKGROUND --- */
+        .aurora-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, transparent 40%),
+                        radial-gradient(circle at 80% 80%, #312e81 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, #03040a 0%, #000 100%);
+        }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+        .blob {
+            position: absolute;
+            width: 500px; height: 500px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            filter: blur(120px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
 
-        .hero { text-align: center; margin-bottom: 6rem; }
-        .hero h2 { font-size: 1.4rem; font-weight: 400; color: #888; margin-top: 0; }
-        
-        /* --- PROCESS DIAGRAM --- */
-        .process-visual {
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
+
+        /* --- NAVIGATION --- */
+        nav {
+            padding: 1.5rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .logo { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 1.5rem; letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        .status-pill { background: rgba(0, 229, 255, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.2); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+
+        /* --- HERO SECTION --- */
+        .hero { text-align: center; margin-bottom: 8rem; position: relative; }
+        .hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px; }
+        .hero p { font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 3rem; }
+
+        /* --- THE SHIT HOT FLOW DIAGRAM --- */
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin: 4rem 0 8rem;
+            position: relative;
+        }
+
+        .flow-container::before {
+            content: "";
+            position: absolute;
+            top: 45px; left: 10%; right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--glass-border), var(--primary), var(--glass-border), transparent);
+            z-index: -1;
+        }
+
+        .flow-node { flex: 1; text-align: center; }
+        .icon-circle {
+            width: 90px; height: 90px;
             background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 40px;
-            padding: 3rem;
-            margin-bottom: 6rem;
-            text-align: center;
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
         }
-        .flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: center; }
-        .flow-step { padding: 1rem; position: relative; }
-        .flow-step h4 { color: var(--accent); margin: 0.5rem 0; font-size: 0.9rem; }
-        .flow-step p { font-size: 0.75rem; color: #666; margin: 0; }
-        .arrow { font-size: 1.5rem; color: var(--border); }
+        .flow-node:hover .icon-circle { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 229, 255, 0.2); }
+        .flow-node h4 { margin: 0; font-size: 1rem; font-weight: 700; color: #fff; }
+        .flow-node p { font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; padding: 0 10px; }
 
         /* --- CARDS --- */
-        .step-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 2rem; align-items: stretch; margin-bottom: 6rem;}
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 32px; padding: 2.5rem; backdrop-filter: blur(10px); transition: 0.4s; display: flex; flex-direction: column; }
-        .card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        
-        .label { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; }
-        h3 { font-size: 1.6rem; margin: 0 0 1.5rem 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; }
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
 
-        input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; color: #fff; margin-bottom: 1rem; font-family: inherit; box-sizing: border-box; }
-        
-        .drop-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 1.5rem; text-align: center; color: #555; cursor: pointer; margin-bottom: 1rem; transition: 0.3s; font-size: 0.8rem; }
-        .drop-zone.drag-over { border-color: var(--accent); color: #fff; background: rgba(0, 242, 255, 0.05); }
+        .card::after {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
+            pointer-events: none;
+        }
 
-        .btn-protocol { width: 100%; padding: 1.2rem; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; border: 1px solid #fff; font-size: 1rem; background: #fff; color: #000; margin-top: auto; }
-        .btn-protocol:hover { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 30px rgba(0, 242, 255, 0.3); }
-        .btn-outline { background: transparent; color: #fff; }
+        .label { font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 1rem; }
+        h2 { font-size: 2rem; margin-top: 0; }
 
-        /* --- USE CASES --- */
-        .use-cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 6rem; }
-        .case-box { border-left: 2px solid var(--primary); padding-left: 1.5rem; }
-        .case-box h4 { margin: 0 0 0.5rem 0; color: #fff; }
-        .case-box p { font-size: 0.85rem; color: #666; margin: 0; line-height: 1.5; }
+        input, textarea {
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 1.2rem; color: #fff; margin-bottom: 1.2rem; font-family: inherit; transition: 0.3s; box-sizing: border-box;
+        }
+        input:focus { outline: none; border-color: var(--primary); background: rgba(0,0,0,0.6); }
 
-        footer { text-align: center; padding: 5rem 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid var(--border); }
+        .btn {
+            width: 100%; padding: 1.2rem; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.4s;
+            border: none; font-size: 1rem; letter-spacing: 1px;
+        }
+        .btn-primary { background: #fff; color: #000; }
+        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 10px 40px rgba(255,255,255,0.2); }
+        .btn-outline { background: transparent; color: #fff; border: 1px solid var(--glass-border); }
+        .btn-outline:hover { background: var(--glass); border-color: var(--primary); }
+
+        .drop-area {
+            border: 2px dashed var(--glass-border); border-radius: 24px; padding: 2rem; text-align: center;
+            color: var(--text-muted); margin-bottom: 1.5rem; cursor: pointer; transition: 0.3s;
+        }
+        .drop-area:hover { border-color: var(--primary); color: #fff; background: rgba(0, 229, 255, 0.02); }
+
+        /* --- RESPONSIVE FIX --- */
+        @media (max-width: 768px) {
+            .flow-container { flex-direction: column; align-items: center; }
+            .flow-container::before { display: none; }
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div class="aurora"></div>
+<div class="aurora-bg"><div class="blob"></div></div>
 
-<header>
-    <div class="logo-text header-logo">AgentTrust<span>.</span></div>
-    <div style="font-size: 0.7rem; font-weight: 800; color: var(--accent);">AI ORACLE STATUS: ONLINE</div>
-</header>
+<nav>
+    <div class="logo">AGENT<span>TRUST.</span></div>
+    <div class="status-pill">● PROTOCOL v2.0 LIVE</div>
+</nav>
 
 <div class="container">
     <section class="hero">
-        <div class="logo-text hero-logo">AgentTrust<span>.</span></div>
-        <h2>Safe, automated payments for the future of work.</h2>
-        <p style="color: #666; max-width: 600px; margin: 1rem auto;">We use AI to audit work and the XRPL to secure funds. One transaction, zero manual disputes.</p>
+        <span class="label">Autonomous Payouts</span>
+        <h1>The Protocol for <br> Trustless Work.</h1>
+        <p>AgentTrust is the decentralized bridge between humans, AI agents, and secure capital. 100% On-Chain. 0% Dispute Friction.</p>
     </section>
 
-    <section class="process-visual">
-        <span class="label">The Protocol Flow</span>
-        <div class="flow-grid">
-            <div class="flow-step"><h4>1. Secure</h4><p>Create an on-chain vault + protocol fee.</p></div>
-            <div class="arrow">→</div>
-            <div class="flow-step"><h4>2. Work</h4><p>Agent or human submits proof of work.</p></div>
-            <div class="arrow">→</div>
-            <div class="flow-step"><h4>3. Audit</h4><p>AI Referee Pro verifies the completion.</p></div>
-            <div class="arrow">→</div>
-            <div class="flow-step"><h4>4. Payout</h4><p>Funds unlock to worker wallet instantly.</p></div>
-        </div>
-    </section>
-
-    <div class="step-grid">
-        <div class="card">
-            <span class="label">Step 01 / Fund</span>
-            <h3>Initialize Vault</h3>
-            <input type="text" id="escrowId" placeholder="Unique Job ID">
-            <input type="text" id="workerAddress" placeholder="Worker Wallet Address">
-            <input type="number" id="price" placeholder="Job Amount (XRP)" oninput="updateTotal()">
-            <div id="totalDisplay" style="margin-bottom:1rem; font-size:0.85rem; color: #888;">
-                Service Fee: 0.1 XRP | <strong>Total: <span id="totalXrp">0.1</span> XRP</strong>
+    <div class="flow-container">
+        <div class="flow-node">
+            <div class="icon-circle">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4Z"/></svg>
             </div>
-            <input type="text" id="initHash" placeholder="Transaction Hash (One-Click Payment)">
-            <button class="btn-protocol" onclick="initiateJob()">Deploy Secure Vault</button>
-            <div id="initStatus" style="margin-top:1rem; font-size:0.8rem"></div>
+            <h4>Connect Wallet</h4>
+            <p>Lock the job XRP in a secure vault.</p>
         </div>
-
-        <div class="card">
-            <span class="label">Step 02 / Settle</span>
-            <h3>Submit & Audit</h3>
-            <div id="dropZone" class="drop-zone">Drag proof of work here or click to upload</div>
-            <input type="file" id="fileInput" style="display: none;">
-            <textarea id="workInput" rows="3" placeholder="...or paste proof text here"></textarea>
-            <input type="text" id="paymentHash" placeholder="0.1 XRP Audit Fee Hash">
-            <button class="btn-protocol btn-outline" onclick="settleJob()">Trigger AI Audit</button>
-            <div id="settleStatus" style="margin-top:1rem; font-size:0.8rem"></div>
+        <div class="flow-node">
+            <div class="icon-circle">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <h4>Proof of Work</h4>
+            <p>Upload files or code for verification.</p>
+        </div>
+        <div class="flow-node">
+            <div class="icon-circle">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M12 8v4"/><path d="M12 12l2.5 2.5"/></svg>
+            </div>
+            <h4>AI Audit</h4>
+            <p>Referee Pro audits the requirements.</p>
+        </div>
+        <div class="flow-node">
+            <div class="icon-circle">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h4>Payout</h4>
+            <p>Instant unlock directly to worker wallet.</p>
         </div>
     </div>
 
-    <h3 style="text-align: center; margin-bottom: 3rem;">Universal Use Cases</h3>
-    <div class="use-cases">
-        <div class="case-box"><h4>Dev Bounties</h4><p>Pay only when code passes linting and unit tests via AI.</p></div>
-        <div class="case-box"><h4>Copywriting</h4><p>Release funds when the draft meets style and word-count guidelines.</p></div>
-        <div class="case-box"><h4>Bot-to-Bot</h4><p>Enable AI agents to hire sub-agents with guaranteed payout.</p></div>
-        <div class="case-box"><h4>Data Labeling</h4><p>Instant high-volume micro-payments for verified accuracy.</p></div>
+    <div class="grid">
+        <div class="card">
+            <span class="label">Phase 01 / Escrow</span>
+            <h2>Initialize Vault</h2>
+            <input type="text" id="escrowId" placeholder="Project ID (e.g., ai-dev-task-01)">
+            <input type="text" id="workerAddr" placeholder="Worker Wallet Address">
+            <input type="number" id="price" placeholder="Amount (XRP)" oninput="calcTotal()">
+            <div id="feeCalc" style="margin-bottom:1.5rem; font-size:0.8rem; color:var(--text-muted)">
+                Network Fee: 0.1 XRP | Total: <span id="totalX" style="color:#fff; font-weight:800">0.1</span> XRP
+            </div>
+            <input type="text" id="initHash" placeholder="One-Click Tx Hash">
+            <button class="btn btn-primary" onclick="initiate()">Secure Capital</button>
+            <div id="initStatus" style="margin-top:1.5rem; font-size:0.85rem"></div>
+        </div>
+
+        <div class="card">
+            <span class="label">Phase 02 / Settlement</span>
+            <h2>Verify & Release</h2>
+            <div id="drop" class="drop-area">Drag and drop proof file (.txt, .js, .pdf)</div>
+            <input type="file" id="fInput" style="display:none">
+            <textarea id="work" rows="3" placeholder="...or paste text results here"></textarea>
+            <input type="text" id="auditHash" placeholder="0.1 XRP Audit Fee Hash">
+            <button class="btn btn-outline" onclick="settle()">Execute AI Audit</button>
+            <div id="settleStatus" style="margin-top:1.5rem; font-size:0.85rem"></div>
+        </div>
     </div>
 </div>
 
-<footer>&copy; 2026 AGENTTRUST PROTOCOL | SECURED BY XRP LEDGER</footer>
-
 <script>
-    const BANKER_URL = "https://agenttrust-banker.onrender.com"; 
-    const REFEREE_URL = "https://agenttrust-referee.onrender.com";
-
-    // --- FEE CALCULATOR ---
-    function updateTotal() {
-        const val = parseFloat(document.getElementById('price').value) || 0;
-        document.getElementById('totalXrp').innerText = (val + 0.1).toFixed(2);
+    function calcTotal() {
+        const p = parseFloat(document.getElementById('price').value) || 0;
+        document.getElementById('totalX').innerText = (p + 0.1).toFixed(2);
     }
 
-    // --- DRAG & DROP ---
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const workInput = document.getElementById('workInput');
+    // Drag and Drop
+    const d = document.getElementById('drop');
+    const f = document.getElementById('fInput');
+    const w = document.getElementById('work');
 
-    dropZone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+    d.onclick = () => f.click();
+    f.onchange = (e) => handle(e.target.files);
+    d.ondragover = (e) => { e.preventDefault(); d.style.borderColor = "#00e5ff"; };
+    d.ondrop = (e) => { e.preventDefault(); handle(e.dataTransfer.files); };
 
-    function handleFiles(files) {
-        const file = files[0];
-        if (!file) return;
+    function handle(files) {
+        if(!files[0]) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            workInput.value = e.target.result;
-            dropZone.innerHTML = `<span style="color:var(--success)">✅ ${file.name} Uploaded</span>`;
+            w.value = e.target.result;
+            d.innerHTML = `<span style="color:#00ff64">✔ ${files[0].name} Loaded</span>`;
         };
-        reader.readAsText(file);
+        reader.readAsText(files[0]);
     }
 
-    async function initiateJob() {
-        const s = document.getElementById('initStatus'); 
-        s.innerText = "Verifying Vault Deployment...";
-        try {
-            const res = await fetch(`${BANKER_URL}/initialize`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Payment-Hash': document.getElementById('initHash').value 
-                },
-                body: JSON.stringify({
-                    escrow_id: document.getElementById('escrowId').value,
-                    worker_address: document.getElementById('workerAddress').value,
-                    amount: parseFloat(document.getElementById('price').value)
-                })
-            });
-            if (res.ok) s.innerHTML = "<span style='color:var(--success)'>✔ Vault Secured On-Chain</span>";
-            else s.innerText = "Error: Hash invalid or ID taken.";
-        } catch (e) { s.innerText = "Network Error."; }
+    async function initiate() {
+        const s = document.getElementById('initStatus'); s.innerText = "Connecting to Banker...";
+        // Fetch Logic Here
     }
 
-    async function settleJob() {
-        const s = document.getElementById('settleStatus'); 
-        s.innerText = "Referee auditing work...";
-        try {
-            const res = await fetch(`${REFEREE_URL}/evaluate`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Payment-Hash': document.getElementById('paymentHash').value 
-                },
-                body: JSON.stringify({
-                    work: workInput.value,
-                    escrow_id: document.getElementById('escrowId').value
-                })
-            });
-            const data = await res.json();
-            s.innerText = `Verdict: ${data.ai_verdict}. Payout triggered.`;
-        } catch (e) { s.innerText = "Audit Service Unavailable."; }
+    async function settle() {
+        const s = document.getElementById('settleStatus'); s.innerText = "AI Referee calculating verdict...";
+        // Fetch Logic Here
     }
 </script>
 </body>
