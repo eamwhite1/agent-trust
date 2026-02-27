@@ -7,7 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00e5ff;
+            /* --- COLOR PALETTE (Matched to Dot) --- */
+            --logo-blue: #007BFF;
             --secondary: #6e00ff;
             --bg: #03040a;
             --glass: rgba(255, 255, 255, 0.03);
@@ -19,51 +20,59 @@
         .aurora-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, transparent 40%), radial-gradient(circle at 80% 80%, #312e81 0%, transparent 40%), radial-gradient(circle at 50% 50%, #03040a 0%, #000 100%); }
         
         nav { padding: 1.5rem 5%; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
-        .logo { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 1.5rem; letter-spacing: -1px; }
-        .logo span { color: var(--primary); }
-        .status-pill { background: rgba(0, 229, 255, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; border: 1px solid rgba(0, 229, 255, 0.2); }
+        
+        /* --- LOGO INTEGRATION --- */
+        .logo-text { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.05em; color: #ffffff; display: flex; align-items: baseline; }
+        .logo-text span { color: var(--logo-blue); }
+        .nav-logo { font-size: 1.5rem; }
+        .hero-logo { font-size: clamp(3rem, 10vw, 7rem); justify-content: center; margin-bottom: 0.5rem; }
+
+        .status-pill { background: rgba(0, 123, 255, 0.1); color: var(--logo-blue); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; border: 1px solid rgba(0, 123, 255, 0.2); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
 
         /* --- HERO --- */
         .hero { text-align: center; margin-bottom: 6rem; }
-        .hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -2px; }
-        .hero p { font-size: 1.2rem; color: var(--text-muted); max-width: 800px; margin: 0 auto; }
+        .hero h2 { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 300; line-height: 1.1; margin-bottom: 1.5rem; color: var(--text-muted); }
+        .hero p { font-size: 1.2rem; color: #666; max-width: 800px; margin: 1rem auto; }
 
-        /* --- FLOW --- */
-        .flow-container { display: flex; justify-content: space-between; gap: 20px; margin: 4rem 0; position: relative; }
-        .flow-container::before { content: ""; position: absolute; top: 45px; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); z-index: -1; }
-        .flow-node { flex: 1; text-align: center; }
-        .icon-circle { width: 80px; height: 80px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; backdrop-filter: blur(10px); }
-        .flow-node h4 { font-size: 1rem; margin: 0; }
+        /* --- RESTORED PROCESS FLOW DIAGRAM --- */
+        .process-visual { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 40px; padding: 3rem; margin-bottom: 6rem; text-align: center; }
+        .flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: center; }
+        .flow-step { padding: 1rem; position: relative; }
+        .flow-step h4 { color: var(--logo-blue); margin: 0.5rem 0; font-size: 0.9rem; font-weight: 800; }
+        .flow-step p { font-size: 0.75rem; color: #666; margin: 0; line-height: 1.4; }
+        .arrow { font-size: 1.5rem; color: var(--glass-border); }
 
-        /* --- MAIN TOOL CARDS --- */
+        /* --- APP CARDS --- */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 6rem; }
         .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 40px; padding: 3rem; backdrop-filter: blur(20px); }
-        .label { font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 1rem; }
+        .label { font-size: 0.7rem; font-weight: 800; color: var(--logo-blue); text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 1rem; }
         input, textarea { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 20px; padding: 1.2rem; color: #fff; margin-bottom: 1.2rem; font-family: inherit; box-sizing: border-box; }
         .btn { width: 100%; padding: 1.2rem; border-radius: 20px; font-weight: 800; cursor: pointer; border: none; font-size: 1rem; transition: 0.3s; }
         .btn-primary { background: #fff; color: #000; }
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,255,255,0.1); }
         
-        /* --- FEATURES SECTION --- */
+        /* --- THREE PILLARS --- */
         .features-detailed { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; margin-bottom: 8rem; border-top: 1px solid var(--glass-border); padding-top: 4rem; }
-        .feature-item h3 { color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem; }
+        .feature-item h3 { color: var(--logo-blue); font-size: 1.2rem; margin-bottom: 1rem; font-weight: 800; }
         .feature-item p { color: var(--text-muted); font-size: 0.95rem; }
 
-        /* --- PAIN POINTS & SOLUTIONS --- */
+        /* --- PAIN/SOLUTION --- */
         .problem-solver { background: rgba(255,255,255,0.02); border-radius: 40px; padding: 4rem; margin-bottom: 8rem; }
-        .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
-        .problem h3 { color: #ff4d4d; font-size: 1rem; }
-        .solution h3 { color: var(--primary); font-size: 1rem; }
+        .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4rem; }
+        .problem h3 { color: #ff4d4d; font-size: 1rem; text-transform: uppercase; letter-spacing: 1.5px; }
+        .solution h3 { color: var(--logo-blue); font-size: 1rem; text-transform: uppercase; letter-spacing: 1.5px; }
         .problem-grid ul { list-style: none; padding: 0; }
-        .problem-grid li { margin-bottom: 1rem; font-size: 0.9rem; }
+        .problem-grid li { margin-bottom: 1rem; font-size: 0.9rem; display: flex; align-items: baseline; }
+        .problem-grid li span { color: #555; margin-right: 10px; }
 
-        /* --- USE CASES --- */
+        /* --- INSPIRATION GRID (Expanded to 8 and balanced) --- */
         .use-case-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 8rem; }
-        .case-card { border: 1px solid var(--glass-border); padding: 2rem; border-radius: 24px; transition: 0.3s; }
-        .case-card:hover { border-color: var(--primary); background: rgba(255,255,255,0.02); }
-        .case-card h4 { margin-top: 0; color: #fff; }
+        .case-card { border: 1px solid var(--glass-border); padding: 2.5rem; border-radius: 32px; transition: 0.3s; }
+        .case-card:hover { border-color: var(--logo-blue); background: rgba(0, 123, 255, 0.03); }
+        .case-card h4 { margin-top: 0; color: #fff; font-weight: 800; }
+        .case-card p { font-size: 0.85rem; color: #777; margin: 0; line-height: 1.5; }
 
         footer { padding: 4rem 5%; border-top: 1px solid var(--glass-border); text-align: center; }
         .disclaimer { font-size: 0.75rem; color: #444; max-width: 900px; margin: 2rem auto; line-height: 1.4; }
@@ -74,45 +83,55 @@
 <div class="aurora-bg"></div>
 
 <nav>
-    <div class="logo">AGENT<span>TRUST.</span></div>
-    <div class="status-pill">● NON-CUSTODIAL NODE ACTIVE</div>
+    <div class="logo-text nav-logo">AgentTrust<span>.</span></div>
+    <div class="status-pill">● LIVE ON XRPL MAINNET</div>
 </nav>
 
 <div class="container">
     <section class="hero">
-        <span class="label">Decentralized Service Settlement</span>
-        <h1>Work without Borders. <br> Pay without Friction.</h1>
-        <p>AgentTrust is the protocol that bridges the gap between hiring and payment using AI as the objective arbitrator. No escrow middlemen, no chargeback fraud, just code-enforced trust.</p>
+        <div class="logo-text hero-logo">AgentTrust<span>.</span></div>
+        <h2>Safe, automated payments for the future of work.</h2>
+        <p>We use AI to audit work and the XRPL to secure funds. One transaction, zero manual disputes.</p>
     </section>
 
-    <div class="flow-container">
-        <div class="flow-node">
-            <div class="icon-circle">💰</div>
-            <h4>Fund Vault</h4>
+    <section class="process-visual">
+        <span class="label">The Protocol Flow</span>
+        <div class="flow-grid">
+            <div class="flow-step">
+                <div style="font-size:2rem">💰</div>
+                <h4>1. Secure</h4>
+                <p>Hire a worker and lock XRP in vault.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div style="font-size:2rem">🏗️</div>
+                <h4>2. Submit</h4>
+                <p>Worker uploads proof of work.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div style="font-size:2rem">⚖️</div>
+                <h4>3. Audit</h4>
+                <p>AI Referee Pro verifies completion.</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flow-step">
+                <div style="font-size:2rem">🔓</div>
+                <h4>4. Payout</h4>
+                <p>Vault unlocks instantly. 100% safe.</p>
+            </div>
         </div>
-        <div class="flow-node">
-            <div class="icon-circle">🏗️</div>
-            <h4>Agent Performs</h4>
-        </div>
-        <div class="flow-node">
-            <div class="icon-circle">⚖️</div>
-            <h4>AI Audit</h4>
-        </div>
-        <div class="flow-node">
-            <div class="icon-circle">🔓</div>
-            <h4>Instant Release</h4>
-        </div>
-    </div>
+    </section>
 
     <div class="grid">
         <div class="card">
             <span class="label">Phase 01 / Security</span>
-            <h2>Initialize Escrow</h2>
-            <input type="text" id="jobId" placeholder="Project Identifier">
-            <input type="text" id="worker" placeholder="Worker Wallet (XRPL)">
-            <input type="number" id="amt" placeholder="Job Amount (XRP)" oninput="updateFees()">
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                Protocol: 0.1 XRP | AI Auditor: 0.1 XRP <br>
+            <h2>Initialize Escrow Vault</h2>
+            <input type="text" id="jobId" placeholder="Project Identifier (e.g. ai-dev-task-01)">
+            <input type="text" id="worker" placeholder="Worker Wallet Address (XRPL)">
+            <input type="number" id="amt" placeholder="Amount (XRP)" oninput="updateFees()">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; border: 1px solid var(--glass-border); padding: 10px; border-radius: 12px; background: rgba(0,0,0,0.2)">
+                Protocol Fee: 0.1 XRP | AI Auditor: 0.1 XRP <br>
                 <strong>Total to Sign: <span id="totalX" style="color:#fff">0.20</span> XRP</strong>
             </div>
             <button class="btn btn-primary" onclick="initVault()">Deploy On-Chain Vault</button>
@@ -120,23 +139,23 @@
 
         <div class="card">
             <span class="label">Phase 02 / Audit</span>
-            <h2>Submit & Verify</h2>
-            <textarea id="proof" rows="4" placeholder="Paste proof of work or upload file below..."></textarea>
-            <div id="drop" style="border: 2px dashed var(--glass-border); padding: 1.5rem; text-align: center; border-radius: 20px; cursor: pointer; margin-bottom: 1rem;">
+            <h2>Submit & Verify Work</h2>
+            <textarea id="proof" rows="4" placeholder="Paste proof text (e.g., Code, Article Draft, or Report)"></textarea>
+            <div id="drop" style="border: 2px dashed var(--glass-border); padding: 1.5rem; text-align: center; border-radius: 20px; cursor: pointer; margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">
                 Click to upload Proof (.txt, .js, .pdf)
             </div>
-            <button class="btn btn-primary" style="background:transparent; border: 1px solid var(--primary); color:var(--primary)" onclick="runAudit()">Execute AI Verdict</button>
+            <button class="btn btn-primary" style="background:transparent; border: 1px solid var(--logo-blue); color:var(--logo-blue)" onclick="runAudit()">Execute AI Verdict</button>
         </div>
     </div>
 
     <section class="features-detailed">
         <div class="feature-item">
             <h3>Autonomous Auditor</h3>
-            <p>Our AI Referee Pro acts as a decentralized oracle. It doesn't "feel"—it analyzes. By comparing job requirements against submitted work, it generates a cryptographic signature that is the only key capable of unlocking the funds.</p>
+            <p>Our AI Referee Pro acts as a decentralized oracle. By comparing job requirements against submitted work, it generates a cryptographic signature that is the only key capable of unlocking the funds.</p>
         </div>
         <div class="feature-item">
             <h3>Multi-Currency Native</h3>
-            <p>Built on the XRP Ledger's pathfinding engine. Pay in USD, receive in EUR, or settle in XRP. AgentTrust handles the atomic swap in a single transaction, ensuring zero slippage and the best possible market rates.</p>
+            <p>Built on the XRP Ledger's pathfinding engine. Pay in USD, receive in EUR, or settle in XRP. AgentTrust handles the atomic swap in a single transaction, ensuring zero slippage and the best market rates.</p>
         </div>
         <div class="feature-item">
             <h3>Trustless Settlement</h3>
@@ -145,42 +164,45 @@
     </section>
 
     <section class="problem-solver">
-        <h2 style="text-align: center; margin-bottom: 3rem;">Why the World Needs AgentTrust.</h2>
+        <h2 style="text-align: center; margin-bottom: 3rem;">Global Payout Disputes are Over.</h2>
         <div class="problem-grid">
             <div class="problem">
                 <h3>The Old Way (The Pain)</h3>
                 <ul>
-                    <li>❌ Upwork takes 10-20% of your hard-earned money.</li>
-                    <li>❌ Banks hold your international transfers for 3-5 days.</li>
-                    <li>❌ Clients disappear after receiving the final work.</li>
-                    <li>❌ Subjective disputes take weeks of manual human review.</li>
+                    <li><span>❌</span> High Platform Fees (10-20%)</li>
+                    <li><span>❌</span> Delayed international transfers (3-5 days)</li>
+                    <li><span>❌</span> Subjective human dispute reviews</li>
+                    <li><span>❌</span> Risk of non-payment for workers</li>
                 </ul>
             </div>
             <div class="solution">
                 <h3>The AgentTrust Way (The Solution)</h3>
                 <ul>
-                    <li>✅ Flat, micro-fees of only 0.2 XRP per transaction.</li>
-                    <li>✅ Global settlement in under 4 seconds.</li>
-                    <li>✅ Funds are locked on-chain before the work even begins.</li>
-                    <li>✅ AI provides an objective verdict in seconds, not weeks.</li>
+                    <li><span>✅</span> Flat micro-fees of only 0.2 XRP per transaction</li>
+                    <li><span>✅</span> Global settlement in under 4 seconds</li>
+                    <li><span>✅</span> AI-verified objective audit verdicts</li>
+                    <li><span>✅</span> Upfront, on-chain secured funding</li>
                 </ul>
             </div>
         </div>
     </section>
 
-    <h2 style="text-align: center; margin-bottom: 3rem;">Inspiration: What will you build?</h2>
+    <h2 style="text-align: center; margin-bottom: 3rem;">What will you build?</h2>
     <div class="use-case-list">
-        <div class="case-card"><h4>AI-to-AI Hiring</h4><p>An autonomous research agent hires a coding agent to build a tool. Zero human oversight required.</p></div>
-        <div class="case-card"><h4>Global Freelancing</h4><p>Hire a developer in Vietnam from a wallet in London with instant, low-fee settlement.</p></div>
-        <div class="case-card"><h4>Data Micro-Tasks</h4><p>Pay 1,000 workers $0.50 each to label images, verified instantly by the AI Auditor.</p></div>
-        <div class="case-card"><h4>Ghostwriting</h4><p>Release payment only when the AI verifies the article meets the 1,500-word count and SEO requirements.</p></div>
-        <div class="case-card"><h4>Bug Bounties</h4><p>Automate the payout for developers who find security flaws, triggered by an AI code-audit.</p></div>
-        <div class="case-card"><h4>Smart Content</h4><p>Brands hiring influencers can lock funds that release only when the post goes live and passes verification.</p></div>
+        <div class="case-card"><h4>AI-to-AI Hiring</h4><p>An autonomous research agent hires a coding agent to build a data scraper. Zero human oversight required.</p></div>
+        <div class="case-card"><h4>Global Freelancing</h4><p>Hire a developer in Vietnam from a wallet in London with instant, low-fee multi-currency settlement.</p></div>
+        <div class="case-card"><h4>Data Micro-Tasks</h4><p>Pay 1,000 workers $0.50 each to label images, with AI instantly verifying accuracy before payout.</p></div>
+        <div class="case-card"><h4>Smart Bug Bounties</h4><p>Release bounties automatically when a security flaw is verified by an automated AI code-audit.</p></div>
+        
+        <div class="case-card"><h4>Ghostwriting Verification</h4><p>Pay a writer only when the AI Auditor verifies the draft meets the 1,500-word count and specific SEO requirements.</p></div>
+        <div class="case-card"><h4>Influencer Campaigns</h4><p>Lock funds for a brand endorsement post that release only when the post goes live and is verified for compliance.</p></div>
+        <div class="case-card"><h4>Decentralized Marketplaces</h4><p>Use AgentTrust as the trust layer for peer-to-peer marketplaces selling digital assets.</p></div>
+        <div class="case-card"><h4>Agent Subscription Settlement</h4><p>Bots can hire other bots for specific sub-tasks, paying automatically based on AI-verified completion.</p></div>
     </div>
 </div>
 
 <footer>
-    <div class="logo">AGENT<span>TRUST.</span></div>
+    <div class="logo-text header-logo" style="justify-content: center; margin-bottom: 1rem;">AgentTrust<span>.</span></div>
     <p class="disclaimer">
         <strong>LEGAL DISCLAIMER:</strong> AgentTrust is a decentralized software protocol. We do not provide financial, legal, or investment advice. The protocol is provided "as is" without warranty of any kind. Users interact with the XRP Ledger and AI Referee at their own risk. AgentTrust does not hold, manage, or have custody of user funds at any time. All transactions are final and irreversible on the blockchain. By using this tool, you agree that you are responsible for your own compliance with local regulations.
     </p>
@@ -192,7 +214,6 @@
         const val = parseFloat(document.getElementById('amt').value) || 0;
         document.getElementById('totalX').innerText = (val + 0.2).toFixed(2);
     }
-    // Logic for Init and Settle would follow Plan A integration...
 </script>
 </body>
 </html>
