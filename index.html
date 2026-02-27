@@ -89,8 +89,22 @@
             transition: 0.3s; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .btn:hover { transform: translateY(-2px); background: #222; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-glass { background: rgba(255, 255, 255, 0.4); color: #000; border: 1px solid var(--glass-border); }
         .btn-glass:hover { background: rgba(255, 255, 255, 0.6); }
+
+        /* --- NEW PAYMENT TOGGLE STYLES --- */
+        .payment-toggle {
+            display: flex; gap: 10px; margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.15); padding: 5px; border-radius: 15px;
+        }
+        .toggle-btn {
+            flex: 1; padding: 10px; border: none; background: transparent; 
+            color: var(--text-secondary); cursor: pointer; border-radius: 12px; font-size: 0.8rem; font-weight: 700;
+            transition: 0.3s;
+        }
+        .toggle-btn.active { background: var(--primary-blue); color: white; }
+        #manual-hash-section { display: none; }
 
         /* --- COMPARISON --- */
         .problem-solver { border-radius: 48px; padding: 5rem; margin-bottom: 8rem; }
@@ -110,6 +124,20 @@
 
         footer { padding: 5rem 5%; background: rgba(249, 249, 251, 0.6); border-top: 1px solid var(--glass-border); text-align: center; }
         .disclaimer-text { font-size: 0.85rem; color: #6e6e73; max-width: 900px; margin: 2rem auto; line-height: 1.6; text-align: center; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+            .use-case-list { grid-template-columns: repeat(2, 1fr); }
+            .problem-grid { grid-template-columns: 1fr; gap: 3rem; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 2rem 1.2rem; }
+            .card { padding: 1.5rem; border-radius: 30px; }
+            .use-case-list { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 3.5rem; }
+            input, .btn { font-size: 16px; } /* Prevent iOS Zoom */
+        }
     </style>
 </head>
 <body>
@@ -130,32 +158,43 @@
         <p>
             AgentTrust is the decentralized bridge between <br>
             humans, AI agents, and secure capital. <br>
-            <strong>100% On-Chain. 0% Dispute Friction.</strong></span>
+            <strong>100% On-Chain. 0% Dispute Friction.</strong>
         </p>
     </section>
 
     <div class="grid">
         <div class="card glass-element">
             <span class="label">Step 01 | Initiate Settlement</span>
-            <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 2rem;">Secure Capital</h2>
-            <input type="text" placeholder="Project Identifier">
-            <input type="text" placeholder="Recipient Wallet Address">
+            <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 1.5rem;">Secure Capital</h2>
+            
+            <div class="payment-toggle">
+                <button class="toggle-btn active" id="btn-auto" onclick="setPaymentMode('auto')">Auto-Pay Fee</button>
+                <button class="toggle-btn" id="btn-manual" onclick="setPaymentMode('manual')">Paste Hash</button>
+            </div>
+
+            <div id="manual-hash-section">
+                <input type="text" id="audit-fee-hash" placeholder="Audit Fee Transaction Hash">
+            </div>
+
+            <input type="text" id="project-id" placeholder="Project Identifier">
+            <input type="text" id="recipient" placeholder="Recipient Wallet Address">
             <input type="number" id="amt" placeholder="Amount (XRP)" oninput="updateFees()">
+            
             <div class="glass-element" style="padding: 1.2rem; border-radius: 20px; margin-bottom: 1.5rem; font-size: 0.95rem; box-shadow: none;">
                 Protocol Fee: 0.1 XRP | AI Auditor: 0.1 XRP<br>
                 <strong>Total to Secure: <span id="totalX">0.20</span> XRP</strong>
             </div>
-            <button class="btn" onclick="initVault()">Initialize Vault</button>
+            <button class="btn" id="init-btn" onclick="initVault()">Initialize Vault</button>
         </div>
 
         <div class="card glass-element">
             <span class="label">Step 02 | Audit Process</span>
             <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 2rem;">Verify & Settle</h2>
-            <textarea rows="4" placeholder="Paste proof of work or verification hash..."></textarea>
+            <textarea id="work-proof" rows="4" placeholder="Paste proof of work or verification hash..."></textarea>
             <div class="glass-element" style="border: 2px dashed rgba(0,0,0,0.1); padding: 2.5rem; text-align: center; border-radius: 20px; margin-bottom: 1.2rem; color: var(--text-secondary); font-size: 0.9rem; box-shadow: none; background: rgba(255,255,255,0.2);">
                 Click or drag files to upload proof
             </div>
-            <button class="btn btn-glass">Release Funds</button>
+            <button class="btn btn-glass" onclick="releaseFunds()">Release Funds</button>
         </div>
     </div>
 
@@ -204,17 +243,31 @@
 </footer>
 
 <script>
+    let paymentMode = 'auto';
+
+    function setPaymentMode(mode) {
+        paymentMode = mode;
+        const manualSection = document.getElementById('manual-hash-section');
+        const btnAuto = document.getElementById('btn-auto');
+        const btnManual = document.getElementById('btn-manual');
+
+        if (mode === 'manual') {
+            manualSection.style.display = 'block';
+            btnManual.classList.add('active');
+            btnAuto.classList.remove('active');
+        } else {
+            manualSection.style.display = 'none';
+            btnAuto.classList.add('active');
+            btnManual.classList.remove('active');
+        }
+    }
+
     function updateFees() {
         const val = parseFloat(document.getElementById('amt').value) || 0;
         document.getElementById('totalX').innerText = (val + 0.2).toFixed(2);
     }
-    
-    function initVault() {
-        console.log("Initializing XRPL Vault...");
-        // Logic to connect to Xaman/MetaMask would be placed here
-    }
 </script>
-</body>
 
 <script src="js/app.js"></script>
+</body>
 </html>
