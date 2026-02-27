@@ -5,6 +5,19 @@ const REFEREE_URL = "https://xrpl-referee.onrender.com";
 async function initVault() {
     // 1. Grab values from your Glassmorphic UI
     const projectID = document.querySelector('input[placeholder="Project Identifier"]').value;
+
+// LOG THIS to your console so you can see if it's actually picking up the text
+console.log("Project ID being sent:", projectID); 
+
+const setupResponse = await fetch(`${REFEREE_URL}/escrow/generate`, {
+    method: "POST",
+    headers: { 
+        "Content-Type": "application/json" 
+    },
+    body: JSON.stringify({ 
+        "escrow_id": projectID  // <--- This MUST match the Python Pydantic model
+    })
+});
     const recipient = document.querySelector('input[placeholder="Recipient Wallet Address"]').value;
     const amountXRP = document.getElementById('amt').value;
 
