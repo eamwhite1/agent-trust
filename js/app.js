@@ -47,11 +47,13 @@ async function initVault() {
 
         // 4. Prepare the XRPL Escrow Transaction
         const escrowTx = {
-            TransactionType: "EscrowCreate",
-            Amount: (parseFloat(amountXRP) * 1000000).toString(),
-            Destination: recipient,
-            Condition: condition,
-            FinishAfter: Math.floor(Date.now() / 1000) + 5, 
+        TransactionType: "EscrowCreate",
+        // We multiply by 1,000,000 to get drops, then turn it into a STRING
+        Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(), 
+        Destination: recipient,
+        Condition: condition,
+        // Note: FinishAfter is a required field for conditional escrows
+        FinishAfter: Math.floor(Date.now() / 1000) + 10, 
         };
 
         // 5. Handle Fee Payment & Payload Creation
