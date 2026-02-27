@@ -79,10 +79,6 @@
         .case-box h4 { margin: 0 0 0.5rem 0; color: #fff; }
         .case-box p { font-size: 0.85rem; color: #666; margin: 0; line-height: 1.5; }
 
-        .explainer { background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 40px; padding: 4rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; }
-        .info-box h3 { color: var(--accent); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; }
-        .info-box p { font-size: 0.9rem; color: #777; margin: 0; }
-
         footer { text-align: center; padding: 5rem 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid var(--border); }
     </style>
 </head>
@@ -92,74 +88,62 @@
 
 <header>
     <div class="logo-text header-logo">AgentTrust<span>.</span></div>
-    <div style="font-size: 0.7rem; font-weight: 800; color: var(--accent);">AI ORACLE ACTIVE</div>
+    <div style="font-size: 0.7rem; font-weight: 800; color: var(--accent);">AI ORACLE STATUS: ONLINE</div>
 </header>
 
 <div class="container">
     <section class="hero">
         <div class="logo-text hero-logo">AgentTrust<span>.</span></div>
         <h2>Safe, automated payments for the future of work.</h2>
-        <p style="color: #666; max-width: 600px; margin: 1rem auto;">We use AI to audit work and the XRPL to secure funds. No more manual disputes—just trustless settlement for humans and AI agents.</p>
+        <p style="color: #666; max-width: 600px; margin: 1rem auto;">We use AI to audit work and the XRPL to secure funds. One transaction, zero manual disputes.</p>
     </section>
 
     <section class="process-visual">
-        <span class="label">How it works</span>
+        <span class="label">The Protocol Flow</span>
         <div class="flow-grid">
-            <div class="flow-step"><h4>1. Secure</h4><p>Hire a worker and lock XRP in vault.</p></div>
+            <div class="flow-step"><h4>1. Secure</h4><p>Create an on-chain vault + protocol fee.</p></div>
             <div class="arrow">→</div>
-            <div class="flow-step"><h4>2. Submit</h4><p>Worker uploads proof of work.</p></div>
+            <div class="flow-step"><h4>2. Work</h4><p>Agent or human submits proof of work.</p></div>
             <div class="arrow">→</div>
-            <div class="flow-step"><h4>3. Audit</h4><p>AI Referee Pro verifies completion.</p></div>
+            <div class="flow-step"><h4>3. Audit</h4><p>AI Referee Pro verifies the completion.</p></div>
             <div class="arrow">→</div>
-            <div class="flow-step"><h4>4. Payout</h4><p>Vault unlocks instantly. 100% safe.</p></div>
+            <div class="flow-step"><h4>4. Payout</h4><p>Funds unlock to worker wallet instantly.</p></div>
         </div>
     </section>
 
     <div class="step-grid">
         <div class="card">
-            <span class="label">Phase 01 / Escrow</span>
-            <h3>Deploy Vault</h3>
-            <input type="text" id="escrowId" placeholder="Unique Job ID (e.g. logo_design_42)">
+            <span class="label">Step 01 / Fund</span>
+            <h3>Initialize Vault</h3>
+            <input type="text" id="escrowId" placeholder="Unique Job ID">
             <input type="text" id="workerAddress" placeholder="Worker Wallet Address">
-            <input type="number" id="price" placeholder="Amount (XRP)">
-            <input type="text" id="initHash" placeholder="0.1 XRP Protocol Fee Hash">
-            <button class="btn-protocol" onclick="initiateJob()">Initialize Banker</button>
+            <input type="number" id="price" placeholder="Job Amount (XRP)" oninput="updateTotal()">
+            <div id="totalDisplay" style="margin-bottom:1rem; font-size:0.85rem; color: #888;">
+                Service Fee: 0.1 XRP | <strong>Total: <span id="totalXrp">0.1</span> XRP</strong>
+            </div>
+            <input type="text" id="initHash" placeholder="Transaction Hash (One-Click Payment)">
+            <button class="btn-protocol" onclick="initiateJob()">Deploy Secure Vault</button>
             <div id="initStatus" style="margin-top:1rem; font-size:0.8rem"></div>
         </div>
 
         <div class="card">
-            <span class="label">Phase 02 / Settlement</span>
-            <h3>Run AI Audit</h3>
-            <div id="dropZone" class="drop-zone">Drop proof file or click to upload</div>
+            <span class="label">Step 02 / Settle</span>
+            <h3>Submit & Audit</h3>
+            <div id="dropZone" class="drop-zone">Drag proof of work here or click to upload</div>
             <input type="file" id="fileInput" style="display: none;">
-            <textarea id="workInput" rows="3" placeholder="Paste proof of work text..."></textarea>
-            <input type="text" id="paymentHash" placeholder="0.1 XRP AI Audit Fee Hash">
-            <button class="btn-protocol btn-outline" onclick="settleJob()">Settle via Referee</button>
+            <textarea id="workInput" rows="3" placeholder="...or paste proof text here"></textarea>
+            <input type="text" id="paymentHash" placeholder="0.1 XRP Audit Fee Hash">
+            <button class="btn-protocol btn-outline" onclick="settleJob()">Trigger AI Audit</button>
             <div id="settleStatus" style="margin-top:1rem; font-size:0.8rem"></div>
         </div>
     </div>
 
-    <h3 style="text-align: center; margin-bottom: 3rem;">Ready for any task.</h3>
+    <h3 style="text-align: center; margin-bottom: 3rem;">Universal Use Cases</h3>
     <div class="use-cases">
-        <div class="case-box"><h4>Freelance Coding</h4><p>Release payment only when the code passes AI linting and requirements.</p></div>
-        <div class="case-box"><h4>Data Labeling</h4><p>Automate payouts for massive datasets verified by AI agents.</p></div>
-        <div class="case-box"><h4>Content Creation</h4><p>Verify that articles or social posts meet the brand guidelines before paying.</p></div>
-        <div class="case-box"><h4>A2A Economy</h4><p>Enable autonomous agents to hire each other with zero human intervention.</p></div>
-    </div>
-
-    <div class="explainer">
-        <div class="info-box">
-            <h3>The Autonomous Auditor</h3>
-            <p>AgentTrust is the world's first autonomous auditor for the A2A economy. Our AI Referee Pro acts as a decentralized oracle to unlock funds.</p>
-        </div>
-        <div class="info-box">
-            <h3>XRPL Native</h3>
-            <p>Powered by the XRP Ledger for multi-currency escrow transactions. We support atomic pathfinding for global settlement.</p>
-        </div>
-        <div class="info-box">
-            <h3>Trustless Security</h3>
-            <p>Funds are never held by us. They are held in a vault governed by cryptographic signatures from our AI Referee.</p>
-        </div>
+        <div class="case-box"><h4>Dev Bounties</h4><p>Pay only when code passes linting and unit tests via AI.</p></div>
+        <div class="case-box"><h4>Copywriting</h4><p>Release funds when the draft meets style and word-count guidelines.</p></div>
+        <div class="case-box"><h4>Bot-to-Bot</h4><p>Enable AI agents to hire sub-agents with guaranteed payout.</p></div>
+        <div class="case-box"><h4>Data Labeling</h4><p>Instant high-volume micro-payments for verified accuracy.</p></div>
     </div>
 </div>
 
@@ -169,7 +153,13 @@
     const BANKER_URL = "https://agenttrust-banker.onrender.com"; 
     const REFEREE_URL = "https://agenttrust-referee.onrender.com";
 
-    // --- DRAG & DROP LOGIC ---
+    // --- FEE CALCULATOR ---
+    function updateTotal() {
+        const val = parseFloat(document.getElementById('price').value) || 0;
+        document.getElementById('totalXrp').innerText = (val + 0.1).toFixed(2);
+    }
+
+    // --- DRAG & DROP ---
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const workInput = document.getElementById('workInput');
@@ -181,47 +171,55 @@
     dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
 
     function handleFiles(files) {
-        const file = files[0]; if (!file) return;
+        const file = files[0];
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             workInput.value = e.target.result;
-            dropZone.innerHTML = `<span style="color:var(--success)">✅ ${file.name} loaded</span>`;
+            dropZone.innerHTML = `<span style="color:var(--success)">✅ ${file.name} Uploaded</span>`;
         };
         reader.readAsText(file);
     }
 
     async function initiateJob() {
-        const s = document.getElementById('initStatus'); s.innerText = "Verifying Protocol Fee...";
+        const s = document.getElementById('initStatus'); 
+        s.innerText = "Verifying Vault Deployment...";
         try {
             const res = await fetch(`${BANKER_URL}/initialize`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Payment-Hash': document.getElementById('initHash').value },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Payment-Hash': document.getElementById('initHash').value 
+                },
                 body: JSON.stringify({
                     escrow_id: document.getElementById('escrowId').value,
                     worker_address: document.getElementById('workerAddress').value,
                     amount: parseFloat(document.getElementById('price').value)
                 })
             });
-            if (res.ok) s.innerHTML = "<span style='color:var(--success)'>✔ Vault Secured & Locked</span>";
-            else s.innerText = "Error: Check fee hash or ID.";
-        } catch (e) { s.innerText = "Network error."; }
+            if (res.ok) s.innerHTML = "<span style='color:var(--success)'>✔ Vault Secured On-Chain</span>";
+            else s.innerText = "Error: Hash invalid or ID taken.";
+        } catch (e) { s.innerText = "Network Error."; }
     }
 
     async function settleJob() {
-        const s = document.getElementById('settleStatus'); s.innerText = "Referee performing audit...";
+        const s = document.getElementById('settleStatus'); 
+        s.innerText = "Referee auditing work...";
         try {
             const res = await fetch(`${REFEREE_URL}/evaluate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Payment-Hash': document.getElementById('paymentHash').value },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Payment-Hash': document.getElementById('paymentHash').value 
+                },
                 body: JSON.stringify({
-                    task: "Verification of work",
-                    work: document.getElementById('workInput').value,
+                    work: workInput.value,
                     escrow_id: document.getElementById('escrowId').value
                 })
             });
             const data = await res.json();
-            s.innerText = data.ai_verdict + " - Settlement triggered.";
-        } catch (e) { s.innerText = "Audit failed."; }
+            s.innerText = `Verdict: ${data.ai_verdict}. Payout triggered.`;
+        } catch (e) { s.innerText = "Audit Service Unavailable."; }
     }
 </script>
 </body>
