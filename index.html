@@ -9,200 +9,209 @@
         :root {
             --primary-blue: #007BFF;
             --text-main: #1d1d1f;
-            --text-secondary: #4b4b4f;
-            --glass-bg: rgba(255, 255, 255, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            --text-secondary: #3a3a3c;
+            /* High-transparency glass */
+            --glass-bg: rgba(255, 255, 255, 0.35);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --glass-input: rgba(255, 255, 255, 0.5);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
         }
 
         body { 
             margin: 0; background: #fff; color: var(--text-main); 
             font-family: 'Inter', sans-serif; overflow-x: hidden;
+            background-attachment: fixed;
         }
 
-        /* --- IRIDESCENT BACKGROUND LAYER --- */
+        /* --- VIVID IRIDESCENT BACKGROUND --- */
         .iridescent-wrapper {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: #fff; overflow: hidden;
+            background: radial-gradient(at 0% 0%, #fff 0%, #f0f4ff 100%); overflow: hidden;
         }
         .blob {
-            position: absolute; width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(0, 123, 255, 0.15) 0%, rgba(110, 0, 255, 0.05) 50%, transparent 100%);
-            filter: blur(80px); animation: move 20s infinite alternate;
+            position: absolute; width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(0, 123, 255, 0.25) 0%, rgba(110, 0, 255, 0.15) 40%, transparent 70%);
+            filter: blur(100px); animation: move 15s infinite alternate ease-in-out;
+        }
+        .blob-2 {
+            position: absolute; bottom: -10%; right: -10%; width: 900px; height: 900px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.2) 0%, rgba(0, 123, 255, 0.1) 50%, transparent 70%);
+            filter: blur(120px); animation: move 18s infinite alternate-reverse ease-in-out;
         }
         @keyframes move {
-            from { transform: translate(-10%, -10%); }
-            to { transform: translate(20%, 20%); }
+            from { transform: translate(-15%, -15%) scale(1); }
+            to { transform: translate(15%, 15%) scale(1.1); }
         }
 
-        /* --- LOGO STYLE HEADER --- */
+        /* --- NAVIGATION --- */
+        nav { 
+            padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5); position: sticky; top: 0; z-index: 100; 
+        }
+        
         .logo-text { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.05em; color: #000; }
         .logo-text span { color: var(--primary-blue); }
 
-        nav { 
-            padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; 
-            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; 
-        }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 6rem 2rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
 
         /* --- HERO --- */
         .hero { text-align: center; margin-bottom: 7rem; }
-        .hero h1 { font-size: clamp(3rem, 8vw, 6rem); font-weight: 800; letter-spacing: -0.05em; margin-bottom: 1.5rem; }
-        .hero p { font-size: 1.3rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.5; }
+        .hero h1 { font-size: clamp(3rem, 8vw, 6rem); font-weight: 800; letter-spacing: -0.05em; margin-bottom: 1.5rem; line-height: 1; }
+        .hero p { font-size: 1.4rem; color: var(--text-secondary); max-width: 800px; margin: 0 auto; line-height: 1.5; font-weight: 400; }
 
-        /* --- THE IRIDESCENT GLASS CARDS --- */
-        .card { 
+        /* --- UNIVERSAL GLASSMORPHIC ELEMENTS --- */
+        .glass-element {
             background: var(--glass-bg); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border); 
-            border-radius: 32px; padding: 3rem; 
             box-shadow: var(--card-shadow);
-            position: relative; overflow: hidden;
-        }
-        /* Iridescent edge highlight */
-        .card::before {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 32px; padding: 2px;
-            background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(0,123,255,0.2) 50%, rgba(255,255,255,1) 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude; pointer-events: none;
         }
 
+        .card { border-radius: 40px; padding: 3rem; position: relative; }
+        
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 8rem; }
         
         .label { font-size: 0.7rem; font-weight: 800; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: block; }
         
         input, textarea { 
-            width: 100%; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); 
-            border-radius: 16px; padding: 1.1rem; color: var(--text-main); 
+            width: 100%; background: var(--glass-input); border: 1px solid var(--glass-border); 
+            border-radius: 18px; padding: 1.1rem; color: var(--text-main); 
             margin-bottom: 1.2rem; font-family: inherit; font-size: 1rem; box-sizing: border-box;
+            backdrop-filter: blur(8px); transition: 0.2s;
         }
+        input:focus { outline: none; background: rgba(255,255,255,0.8); border-color: var(--primary-blue); }
 
         .btn { 
-            width: 100%; padding: 1.1rem; border-radius: 16px; font-weight: 700; 
-            cursor: pointer; border: none; font-size: 1rem; 
-            transition: 0.3s; background: #000; color: #fff;
+            width: 100%; padding: 1.1rem; border-radius: 18px; font-weight: 700; 
+            cursor: pointer; border: 1px solid var(--glass-border); font-size: 1rem; 
+            transition: 0.3s; background: #000; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .btn:hover { transform: translateY(-2px); background: #222; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .btn-glass { background: rgba(255, 255, 255, 0.4); color: #000; border: 1px solid var(--glass-border); }
+        .btn-glass:hover { background: rgba(255, 255, 255, 0.6); }
 
-        /* --- PROBLEM/SOLUTION (Matching the New Glass Vibe) --- */
-        .problem-solver { 
-            background: rgba(250, 250, 250, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 40px; padding: 5rem; margin-bottom: 8rem; 
-        }
-        .problem h3 { color: #ff3b30; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 2rem; }
-        .solution h3 { color: var(--primary-blue); text-transform: uppercase; font-size: 0.8rem; margin-bottom: 2rem; }
+        /* --- COMPARISON --- */
+        .problem-solver { border-radius: 48px; padding: 5rem; margin-bottom: 8rem; }
+        .problem h3 { color: #ff3b30; text-transform: uppercase; font-size: 0.85rem; font-weight: 800; margin-bottom: 2rem; }
+        .solution h3 { color: var(--primary-blue); text-transform: uppercase; font-size: 0.85rem; font-weight: 800; margin-bottom: 2rem; }
         .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; }
         .problem-grid ul { list-style: none; padding: 0; }
-        .problem-grid li { margin-bottom: 1.2rem; font-size: 1rem; color: var(--text-secondary); }
+        .problem-grid li { margin-bottom: 1.4rem; font-size: 1.05rem; display: flex; align-items: center; color: var(--text-secondary); }
+        .problem-grid li span { margin-right: 12px; opacity: 0.7; }
 
         /* --- USE CASES --- */
         .use-case-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 8rem; }
-        .case-card { 
-            background: rgba(255,255,255,0.4); backdrop-filter: blur(5px);
-            border: 1px solid var(--glass-border); padding: 2rem; border-radius: 24px; transition: 0.3s; 
-        }
-        .case-card:hover { border-color: var(--primary-blue); transform: translateY(-5px); }
+        .case-card { padding: 2.2rem; border-radius: 28px; transition: 0.4s ease; height: 100%; box-sizing: border-box; }
+        .case-card:hover { transform: translateY(-8px); border-color: var(--primary-blue); background: rgba(255,255,255,0.6); }
+        .case-card h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .case-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
 
-        footer { padding: 5rem 5%; background: #f9f9fb; border-top: 1px solid var(--glass-border); text-align: center; }
+        footer { padding: 5rem 5%; background: rgba(249, 249, 251, 0.6); border-top: 1px solid var(--glass-border); text-align: center; }
+        .disclaimer-text { font-size: 0.85rem; color: #6e6e73; max-width: 900px; margin: 2rem auto; line-height: 1.6; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="iridescent-wrapper">
-    <div class="blob" style="top: 10%; left: 10%;"></div>
-    <div class="blob" style="bottom: 10%; right: 10%; background: radial-gradient(circle, rgba(110, 0, 255, 0.1) 0%, transparent 70%);"></div>
+    <div class="blob"></div>
+    <div class="blob-2"></div>
 </div>
 
 <nav>
     <div class="logo-text">AgentTrust<span>.</span></div>
-    <div style="background: rgba(255,255,255,0.8); padding: 6px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--glass-border);">● LIVE ON XRPL MAINNET</div>
+    <div class="glass-element" style="padding: 6px 16px; border-radius: 40px; font-size: 0.75rem; font-weight: 700; color: #444;">● LIVE ON XRPL MAINNET</div>
 </nav>
 
 <div class="container">
     <section class="hero">
-        <div class="logo-text" style="font-size: clamp(3rem, 8vw, 6rem); margin-bottom: 1.5rem;">AgentTrust<span>.</span></div>
+        <div class="logo-text" style="font-size: clamp(3.5rem, 9vw, 6.5rem); margin-bottom: 2rem;">AgentTrust<span>.</span></div>
         <p>
-            AgentTrust is the decentralized bridge between humans, AI agents, and secure capital. <br>
-            <strong>100% On-Chain. 0% Dispute Friction.</strong>
+            AgentTrust is the decentralized bridge between <br>
+            <strong>humans, AI agents, and secure capital.</strong> <br>
+            <span style="opacity: 0.8; font-size: 1.2rem; margin-top: 10px; display: block;">100% On-Chain. 0% Dispute Friction.</span>
         </p>
     </section>
 
     <div class="grid">
-        <div class="card">
-            <span class="label">Step 01</span>
-            <h2>Secure Capital</h2>
-            <input type="text" placeholder="Project ID">
-            <input type="text" placeholder="Recipient Wallet">
+        <div class="card glass-element">
+            <span class="label">Initiate Settlement</span>
+            <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 2rem;">Secure Capital</h2>
+            <input type="text" placeholder="Project Identifier">
+            <input type="text" placeholder="Recipient Wallet Address">
             <input type="number" id="amt" placeholder="Amount (XRP)" oninput="updateFees()">
-            <div style="background: rgba(0,0,0,0.03); padding: 1.2rem; border-radius: 16px; margin-bottom: 1.5rem; font-size: 0.95rem;">
+            <div class="glass-element" style="padding: 1.2rem; border-radius: 20px; margin-bottom: 1.5rem; font-size: 0.95rem; box-shadow: none;">
                 Protocol Fee: 0.1 XRP | AI Auditor: 0.1 XRP<br>
                 <strong>Total to Secure: <span id="totalX">0.20</span> XRP</strong>
             </div>
             <button class="btn" onclick="initVault()">Initialize Vault</button>
         </div>
 
-        <div class="card">
-            <span class="label">Step 02</span>
-            <h2>Verify & Settle</h2>
-            <textarea rows="4" placeholder="Paste proof or hash here..."></textarea>
-            <div style="border: 2px dashed rgba(0,0,0,0.1); padding: 2.5rem; text-align: center; border-radius: 16px; margin-bottom: 1.2rem; color: var(--text-secondary); font-size: 0.9rem;">
-                Upload audit data
+        <div class="card glass-element">
+            <span class="label">Audit Process</span>
+            <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 2rem;">Verify & Settle</h2>
+            <textarea rows="4" placeholder="Paste proof of work or verification hash..."></textarea>
+            <div class="glass-element" style="border: 2px dashed rgba(0,0,0,0.1); padding: 2.5rem; text-align: center; border-radius: 20px; margin-bottom: 1.2rem; color: var(--text-secondary); font-size: 0.9rem; box-shadow: none; background: rgba(255,255,255,0.2);">
+                Click or drag files to upload proof
             </div>
-            <button class="btn" style="background:transparent; border: 2px solid #000; color:#000">Release Funds</button>
+            <button class="btn btn-glass">Release Funds</button>
         </div>
     </div>
 
-    <section class="problem-solver">
+    <section class="problem-solver glass-element">
         <div class="problem-grid">
             <div class="problem">
                 <h3>The Middleman Economy</h3>
                 <ul>
-                    <li>✕ Expensive platform commissions</li>
-                    <li>✕ Multi-day bank holding periods</li>
-                    <li>✕ Opaque, biased dispute resolution</li>
+                    <li><span>✕</span> Opaque platform commissions (10-20%)</li>
+                    <li><span>✕</span> Multi-day settlement and holding periods</li>
+                    <li><span>✕</span> Subjective and biased dispute resolution</li>
+                    <li><span>✕</span> High legal and administrative overhead</li>
                 </ul>
             </div>
             <div class="solution">
                 <h3>The AgentTrust Protocol</h3>
                 <ul>
-                    <li>✓ Flat, transparent micro-fees</li>
-                    <li>✓ 4-second global settlement</li>
-                    <li>✓ Objective, AI-driven audit verdicts</li>
+                    <li><span>✓</span> Flat, transparent micro-fees (0.2 XRP)</li>
+                    <li><span>✓</span> Instant 4-second global settlement</li>
+                    <li><span>✓</span> Objective, AI-driven audit verdicts</li>
+                    <li><span>✓</span> Immutable, code-enforced contracts</li>
                 </ul>
             </div>
         </div>
     </section>
 
-    <h2 style="text-align:center; margin-bottom: 4rem; font-size: 2.5rem; letter-spacing: -0.02em;">How will you integrate AgentTrust?</h2>
+    <h2 style="text-align:center; margin-bottom: 4rem; font-size: 2.8rem; letter-spacing: -0.03em;">How will you integrate AgentTrust?</h2>
     <div class="use-case-list">
-        <div class="case-card"><h4>Automated Real Estate</h4><p>AI verifies land registry and structural reports to release house deposits instantly.</p></div>
-        <div class="case-card"><h4>Global Supply Chain</h4><p>Release manufacturer payments the moment AI verifies port-entry data.</p></div>
-        <div class="case-card"><h4>IP & Royalties</h4><p>Secure digital asset funds that release only when AI verifies license terms.</p></div>
-        <div class="case-card"><h4>Autonomous R&D</h4><p>Labs pay cloud-compute clusters only when valid computation results are returned.</p></div>
-        <div class="case-card"><h4>High-Value Bug Bounties</h4><p>AI verifies exploit code before releasing capital to the security researcher.</p></div>
-        <div class="case-card"><h4>Legal Escrow Bridge</h4><p>A non-human, unbiased arbiter for high-stakes corporate settlements.</p></div>
-        <div class="case-card"><h4>Fleet Orchestration</h4><p>Settle fuel and maintenance costs via AI-verified drone sensor data.</p></div>
-        <div class="case-card"><h4>Corporate Mergers</h4><p>AI verifies financial audit benchmarks to trigger tranches of a buyout.</p></div>
+        <div class="case-card glass-element"><h4>Real Estate Escrow</h4><p>AI verifies land registry and structural reports to release house deposits instantly, bypassing slow solicitors.</p></div>
+        <div class="case-card glass-element"><h4>Supply Chain Logistics</h4><p>Release manufacturer payments the exact second AI verifies port-entry data and bill of lading authenticity.</p></div>
+        <div class="case-card glass-element"><h4>IP & Royalties</h4><p>Lock funds for digital assets that release only when the AI verifies licensing terms and copyright uniqueness.</p></div>
+        <div class="case-card glass-element"><h4>Autonomous R&D</h4><p>Enable AI Lab agents to hire compute clusters, paying only when a valid computation result is returned.</p></div>
+        <div class="case-card glass-element"><h4>Vulnerability Rewards</h4><p>Secure $1M+ bug bounties. AI verifies the exploit code before releasing capital to the security researcher.</p></div>
+        <div class="case-card glass-element"><h4>Legal Settlements</h4><p>A non-human, unbiased arbiter for high-stakes corporate settlements where both parties require neutral payout.</p></div>
+        <div class="case-card glass-element"><h4>Fleet Management</h4><p>Coordinate autonomous delivery fleets, settling fuel and maintenance costs via AI-verified sensor data.</p></div>
+        <div class="case-card glass-element"><h4>Corporate Mergers</h4><p>Hold funds during M&A; AI verifies financial audit benchmarks to trigger tranches of the payout automatically.</p></div>
     </div>
 </div>
 
 <footer>
-    <div class="logo-text" style="justify-content: center; margin-bottom: 1rem;">AgentTrust<span>.</span></div>
-    <p style="font-size: 0.85rem; color: #8e8e93; max-width: 850px; margin: 2rem auto;">
-        LEGAL DISCLAIMER: AgentTrust is a decentralized protocol. We do not provide financial advice. Use at your own risk.
-    </p>
+    <div class="logo-text" style="justify-content: center; margin-bottom: 2rem;">AgentTrust<span>.</span></div>
+    <div class="disclaimer-text">
+        <strong>LEGAL DISCLAIMER:</strong> AgentTrust is a decentralized software protocol. We do not provide financial, legal, or investment advice. The protocol is provided "as is" without warranty of any kind. Users interact with the XRP Ledger and AI Referee at their own risk. AgentTrust does not hold, manage, or have custody of user funds at any time. All transactions are final and irreversible on the blockchain. By using this tool, you agree that you are responsible for your own compliance with local regulations.
+    </div>
+    <p style="color: #c1c1c6; font-size: 0.75rem;">&copy; 2026 AgentTrust Protocol. All rights reserved.</p>
 </footer>
 
 <script>
     function updateFees() {
         const val = parseFloat(document.getElementById('amt').value) || 0;
         document.getElementById('totalX').innerText = (val + 0.2).toFixed(2);
+    }
+    
+    function initVault() {
+        console.log("Initializing XRPL Vault...");
+        // Logic to connect to Xaman/MetaMask would be placed here
     }
 </script>
 </body>
