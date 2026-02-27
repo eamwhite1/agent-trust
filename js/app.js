@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
 // If the Referee is running on your same machine, this is the default:
-const REFEREE_URL = "http://localhost:8000"; 
+const REFEREE_URL = "http://127.0.0.1:8000"; 
 
 async function initVault() {
     // 1. Grab values from your Glassmorphic UI
