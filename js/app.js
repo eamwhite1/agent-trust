@@ -2,55 +2,71 @@
 const REFEREE_URL = "https://xrpl-referee.onrender.com"; 
 
 async function initVault() {
-    const btn = document.querySelector('button[onclick="initVault()"]');
-    
-    // 1. Grab values from your Glassmorphic UI
-    const projectID = document.querySelector('input[placeholder="Project Identifier"]').value;
-    const recipient = document.querySelector('input[placeholder="Recipient Wallet Address"]').value;
+    // 1. Setup UI References
+    const btn = document.getElementById('init-btn');
+    const projectID = document.getElementById('project-id').value;
+    const recipient = document.getElementById('recipient').value;
     const amountXRP = document.getElementById('amt').value;
+    const manualHash = document.getElementById('audit-fee-hash').value;
 
-    // Validation
+    // 2. Validation
     if (!projectID || !recipient || !amountXRP) {
-        alert("Please fill in all fields before initializing the vault.");
+        alert("Please fill in all project fields.");
         return;
     }
 
-    if (btn) btn.disabled = true; // Disable button to prevent triple-clicks during the process
+    // If manual mode is active, ensure a hash is provided
+    if (window.paymentMode === 'manual' && !manualHash) {
+        alert("Please paste the Transaction Hash for the 0.2 XRP fee.");
+        return;
+    }
+
+    if (btn) btn.disabled = true;
 
     try {
-        console.log("Step 1: Requesting Condition from Referee for Project:", projectID);
-        
-        // 2. Ask the Referee to generate the "Lock" (Condition)
+        console.log("Step 1: Initializing Escrow with Referee...");
+
+        // 3. Request Condition (Lock) from Referee
+        // We send the manual hash here if it exists so the Referee can verify the fee
         const setupResponse = await fetch(`${REFEREE_URL}/escrow/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ escrow_id: projectID })
+            body: JSON.stringify({ 
+                escrow_id: projectID,
+                fee_hash: window.paymentMode === 'manual' ? manualHash : null 
+            })
         });
 
         if (!setupResponse.ok) {
             const errorMsg = await setupResponse.json();
-            throw new Error(errorMsg.detail || "Failed to get condition from Referee.");
+            throw new Error(errorMsg.detail || "Referee rejected escrow generation.");
         }
         
         const { condition } = await setupResponse.json();
-        console.log("✅ Condition Received:", condition);
+        console.log("✅ Condition Secured:", condition);
 
-        // 3. Prepare the XRPL Escrow Transaction
+        // 4. Prepare the XRPL Escrow Transaction
         const escrowTx = {
             TransactionType: "EscrowCreate",
-            Amount: (parseFloat(amountXRP) * 1000000).toString(), // Convert XRP to Drops
+            Amount: (parseFloat(amountXRP) * 1000000).toString(),
             Destination: recipient,
-            Condition: condition, // The cryptographic lock from the Referee
-            FinishAfter: Math.floor(Date.now() / 1000) + 10, 
+            Condition: condition,
+            FinishAfter: Math.floor(Date.now() / 1000) + 5, 
         };
 
-        console.log("Step 2: Creating Xaman Payload...");
+        // 5. Handle Fee Payment & Payload Creation
+        console.log("Step 2: Bridging to Xaman...");
 
-        // 4. Send the transaction to the Referee's Xaman Bridge
+        const payloadBody = {
+            txjson: escrowTx,
+            // If auto-pay is on, we tell the Referee to bundle a 0.2 XRP payment
+            bundle_fee: window.paymentMode === 'auto' ? true : false
+        };
+
         const xummResponse = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ txjson: escrowTx })
+            body: JSON.stringify(payloadBody)
         });
 
         if (!xummResponse.ok) {
@@ -60,17 +76,59 @@ async function initVault() {
 
         const { nextUrl } = await xummResponse.json();
 
-        // 5. Open the Xaman Sign Request
+        // 6. Final Redirection
         if (nextUrl) {
-            console.log("🚀 Success! Redirecting to Xaman:", nextUrl);
+            console.log("🚀 Redirecting to Xaman:", nextUrl);
             window.open(nextUrl, '_blank');
-            alert("Scan the QR code in your Xaman (Xumm) app to lock the vault.");
+            alert("Please sign the request in Xaman to lock the vault.");
         }
 
     } catch (err) {
         console.error("❌ Protocol Error:", err);
-        alert(`Transaction failed: ${err.message}`);
+        alert(`Failed: ${err.message}`);
     } finally {
-        if (btn) btn.disabled = false; // Re-enable button so user can try again if they hit an error
+        if (btn) btn.disabled = false;
+    }
+}
+
+/**
+ * Step 2 Logic: Release Funds (The Audit)
+ */
+async function releaseFunds() {
+    const projectID = document.getElementById('project-id').value;
+    const workProof = document.getElementById('work-proof').value;
+    const auditHash = document.getElementById('audit-fee-hash').value; // In case they paid earlier
+
+    if (!projectID || !workProof) {
+        alert("Enter the Project ID and Proof of Work to trigger audit.");
+        return;
+    }
+
+    try {
+        console.log("Requesting AI Audit...");
+        const response = await fetch(`${REFEREE_URL}/evaluate`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "X-Payment-Hash": auditHash // The "receipt" for the audit fee
+            },
+            body: JSON.stringify({
+                task: "Verify the following work against project requirements.",
+                work: workProof,
+                escrow_id: projectID
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            alert(`✅ APPROVED by AI! \nFulfillment: ${result.fulfillment}\n\nYou can now finish the escrow on-chain.`);
+            console.log("Fulfillment revealed:", result.fulfillment);
+        } else {
+            alert(`❌ REJECTED: ${result.ai_verdict}`);
+        }
+    } catch (err) {
+        console.error("Audit Error:", err);
+        alert("Audit failed. See console.");
     }
 }
