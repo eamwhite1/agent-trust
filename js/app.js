@@ -78,22 +78,22 @@ async function initVault() {
 
 /**
  * STEP 2: TRIGGER AI AUDIT (Request Fulfillment)
- * Now pulls data directly from the new HTML fields to avoid Chrome suppression.
+ * Pulls data from the new UI fields and sends the Job Description to the AI.
  */
 async function releaseFunds() {
-    // 1. Grab values from the new HTML fields
+    // 1. Grab values from the new HTML IDs
     const projectID = document.getElementById('project-id').value.trim();
     const workProof = document.getElementById('work-proof').value.trim();
-    const auditHash = document.getElementById('audit-fee-hash').value.trim();
+    const jobTask = document.getElementById('job-description').value.trim(); // The new criteria
+    const auditHash = document.getElementById('audit-hash-step2').value.trim(); // The new Step 2 hash box
     
-    // The new "Sequence & Address" fields we just added
     const seq = document.getElementById('escrow-sequence').value.trim();
     const owner = document.getElementById('escrow-sender').value.trim();
     const recipient = document.getElementById('escrow-dest').value.trim();
 
-    // 2. Comprehensive Validation
-    if (!projectID || !workProof || !auditHash || !seq || !owner || !recipient) {
-        alert("Missing Data! Please ensure Proof, Audit Fee Hash, Sequence, and both Wallet Addresses are filled in.");
+    // 2. Validation Check
+    if (!projectID || !workProof || !auditHash || !seq || !owner || !recipient || !jobTask) {
+        alert("Missing Data! Please ensure Job Description, Proof, Audit Fee Hash, Sequence, and Addresses are all filled in.");
         return;
     }
 
@@ -107,8 +107,8 @@ async function releaseFunds() {
                 "x-payment-hash": auditHash 
             },
             body: JSON.stringify({
-                task: "AgentTrust Protocol Verification", 
-                work: workProof,
+                task: jobTask,      // This passes your Job Description to the AI
+                work: workProof,    // This passes your completed work to the AI
                 escrow_id: projectID
             })
         });
@@ -119,11 +119,11 @@ async function releaseFunds() {
             console.log("✅ AI APPROVED! Fulfillment Key Received.");
             alert(`✅ AUDIT APPROVED!\n\nVerdict: ${result.ai_verdict}`);
             
-            // Trigger Phase 3 immediately using the pre-filled fields
+            // Immediately trigger the Xaman claim using the data in the boxes
             await claimXRP(owner, seq, result.fulfillment, recipient);
             
         } else {
-            alert(`❌ AUDIT REJECTED:\n\n${result.ai_verdict || "The AI was not satisfied with the proof or the fee was invalid."}`);
+            alert(`❌ AUDIT REJECTED:\n\n${result.ai_verdict || "The AI was not satisfied or the fee hash was already used."}`);
         }
     } catch (err) {
         console.error("Audit Error:", err);
