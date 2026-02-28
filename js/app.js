@@ -1,21 +1,21 @@
 // --- CONFIGURATION ---
 const REFEREE_URL = "https://xrpl-referee.onrender.com"; 
 
+/**
+ * Step 1: Initialize the Vault (EscrowCreate)
+ */
 async function initVault() {
-    // 1. Setup UI References
     const btn = document.getElementById('init-btn');
     const projectID = document.getElementById('project-id').value;
     const recipient = document.getElementById('recipient').value;
     const amountXRP = document.getElementById('amt').value;
     const manualHash = document.getElementById('audit-fee-hash').value;
 
-    // 2. Validation
     if (!projectID || !recipient || !amountXRP) {
         alert("Please fill in all project fields.");
         return;
     }
 
-    // If manual mode is active, ensure a hash is provided
     if (window.paymentMode === 'manual' && !manualHash) {
         alert("Please paste the Transaction Hash for the 0.2 XRP fee.");
         return;
@@ -24,10 +24,7 @@ async function initVault() {
     if (btn) btn.disabled = true;
 
     try {
-        console.log("Step 1: Initializing Escrow with Referee...");
-
-        // 3. Request Condition (Lock) from Referee
-        // We send the manual hash here if it exists so the Referee can verify the fee
+        console.log("Step 1: Requesting Condition from Referee...");
         const setupResponse = await fetch(`${REFEREE_URL}/escrow/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -39,53 +36,38 @@ async function initVault() {
 
         if (!setupResponse.ok) {
             const errorMsg = await setupResponse.json();
-            throw new Error(errorMsg.detail || "Referee rejected escrow generation.");
+            throw new Error(errorMsg.detail || "Referee rejected generation.");
         }
         
         const { condition } = await setupResponse.json();
         console.log("✅ Condition Secured:", condition);
 
-        // 4. Prepare the XRPL Escrow Transaction
+        // XRPL Time (Seconds since Jan 1, 2000)
         const RIPPLE_EPOCH = 946684800;
         const nowRipple = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
 
         const escrowTx = {
             TransactionType: "EscrowCreate",
-            Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(),
+            Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(), // Convert to Drops
             Destination: recipient.trim(),
             Condition: condition.toUpperCase(), 
-            
-            // Only CancelAfter is needed. It gives 24 hours to finish the task.
-            CancelAfter: nowRipple + 86400
+            CancelAfter: nowRipple + 86400 // 24-hour expiration
         };
 
-        // 5. Handle Fee Payment & Payload Creation
-        console.log("Step 2: Bridging to Xaman...");
-
-        const payloadBody = {
-            txjson: escrowTx,
-            // If auto-pay is on, we tell the Referee to bundle a 0.2 XRP payment
-            bundle_fee: window.paymentMode === 'auto' ? true : false
-        };
-
+        console.log("Step 2: Sending Payload to Xaman...");
         const xummResponse = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payloadBody)
+            body: JSON.stringify({ 
+                txjson: escrowTx,
+                bundle_fee: window.paymentMode === 'auto' ? true : false
+            })
         });
 
-        if (!xummResponse.ok) {
-            const xummError = await xummResponse.json();
-            throw new Error(xummError.detail || "Xaman Bridge failed.");
-        }
-
         const { nextUrl } = await xummResponse.json();
-
-        // 6. Final Redirection
         if (nextUrl) {
-            console.log("🚀 Redirecting to Xaman:", nextUrl);
             window.open(nextUrl, '_blank');
-            alert("Please sign the request in Xaman to lock the vault.");
+            alert("Sign the EscrowCreate in Xaman. IMPORTANT: Keep your Sequence Number!");
         }
 
     } catch (err) {
@@ -97,15 +79,15 @@ async function initVault() {
 }
 
 /**
- * Step 2 Logic: Release Funds (The Audit)
+ * Step 2: Trigger AI Audit (Request Fulfillment)
  */
 async function releaseFunds() {
     const projectID = document.getElementById('project-id').value;
     const workProof = document.getElementById('work-proof').value;
-    const auditHash = document.getElementById('audit-fee-hash').value; // In case they paid earlier
+    const auditHash = document.getElementById('audit-fee-hash').value;
 
     if (!projectID || !workProof) {
-        alert("Enter the Project ID and Proof of Work to trigger audit.");
+        alert("Enter Project ID and Proof of Work.");
         return;
     }
 
@@ -115,10 +97,10 @@ async function releaseFunds() {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "X-Payment-Hash": auditHash // The "receipt" for the audit fee
+                "X-Payment-Hash": auditHash 
             },
             body: JSON.stringify({
-                task: "Verify the following work against project requirements.",
+                task: "Verify the submitted work against project requirements.",
                 work: workProof,
                 escrow_id: projectID
             })
@@ -126,14 +108,51 @@ async function releaseFunds() {
 
         const result = await response.json();
         
-        if (result.status === "success") {
-            alert(`✅ APPROVED by AI! \nFulfillment: ${result.fulfillment}\n\nYou can now finish the escrow on-chain.`);
-            console.log("Fulfillment revealed:", result.fulfillment);
+        if (result.status === "success" && result.fulfillment) {
+            alert(`✅ APPROVED! Fulfillment: ${result.fulfillment}`);
+            
+            // Ask user if they want to claim now
+            const seq = prompt("Enter the Sequence Number of your original EscrowCreate to claim funds:");
+            const owner = prompt("Enter the Wallet Address of the person who created the escrow:");
+            const recipient = prompt("Enter your Wallet Address (Recipient):");
+            
+            if (seq && owner && recipient) {
+                await claimXRP(owner, seq, result.fulfillment, recipient);
+            }
         } else {
             alert(`❌ REJECTED: ${result.ai_verdict}`);
         }
     } catch (err) {
-        console.error("Audit Error:", err);
-        alert("Audit failed. See console.");
+        alert("Audit failed. Check console.");
+    }
+}
+
+/**
+ * Step 3: Final Claim (EscrowFinish)
+ */
+async function claimXRP(ownerAddress, sequenceNumber, fulfillment, recipientAddress) {
+    try {
+        const finishTx = {
+            TransactionType: "EscrowFinish",
+            Account: recipientAddress, 
+            Owner: ownerAddress,        
+            OfferSequence: parseInt(sequenceNumber),
+            Fulfillment: fulfillment.toUpperCase()
+        };
+
+        const response = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ txjson: finishTx })
+        });
+
+        const { nextUrl } = await response.json();
+        if (nextUrl) {
+            window.open(nextUrl, '_blank');
+            alert("Sign the final claim in Xaman to receive your XRP.");
+        }
+    } catch (err) {
+        console.error("Claim Error:", err);
+        alert("Failed to generate claim payload.");
     }
 }
