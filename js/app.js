@@ -47,16 +47,20 @@ async function initVault() {
 
         // 4. Prepare the XRPL Escrow Transaction
         const RIPPLE_EPOCH = 946684800;
+        const nowRipple = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
 
         const escrowTx = {
             TransactionType: "EscrowCreate",
             Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(),
             Destination: recipient.trim(),
-            // WE ARE TEMPORARILY REMOVING THE CONDITION TO TEST THE CONNECTION
-            // This escrow will be "Finishable" in 2 minutes
-            FinishAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 120,
-            // And "Cancelable" in 24 hours
-            CancelAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 86400
+            Condition: condition.toUpperCase(), // Ensure uppercase
+    
+            // Some XRPL nodes require FinishAfter to be present with a Condition
+            // Setting it to 'now' means it can be finished immediately if the AI approves
+            FinishAfter: nowRipple, 
+    
+            // CancelAfter gives you a 24-hour safety window
+            CancelAfter: nowRipple + 86400
         };
 
         // 5. Handle Fee Payment & Payload Creation
