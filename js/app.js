@@ -46,19 +46,16 @@ async function initVault() {
         console.log("✅ Condition Secured:", condition);
 
         // 4. Prepare the XRPL Escrow Transaction
-        const RIPPLE_EPOCH = 946684800; // The magic number to convert time
+        const RIPPLE_EPOCH = 946684800;
 
         const escrowTx = {
             TransactionType: "EscrowCreate",
-            // Ensure it's a string of drops
-            Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(), 
+            Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(),
             Destination: recipient.trim(),
-            Condition: condition, // Your backend now provides the A0258020 prefix
-    
-            // Convert Unix time (milliseconds) to Ripple Epoch (seconds)
-            // We add 120 seconds (2 minutes) to ensure the ledger doesn't think 
-            // the finish time is in the past due to network drift.
-            FinishAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 120
+            Condition: condition, 
+            // REMOVE FinishAfter and use CancelAfter instead
+            // This gives the worker 24 hours to finish the task
+            CancelAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 86400 
         };
 
         // 5. Handle Fee Payment & Payload Creation
