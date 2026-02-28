@@ -78,20 +78,28 @@ async function initVault() {
 
 /**
  * STEP 2: TRIGGER AI AUDIT (Request Fulfillment)
- * Triggered by the "Release Funds / Audit" button.
+ * Now pulls data directly from the new HTML fields to avoid Chrome suppression.
  */
 async function releaseFunds() {
+    // 1. Grab values from the new HTML fields
     const projectID = document.getElementById('project-id').value.trim();
     const workProof = document.getElementById('work-proof').value.trim();
     const auditHash = document.getElementById('audit-fee-hash').value.trim();
+    
+    // The new "Sequence & Address" fields we just added
+    const seq = document.getElementById('escrow-sequence').value.trim();
+    const owner = document.getElementById('escrow-sender').value.trim();
+    const recipient = document.getElementById('escrow-dest').value.trim();
 
-    if (!projectID || !workProof || !auditHash) {
-        alert("Please enter Project ID, Proof of Work, and the 0.2 XRP Audit Fee Hash.");
+    // 2. Comprehensive Validation
+    if (!projectID || !workProof || !auditHash || !seq || !owner || !recipient) {
+        alert("Missing Data! Please ensure Proof, Audit Fee Hash, Sequence, and both Wallet Addresses are filled in.");
         return;
     }
 
     try {
-        console.log("Requesting AI Audit...");
+        console.log("🚀 Requesting AI Audit for Project:", projectID);
+        
         const response = await fetch(`${REFEREE_URL}/evaluate`, {
             method: "POST",
             headers: { 
@@ -99,7 +107,7 @@ async function releaseFunds() {
                 "x-payment-hash": auditHash 
             },
             body: JSON.stringify({
-                task: "Standard Quality Audit", // This will be dynamic in our next update
+                task: "AgentTrust Protocol Verification", 
                 work: workProof,
                 escrow_id: projectID
             })
@@ -108,36 +116,33 @@ async function releaseFunds() {
         const result = await response.json();
         
         if (result.status === "success" && result.fulfillment) {
+            console.log("✅ AI APPROVED! Fulfillment Key Received.");
             alert(`✅ AUDIT APPROVED!\n\nVerdict: ${result.ai_verdict}`);
             
-            // Collect details for the final claim
-            const seq = prompt("Enter the Sequence Number from your EscrowCreate transaction:");
-            const owner = prompt("Enter the Wallet Address of the Sender (who created the escrow):");
-            const recipient = prompt("Enter your Receiving Wallet Address:");
+            // Trigger Phase 3 immediately using the pre-filled fields
+            await claimXRP(owner, seq, result.fulfillment, recipient);
             
-            if (seq && owner && recipient) {
-                await claimXRP(owner, seq, result.fulfillment, recipient);
-            }
         } else {
-            alert(`❌ AUDIT REJECTED:\n\n${result.ai_verdict || "Insufficient details."}`);
+            alert(`❌ AUDIT REJECTED:\n\n${result.ai_verdict || "The AI was not satisfied with the proof or the fee was invalid."}`);
         }
     } catch (err) {
         console.error("Audit Error:", err);
-        alert("Audit failed to process. Check your console and backend logs.");
+        alert("Audit failed to process. Check your browser console and Render logs.");
     }
 }
 
 /**
  * STEP 3: FINAL CLAIM (EscrowFinish)
- * Submits the fulfillment to the ledger to move the XRP.
+ * Packages the secret key into the final Xaman prompt.
  */
 async function claimXRP(ownerAddress, sequenceNumber, fulfillment, recipientAddress) {
     try {
         console.log("Generating Final Claim (EscrowFinish)...");
+        
         const finishTx = {
             TransactionType: "EscrowFinish",
-            Account: recipientAddress, 
-            Owner: ownerAddress,        
+            Account: recipientAddress, // The person clicking the button (usually the receiver)
+            Owner: ownerAddress,       // The person who originally created the vault
             OfferSequence: parseInt(sequenceNumber),
             Fulfillment: fulfillment.toUpperCase()
         };
@@ -149,12 +154,16 @@ async function claimXRP(ownerAddress, sequenceNumber, fulfillment, recipientAddr
         });
 
         const data = await response.json();
+        
         if (data.nextUrl) {
+            // Open Xaman in a new tab
             window.open(data.nextUrl, '_blank');
-            alert("Final step: Sign in Xaman to claim your XRP!");
+            alert("Final Step: A new tab has opened for Xaman. Sign to release the XRP from the vault!");
+        } else {
+            throw new Error("Xaman failed to generate the signature URL.");
         }
     } catch (err) {
         console.error("Claim Error:", err);
-        alert("Failed to create the claim payload.");
+        alert("Failed to create the claim payload: " + err.message);
     }
 }
