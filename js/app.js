@@ -53,9 +53,9 @@ async function initVault() {
             Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(),
             Destination: recipient.trim(),
             Condition: condition, 
-            // REMOVE FinishAfter and use CancelAfter instead
-            // This gives the worker 24 hours to finish the task
-            CancelAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 86400 
+            // Add 3600 (1 hour) instead of 120
+            // This removes any chance of the ledger thinking the time is in the past
+            CancelAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 3600 
         };
 
         // 5. Handle Fee Payment & Payload Creation
