@@ -162,8 +162,9 @@
         </p>
     </section>
 
-    <div class="grid">
-        <div class="card glass-element">
+    <div style="display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center; align-items: stretch; margin-bottom: 8rem;">
+        
+        <div class="card glass-element" style="flex: 1; min-width: 450px; max-width: 550px; display: flex; flex-direction: column;">
             <span class="label">Step 01 | Initiate Settlement</span>
             <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 1.5rem;">Secure Capital</h2>
             
@@ -173,52 +174,59 @@
             </div>
 
             <div id="manual-hash-section">
-                <input type="text" id="audit-fee-hash" placeholder="Audit Fee Transaction Hash">
+                <input type="text" id="audit-fee-hash" placeholder="Setup Fee Transaction Hash">
             </div>
 
-            <input type="text" id="project-id" placeholder="Project Identifier">
-            <input type="text" id="recipient" placeholder="Recipient Wallet Address">
-            <input type="number" id="amt" placeholder="Amount (XRP)" oninput="updateFees()">
+            <input type="text" id="project-id" placeholder="Project Identifier (e.g., 'Alpha-Task')">
             
-            <div class="glass-element" style="padding: 1.2rem; border-radius: 20px; margin-bottom: 1.5rem; font-size: 0.95rem; box-shadow: none;">
+            <textarea id="job-description" rows="3" placeholder="Define the Task for the AI (e.g., 'Write 500 words on XRPL')"></textarea>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="recipient" placeholder="Recipient Wallet Address" style="flex: 2;" oninput="document.getElementById('escrow-dest').value = this.value">
+                <input type="number" id="amt" placeholder="XRP" style="flex: 1;" oninput="updateFees()">
+            </div>
+            
+            <div class="glass-element" style="padding: 1.2rem; border-radius: 20px; margin-top: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; box-shadow: none;">
                 Protocol Fee: 0.1 XRP | AI Auditor: 0.1 XRP<br>
                 <strong>Total to Secure: <span id="totalX">0.20</span> XRP</strong>
             </div>
-            <button class="btn" id="init-btn" onclick="initVault()">Initialize Vault</button>
+
+            <button class="btn" id="init-btn" onclick="initVault()" style="margin-top: auto;">Initialize Vault</button>
         </div>
 
-        <div class="card glass-element">
+        <div class="card glass-element" style="flex: 1; min-width: 450px; max-width: 550px; display: flex; flex-direction: column;">
             <span class="label">Step 02 | Audit Process</span>
             <h2 style="font-size: 2rem; margin-top: 0; margin-bottom: 2rem;">Verify & Settle</h2>
             
-            <textarea id="work-proof" rows="4" placeholder="Describe the work completed..."></textarea>
+            <textarea id="work-proof" rows="4" placeholder="Paste proof of work or verification text..."></textarea>
             
+            <div class="glass-element" style="border: 2px dashed rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; border-radius: 20px; margin-bottom: 1.2rem; color: var(--text-secondary); font-size: 0.8rem; box-shadow: none; background: rgba(255,255,255,0.2); cursor: pointer;">
+                📎 Click to upload documents (PDF, JPG, PNG)
+            </div>
+
             <div style="display: grid; gap: 10px; margin-bottom: 1.2rem;">
-                <input type="text" id="audit-fee-hash" class="glass-element" 
+                <input type="text" id="audit-hash-step2" class="glass-element" 
                        style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);" 
                        placeholder="Paste 0.2 XRP Audit Fee Hash">
                 
                 <input type="number" id="escrow-sequence" class="glass-element" 
                        style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);" 
-                       placeholder="Escrow Sequence Number (e.g. 102383911)">
+                       placeholder="Escrow Sequence (e.g. 102383911)">
                 
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="escrow-sender" class="glass-element" 
-                           style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); font-size: 0.8rem;" 
+                           style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); font-size: 0.75rem;" 
                            placeholder="Sender Address">
                     
                     <input type="text" id="escrow-dest" class="glass-element" 
-                           style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); font-size: 0.8rem;" 
+                           style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); font-size: 0.75rem;" 
                            placeholder="Recipient Address">
                 </div>
             </div>
-
-            <div class="glass-element" style="border: 2px dashed rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; border-radius: 20px; margin-bottom: 1.2rem; color: var(--text-secondary); font-size: 0.8rem; box-shadow: none; background: rgba(255,255,255,0.2);">
-                Click or drag files to upload proof (optional)
-            </div>
             
-            <button class="btn btn-glass" onclick="releaseFunds()">Release Funds / Audit</button>
+            <button class="btn btn-glass" onclick="releaseFunds()" style="margin-top: auto;">Release Funds / Audit</button>
         </div>
+    </div>
 
     <section class="problem-solver glass-element">
         <div class="problem-grid">
