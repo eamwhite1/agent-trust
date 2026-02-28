@@ -53,13 +53,9 @@ async function initVault() {
             TransactionType: "EscrowCreate",
             Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(),
             Destination: recipient.trim(),
-            Condition: condition.toUpperCase(), // Ensure uppercase
-    
-            // Some XRPL nodes require FinishAfter to be present with a Condition
-            // Setting it to 'now' means it can be finished immediately if the AI approves
-            FinishAfter: nowRipple, 
-    
-            // CancelAfter gives you a 24-hour safety window
+            Condition: condition.toUpperCase(), 
+            
+            // Only CancelAfter is needed. It gives 24 hours to finish the task.
             CancelAfter: nowRipple + 86400
         };
 
