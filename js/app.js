@@ -52,10 +52,11 @@ async function initVault() {
             TransactionType: "EscrowCreate",
             Amount: Math.floor(parseFloat(amountXRP) * 1000000).toString(),
             Destination: recipient.trim(),
-            Condition: condition, 
-            // Add 3600 (1 hour) instead of 120
-            // This removes any chance of the ledger thinking the time is in the past
-            CancelAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 3600 
+            // WE ARE TEMPORARILY REMOVING THE CONDITION TO TEST THE CONNECTION
+            // This escrow will be "Finishable" in 2 minutes
+            FinishAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 120,
+            // And "Cancelable" in 24 hours
+            CancelAfter: Math.floor(Date.now() / 1000) - RIPPLE_EPOCH + 86400
         };
 
         // 5. Handle Fee Payment & Payload Creation
