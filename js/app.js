@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
 // CONFIGURATION
 // ---------------------------------------------------------------------------
-// Use relative URLs — the JS is served from the same server as the API.
-// This avoids CORS issues and works regardless of the deployment domain.
-const REFEREE_URL = "";
+// The frontend (AgentTrust repo) and API (xrpl-referee repo) are separate
+// Render services, so we must use the absolute API URL.
+const REFEREE_URL = "https://xrpl-referee.onrender.com";
 
 // ---------------------------------------------------------------------------
 // FILE ATTACHMENT STATE
