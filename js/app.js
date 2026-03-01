@@ -332,8 +332,8 @@ async function initVault() {
     const feeHash     = document.getElementById("audit-fee-hash")?.value.trim();
     const cancelHrs   = parseInt(document.getElementById("cancel-hours")?.value || "168");
 
-    if (!buyerName || !taskDesc || !recipient || !amountXRP) {
-        showStatus("init-status", "❌ Please fill in all required fields.", "error");
+    if (!buyerName || !projectLabel || !taskDesc || !recipient || !amountXRP) {
+        showStatus("init-status", "❌ Please fill in all required fields including Project Label.", "error");
         return;
     }
     if (!feeHash) {
