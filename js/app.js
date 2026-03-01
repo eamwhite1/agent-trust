@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------
 // CONFIGURATION
 // ---------------------------------------------------------------------------
-const REFEREE_URL = "https://xrpl-referee.onrender.com";
+// Use relative URLs — the JS is served from the same server as the API.
+// This avoids CORS issues and works regardless of the deployment domain.
+const REFEREE_URL = "";
 
 // ---------------------------------------------------------------------------
 // FILE ATTACHMENT STATE
@@ -200,9 +202,10 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 function updateFeeDisplay() {
-    const val = parseFloat(document.getElementById("amt")?.value) || 0;
+    const val     = parseFloat(document.getElementById("amt")?.value) || 0;
     const totalEl = document.getElementById("totalX");
-    if (totalEl) totalEl.textContent = (val + 0.2).toFixed(2);
+    // Worker receives exactly the escrowed amount — the 0.1 XRP fee is separate
+    if (totalEl) totalEl.textContent = val.toFixed(2);
 }
 
 function setPaymentMode(mode) {
@@ -224,7 +227,7 @@ function setPaymentMode(mode) {
 
 // ---------------------------------------------------------------------------
 // STEP 1A — PAY PROTOCOL FEE (Buyer)
-// Opens Xaman for the 0.2 XRP fee. Polls until signed, then auto-proceeds.
+// Opens Xaman for the 0.1 XRP fee. Polls until signed, then auto-proceeds.
 // ---------------------------------------------------------------------------
 async function payFee() {
     const btn = document.getElementById("pay-fee-btn");
@@ -241,7 +244,7 @@ async function payFee() {
 
         // Open Xaman in new tab
         window.open(data.nextUrl, "_blank");
-        showStatus("fee-status", "📱 Xaman opened — sign the 0.2 XRP payment, then return here.", "info");
+        showStatus("fee-status", "Opening Xaman — sign the 0.1 XRP payment, then return here.", "info");
 
         // Start polling for confirmation
         feePollingTimer = setInterval(pollFeePayment, 3000);
@@ -282,30 +285,43 @@ async function pollFeePayment() {
 }
 
 // ---------------------------------------------------------------------------
+// RECEIPT CODE GENERATOR
+// Generates a unique human-readable code like AT-7X9K-2MQ4
+// Uses crypto.getRandomValues — collision probability negligible
+// ---------------------------------------------------------------------------
+function generateReceiptCode() {
+    const chars   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no O/0/I/1
+    const segment = (len) => Array.from(
+        crypto.getRandomValues(new Uint8Array(len)),
+        b => chars[b % chars.length]
+    ).join("");
+    return `AT-${segment(4)}-${segment(4)}`;
+}
+
+// ---------------------------------------------------------------------------
 // STEP 1B — INITIALIZE VAULT (Buyer)
-// Called after fee is confirmed. Verifies fee on-chain, creates vault, emails worker.
 // ---------------------------------------------------------------------------
 async function initVault() {
     const btn = document.getElementById("init-btn");
 
-    const projectID   = document.getElementById("project-id")?.value.trim();
-    const buyerName   = document.getElementById("buyer-name")?.value.trim();
-    const taskDesc    = document.getElementById("job-description")?.value.trim();
-    const recipient   = document.getElementById("recipient")?.value.trim();
-    const amountXRP   = document.getElementById("amt")?.value;
-    const feeHash     = document.getElementById("audit-fee-hash")?.value.trim();
-    const cancelHrs   = parseInt(document.getElementById("cancel-hours")?.value || "168");
+    const buyerName  = document.getElementById("buyer-name")?.value.trim();
+    const taskDesc   = document.getElementById("job-description")?.value.trim();
+    const recipient  = document.getElementById("recipient")?.value.trim();
+    const amountXRP  = document.getElementById("amt")?.value;
+    const feeHash    = document.getElementById("audit-fee-hash")?.value.trim();
+    const cancelHrs  = parseInt(document.getElementById("cancel-hours")?.value || "168");
 
-    // Validation
-    if (!projectID || !buyerName || !taskDesc || !recipient || !amountXRP) {
+    if (!buyerName || !taskDesc || !recipient || !amountXRP) {
         showStatus("init-status", "❌ Please fill in all required fields.", "error");
         return;
     }
-
     if (!feeHash) {
-        showStatus("init-status", "❌ Please pay the 0.2 XRP fee first.", "error");
+        showStatus("init-status", "❌ Please pay the 0.1 XRP fee first.", "error");
         return;
     }
+
+    // Auto-generate unique receipt code — buyer never types this
+    const receiptCode = generateReceiptCode();
 
     if (btn) btn.disabled = true;
     showStatus("init-status", "⏳ Verifying fee and creating vault...", "info");
@@ -315,7 +331,7 @@ async function initVault() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                escrow_id:          projectID,
+                escrow_id:          receiptCode,
                 fee_hash:           feeHash,
                 buyer_name:         buyerName,
                 task_description:   taskDesc,
@@ -365,18 +381,17 @@ async function initVault() {
         if (xummData.nextUrl) {
             window.open(xummData.nextUrl, "_blank");
 
-            // Show the share panel with copy buttons
             const sharePanel = document.getElementById("share-panel");
             const shareId    = document.getElementById("share-project-id");
             if (sharePanel && shareId) {
-                shareId.textContent      = projectID;
+                shareId.textContent      = receiptCode;
                 sharePanel.style.display = "block";
                 if (window.lucide) lucide.createIcons();
             }
 
             showStatus(
                 "init-status",
-                `✅ Vault created! Xaman opened for EscrowCreate.\nShare your Project ID with the worker using the buttons below.`,
+                `Vault created! Xaman opened for EscrowCreate.\nShare the Receipt Code with your worker so they can submit and claim payment.`,
                 "success"
             );
         } else {
@@ -392,7 +407,7 @@ async function initVault() {
 }
 
 // ---------------------------------------------------------------------------
-// WORKER — Load job info when Project ID is entered
+// WORKER — Load job info when Receipt Code is entered
 // ---------------------------------------------------------------------------
 async function loadJobInfo(projectId) {
     if (!projectId) return;
@@ -443,7 +458,7 @@ async function submitWork() {
     const callbackUrl = document.getElementById("callback-url")?.value.trim() || null;
 
     if (!projectID || !workProof) {
-        showStatus("submit-status", "❌ Please enter your Project ID and proof of work.", "error");
+        showStatus("submit-status", "❌ Please enter your Receipt Code and proof of work.", "error");
         return;
     }
 
@@ -494,7 +509,7 @@ async function submitWork() {
             // Approved but vault lookup failed — should not happen but handle gracefully
             showStatus(
                 "submit-status",
-                `⚠️ AI approved your work but the vault could not be found for Project ID "${projectID}". ` +
+                `AI approved your work but the vault could not be found for Receipt Code "${projectID}". ` +
                 `Please check the ID is exactly correct and contact support if the issue persists.`,
                 "warning"
             );
@@ -700,7 +715,7 @@ function onCurrencyChange() {
         if (quotePanel) quotePanel.style.display = "block";
         // We don't have the worker address or amount here yet — prompt will show on submit
         const quoteText = document.getElementById("dex-quote-text");
-        if (quoteText) quoteText.textContent = "Enter your Project ID and look up the job to see a live quote.";
+        if (quoteText) quoteText.textContent = "Enter your Receipt Code and look up the job to see a live quote.";
     } else {
         if (quotePanel) quotePanel.style.display = "none";
         dexQuoteData = null;
