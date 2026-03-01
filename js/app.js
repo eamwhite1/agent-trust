@@ -160,6 +160,7 @@ function initDropZone(zoneId, fileArray, fileListId, textareaId, labelPrefix) {
 // ---------------------------------------------------------------------------
 let feePayloadUUID   = null;   // Xaman payload UUID for the fee payment
 let feePollingTimer  = null;   // setInterval handle for polling Xaman status
+let buyerWalletAddress = null; // Captured from Xaman fee payment — buyer's XRPL wallet
 
 // ---------------------------------------------------------------------------
 // UTILITY
@@ -269,7 +270,9 @@ async function pollFeePayment() {
         if (data.signed && data.tx_hash) {
             clearInterval(feePollingTimer);
 
-            // Auto-fill the fee hash field (hidden or visible)
+            // Capture buyer's wallet address from Xaman — used as buyer_address in vault
+            if (data.signer) buyerWalletAddress = data.signer;
+
             const hashField = document.getElementById("audit-fee-hash");
             if (hashField) hashField.value = data.tx_hash;
 
@@ -321,12 +324,13 @@ function generateReceiptCode() {
 async function initVault() {
     const btn = document.getElementById("init-btn");
 
-    const buyerName  = document.getElementById("buyer-name")?.value.trim();
-    const taskDesc   = document.getElementById("job-description")?.value.trim();
-    const recipient  = document.getElementById("recipient")?.value.trim();
-    const amountXRP  = document.getElementById("amt")?.value;
-    const feeHash    = document.getElementById("audit-fee-hash")?.value.trim();
-    const cancelHrs  = parseInt(document.getElementById("cancel-hours")?.value || "168");
+    const buyerName   = document.getElementById("buyer-name")?.value.trim();
+    const projectLabel = document.getElementById("project-label")?.value.trim() || null;
+    const taskDesc    = document.getElementById("job-description")?.value.trim();
+    const recipient   = document.getElementById("recipient")?.value.trim();
+    const amountXRP   = document.getElementById("amt")?.value;
+    const feeHash     = document.getElementById("audit-fee-hash")?.value.trim();
+    const cancelHrs   = parseInt(document.getElementById("cancel-hours")?.value || "168");
 
     if (!buyerName || !taskDesc || !recipient || !amountXRP) {
         showStatus("init-status", "❌ Please fill in all required fields.", "error");
@@ -350,7 +354,9 @@ async function initVault() {
             body: JSON.stringify({
                 escrow_id:          receiptCode,
                 fee_hash:           feeHash,
+                project_label:      projectLabel,
                 buyer_name:         buyerName,
+                buyer_address:      buyerWalletAddress || "",
                 task_description:   taskDesc,
                 worker_address:     recipient,
                 amount_xrp:         parseFloat(amountXRP),
@@ -408,9 +414,14 @@ async function initVault() {
 
             showStatus(
                 "init-status",
-                `Vault created! Xaman opened for EscrowCreate.\nShare the Receipt Code with your worker so they can submit and claim payment.`,
+                `Vault created! Xaman opened — sign the EscrowCreate transaction.\nShare the Receipt Code with your worker once signed.`,
                 "success"
             );
+
+            // Poll Xaman until the EscrowCreate is signed, then store the tx hash
+            // in the vault so the worker never has to look up sequence/owner manually
+            pollEscrowCreate(xummData.uuid, receiptCode);
+
         } else {
             throw new Error("Xaman failed to return a sign URL.");
         }
@@ -421,6 +432,41 @@ async function initVault() {
     } finally {
         if (btn) btn.disabled = false;
     }
+}
+
+// ---------------------------------------------------------------------------
+// POLL XAMAN FOR ESCROW CREATE CONFIRMATION
+// Once the buyer signs the EscrowCreate, we grab the tx hash and send it
+// to /escrow/{id}/confirm so the referee can store the sequence number.
+// The worker then never needs to look anything up manually.
+// ---------------------------------------------------------------------------
+let escrowCreateTimer = null;
+
+async function pollEscrowCreate(uuid, receiptCode) {
+    if (!uuid) return;
+    escrowCreateTimer = setInterval(async () => {
+        try {
+            const res  = await safeFetch(`${REFEREE_URL}/xumm/payload/${uuid}`);
+            const data = await res.json();
+            if (data.signed && data.tx_hash) {
+                clearInterval(escrowCreateTimer);
+                // Confirm with referee — stores tx hash + auto-looks up sequence
+                await safeFetch(`${REFEREE_URL}/escrow/${encodeURIComponent(receiptCode)}/confirm`, {
+                    method:  "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body:    JSON.stringify({ tx_hash: data.tx_hash }),
+                });
+                showStatus(
+                    "init-status",
+                    `Escrow live on XRPL! Receipt Code: ${receiptCode}\nShare this with your worker — they can now submit their work and claim payment automatically.`,
+                    "success"
+                );
+                console.log(`✅ EscrowCreate confirmed on-chain: ${data.tx_hash}`);
+            }
+        } catch (err) {
+            console.warn("EscrowCreate poll error:", err);
+        }
+    }, 3000);
 }
 
 // ---------------------------------------------------------------------------
@@ -592,6 +638,16 @@ async function claimXRP(auditResult) {
             claimSection.dataset.xrpAmount     = auditResult.amount_xrp || null;
             claimSection.dataset.currency      = currency;
             claimSection.dataset.condition     = auditResult.condition;
+
+            // Auto-fill sequence and buyer address — worker should never need to type these
+            if (auditResult.escrow_sequence) {
+                const seqField = document.getElementById("escrow-sequence");
+                if (seqField) seqField.value = auditResult.escrow_sequence;
+            }
+            if (auditResult.buyer_address) {
+                const ownerField = document.getElementById("escrow-owner");
+                if (ownerField) ownerField.value = auditResult.buyer_address;
+            }
         }
         return;
     }
