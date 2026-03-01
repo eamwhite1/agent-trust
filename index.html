@@ -635,7 +635,7 @@
 
             <div id="manual-hash-section" style="display:none;">
                 <div class="field-group">
-                    <label class="field-label">Fee Transaction Hash</label>
+                    <label class="field-label" for="audit-fee-hash">Fee Transaction Hash</label>
                     <input type="text" id="audit-fee-hash" placeholder="Paste your 0.1 XRP payment tx hash">
                 </div>
             </div>
@@ -643,17 +643,22 @@
             <hr class="divider">
 
             <div class="field-group">
-                <label class="field-label">Your Name / Company *</label>
+                <label class="field-label" for="project-label">Project Label <span class="opt">(optional — your own reference, e.g. "Job-01")</span></label>
+                <input type="text" id="project-label" placeholder="e.g. Logo Design · Jan 2026">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label" for="buyer-name">Your Name / Company *</label>
                 <input type="text" id="buyer-name" placeholder="e.g. Acme Corp">
             </div>
 
             <div class="field-group">
-                <label class="field-label">Task Requirements * <span class="opt">(the AI audits against exactly this)</span></label>
+                <label class="field-label" for="job-description">Task Requirements * <span class="opt">(the AI audits against exactly this)</span></label>
                 <textarea id="job-description" rows="4" placeholder="e.g. Write a 500-word article about the XRP Ledger. Must include: introduction, 3 key benefits, and a conclusion. No AI filler."></textarea>
             </div>
 
             <div class="field-group">
-                <label class="field-label">Supporting Documents <span class="opt">(optional — spec, brief, design files)</span></label>
+                <label class="field-label" for="buyer-drop-zone">Supporting Documents <span class="opt">(optional — spec, brief, design files)</span></label>
                 <div class="drop-zone" id="buyer-drop-zone">
                     <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.docx,.txt,.md">
                     <div class="drop-zone-icon"><i data-lucide="paperclip"></i></div>
@@ -665,18 +670,18 @@
 
             <div class="row-2">
                 <div class="field-group">
-                    <label class="field-label">Worker Wallet Address *</label>
+                    <label class="field-label" for="recipient">Worker Wallet Address *</label>
                     <input type="text" id="recipient" placeholder="rXXX... (funds go here on approval)">
                 </div>
                 <div class="field-group">
-                    <label class="field-label">Amount to Escrow (XRP) *</label>
+                    <label class="field-label" for="amt">Amount to Escrow (XRP) *</label>
                     <input type="number" id="amt" placeholder="e.g. 10" min="0.01" step="0.01" oninput="updateFeeDisplay()">
                 </div>
             </div>
 
             <div class="row-2">
                 <div class="field-group">
-                    <label class="field-label">Deadline</label>
+                    <label class="field-label" for="cancel-hours">Deadline</label>
                     <select id="cancel-hours">
                         <option value="24">24 hours</option>
                         <option value="72">3 days</option>
@@ -686,7 +691,7 @@
                     </select>
                 </div>
                 <div class="field-group">
-                    <label class="field-label">Worker receives on approval</label>
+                    <span class="field-label">Worker receives on approval</span>
                     <div class="fee-box" style="margin:0;">
                         <strong><span id="totalX">0.00</span> XRP</strong> — protocol fee already covered
                     </div>
@@ -730,7 +735,7 @@
             </p>
 
             <div class="field-group">
-                <label class="field-label">Receipt Code *</label>
+                <label class="field-label" for="worker-project-id">Receipt Code *</label>
                 <div style="display:flex;gap:10px;">
                     <input type="text" id="worker-project-id" placeholder="e.g. AT-7X9K-2MQ4" style="flex:1;font-family:monospace;letter-spacing:.05em;">
                     <button class="btn btn-secondary btn-sm" onclick="loadJobInfo(document.getElementById('worker-project-id').value.trim())">
@@ -750,12 +755,12 @@
             </div>
 
             <div class="field-group">
-                <label class="field-label">Work / Proof of Completion *</label>
-                <textarea id="work-proof" rows="5" placeholder="Paste your completed work here. The AI will evaluate it against the task requirements shown above."></textarea>
+                <label class="field-label" for="work-proof">Work / Proof of Completion *</label>
+                <textarea id="work-proof" rows="5" placeholder="Describe or paste your completed work here. Include any relevant links, outputs, or notes. The AI referee will evaluate this against the buyer's task requirements."></textarea>
             </div>
 
             <div class="field-group">
-                <label class="field-label">Upload Proof Documents <span class="opt">(optional — screenshots, reports, deliverables)</span></label>
+                <label class="field-label" for="worker-drop-zone">Upload Proof Documents <span class="opt">(optional — screenshots, reports, deliverables)</span></label>
                 <div class="drop-zone" id="worker-drop-zone">
                     <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.docx,.txt,.md">
                     <div class="drop-zone-icon"><i data-lucide="upload"></i></div>
@@ -766,12 +771,12 @@
             </div>
 
             <div class="field-group" style="display:none;">
-                <label class="field-label">Webhook URL (agents only)</label>
+                <label class="field-label" for="callback-url">Webhook URL (agents only)</label>
                 <input type="text" id="callback-url" placeholder="https://your-agent.com/callback">
             </div>
 
             <div class="field-group">
-                <label class="field-label">Payout Currency</label>
+                <label class="field-label" for="payout-currency">Payout Currency</label>
                 <select id="payout-currency" onchange="onCurrencyChange()">
                     <option value="XRP">XRP — instant, no extra step</option>
                     <option value="RLUSD">RLUSD — Ripple's stablecoin (DEX swap after claim)</option>
@@ -817,17 +822,23 @@
             <!-- Claim section -->
             <div class="claim-section" id="claim-section">
                 <h4><i data-lucide="check-circle"></i> Approved — Claim Your Payment</h4>
-                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;margin-top:.4rem;">
-                    Find your escrow sequence number in your Xaman transaction history or by looking up the buyer's wallet on xrpl.org.
+                <p style="font-size:.85rem;color:#006644;margin:.4rem 0 .8rem;line-height:1.6;">
+                    The escrow details below have been filled in automatically. Just click Claim.
                 </p>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:.85rem 1rem;background:rgba(255,149,0,.08);border:1px solid rgba(255,149,0,.25);border-radius:10px;margin-bottom:1.1rem;">
+                    <i data-lucide="info" style="width:15px;height:15px;color:#b96800;flex-shrink:0;margin-top:2px;"></i>
+                    <p style="font-size:.8rem;color:#7a4800;margin:0;line-height:1.55;">
+                        <strong>Network fee:</strong> The XRPL charges ~<strong>0.005 XRP</strong> to unlock a crypto-condition escrow. This is deducted from your payout by the network, not by AgentTrust.
+                    </p>
+                </div>
                 <div class="row-2">
                     <div class="field-group">
-                        <label class="field-label">Escrow Sequence Number *</label>
-                        <input type="number" id="escrow-sequence" placeholder="e.g. 102383911">
+                        <label class="field-label" for="escrow-sequence">Escrow Sequence</label>
+                        <input type="number" id="escrow-sequence" placeholder="Auto-filled on approval" style="background:rgba(255,255,255,.35);">
                     </div>
                     <div class="field-group">
-                        <label class="field-label">Buyer Wallet Address *</label>
-                        <input type="text" id="escrow-owner" placeholder="rXXX...">
+                        <label class="field-label" for="escrow-owner">Buyer Wallet</label>
+                        <input type="text" id="escrow-owner" placeholder="Auto-filled on approval" style="background:rgba(255,255,255,.35);">
                     </div>
                 </div>
                 <button class="btn btn-blue" onclick="claimFromPanel()">
