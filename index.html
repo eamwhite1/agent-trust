@@ -642,15 +642,9 @@
 
             <hr class="divider">
 
-            <div class="row-2">
-                <div class="field-group">
-                    <label class="field-label">Project ID *</label>
-                    <input type="text" id="project-id" placeholder="e.g. copywriting-jan-01">
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Your Name / Company *</label>
-                    <input type="text" id="buyer-name" placeholder="e.g. Acme Corp">
-                </div>
+            <div class="field-group">
+                <label class="field-label">Your Name / Company *</label>
+                <input type="text" id="buyer-name" placeholder="e.g. Acme Corp">
             </div>
 
             <div class="field-group">
@@ -706,12 +700,12 @@
 
             <!-- Share panel -->
             <div id="share-panel" style="display:none;">
-                <p class="share-title">Vault created — share with your worker</p>
-                <p class="share-sub">Send your worker this Project ID so they can submit their work and claim payment.</p>
+                <p class="share-title">Vault created — give this Receipt Code to your worker</p>
+                <p class="share-sub">This unique code was auto-generated for this job. Your worker enters it on the Worker tab to look up the job, submit their work, and claim payment.</p>
                 <div style="display:flex;gap:10px;align-items:center;">
                     <div id="share-project-id"></div>
                     <button class="btn btn-secondary btn-sm" id="copy-btn" onclick="copyProjectId()">
-                        <i data-lucide="copy"></i> Copy ID
+                        <i data-lucide="copy"></i> Copy Code
                     </button>
                 </div>
                 <div style="margin-top:.8rem;">
@@ -732,13 +726,13 @@
             <h2 class="card-title">Claim Your Payment</h2>
 
             <p style="color:var(--text-muted);margin-bottom:1.6rem;font-size:.95rem;">
-                No fee required — the buyer has already covered the audit cost. Enter your Project ID to load the job requirements, then submit your proof of work.
+                No fee required — the buyer has already covered the audit cost. Enter your Receipt Code to load the job, submit your proof of work, and claim payment instantly on approval.
             </p>
 
             <div class="field-group">
-                <label class="field-label">Project ID *</label>
+                <label class="field-label">Receipt Code *</label>
                 <div style="display:flex;gap:10px;">
-                    <input type="text" id="worker-project-id" placeholder="e.g. copywriting-jan-01" style="flex:1;">
+                    <input type="text" id="worker-project-id" placeholder="e.g. AT-7X9K-2MQ4" style="flex:1;font-family:monospace;letter-spacing:.05em;">
                     <button class="btn btn-secondary btn-sm" onclick="loadJobInfo(document.getElementById('worker-project-id').value.trim())">
                         <i data-lucide="search"></i> Look Up
                     </button>
@@ -885,7 +879,7 @@
                 <div class="flow-icon-wrap ai"><i data-lucide="cpu"></i></div>
                 <div class="flow-node-label">Step 3</div>
                 <div class="flow-node-title">AI Audit</div>
-                <div class="flow-node-sub">Worker submits proof. AI evaluates against the buyer's spec.</div>
+                <div class="flow-node-sub">Worker submits proof. Gemini evaluates against the buyer's spec.</div>
             </div>
 
             <div class="flow-arrow">
@@ -1003,7 +997,7 @@
             </ul>
             <div class="compare-stat">
                 <div class="compare-stat-num">0.1</div>
-                <div class="compare-stat-label">XRP total fee</div>
+                <div class="compare-stat-label">XRP total fee — less than a fraction of a cent</div>
             </div>
         </div>
     </div>
