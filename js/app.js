@@ -4,6 +4,156 @@
 const REFEREE_URL = "https://xrpl-referee.onrender.com";
 
 // ---------------------------------------------------------------------------
+// FILE ATTACHMENT STATE
+// ---------------------------------------------------------------------------
+// Each entry: { filename, mime_type, data (base64), size }
+let buyerFiles  = [];
+let workerFiles = [];
+
+const MAX_FILE_SIZE_MB = 10;
+const ACCEPTED_MIME_TYPES = {
+    "application/pdf":                          "pdf",
+    "image/jpeg":                               "image",
+    "image/png":                                "image",
+    "image/gif":                                "image",
+    "image/webp":                               "image",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+    "text/plain":                               "text",
+    "text/markdown":                            "text",
+};
+
+// ---------------------------------------------------------------------------
+// FILE READING HELPERS
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads a File object. For PDF/images: returns base64.
+ * For DOCX/TXT/MD: extracts text and appends to the relevant textarea.
+ */
+async function processFile(file, targetArray, targetTextareaId, labelPrefix) {
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        alert(`"${file.name}" is too large. Maximum file size is ${MAX_FILE_SIZE_MB}MB.`);
+        return;
+    }
+
+    const mime = file.type || guessMime(file.name);
+
+    if (!ACCEPTED_MIME_TYPES[mime]) {
+        alert(`"${file.name}" is not a supported file type.`);
+        return;
+    }
+
+    // Check for duplicates
+    if (targetArray.find(f => f.filename === file.name)) {
+        alert(`"${file.name}" has already been added.`);
+        return;
+    }
+
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+
+        if (mime === "application/pdf" || mime.startsWith("image/")) {
+            // Read as base64 for direct Gemini multimodal input
+            reader.onload = (e) => {
+                const base64 = e.target.result.split(",")[1]; // strip data:mime;base64,
+                targetArray.push({ filename: file.name, mime_type: mime, data: base64, size: file.size });
+                resolve();
+            };
+            reader.readAsDataURL(file);
+
+        } else {
+            // DOCX / TXT / MD — extract as plain text and append to textarea
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const textarea = document.getElementById(targetTextareaId);
+                if (textarea) {
+                    const existing = textarea.value.trim();
+                    textarea.value = existing
+                        ? `${existing}\n\n--- ${labelPrefix}: ${file.name} ---\n${text}`
+                        : `--- ${labelPrefix}: ${file.name} ---\n${text}`;
+                }
+                // Store a text placeholder so the file shows in the UI list
+                targetArray.push({ filename: file.name, mime_type: mime, data: null, size: file.size, text_extracted: true });
+                resolve();
+            };
+            reader.readAsText(file);
+        }
+    });
+}
+
+function guessMime(filename) {
+    const ext = filename.split(".").pop().toLowerCase();
+    const map = {
+        pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg",
+        png: "image/png", gif: "image/gif", webp: "image/webp",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        txt: "text/plain", md: "text/markdown",
+    };
+    return map[ext] || "application/octet-stream";
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Renders the file list under a drop zone.
+ */
+function renderFileList(files, listId) {
+    const el = document.getElementById(listId);
+    if (!el) return;
+    if (files.length === 0) { el.innerHTML = ""; return; }
+    el.innerHTML = files.map((f, i) => `
+        <div class="file-chip">
+            <i data-lucide="${f.mime_type?.startsWith("image/") ? "image" : f.mime_type === "application/pdf" ? "file-text" : "file"}"></i>
+            <span class="file-name">${f.filename}</span>
+            <span class="file-size">${formatBytes(f.size)}</span>
+            ${f.text_extracted ? '<span class="file-extracted">text extracted</span>' : ""}
+            <button class="file-remove" onclick="removeFile('${listId}', ${i})"><i data-lucide="x"></i></button>
+        </div>
+    `).join("");
+    if (window.lucide) lucide.createIcons();
+}
+
+function removeFile(listId, index) {
+    if (listId === "buyer-file-list")  { buyerFiles.splice(index, 1);  renderFileList(buyerFiles,  "buyer-file-list"); }
+    if (listId === "worker-file-list") { workerFiles.splice(index, 1); renderFileList(workerFiles, "worker-file-list"); }
+}
+
+/**
+ * Sets up drag-and-drop and click-to-browse on a drop zone element.
+ */
+function initDropZone(zoneId, fileArray, fileListId, textareaId, labelPrefix) {
+    const zone = document.getElementById(zoneId);
+    const input = zone?.querySelector("input[type=file]");
+    if (!zone || !input) return;
+
+    zone.addEventListener("dragover",  (e) => { e.preventDefault(); zone.classList.add("drag-over"); });
+    zone.addEventListener("dragleave", ()  => zone.classList.remove("drag-over"));
+    zone.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        zone.classList.remove("drag-over");
+        const files = Array.from(e.dataTransfer.files);
+        for (const f of files) await processFile(f, fileArray, textareaId, labelPrefix);
+        renderFileList(fileArray, fileListId);
+    });
+
+    zone.addEventListener("click", (e) => {
+        if (e.target.classList.contains("file-remove")) return;
+        input.click();
+    });
+
+    input.addEventListener("change", async () => {
+        const files = Array.from(input.files);
+        for (const f of files) await processFile(f, fileArray, textareaId, labelPrefix);
+        renderFileList(fileArray, fileListId);
+        input.value = ""; // reset so same file can be re-added after removal
+    });
+}
+
+// ---------------------------------------------------------------------------
 // SHARED STATE
 // ---------------------------------------------------------------------------
 let feePayloadUUID   = null;   // Xaman payload UUID for the fee payment
@@ -40,8 +190,9 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Update fee display when amount changes
-    const amtField = document.getElementById("amt");
+    // Initialise drag-and-drop zones
+    initDropZone("buyer-drop-zone",  buyerFiles,  "buyer-file-list",  "job-description", "Buyer Spec");
+    initDropZone("worker-drop-zone", workerFiles, "worker-file-list", "work-proof",       "Worker Proof");
     if (amtField) amtField.addEventListener("input", updateFeeDisplay);
 
     // Payment mode toggle
@@ -164,13 +315,18 @@ async function initVault() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                escrow_id:        projectID,
-                fee_hash:         feeHash,
-                buyer_name:       buyerName,
-                task_description: taskDesc,
-                worker_address:   recipient,
-                amount_xrp:       parseFloat(amountXRP),
-                cancel_after_hrs: cancelHrs,
+                escrow_id:          projectID,
+                fee_hash:           feeHash,
+                buyer_name:         buyerName,
+                task_description:   taskDesc,
+                worker_address:     recipient,
+                amount_xrp:         parseFloat(amountXRP),
+                cancel_after_hrs:   cancelHrs,
+                buyer_attachments:  buyerFiles.filter(f => f.data).map(f => ({
+                    filename:  f.filename,
+                    mime_type: f.mime_type,
+                    data:      f.data,
+                })),
             }),
         });
 
@@ -213,8 +369,9 @@ async function initVault() {
             const sharePanel = document.getElementById("share-panel");
             const shareId    = document.getElementById("share-project-id");
             if (sharePanel && shareId) {
-                shareId.textContent    = projectID;
+                shareId.textContent      = projectID;
                 sharePanel.style.display = "block";
+                if (window.lucide) lucide.createIcons();
             }
 
             showStatus(
@@ -265,6 +422,10 @@ async function loadJobInfo(projectId) {
         hideStatus("job-info-status");
         console.log("✅ Job info loaded:", data);
 
+        // Fetch live DEX quote if worker has selected RLUSD payout
+        // We use the worker's own address from the escrow (stored at vault creation)
+        await fetchQuoteAfterLookup(data.worker_address, data.amount_xrp);
+
     } catch (err) {
         showStatus("job-info-status", `❌ Error loading job: ${err.message}`, "error");
     }
@@ -294,9 +455,14 @@ async function submitWork() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                escrow_id:    projectID,
-                work:         workProof,
-                callback_url: callbackUrl,
+                escrow_id:          projectID,
+                work:               workProof,
+                callback_url:       callbackUrl,
+                worker_attachments: workerFiles.filter(f => f.data).map(f => ({
+                    filename:  f.filename,
+                    mime_type: f.mime_type,
+                    data:      f.data,
+                })),
             }),
         });
 
@@ -381,35 +547,26 @@ function showVerdictPanel(verdict) {
 // STEP 3 — CLAIM PAYMENT (EscrowFinish via Xaman)
 // ---------------------------------------------------------------------------
 async function claimXRP(auditResult) {
-    // The backend returns the worker_address stored at vault creation time
-    // and the escrow sequence must be entered by the worker (from their Xaman history)
-    const seq = document.getElementById("escrow-sequence")?.value.trim();
+    const seq      = document.getElementById("escrow-sequence")?.value.trim();
+    const currency = document.getElementById("payout-currency")?.value || "XRP";
 
     if (!seq) {
-        showStatus(
-            "submit-status",
-            "✅ Audit approved! Enter your Escrow Sequence number below and click Claim Payment.",
-            "success"
-        );
-        // Show the claim section
+        showStatus("submit-status", "✅ Audit approved! Enter your Escrow Sequence number below and click Claim Payment.", "success");
         const claimSection = document.getElementById("claim-section");
         if (claimSection) {
-            claimSection.style.display = "block";
-            // Store fulfillment temporarily for when they click claim
+            claimSection.style.display          = "block";
             claimSection.dataset.fulfillment    = auditResult.fulfillment;
             claimSection.dataset.workerAddress  = auditResult.worker_address;
+            claimSection.dataset.xrpAmount      = auditResult.verdict?.score ? null : null; // populated from vault
+            claimSection.dataset.currency       = currency;
         }
         return;
     }
 
-    await sendEscrowFinish(
-        auditResult.fulfillment,
-        auditResult.worker_address,
-        seq
-    );
+    await sendEscrowFinish(auditResult.fulfillment, auditResult.worker_address, seq, currency, auditResult.amount_xrp);
 }
 
-async function sendEscrowFinish(fulfillment, workerAddress, sequence) {
+async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency = "XRP", xrpAmount = null) {
     const ownerAddress = document.getElementById("escrow-owner")?.value.trim();
 
     if (!ownerAddress) {
@@ -417,7 +574,7 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence) {
         return;
     }
 
-    showStatus("claim-status", "⏳ Opening Xaman to claim your payment...", "info");
+    showStatus("claim-status", "⏳ Opening Xaman to claim your XRP...", "info");
 
     try {
         const finishTx = {
@@ -429,15 +586,27 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence) {
         };
 
         const res  = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
-            method: "POST",
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ txjson: finishTx }),
+            body:    JSON.stringify({ txjson: finishTx }),
         });
         const data = await res.json();
 
         if (data.nextUrl) {
             window.open(data.nextUrl, "_blank");
-            showStatus("claim-status", "✅ Xaman opened — sign to receive your XRP!", "success");
+
+            if (currency === "RLUSD" && xrpAmount) {
+                showStatus(
+                    "claim-status",
+                    "✅ Step 1 of 2: Xaman opened — sign to receive your XRP from escrow.\n" +
+                    "Once signed, a second Xaman window will open to swap to RLUSD.",
+                    "success"
+                );
+                // Poll until the EscrowFinish is likely signed (5 second delay), then trigger swap
+                setTimeout(() => triggerDexSwap(workerAddress, xrpAmount), 5000);
+            } else {
+                showStatus("claim-status", "✅ Xaman opened — sign to receive your XRP!", "success");
+            }
         } else {
             throw new Error("Xaman failed to generate a signing URL.");
         }
@@ -452,6 +621,8 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence) {
 async function claimFromPanel() {
     const claimSection = document.getElementById("claim-section");
     const seq          = document.getElementById("escrow-sequence")?.value.trim();
+    const currency     = claimSection?.dataset.currency || "XRP";
+    const xrpAmount    = parseFloat(claimSection?.dataset.xrpAmount) || null;
 
     if (!claimSection || !seq) {
         showStatus("claim-status", "❌ Please enter the escrow sequence number.", "error");
@@ -461,13 +632,132 @@ async function claimFromPanel() {
     await sendEscrowFinish(
         claimSection.dataset.fulfillment,
         claimSection.dataset.workerAddress,
-        seq
+        seq,
+        currency,
+        xrpAmount,
     );
 }
 
 // ---------------------------------------------------------------------------
-// SHARE HELPERS — Copy Project ID or worker portal link to clipboard
+// DEX — RLUSD QUOTE & SWAP
 // ---------------------------------------------------------------------------
+
+let dexQuoteData = null;  // Stores latest quote response
+
+async function fetchDexQuote(workerAddress, xrpAmount) {
+    if (!workerAddress || !xrpAmount || xrpAmount <= 0) return;
+
+    const quotePanel = document.getElementById("dex-quote-panel");
+    const quoteText  = document.getElementById("dex-quote-text");
+    const trustWarn  = document.getElementById("dex-trust-warning");
+
+    if (quotePanel) quotePanel.style.display = "block";
+    if (quoteText)  quoteText.textContent     = "⏳ Fetching live quote...";
+    if (trustWarn)  trustWarn.style.display   = "none";
+
+    try {
+        const res  = await fetch(`${REFEREE_URL}/dex/quote`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ worker_address: workerAddress, xrp_amount: xrpAmount }),
+        });
+        const data = await res.json();
+        dexQuoteData = data;
+
+        console.log("💱 DEX quote:", data);
+
+        if (!data.trust_line_ok) {
+            if (quoteText)  quoteText.textContent   = "⚠️ No RLUSD trust line found.";
+            if (trustWarn) {
+                trustWarn.style.display  = "block";
+                trustWarn.textContent    = data.trust_line_instructions;
+            }
+            return;
+        }
+
+        if (data.estimated_rlusd) {
+            const rate = (data.estimated_rlusd / data.xrp_amount).toFixed(4);
+            quoteText.textContent =
+                `~${data.estimated_rlusd.toFixed(4)} RLUSD for ${data.xrp_amount} XRP` +
+                `  (rate: 1 XRP ≈ ${rate} RLUSD)` +
+                (data.slippage_warning ? "  ⚠️ Slippage warning — rate may shift" : "");
+        } else {
+            quoteText.textContent = "⚠️ No liquidity path found for XRP → RLUSD. Try receiving XRP instead.";
+        }
+
+    } catch (err) {
+        console.error("DEX quote error:", err);
+        if (quoteText) quoteText.textContent = "❌ Could not fetch quote. Check connection.";
+    }
+}
+
+function onCurrencyChange() {
+    const currency      = document.getElementById("payout-currency")?.value;
+    const quotePanel    = document.getElementById("dex-quote-panel");
+    const workerAddress = document.getElementById("worker-project-id") ? null : null; // pulled at submit time
+
+    if (currency === "RLUSD") {
+        if (quotePanel) quotePanel.style.display = "block";
+        // We don't have the worker address or amount here yet — prompt will show on submit
+        const quoteText = document.getElementById("dex-quote-text");
+        if (quoteText) quoteText.textContent = "Enter your Project ID and look up the job to see a live quote.";
+    } else {
+        if (quotePanel) quotePanel.style.display = "none";
+        dexQuoteData = null;
+    }
+}
+
+// Called after job info loads so we have the XRP amount for the quote
+async function fetchQuoteAfterLookup(workerAddress, xrpAmount) {
+    const currency = document.getElementById("payout-currency")?.value;
+    if (currency === "RLUSD" && workerAddress && xrpAmount) {
+        await fetchDexQuote(workerAddress, xrpAmount);
+    }
+}
+
+async function triggerDexSwap(workerAddress, xrpAmount) {
+    if (!dexQuoteData?.estimated_rlusd) return;
+
+    showStatus("submit-status", "⏳ Opening Xaman for RLUSD swap...", "info");
+
+    // Allow 2% slippage on the minimum RLUSD to receive
+    const minRlusd = (dexQuoteData.estimated_rlusd * 0.98).toFixed(6);
+
+    const offerTx = {
+        TransactionType: "OfferCreate",
+        TakerPays: {
+            currency: "RLUSD",
+            issuer:   dexQuoteData.rlusd_issuer,
+            value:    minRlusd,
+        },
+        TakerGets: String(Math.floor(xrpAmount * 1_000_000)), // XRP in drops
+    };
+
+    try {
+        const res  = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ txjson: offerTx }),
+        });
+        const data = await res.json();
+
+        if (data.nextUrl) {
+            window.open(data.nextUrl, "_blank");
+            showStatus(
+                "submit-status",
+                `✅ Xaman opened for DEX swap!\n` +
+                `Sign to receive ~${dexQuoteData.estimated_rlusd.toFixed(4)} RLUSD.\n` +
+                `(Minimum guaranteed: ${minRlusd} RLUSD with 2% slippage protection)`,
+                "success"
+            );
+        } else {
+            throw new Error("Xaman did not return a sign URL for the swap.");
+        }
+    } catch (err) {
+        console.error("DEX swap error:", err);
+        showStatus("submit-status", `❌ DEX swap failed: ${err.message}`, "error");
+    }
+}
 function copyProjectId() {
     const id  = document.getElementById("share-project-id")?.textContent?.trim();
     if (!id) return;
