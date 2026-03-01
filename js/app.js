@@ -195,6 +195,9 @@ window.addEventListener("DOMContentLoaded", () => {
     // Initialise drag-and-drop zones
     initDropZone("buyer-drop-zone",  buyerFiles,  "buyer-file-list",  "job-description", "Buyer Spec");
     initDropZone("worker-drop-zone", workerFiles, "worker-file-list", "work-proof",       "Worker Proof");
+
+    // Wire up live fee display
+    const amtField = document.getElementById("amt");
     if (amtField) amtField.addEventListener("input", updateFeeDisplay);
 
     // Payment mode toggle
@@ -235,7 +238,7 @@ async function payFee() {
     showStatus("fee-status", "⏳ Opening Xaman for fee payment...", "info");
 
     try {
-        const res  = await fetch(`${REFEREE_URL}/xumm/fee-payload`, { method: "POST" });
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, { method: "POST" });
         const data = await res.json();
 
         if (!data.nextUrl) throw new Error("Xaman did not return a sign URL.");
@@ -260,7 +263,7 @@ async function pollFeePayment() {
     if (!feePayloadUUID) return;
 
     try {
-        const res  = await fetch(`${REFEREE_URL}/xumm/payload/${feePayloadUUID}`);
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/payload/${feePayloadUUID}`);
         const data = await res.json();
 
         if (data.signed && data.tx_hash) {
@@ -285,7 +288,21 @@ async function pollFeePayment() {
 }
 
 // ---------------------------------------------------------------------------
-// RECEIPT CODE GENERATOR
+// SAFE FETCH HELPER
+// Wraps fetch() so a non-JSON response (e.g. HTML 404/405 error page)
+// gives a readable error message rather than "Unexpected token '<'"
+// ---------------------------------------------------------------------------
+async function safeFetch(url, options = {}) {
+    const res = await fetch(url, options);
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        const body = await res.text();
+        throw new Error(
+            `Server returned ${res.status} (${res.statusText}) — expected JSON but got:\n${body.substring(0, 200)}`
+        );
+    }
+    return res;
+}
 // Generates a unique human-readable code like AT-7X9K-2MQ4
 // Uses crypto.getRandomValues — collision probability negligible
 // ---------------------------------------------------------------------------
@@ -327,7 +344,7 @@ async function initVault() {
     showStatus("init-status", "⏳ Verifying fee and creating vault...", "info");
 
     try {
-        const setupRes = await fetch(`${REFEREE_URL}/escrow/generate`, {
+        const setupRes = await safeFetch(`${REFEREE_URL}/escrow/generate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -371,7 +388,7 @@ async function initVault() {
         }
 
         // Send to Xaman for signing
-        const xummRes  = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
+        const xummRes  = await safeFetch(`${REFEREE_URL}/xumm/create-payload`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ txjson: escrowTx }),
@@ -415,7 +432,7 @@ async function loadJobInfo(projectId) {
     showStatus("job-info-status", "⏳ Loading job details...", "info");
 
     try {
-        const res  = await fetch(`${REFEREE_URL}/escrow/${encodeURIComponent(projectId)}`);
+        const res  = await safeFetch(`${REFEREE_URL}/escrow/${encodeURIComponent(projectId)}`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -466,7 +483,7 @@ async function submitWork() {
     showStatus("submit-status", "⏳ Submitting work for AI audit...", "info");
 
     try {
-        const res = await fetch(`${REFEREE_URL}/evaluate`, {
+        const res = await safeFetch(`${REFEREE_URL}/evaluate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -600,7 +617,7 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency =
             Fulfillment:     fulfillment.toUpperCase(),
         };
 
-        const res  = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/create-payload`, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ txjson: finishTx }),
@@ -671,7 +688,7 @@ async function fetchDexQuote(workerAddress, xrpAmount) {
     if (trustWarn)  trustWarn.style.display   = "none";
 
     try {
-        const res  = await fetch(`${REFEREE_URL}/dex/quote`, {
+        const res  = await safeFetch(`${REFEREE_URL}/dex/quote`, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ worker_address: workerAddress, xrp_amount: xrpAmount }),
@@ -749,7 +766,7 @@ async function triggerDexSwap(workerAddress, xrpAmount) {
     };
 
     try {
-        const res  = await fetch(`${REFEREE_URL}/xumm/create-payload`, {
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/create-payload`, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ txjson: offerTx }),
