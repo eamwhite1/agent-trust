@@ -12,7 +12,7 @@ const REFEREE_URL = "https://xrpl-referee.onrender.com";
 let buyerFiles  = [];
 let workerFiles = [];
 
-const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_MB = 15;
 const ACCEPTED_MIME_TYPES = {
     "application/pdf":                          "pdf",
     "image/jpeg":                               "image",
