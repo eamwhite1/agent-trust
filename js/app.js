@@ -616,6 +616,9 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency =
             Owner:           ownerAddress,
             OfferSequence:   parseInt(sequence),
             Fulfillment:     fulfillment.toUpperCase(),
+            // EscrowFinish with a crypto-condition requires a higher fee than standard txs.
+            // Formula: 10 + (32 * fulfillment_bytes). We use 5000 drops (~0.000005 XRP) — well above minimum.
+            Fee:             "5000",
         };
 
         // Condition is required by XRPL when the escrow was created with one
