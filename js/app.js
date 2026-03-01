@@ -586,11 +586,12 @@ async function claimXRP(auditResult) {
         showStatus("submit-status", "✅ Audit approved! Enter your Escrow Sequence number below and click Claim Payment.", "success");
         const claimSection = document.getElementById("claim-section");
         if (claimSection) {
-            claimSection.style.display          = "block";
-            claimSection.dataset.fulfillment    = auditResult.fulfillment;
-            claimSection.dataset.workerAddress  = auditResult.worker_address;
-            claimSection.dataset.xrpAmount      = auditResult.verdict?.score ? null : null; // populated from vault
-            claimSection.dataset.currency       = currency;
+            claimSection.style.display         = "block";
+            claimSection.dataset.fulfillment   = auditResult.fulfillment;
+            claimSection.dataset.workerAddress = auditResult.worker_address;
+            claimSection.dataset.xrpAmount     = auditResult.amount_xrp || null;
+            claimSection.dataset.currency      = currency;
+            claimSection.dataset.condition     = auditResult.condition;
         }
         return;
     }
@@ -598,7 +599,7 @@ async function claimXRP(auditResult) {
     await sendEscrowFinish(auditResult.fulfillment, auditResult.worker_address, seq, currency, auditResult.amount_xrp);
 }
 
-async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency = "XRP", xrpAmount = null) {
+async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency = "XRP", xrpAmount = null, condition = null) {
     const ownerAddress = document.getElementById("escrow-owner")?.value.trim();
 
     if (!ownerAddress) {
@@ -616,6 +617,11 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency =
             OfferSequence:   parseInt(sequence),
             Fulfillment:     fulfillment.toUpperCase(),
         };
+
+        // Condition is required by XRPL when the escrow was created with one
+        if (condition) {
+            finishTx.Condition = condition.toUpperCase();
+        }
 
         const res  = await safeFetch(`${REFEREE_URL}/xumm/create-payload`, {
             method:  "POST",
@@ -655,6 +661,7 @@ async function claimFromPanel() {
     const seq          = document.getElementById("escrow-sequence")?.value.trim();
     const currency     = claimSection?.dataset.currency || "XRP";
     const xrpAmount    = parseFloat(claimSection?.dataset.xrpAmount) || null;
+    const condition    = claimSection?.dataset.condition || null;
 
     if (!claimSection || !seq) {
         showStatus("claim-status", "❌ Please enter the escrow sequence number.", "error");
@@ -667,6 +674,7 @@ async function claimFromPanel() {
         seq,
         currency,
         xrpAmount,
+        condition,
     );
 }
 
