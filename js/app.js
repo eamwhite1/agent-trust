@@ -1,40 +1,33 @@
 // ---------------------------------------------------------------------------
 // CONFIGURATION
 // ---------------------------------------------------------------------------
-// The frontend (AgentTrust repo) and API (xrpl-referee repo) are separate
-// Render services, so we must use the absolute API URL.
 const REFEREE_URL = "https://xrpl-referee.onrender.com";
 
 // ---------------------------------------------------------------------------
 // FILE ATTACHMENT STATE
 // ---------------------------------------------------------------------------
-// Each entry: { filename, mime_type, data (base64), size }
 let buyerFiles  = [];
 let workerFiles = [];
 
-const MAX_FILE_SIZE_MB = 15;
+const MAX_FILE_SIZE_MB    = 15;
+const MAX_TOTAL_SIZE_MB   = 50;
 const ACCEPTED_MIME_TYPES = {
-    "application/pdf":                          "pdf",
-    "image/jpeg":                               "image",
-    "image/png":                                "image",
-    "image/gif":                                "image",
-    "image/webp":                               "image",
+    "application/pdf": "pdf",
+    "image/jpeg":      "image",
+    "image/png":       "image",
+    "image/gif":       "image",
+    "image/webp":      "image",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-    "text/plain":                               "text",
-    "text/markdown":                            "text",
+    "text/plain":      "text",
+    "text/markdown":   "text",
 };
 
 // ---------------------------------------------------------------------------
 // FILE READING HELPERS
 // ---------------------------------------------------------------------------
-
-/**
- * Reads a File object. For PDF/images: returns base64.
- * For DOCX/TXT/MD: extracts text and appends to the relevant textarea.
- */
 async function processFile(file, targetArray, targetTextareaId, labelPrefix) {
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        alert(`"${file.name}" is too large. Maximum file size is ${MAX_FILE_SIZE_MB}MB.`);
+        alert(`"${file.name}" is too large. Maximum file size is ${MAX_FILE_SIZE_MB} MB.`);
         return;
     }
 
@@ -45,9 +38,15 @@ async function processFile(file, targetArray, targetTextareaId, labelPrefix) {
         return;
     }
 
-    // Check for duplicates
     if (targetArray.find(f => f.filename === file.name)) {
         alert(`"${file.name}" has already been added.`);
+        return;
+    }
+
+    // Check total size across all files in this array
+    const currentTotal = targetArray.reduce((sum, f) => sum + (f.size || 0), 0);
+    if (currentTotal + file.size > MAX_TOTAL_SIZE_MB * 1024 * 1024) {
+        alert(`Adding "${file.name}" would exceed the ${MAX_TOTAL_SIZE_MB} MB total limit. Please remove some files first.`);
         return;
     }
 
@@ -55,18 +54,16 @@ async function processFile(file, targetArray, targetTextareaId, labelPrefix) {
         const reader = new FileReader();
 
         if (mime === "application/pdf" || mime.startsWith("image/")) {
-            // Read as base64 for direct Gemini multimodal input
             reader.onload = (e) => {
-                const base64 = e.target.result.split(",")[1]; // strip data:mime;base64,
+                const base64 = e.target.result.split(",")[1];
                 targetArray.push({ filename: file.name, mime_type: mime, data: base64, size: file.size });
                 resolve();
             };
             reader.readAsDataURL(file);
-
         } else {
-            // DOCX / TXT / MD — extract as plain text and append to textarea
+            // DOCX / TXT / MD — extract as plain text, append to textarea
             reader.onload = (e) => {
-                const text = e.target.result;
+                const text     = e.target.result;
                 const textarea = document.getElementById(targetTextareaId);
                 if (textarea) {
                     const existing = textarea.value.trim();
@@ -74,7 +71,6 @@ async function processFile(file, targetArray, targetTextareaId, labelPrefix) {
                         ? `${existing}\n\n--- ${labelPrefix}: ${file.name} ---\n${text}`
                         : `--- ${labelPrefix}: ${file.name} ---\n${text}`;
                 }
-                // Store a text placeholder so the file shows in the UI list
                 targetArray.push({ filename: file.name, mime_type: mime, data: null, size: file.size, text_extracted: true });
                 resolve();
             };
@@ -86,23 +82,25 @@ async function processFile(file, targetArray, targetTextareaId, labelPrefix) {
 function guessMime(filename) {
     const ext = filename.split(".").pop().toLowerCase();
     const map = {
-        pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg",
-        png: "image/png", gif: "image/gif", webp: "image/webp",
+        pdf:  "application/pdf",
+        jpg:  "image/jpeg",
+        jpeg: "image/jpeg",
+        png:  "image/png",
+        gif:  "image/gif",
+        webp: "image/webp",
         docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        txt: "text/plain", md: "text/markdown",
+        txt:  "text/plain",
+        md:   "text/markdown",
     };
     return map[ext] || "application/octet-stream";
 }
 
 function formatBytes(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024)           return `${bytes} B`;
+    if (bytes < 1024 * 1024)   return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/**
- * Renders the file list under a drop zone.
- */
 function renderFileList(files, listId) {
     const el = document.getElementById(listId);
     if (!el) return;
@@ -124,11 +122,8 @@ function removeFile(listId, index) {
     if (listId === "worker-file-list") { workerFiles.splice(index, 1); renderFileList(workerFiles, "worker-file-list"); }
 }
 
-/**
- * Sets up drag-and-drop and click-to-browse on a drop zone element.
- */
 function initDropZone(zoneId, fileArray, fileListId, textareaId, labelPrefix) {
-    const zone = document.getElementById(zoneId);
+    const zone  = document.getElementById(zoneId);
     const input = zone?.querySelector("input[type=file]");
     if (!zone || !input) return;
 
@@ -137,30 +132,26 @@ function initDropZone(zoneId, fileArray, fileListId, textareaId, labelPrefix) {
     zone.addEventListener("drop", async (e) => {
         e.preventDefault();
         zone.classList.remove("drag-over");
-        const files = Array.from(e.dataTransfer.files);
-        for (const f of files) await processFile(f, fileArray, textareaId, labelPrefix);
+        for (const f of Array.from(e.dataTransfer.files)) await processFile(f, fileArray, textareaId, labelPrefix);
         renderFileList(fileArray, fileListId);
     });
-
     zone.addEventListener("click", (e) => {
         if (e.target.classList.contains("file-remove")) return;
         input.click();
     });
-
     input.addEventListener("change", async () => {
-        const files = Array.from(input.files);
-        for (const f of files) await processFile(f, fileArray, textareaId, labelPrefix);
+        for (const f of Array.from(input.files)) await processFile(f, fileArray, textareaId, labelPrefix);
         renderFileList(fileArray, fileListId);
-        input.value = ""; // reset so same file can be re-added after removal
+        input.value = "";
     });
 }
 
 // ---------------------------------------------------------------------------
 // SHARED STATE
 // ---------------------------------------------------------------------------
-let feePayloadUUID   = null;   // Xaman payload UUID for the fee payment
-let feePollingTimer  = null;   // setInterval handle for polling Xaman status
-let buyerWalletAddress = null; // Captured from Xaman fee payment — buyer's XRPL wallet
+let feePayloadUUID    = null;
+let feePollingTimer   = null;
+let buyerWalletAddress = null;
 
 // ---------------------------------------------------------------------------
 // UTILITY
@@ -169,9 +160,9 @@ function showStatus(elementId, message, type = "info") {
     const el = document.getElementById(elementId);
     if (!el) return;
     const colors = { info: "#007BFF", success: "#34c759", error: "#ff3b30", warning: "#ff9500" };
-    el.style.color    = colors[type] || colors.info;
-    el.style.display  = "block";
-    el.textContent    = message;
+    el.style.color   = colors[type] || colors.info;
+    el.style.display = "block";
+    el.textContent   = message;
 }
 
 function hideStatus(elementId) {
@@ -179,36 +170,9 @@ function hideStatus(elementId) {
     if (el) el.style.display = "none";
 }
 
-// Auto-fill project ID from URL param (worker clicks link in email)
-window.addEventListener("DOMContentLoaded", () => {
-    const params    = new URLSearchParams(window.location.search);
-    const projectId = params.get("project");
-    if (projectId) {
-        // Fill in worker panel
-        const workerProjectField = document.getElementById("worker-project-id");
-        if (workerProjectField) {
-            workerProjectField.value = projectId;
-            // Automatically load job info once the field is filled
-            loadJobInfo(projectId);
-        }
-    }
-
-    // Initialise drag-and-drop zones
-    initDropZone("buyer-drop-zone",  buyerFiles,  "buyer-file-list",  "job-description", "Buyer Spec");
-    initDropZone("worker-drop-zone", workerFiles, "worker-file-list", "work-proof",       "Worker Proof");
-
-    // Wire up live fee display
-    const amtField = document.getElementById("amt");
-    if (amtField) amtField.addEventListener("input", updateFeeDisplay);
-
-    // Payment mode toggle
-    setPaymentMode("auto");
-});
-
 function updateFeeDisplay() {
     const val     = parseFloat(document.getElementById("amt")?.value) || 0;
     const totalEl = document.getElementById("totalX");
-    // Worker receives exactly the escrowed amount — the 0.1 XRP fee is separate
     if (totalEl) totalEl.textContent = val.toFixed(2);
 }
 
@@ -217,7 +181,6 @@ function setPaymentMode(mode) {
     const btnAuto       = document.getElementById("btn-auto");
     const btnManual     = document.getElementById("btn-manual");
     if (!manualSection) return;
-
     if (mode === "manual") {
         manualSection.style.display = "block";
         btnManual?.classList.add("active");
@@ -229,9 +192,46 @@ function setPaymentMode(mode) {
     }
 }
 
+// Generates a unique human-readable code like AT-7X9K-2MQ4
+function generateReceiptCode() {
+    const chars   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no O/0/I/1
+    const segment = (len) => Array.from(
+        crypto.getRandomValues(new Uint8Array(len)),
+        b => chars[b % chars.length]
+    ).join("");
+    return `AT-${segment(4)}-${segment(4)}`;
+}
+
 // ---------------------------------------------------------------------------
-// STEP 1A — PAY PROTOCOL FEE (Buyer)
-// Opens Xaman for the 0.1 XRP fee. Polls until signed, then auto-proceeds.
+// SAFE FETCH — gives readable errors when server returns non-JSON
+// ---------------------------------------------------------------------------
+async function safeFetch(url, options = {}) {
+    const res         = await fetch(url, options);
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        const body = await res.text();
+        throw new Error(
+            `Server returned ${res.status} (${res.statusText}) — expected JSON but got:\n${body.substring(0, 200)}`
+        );
+    }
+    return res;
+}
+
+// ---------------------------------------------------------------------------
+// DOM READY
+// ---------------------------------------------------------------------------
+window.addEventListener("DOMContentLoaded", () => {
+    initDropZone("buyer-drop-zone",  buyerFiles,  "buyer-file-list",  "job-description", "Buyer Spec");
+    initDropZone("worker-drop-zone", workerFiles, "worker-file-list", "work-proof",       "Worker Proof");
+
+    const amtField = document.getElementById("amt");
+    if (amtField) amtField.addEventListener("input", updateFeeDisplay);
+
+    setPaymentMode("auto");
+});
+
+// ---------------------------------------------------------------------------
+// STEP 1A — PAY PROTOCOL FEE (Buyer via Xaman)
 // ---------------------------------------------------------------------------
 async function payFee() {
     const btn = document.getElementById("pay-fee-btn");
@@ -245,12 +245,9 @@ async function payFee() {
         if (!data.nextUrl) throw new Error("Xaman did not return a sign URL.");
 
         feePayloadUUID = data.uuid;
-
-        // Open Xaman in new tab
         window.open(data.nextUrl, "_blank");
         showStatus("fee-status", "Opening Xaman — sign the 0.1 XRP payment, then return here.", "info");
 
-        // Start polling for confirmation
         feePollingTimer = setInterval(pollFeePayment, 3000);
 
     } catch (err) {
@@ -262,7 +259,6 @@ async function payFee() {
 
 async function pollFeePayment() {
     if (!feePayloadUUID) return;
-
     try {
         const res  = await safeFetch(`${REFEREE_URL}/xumm/payload/${feePayloadUUID}`);
         const data = await res.json();
@@ -270,7 +266,6 @@ async function pollFeePayment() {
         if (data.signed && data.tx_hash) {
             clearInterval(feePollingTimer);
 
-            // Capture buyer's wallet address from Xaman — used as buyer_address in vault
             if (data.signer) buyerWalletAddress = data.signer;
 
             const hashField = document.getElementById("audit-fee-hash");
@@ -279,7 +274,6 @@ async function pollFeePayment() {
             showStatus("fee-status", `✅ Fee paid! Hash: ${data.tx_hash.substring(0, 16)}...`, "success");
             console.log("✅ Fee payment confirmed. TX hash:", data.tx_hash);
 
-            // Re-enable the pay button and enable the init button
             const payBtn  = document.getElementById("pay-fee-btn");
             const initBtn = document.getElementById("init-btn");
             if (payBtn)  payBtn.disabled  = false;
@@ -291,46 +285,20 @@ async function pollFeePayment() {
 }
 
 // ---------------------------------------------------------------------------
-// SAFE FETCH HELPER
-// Wraps fetch() so a non-JSON response (e.g. HTML 404/405 error page)
-// gives a readable error message rather than "Unexpected token '<'"
-// ---------------------------------------------------------------------------
-async function safeFetch(url, options = {}) {
-    const res = await fetch(url, options);
-    const contentType = res.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-        const body = await res.text();
-        throw new Error(
-            `Server returned ${res.status} (${res.statusText}) — expected JSON but got:\n${body.substring(0, 200)}`
-        );
-    }
-    return res;
-}
-// Generates a unique human-readable code like AT-7X9K-2MQ4
-// Uses crypto.getRandomValues — collision probability negligible
-// ---------------------------------------------------------------------------
-function generateReceiptCode() {
-    const chars   = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no O/0/I/1
-    const segment = (len) => Array.from(
-        crypto.getRandomValues(new Uint8Array(len)),
-        b => chars[b % chars.length]
-    ).join("");
-    return `AT-${segment(4)}-${segment(4)}`;
-}
-
-// ---------------------------------------------------------------------------
 // STEP 1B — INITIALIZE VAULT (Buyer)
 // ---------------------------------------------------------------------------
 async function initVault() {
     const btn = document.getElementById("init-btn");
 
-    const buyerName   = document.getElementById("buyer-name")?.value.trim();
+    const buyerName    = document.getElementById("buyer-name")?.value.trim();
+    const buyerEmail   = document.getElementById("buyer-email")?.value.trim() || null;
+    const workerEmail  = document.getElementById("worker-email-field")?.value.trim() || null;
     const projectLabel = document.getElementById("project-label")?.value.trim() || null;
-    const taskDesc    = document.getElementById("job-description")?.value.trim();
-    const recipient   = document.getElementById("recipient")?.value.trim();
-    const amountXRP   = document.getElementById("amt")?.value;
-    const feeHash     = document.getElementById("audit-fee-hash")?.value.trim();
-    const cancelHrs   = parseInt(document.getElementById("cancel-hours")?.value || "168");
+    const taskDesc     = document.getElementById("job-description")?.value.trim();
+    const recipient    = document.getElementById("recipient")?.value.trim();
+    const amountXRP    = document.getElementById("amt")?.value;
+    const feeHash      = document.getElementById("audit-fee-hash")?.value.trim();
+    const cancelHrs    = parseInt(document.getElementById("cancel-hours")?.value || "168");
 
     if (!buyerName || !projectLabel || !taskDesc || !recipient || !amountXRP) {
         showStatus("init-status", "❌ Please fill in all required fields including Project Label.", "error");
@@ -341,7 +309,6 @@ async function initVault() {
         return;
     }
 
-    // Auto-generate unique receipt code — buyer never types this
     const receiptCode = generateReceiptCode();
 
     if (btn) btn.disabled = true;
@@ -349,19 +316,21 @@ async function initVault() {
 
     try {
         const setupRes = await safeFetch(`${REFEREE_URL}/escrow/generate`, {
-            method: "POST",
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                escrow_id:          receiptCode,
-                fee_hash:           feeHash,
-                project_label:      projectLabel,
-                buyer_name:         buyerName,
-                buyer_address:      buyerWalletAddress || "",
-                task_description:   taskDesc,
-                worker_address:     recipient,
-                amount_xrp:         parseFloat(amountXRP),
-                cancel_after_hrs:   cancelHrs,
-                buyer_attachments:  buyerFiles.filter(f => f.data).map(f => ({
+                escrow_id:         receiptCode,
+                fee_hash:          feeHash,
+                project_label:     projectLabel,
+                buyer_name:        buyerName,
+                buyer_address:     buyerWalletAddress || "",
+                buyer_email:       buyerEmail,        // V2: notify buyer on PASS
+                worker_email:      workerEmail,       // V2: send receipt code to worker
+                task_description:  taskDesc,
+                worker_address:    recipient,
+                amount_xrp:        parseFloat(amountXRP),
+                cancel_after_hrs:  cancelHrs,
+                buyer_attachments: buyerFiles.filter(f => f.data).map(f => ({
                     filename:  f.filename,
                     mime_type: f.mime_type,
                     data:      f.data,
@@ -371,33 +340,31 @@ async function initVault() {
 
         const setupData = await setupRes.json();
 
-        if (!setupRes.ok) {
-            throw new Error(setupData.detail || "Backend rejected the request.");
-        }
+        if (!setupRes.ok) throw new Error(setupData.detail || "Backend rejected the request.");
 
         const condition         = setupData.condition;
         const cancelAfterRipple = setupData.cancel_after_ripple;
+        const workerEmailSent   = setupData.worker_email_sent;
 
         console.log("✅ Vault created:", setupData);
-        showStatus("init-status", "✅ Vault created! Opening Xaman for EscrowCreate...", "success");
 
-        // Build the EscrowCreate transaction
+        let statusMsg = "✅ Vault created! Opening Xaman for EscrowCreate...";
+        if (workerEmail && workerEmailSent) statusMsg += `\n📧 Receipt code sent to ${workerEmail}`;
+        showStatus("init-status", statusMsg, "success");
+
+        // Build and sign EscrowCreate via Xaman
         const escrowTx = {
             TransactionType: "EscrowCreate",
             Amount:          Math.floor(parseFloat(amountXRP) * 1_000_000).toString(),
             Destination:     recipient,
             Condition:       condition.toUpperCase(),
         };
+        if (cancelAfterRipple) escrowTx.CancelAfter = cancelAfterRipple;
 
-        if (cancelAfterRipple) {
-            escrowTx.CancelAfter = cancelAfterRipple;
-        }
-
-        // Send to Xaman for signing
         const xummRes  = await safeFetch(`${REFEREE_URL}/xumm/create-payload`, {
-            method: "POST",
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ txjson: escrowTx }),
+            body:    JSON.stringify({ txjson: escrowTx }),
         });
         const xummData = await xummRes.json();
 
@@ -414,12 +381,11 @@ async function initVault() {
 
             showStatus(
                 "init-status",
-                `Vault created! Xaman opened — sign the EscrowCreate transaction.\nShare the Receipt Code with your worker once signed.`,
+                `Vault created! Xaman opened — sign the EscrowCreate transaction.\nReceipt Code: ${receiptCode}\nShare this with your worker once signed.` +
+                (workerEmail && workerEmailSent ? `\n📧 We've also emailed the receipt code to ${workerEmail}` : ""),
                 "success"
             );
 
-            // Poll Xaman until the EscrowCreate is signed, then store the tx hash
-            // in the vault so the worker never has to look up sequence/owner manually
             pollEscrowCreate(xummData.uuid, receiptCode);
 
         } else {
@@ -436,9 +402,6 @@ async function initVault() {
 
 // ---------------------------------------------------------------------------
 // POLL XAMAN FOR ESCROW CREATE CONFIRMATION
-// Once the buyer signs the EscrowCreate, we grab the tx hash and send it
-// to /escrow/{id}/confirm so the referee can store the sequence number.
-// The worker then never needs to look anything up manually.
 // ---------------------------------------------------------------------------
 let escrowCreateTimer = null;
 
@@ -450,7 +413,6 @@ async function pollEscrowCreate(uuid, receiptCode) {
             const data = await res.json();
             if (data.signed && data.tx_hash) {
                 clearInterval(escrowCreateTimer);
-                // Confirm with referee — stores tx hash + auto-looks up sequence
                 await safeFetch(`${REFEREE_URL}/escrow/${encodeURIComponent(receiptCode)}/confirm`, {
                     method:  "POST",
                     headers: { "Content-Type": "application/json" },
@@ -458,7 +420,7 @@ async function pollEscrowCreate(uuid, receiptCode) {
                 });
                 showStatus(
                     "init-status",
-                    `Escrow live on XRPL! Receipt Code: ${receiptCode}\nShare this with your worker — they can now submit their work and claim payment automatically.`,
+                    `✅ Escrow live on XRPL!\nReceipt Code: ${receiptCode}\nShare this with your worker — they can now submit their work and claim payment automatically.`,
                     "success"
                 );
                 console.log(`✅ EscrowCreate confirmed on-chain: ${data.tx_hash}`);
@@ -474,7 +436,6 @@ async function pollEscrowCreate(uuid, receiptCode) {
 // ---------------------------------------------------------------------------
 async function loadJobInfo(projectId) {
     if (!projectId) return;
-
     showStatus("job-info-status", "⏳ Loading job details...", "info");
 
     try {
@@ -486,22 +447,19 @@ async function loadJobInfo(projectId) {
             return;
         }
 
-        // Populate the job info panel
         const infoPanel = document.getElementById("job-info-panel");
         if (infoPanel) {
             infoPanel.style.display = "block";
-            document.getElementById("info-buyer").textContent   = data.buyer_name    || "—";
-            document.getElementById("info-task").textContent    = data.task_description || "—";
-            document.getElementById("info-amount").textContent  = `${data.amount_xrp} XRP`;
-            document.getElementById("info-deadline").textContent = data.deadline      || "—";
-            document.getElementById("info-status").textContent  = data.status        || "—";
+            document.getElementById("info-buyer").textContent    = data.buyer_name        || "—";
+            document.getElementById("info-task").textContent     = data.task_description  || "—";
+            document.getElementById("info-amount").textContent   = `${data.amount_xrp} XRP`;
+            document.getElementById("info-deadline").textContent = data.deadline          || "—";
+            document.getElementById("info-status").textContent   = data.status            || "—";
         }
 
         hideStatus("job-info-status");
         console.log("✅ Job info loaded:", data);
 
-        // Fetch live DEX quote if worker has selected RLUSD payout
-        // We use the worker's own address from the escrow (stored at vault creation)
         await fetchQuoteAfterLookup(data.worker_address, data.amount_xrp);
 
     } catch (err) {
@@ -511,13 +469,12 @@ async function loadJobInfo(projectId) {
 
 // ---------------------------------------------------------------------------
 // STEP 2 — SUBMIT WORK FOR AUDIT (Worker)
-// No payment required — fee was already paid by the buyer in Step 1.
 // ---------------------------------------------------------------------------
 async function submitWork() {
     const btn = document.getElementById("submit-btn");
 
-    const projectID = document.getElementById("worker-project-id")?.value.trim();
-    const workProof = document.getElementById("work-proof")?.value.trim();
+    const projectID   = document.getElementById("worker-project-id")?.value.trim();
+    const workProof   = document.getElementById("work-proof")?.value.trim();
     const callbackUrl = document.getElementById("callback-url")?.value.trim() || null;
 
     if (!projectID || !workProof) {
@@ -530,7 +487,7 @@ async function submitWork() {
 
     try {
         const res = await safeFetch(`${REFEREE_URL}/evaluate`, {
-            method: "POST",
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 escrow_id:          projectID,
@@ -547,29 +504,20 @@ async function submitWork() {
         const result = await res.json();
         console.log("📋 Audit response:", result);
 
-        if (!res.ok) {
-            // 404 = wrong project ID, 409 = already released/cancelled
-            throw new Error(result.detail || "Audit request failed.");
-        }
+        if (!res.ok) throw new Error(result.detail || "Audit request failed.");
 
         const verdict = result.verdict;
 
         if (result.status === "approved" && result.fulfillment) {
-            // Show the verdict
             showStatus(
                 "submit-status",
                 `✅ APPROVED! Score: ${verdict.score}/100\n${verdict.summary}`,
                 "success"
             );
-
-            // Show full verdict details
             showVerdictPanel(verdict);
-
-            // Trigger EscrowFinish in Xaman
             await claimXRP(result);
 
         } else if (result.status === "approved" && !result.fulfillment) {
-            // Approved but vault lookup failed — should not happen but handle gracefully
             showStatus(
                 "submit-status",
                 `AI approved your work but the vault could not be found for Receipt Code "${projectID}". ` +
@@ -577,7 +525,6 @@ async function submitWork() {
                 "warning"
             );
         } else {
-            // Rejected — show the feedback
             showStatus(
                 "submit-status",
                 `❌ REJECTED — Score: ${verdict.score}/100\n${verdict.summary}`,
@@ -597,14 +544,9 @@ async function submitWork() {
 function showVerdictPanel(verdict) {
     const panel = document.getElementById("verdict-panel");
     if (!panel) return;
-
     panel.style.display = "block";
 
-    const setEl = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val || "—";
-    };
-
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || "—"; };
     setEl("verdict-result",  verdict.verdict);
     setEl("verdict-score",   `${verdict.score}/100`);
     setEl("verdict-summary", verdict.summary);
@@ -612,12 +554,19 @@ function showVerdictPanel(verdict) {
 
     const metEl    = document.getElementById("verdict-met");
     const failedEl = document.getElementById("verdict-failed");
+    if (metEl    && verdict.criteria_met?.length)    metEl.innerHTML    = verdict.criteria_met.map(c    => `<li>✓ ${c}</li>`).join("");
+    if (failedEl && verdict.criteria_failed?.length) failedEl.innerHTML = verdict.criteria_failed.map(c => `<li>✕ ${c}</li>`).join("");
 
-    if (metEl && verdict.criteria_met?.length) {
-        metEl.innerHTML = verdict.criteria_met.map(c => `<li>✓ ${c}</li>`).join("");
+    // Style the verdict header
+    const header = document.getElementById("verdict-header");
+    const badge  = document.getElementById("verdict-result");
+    if (header) {
+        header.classList.remove("pass", "fail");
+        header.classList.add(verdict.verdict === "PASS" ? "pass" : "fail");
     }
-    if (failedEl && verdict.criteria_failed?.length) {
-        failedEl.innerHTML = verdict.criteria_failed.map(c => `<li>✕ ${c}</li>`).join("");
+    if (badge) {
+        badge.classList.remove("pass", "fail");
+        badge.classList.add(verdict.verdict === "PASS" ? "pass" : "fail");
     }
 }
 
@@ -625,34 +574,29 @@ function showVerdictPanel(verdict) {
 // STEP 3 — CLAIM PAYMENT (EscrowFinish via Xaman)
 // ---------------------------------------------------------------------------
 async function claimXRP(auditResult) {
-    const seq      = document.getElementById("escrow-sequence")?.value.trim();
     const currency = document.getElementById("payout-currency")?.value || "XRP";
 
-    if (!seq) {
-        showStatus("submit-status", "✅ Audit approved! Enter your Escrow Sequence number below and click Claim Payment.", "success");
-        const claimSection = document.getElementById("claim-section");
-        if (claimSection) {
-            claimSection.style.display         = "block";
-            claimSection.dataset.fulfillment   = auditResult.fulfillment;
-            claimSection.dataset.workerAddress = auditResult.worker_address;
-            claimSection.dataset.xrpAmount     = auditResult.amount_xrp || null;
-            claimSection.dataset.currency      = currency;
-            claimSection.dataset.condition     = auditResult.condition;
+    const claimSection = document.getElementById("claim-section");
+    if (claimSection) {
+        claimSection.style.display         = "block";
+        claimSection.dataset.fulfillment   = auditResult.fulfillment;
+        claimSection.dataset.workerAddress = auditResult.worker_address;
+        claimSection.dataset.xrpAmount     = auditResult.amount_xrp || null;
+        claimSection.dataset.currency      = currency;
+        claimSection.dataset.condition     = auditResult.condition;
 
-            // Auto-fill sequence and buyer address — worker should never need to type these
-            if (auditResult.escrow_sequence) {
-                const seqField = document.getElementById("escrow-sequence");
-                if (seqField) seqField.value = auditResult.escrow_sequence;
-            }
-            if (auditResult.buyer_address) {
-                const ownerField = document.getElementById("escrow-owner");
-                if (ownerField) ownerField.value = auditResult.buyer_address;
-            }
+        // Auto-fill sequence and buyer address
+        if (auditResult.escrow_sequence) {
+            const seqField = document.getElementById("escrow-sequence");
+            if (seqField) seqField.value = auditResult.escrow_sequence;
         }
-        return;
+        if (auditResult.buyer_address) {
+            const ownerField = document.getElementById("escrow-owner");
+            if (ownerField) ownerField.value = auditResult.buyer_address;
+        }
     }
 
-    await sendEscrowFinish(auditResult.fulfillment, auditResult.worker_address, seq, currency, auditResult.amount_xrp);
+    showStatus("submit-status", "✅ Audit approved! Click Claim Payment below to receive your XRP.", "success");
 }
 
 async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency = "XRP", xrpAmount = null, condition = null) {
@@ -672,15 +616,9 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency =
             Owner:           ownerAddress,
             OfferSequence:   parseInt(sequence),
             Fulfillment:     fulfillment.toUpperCase(),
-            // EscrowFinish with a crypto-condition requires a higher fee than standard txs.
-            // Formula: 10 + (32 * fulfillment_bytes). We use 5000 drops (~0.000005 XRP) — well above minimum.
             Fee:             "5000",
         };
-
-        // Condition is required by XRPL when the escrow was created with one
-        if (condition) {
-            finishTx.Condition = condition.toUpperCase();
-        }
+        if (condition) finishTx.Condition = condition.toUpperCase();
 
         const res  = await safeFetch(`${REFEREE_URL}/xumm/create-payload`, {
             method:  "POST",
@@ -699,7 +637,6 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency =
                     "Once signed, a second Xaman window will open to swap to RLUSD.",
                     "success"
                 );
-                // Poll until the EscrowFinish is likely signed (5 second delay), then trigger swap
                 setTimeout(() => triggerDexSwap(workerAddress, xrpAmount), 5000);
             } else {
                 showStatus("claim-status", "✅ Xaman opened — sign to receive your XRP!", "success");
@@ -714,11 +651,10 @@ async function sendEscrowFinish(fulfillment, workerAddress, sequence, currency =
     }
 }
 
-// Called by the "Claim Payment" button in the claim section
 async function claimFromPanel() {
     const claimSection = document.getElementById("claim-section");
     const seq          = document.getElementById("escrow-sequence")?.value.trim();
-    const currency     = claimSection?.dataset.currency || "XRP";
+    const currency     = claimSection?.dataset.currency  || "XRP";
     const xrpAmount    = parseFloat(claimSection?.dataset.xrpAmount) || null;
     const condition    = claimSection?.dataset.condition || null;
 
@@ -740,8 +676,7 @@ async function claimFromPanel() {
 // ---------------------------------------------------------------------------
 // DEX — RLUSD QUOTE & SWAP
 // ---------------------------------------------------------------------------
-
-let dexQuoteData = null;  // Stores latest quote response
+let dexQuoteData = null;
 
 async function fetchDexQuote(workerAddress, xrpAmount) {
     if (!workerAddress || !xrpAmount || xrpAmount <= 0) return;
@@ -751,8 +686,8 @@ async function fetchDexQuote(workerAddress, xrpAmount) {
     const trustWarn  = document.getElementById("dex-trust-warning");
 
     if (quotePanel) quotePanel.style.display = "block";
-    if (quoteText)  quoteText.textContent     = "⏳ Fetching live quote...";
-    if (trustWarn)  trustWarn.style.display   = "none";
+    if (quoteText)  quoteText.textContent    = "⏳ Fetching live quote...";
+    if (trustWarn)  trustWarn.style.display  = "none";
 
     try {
         const res  = await safeFetch(`${REFEREE_URL}/dex/quote`, {
@@ -763,14 +698,9 @@ async function fetchDexQuote(workerAddress, xrpAmount) {
         const data = await res.json();
         dexQuoteData = data;
 
-        console.log("💱 DEX quote:", data);
-
         if (!data.trust_line_ok) {
-            if (quoteText)  quoteText.textContent   = "⚠️ No RLUSD trust line found.";
-            if (trustWarn) {
-                trustWarn.style.display  = "block";
-                trustWarn.textContent    = data.trust_line_instructions;
-            }
+            if (quoteText) quoteText.textContent = "⚠️ No RLUSD trust line found.";
+            if (trustWarn) { trustWarn.style.display = "block"; trustWarn.textContent = data.trust_line_instructions; }
             return;
         }
 
@@ -786,18 +716,16 @@ async function fetchDexQuote(workerAddress, xrpAmount) {
 
     } catch (err) {
         console.error("DEX quote error:", err);
-        if (quoteText) quoteText.textContent = "❌ Could not fetch quote. Check connection.";
+        if (document.getElementById("dex-quote-text"))
+            document.getElementById("dex-quote-text").textContent = "❌ Could not fetch quote. Check connection.";
     }
 }
 
 function onCurrencyChange() {
-    const currency      = document.getElementById("payout-currency")?.value;
-    const quotePanel    = document.getElementById("dex-quote-panel");
-    const workerAddress = document.getElementById("worker-project-id") ? null : null; // pulled at submit time
-
+    const currency   = document.getElementById("payout-currency")?.value;
+    const quotePanel = document.getElementById("dex-quote-panel");
     if (currency === "RLUSD") {
         if (quotePanel) quotePanel.style.display = "block";
-        // We don't have the worker address or amount here yet — prompt will show on submit
         const quoteText = document.getElementById("dex-quote-text");
         if (quoteText) quoteText.textContent = "Enter your Receipt Code and look up the job to see a live quote.";
     } else {
@@ -806,7 +734,6 @@ function onCurrencyChange() {
     }
 }
 
-// Called after job info loads so we have the XRP amount for the quote
 async function fetchQuoteAfterLookup(workerAddress, xrpAmount) {
     const currency = document.getElementById("payout-currency")?.value;
     if (currency === "RLUSD" && workerAddress && xrpAmount) {
@@ -819,7 +746,6 @@ async function triggerDexSwap(workerAddress, xrpAmount) {
 
     showStatus("submit-status", "⏳ Opening Xaman for RLUSD swap...", "info");
 
-    // Allow 2% slippage on the minimum RLUSD to receive
     const minRlusd = (dexQuoteData.estimated_rlusd * 0.98).toFixed(6);
 
     const offerTx = {
@@ -829,7 +755,7 @@ async function triggerDexSwap(workerAddress, xrpAmount) {
             issuer:   dexQuoteData.rlusd_issuer,
             value:    minRlusd,
         },
-        TakerGets: String(Math.floor(xrpAmount * 1_000_000)), // XRP in drops
+        TakerGets: String(Math.floor(xrpAmount * 1_000_000)),
     };
 
     try {
@@ -857,22 +783,31 @@ async function triggerDexSwap(workerAddress, xrpAmount) {
         showStatus("submit-status", `❌ DEX swap failed: ${err.message}`, "error");
     }
 }
+
+// ---------------------------------------------------------------------------
+// COPY HELPERS
+// ---------------------------------------------------------------------------
 function copyProjectId() {
-    const id  = document.getElementById("share-project-id")?.textContent?.trim();
+    const id = document.getElementById("share-project-id")?.textContent?.trim();
     if (!id) return;
     navigator.clipboard.writeText(id).then(() => {
         const btn = document.getElementById("copy-btn");
         if (btn) {
-            btn.textContent = "✅ Copied!";
-            setTimeout(() => { btn.textContent = "📋 Copy ID"; }, 2000);
+            btn.innerHTML = '<i data-lucide="check"></i> Copied!';
+            if (window.lucide) lucide.createIcons();
+            setTimeout(() => {
+                btn.innerHTML = '<i data-lucide="copy"></i> Copy Code';
+                if (window.lucide) lucide.createIcons();
+            }, 2000);
         }
     });
 }
 
 function copyWorkerLink() {
-    const id   = document.getElementById("share-project-id")?.textContent?.trim();
+    const id = document.getElementById("share-project-id")?.textContent?.trim();
     if (!id) return;
-    const link = `${window.location.origin}${window.location.pathname}?project=${encodeURIComponent(id)}`;
+    // Uses ?worker= param so the worker tab auto-opens and job info auto-loads
+    const link = `${window.location.origin}${window.location.pathname}?worker=${encodeURIComponent(id)}`;
     navigator.clipboard.writeText(link).then(() => {
         showStatus("init-status", `✅ Worker link copied!\n${link}`, "success");
     });
