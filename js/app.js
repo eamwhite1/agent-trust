@@ -286,25 +286,29 @@ function updateUsdEquiv() {
     const el  = document.getElementById("usd-equiv");
     const amt = parseFloat(document.getElementById("amt")?.value);
 
-    // Buyer amount field
+    // Amount field beneath escrow amount input
     if (el) {
         if (getBuyerCurrency() === "RLUSD") {
-            el.textContent = "RLUSD is pegged 1:1 to USD";
-        } else if (amt && !isNaN(amt) && xrpPriceUsd && xrpPriceGbp) {
-            el.textContent = `≈ $${(amt * xrpPriceUsd).toFixed(2)} USD · £${(amt * xrpPriceGbp).toFixed(2)} GBP`;
+            el.textContent = "RLUSD is pegged 1:1 to USD — $1 per RLUSD";
+        } else if (amt && !isNaN(amt) && xrpPriceUsd) {
+            const usd = (amt * xrpPriceUsd).toFixed(2);
+            const gbp = xrpPriceGbp ? ` · £${(amt * xrpPriceGbp).toFixed(2)} GBP` : "";
+            el.textContent = `≈ $${usd} USD${gbp}`;
+        } else if (amt && !isNaN(amt)) {
+            el.textContent = "Fetching live XRP price…";
         } else {
             el.textContent = "";
         }
     }
 
-    // Protocol fee box + button (0.1 XRP)
+    // Fee spans — update whenever this runs if price is available
     if (xrpPriceUsd) {
-        const feeUsd    = (0.1 * xrpPriceUsd).toFixed(3);
-        const feeEquiv  = document.getElementById("fee-usd-equiv");
-        const feeBtn    = document.getElementById("fee-btn-usd");
+        const feeUsd     = (0.1 * xrpPriceUsd).toFixed(2);
+        const feeEquiv   = document.getElementById("fee-usd-equiv");
+        const feeBtn     = document.getElementById("fee-btn-usd");
         const compareFee = document.getElementById("compare-fee-usd");
         if (feeEquiv)   feeEquiv.textContent  = `(≈ $${feeUsd})`;
-        if (feeBtn)     feeBtn.textContent     = `(≈ $${feeUsd})`;
+        if (feeBtn)     feeBtn.textContent     = `≈ $${feeUsd}`;
         if (compareFee) compareFee.textContent = `≈ $${feeUsd} USD at current XRP price`;
     }
 }
