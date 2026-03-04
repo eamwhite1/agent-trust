@@ -1466,7 +1466,7 @@ async function createJobEscrow(feeHash) {
             // Add to activity feed
             SEED_ACTIVITY.unshift({
                 type: "post",
-                text: `New job posted: <strong>${pendingPostData.title.substring(0,40)}…</strong> · ${pendingPostData.bounty} XRP`,,
+                text: `New job posted: <strong>${pendingPostData.title.substring(0,40)}…</strong> · ${pendingPostData.bounty} XRP`,
                 time: "just now",
             });
             renderActivity();
