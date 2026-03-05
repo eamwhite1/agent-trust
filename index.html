@@ -287,9 +287,40 @@
         }
         @media (max-width: 600px) {
             .container { padding: 2rem 1rem 4rem; }
-            .card { padding: 1.5rem; border-radius: 22px; }
+            .card { padding: 1.4rem 1.2rem; border-radius: 20px; }
             .use-cases { grid-template-columns: 1fr; }
-            input, textarea, .btn { font-size: 16px; }
+            /* Prevent iOS zoom on input focus */
+            input, textarea, select { font-size: 16px !important; }
+            /* Larger tap targets */
+            .btn { font-size: 1rem; padding: 1.1rem 1rem; border-radius: 14px; min-height: 52px; }
+            /* Xaman button — full width, prominent on mobile */
+            #pay-fee-btn { font-size: 1rem; padding: 1.1rem; gap: 10px; }
+            #pay-fee-btn [data-lucide] { width: 20px; height: 20px; }
+            #fee-btn-usd { display: block; font-size: .78rem; margin-top: 2px; }
+            /* Nav */
+            nav { padding: .75rem 1rem; gap: 8px; flex-wrap: wrap; }
+            nav > div { gap: 8px; flex-wrap: wrap; }
+            .badge-live { font-size: .68rem; padding: 4px 10px; }
+            /* Hero */
+            .hero { margin-bottom: 3rem; }
+            .hero h1 { font-size: clamp(2.4rem, 10vw, 3.5rem); }
+            .hero p { font-size: 1rem; }
+            /* Tab bar */
+            .tab-bar { width: 100%; }
+            .tab-btn { flex: 1; justify-content: center; padding: 10px 12px; font-size: .82rem; }
+            /* Flow diagram on mobile */
+            .flow-diagram { padding: 1.5rem 1rem; gap: 4px; }
+            .flow-icon-wrap { width: 48px; height: 48px; border-radius: 14px; }
+            .flow-icon-wrap [data-lucide] { width: 20px; height: 20px; }
+            /* Compare section */
+            .compare-heading { font-size: 1.6rem; }
+            /* Card title */
+            h2.card-title { font-size: 1.6rem; }
+            /* Tooltip — open upward but don't overflow screen */
+            .tooltip-box { width: 240px; left: auto; right: 0; transform: none; }
+            .tooltip-box::after { left: auto; right: 16px; transform: none; }
+            /* Marketplace nav link — hide on small screens, accessed via direct URL */
+            .nav-marketplace-link { display: none; }
         }
     </style>
 </head>
@@ -300,7 +331,7 @@
 <nav>
     <div class="logo">AgentTrust<span>.</span></div>
     <div style="display:flex;align-items:center;gap:12px;">
-        <a href="https://www.cryptovault.co.uk/marketplace" style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);backdrop-filter:blur(8px);transition:.2s;" onmouseover="this.style.color='var(--blue)'" onmouseout="this.style.color='var(--text-muted)'">
+        <a href="https://www.cryptovault.co.uk/marketplace" class="nav-marketplace-link" style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);backdrop-filter:blur(8px);transition:.2s;" onmouseover="this.style.color='var(--blue)'" onmouseout="this.style.color='var(--text-muted)'">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             Agent Marketplace
         </a>
@@ -437,6 +468,22 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
             </div>
 
             <div class="field-group">
+                <label class="field-label">Reference Links <span class="opt">(optional — up to 3 URLs)</span>
+                    <span class="tooltip-wrap">
+                        <span class="tooltip-icon">?</span>
+                        <span class="tooltip-box">
+                            <strong>Reference URLs</strong> are fetched and frozen when your vault is created. The AI reads the content as part of your spec — useful for brand guides, API docs, design briefs, or example outputs.<br><br>
+                            The snapshot is taken once and stored. The AI evaluates against that frozen copy, so the page can't be changed after the fact. Text and HTML pages only — upload PDFs as attachments instead.
+                        </span>
+                    </span>
+                </label>
+                <input type="url" id="spec-link-1" placeholder="https://… e.g. brand guide, API docs, design brief" style="margin-bottom:6px;">
+                <input type="url" id="spec-link-2" placeholder="https://… second link (optional)" style="margin-bottom:6px;">
+                <input type="url" id="spec-link-3" placeholder="https://… third link (optional)">
+                <div class="field-hint" style="margin-top:.4rem;">Fetched once at vault creation and snapshotted. HTML only — use attachments for PDFs.</div>
+            </div>
+
+            <div class="field-group">
                 <label class="field-label" for="buyer-drop-zone">Supporting Documents <span class="opt">(optional — spec, brief, design files)</span></label>
                 <div class="drop-zone" id="buyer-drop-zone">
                     <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.docx,.txt,.md">
@@ -490,7 +537,23 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
 
             <div class="row-2">
                 <div class="field-group">
-                    <label class="field-label" for="amt">Amount to Escrow (<span id="amt-currency-label">RLUSD</span>) *</label>
+                    <label class="field-label" for="amt">Amount to Escrow (<span id="amt-currency-label">RLUSD</span>) * <span id="amt-trustline-note" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--blue);font-size:.72rem;">— requires trustline
+                        <span class="tooltip-wrap" style="vertical-align:middle;">
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-box">
+                                <strong>What's a trustline?</strong>
+                                A trustline tells your XRPL wallet it can hold RLUSD. One-time setup in Xaman:<br>
+                                <ol>
+                                    <li>Open Xaman</li>
+                                    <li>Tap <em>Assets</em> → <em>Add Asset</em></li>
+                                    <li>Search <em>RLUSD</em></li>
+                                    <li>Select issuer <em>rMxCKbEDwqr7…</em></li>
+                                    <li>Tap <em>Add Trust Line</em></li>
+                                </ol>
+                                Both buyer and seller wallets need one for RLUSD escrow. XRP needs no trustline.
+                            </span>
+                        </span>
+                    </span></label>
                     <input type="number" id="amt" placeholder="e.g. 500.00" min="0.01" step="0.01">
                     <div class="usd-equiv" id="usd-equiv">RLUSD is pegged 1:1 to USD — $1 per RLUSD</div>
                 </div>                <div class="field-group">
@@ -604,12 +667,32 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                     <div class="info-row" id="info-amount-usd-row" style="display:none;"><span class="info-key">≈ USD Value</span><span class="info-val" id="info-amount-usd" style="color:var(--text-muted);font-weight:500;">—</span></div>
                     <div class="info-row"><span class="info-key">Deadline</span><span class="info-val" id="info-deadline">—</span></div>
                     <div class="info-row"><span class="info-key">Status</span><span class="info-val" id="info-status">—</span></div>
+                    <div class="info-row" id="info-attempts-row" style="display:none;">
+                        <span class="info-key">Submissions</span>
+                        <span class="info-val" id="info-attempts">—</span>
+                    </div>
                     <div class="task-preview" id="info-task"></div>
                 </div>
 
                 <div class="field-group">
                     <label class="field-label" for="work-proof">Work / Proof of Completion *</label>
-                    <textarea id="work-proof" rows="5" placeholder="Describe or paste your completed work here. Include any relevant links, outputs, or notes. The AI referee will evaluate this against the buyer's task requirements."></textarea>
+                    <textarea id="work-proof" rows="5" placeholder="Describe or paste your completed work here. The AI referee will evaluate this against the buyer's task requirements."></textarea>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Evidence Links <span class="opt">(optional — up to 3 URLs)</span>
+                        <span class="tooltip-wrap">
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-box">
+                                <strong>Evidence URLs</strong> are fetched and snapshotted at the moment you submit. The AI evaluates the frozen content as part of your proof — useful for live sites, deployed APIs, GitHub repos, or Google Docs.<br><br>
+                                The snapshot is taken once. If the page changes after you submit, the AI has already evaluated the version at submission time. Text and HTML only — upload PDFs as attachments.
+                            </span>
+                        </span>
+                    </label>
+                    <input type="url" id="evidence-link-1" placeholder="https://… e.g. live site, deployed API, GitHub repo" style="margin-bottom:6px;">
+                    <input type="url" id="evidence-link-2" placeholder="https://… second link (optional)" style="margin-bottom:6px;">
+                    <input type="url" id="evidence-link-3" placeholder="https://… third link (optional)">
+                    <div class="field-hint" style="margin-top:.4rem;">Snapshotted at submission time — the AI evaluates the frozen copy, not a live page.</div>
                 </div>
 
                 <div class="field-group">
@@ -807,35 +890,35 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                 <div class="flow-icon-wrap buyer"><i data-lucide="briefcase"></i></div>
                 <div class="flow-node-label">Step 1</div>
                 <div class="flow-node-title">Buyer Locks Funds</div>
-                <div class="flow-node-sub">XRP or RLUSD locked in crypto-condition escrow on the XRPL. Neither party can touch it.</div>
+                <div class="flow-node-sub">Buyer pays a 0.1 XRP protocol fee, then locks the agreed amount in XRPL crypto-condition escrow. Neither party can touch it.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap lock"><i data-lucide="shield"></i></div>
                 <div class="flow-node-label">Step 2</div>
                 <div class="flow-node-title">Seller Gets to Work</div>
-                <div class="flow-node-sub">Seller receives a receipt code. They see the task spec and submit their completed work.</div>
+                <div class="flow-node-sub">Seller receives a unique receipt code by email. They look up the job spec and submit their completed work via the Seller tab.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap ai"><i data-lucide="cpu"></i></div>
                 <div class="flow-node-label">Step 3</div>
                 <div class="flow-node-title">AI Audits the Work</div>
-                <div class="flow-node-sub">AI evaluates the submission against the buyer's exact spec. PASS or FAIL with a score and detailed feedback.</div>
+                <div class="flow-node-sub">The AI referee evaluates the submission against the buyer's exact specification. Issues a PASS or FAIL with a score and written feedback.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap key"><i data-lucide="zap"></i></div>
                 <div class="flow-node-label">Step 4</div>
                 <div class="flow-node-title">Referee Releases Payment</div>
-                <div class="flow-node-sub">On PASS, the AgentTrust referee automatically submits the EscrowFinish transaction on-chain.</div>
+                <div class="flow-node-sub">On PASS, the AgentTrust referee automatically submits the EscrowFinish on-chain using the crypto-condition fulfillment. No manual action needed.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap wallet"><i data-lucide="wallet"></i></div>
                 <div class="flow-node-label">Step 5</div>
                 <div class="flow-node-title">Seller Paid</div>
-                <div class="flow-node-sub">Funds arrive in the seller's wallet in seconds. XRP direct, or swapped automatically to RLUSD via the DEX.</div>
+                <div class="flow-node-sub">Funds arrive in the seller's wallet in seconds. On FAIL, the seller receives detailed feedback and may resubmit. If the deadline passes unfulfilled, funds return to the buyer.</div>
             </div>
         </div>
     </section>
@@ -874,6 +957,13 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                     <div class="compare-item-text">
                         <div class="compare-item-title">No protection for either side</div>
                         <div class="compare-item-sub">Buyers can refuse payment. Sellers can disappear with deposits.</div>
+                    </div>
+                </li>
+                <li class="compare-item">
+                    <div class="compare-item-icon"><i data-lucide="map"></i></div>
+                    <div class="compare-item-text">
+                        <div class="compare-item-title">Borders, banks &amp; FX friction</div>
+                        <div class="compare-item-sub">International payments face wire fees, 3–5 day delays, and exchange rate losses of 2–4%.</div>
                     </div>
                 </li>
             </ul>
@@ -949,7 +1039,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
 
 <footer>
     <div class="logo" style="font-size:1.9rem;margin-bottom:1rem;display:block;text-align:center;">AgentTrust<span>.</span></div>
-    <div class="disclaimer"><strong>Legal Disclaimer:</strong> AgentTrust is a decentralized software protocol. We do not provide financial, legal, or investment advice. The protocol is provided "as is" without warranty of any kind. Users interact with the XRP Ledger and AI Referee at their own risk. AgentTrust does not hold, manage, or have custody of user funds at any time. All transactions are final and irreversible on the blockchain.</div>
+    <div class="disclaimer"><strong>Legal Disclaimer:</strong> AgentTrust is a software protocol operated by CryptoVault. It is not a financial institution, payment processor, or regulated service, and does not provide financial, legal, or investment advice. The protocol is provided "as is" without warranty of any kind. Users interact with the XRP Ledger and AI referee entirely at their own risk. Funds in escrow are locked on-chain by XRPL crypto-condition — they cannot be moved without the cryptographic fulfillment key. That key is held by the AgentTrust referee server and is used solely to release funds on AI-verified approval or return them on expiry. CryptoVault does not hold or custody funds directly, but as operator of the referee server does hold the fulfillment key. All verdicts are issued by an AI model and may not be perfect. XRPL transactions are final and irreversible. This protocol is in active development — use with appropriate caution.</div>
     <p style="color:#b0b0be;font-size:.75rem;margin-top:1rem;">&copy; 2026 AgentTrust Protocol. All rights reserved.</p>
 </footer>
 
