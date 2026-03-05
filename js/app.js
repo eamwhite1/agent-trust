@@ -238,14 +238,17 @@ function onBuyerCurrencyChange() {
     const amtLabel = document.getElementById("amt-currency-label");
     const amtInput = document.getElementById("amt");
     const equiv    = document.getElementById("usd-equiv");
+    const trustNote = document.getElementById("amt-trustline-note");
 
     if (currency === "RLUSD") {
-        if (amtLabel) amtLabel.textContent = "RLUSD";
-        if (amtInput) amtInput.placeholder = "e.g. 500.00";
-        if (equiv)    equiv.textContent    = "RLUSD is pegged 1:1 to USD — $1 per RLUSD";
+        if (amtLabel)   amtLabel.textContent    = "RLUSD";
+        if (amtInput)   amtInput.placeholder    = "e.g. 500.00";
+        if (equiv)      equiv.textContent        = "RLUSD is pegged 1:1 to USD — $1 per RLUSD";
+        if (trustNote)  trustNote.style.display  = "inline";
     } else {
-        if (amtLabel) amtLabel.textContent = "XRP";
-        if (amtInput) amtInput.placeholder = "e.g. 10";
+        if (amtLabel)   amtLabel.textContent    = "XRP";
+        if (amtInput)   amtInput.placeholder    = "e.g. 10";
+        if (trustNote)  trustNote.style.display  = "none";
         updateUsdEquiv();
     }
     updateFeeDisplay();
@@ -403,6 +406,11 @@ async function initVault() {
             buyer_attachments: buyerFiles.filter(f => f.data).map(f => ({
                 filename: f.filename, mime_type: f.mime_type, data: f.data,
             })),
+            spec_links: [
+                document.getElementById("spec-link-1")?.value.trim(),
+                document.getElementById("spec-link-2")?.value.trim(),
+                document.getElementById("spec-link-3")?.value.trim(),
+            ].filter(Boolean),
         };
 
         if (currency === "RLUSD") {
@@ -526,6 +534,27 @@ async function loadJobInfo(projectId) {
             document.getElementById("info-deadline").textContent = data.deadline         || "—";
             document.getElementById("info-status").textContent   = data.status           || "—";
 
+            // Show submission attempts
+            const attRow = document.getElementById("info-attempts-row");
+            const attVal = document.getElementById("info-attempts");
+            if (attRow && attVal && data.max_submissions != null) {
+                attRow.style.display = "flex";
+                const used      = data.submission_count    || 0;
+                const max       = data.max_submissions     || 3;
+                const remaining = data.attempts_remaining  ?? (max - used);
+                let attText = `${used} used of ${max} allowed · ${remaining} remaining`;
+                if (remaining === 0) {
+                    attText = `⛔ No attempts remaining (${used}/${max} used)`;
+                    attVal.style.color = "var(--red)";
+                } else if (remaining === 1) {
+                    attText = `⚠️ ${remaining} attempt remaining (${used}/${max} used)`;
+                    attVal.style.color = "var(--amber, #f59e0b)";
+                } else {
+                    attVal.style.color = "";
+                }
+                attVal.textContent = attText;
+            }
+
             // Show live USD equivalent for XRP amounts
             const usdRow = document.getElementById("info-amount-usd-row");
             const usdVal = document.getElementById("info-amount-usd");
@@ -577,7 +606,15 @@ async function submitWork() {
     }
 
     if (btn) btn.disabled = true;
-    showStatus("submit-status", "⏳ Submitting work for AI audit...", "info");
+    const evidenceLinks = [
+        document.getElementById("evidence-link-1")?.value.trim(),
+        document.getElementById("evidence-link-2")?.value.trim(),
+        document.getElementById("evidence-link-3")?.value.trim(),
+    ].filter(Boolean);
+    const linkMsg = evidenceLinks.length > 0
+        ? `⏳ Fetching ${evidenceLinks.length} evidence link${evidenceLinks.length > 1 ? "s" : ""} and submitting for AI audit…`
+        : "⏳ Submitting work for AI audit...";
+    showStatus("submit-status", linkMsg, "info");
 
     try {
         const res = await safeFetch(`${REFEREE_URL}/evaluate`, {
@@ -589,11 +626,29 @@ async function submitWork() {
                 worker_attachments: workerFiles.filter(f => f.data).map(f => ({
                     filename: f.filename, mime_type: f.mime_type, data: f.data,
                 })),
+                evidence_links: [
+                    document.getElementById("evidence-link-1")?.value.trim(),
+                    document.getElementById("evidence-link-2")?.value.trim(),
+                    document.getElementById("evidence-link-3")?.value.trim(),
+                ].filter(Boolean),
             }),
         });
 
         const result = await res.json();
         console.log("📋 Audit response:", result);
+
+        if (res.status === 429) {
+            // Submission limit reached — offer purchase option
+            const projectID = document.getElementById("worker-project-id")?.value.trim();
+            showStatus(
+                "submit-status",
+                `⛔ Submission limit reached.\n\n${result.detail}`,
+                "error"
+            );
+            showPurchaseAttemptPanel(projectID);
+            if (btn) btn.disabled = false;
+            return;
+        }
 
         if (!res.ok) throw new Error(result.detail || "Audit request failed.");
 
@@ -764,6 +819,90 @@ async function triggerDexSwap() {
 // ---------------------------------------------------------------------------
 // MANUAL CLAIM SECTION (fallback only)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// PURCHASE EXTRA SUBMISSION ATTEMPT
+// ---------------------------------------------------------------------------
+function showPurchaseAttemptPanel(escrowId) {
+    // Insert a purchase panel into the submit area if not already present
+    let panel = document.getElementById("purchase-attempt-panel");
+    if (!panel) {
+        panel = document.createElement("div");
+        panel.id = "purchase-attempt-panel";
+        panel.className = "info-callout";
+        panel.style.cssText = "margin-top:1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);";
+        const submitBtn = document.getElementById("submit-btn");
+        submitBtn?.parentNode?.insertBefore(panel, submitBtn.nextSibling);
+    }
+    panel.innerHTML = `
+        <i data-lucide="zap" style="color:var(--amber,#f59e0b);flex-shrink:0;"></i>
+        <div>
+            <strong>Need another attempt?</strong> Pay 0.05 XRP to unlock one more submission.
+            <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" id="buy-attempt-btn" onclick="purchaseExtraAttempt('${escrowId}')">
+                    <i data-lucide="plus-circle"></i> Buy extra attempt (0.05 XRP)
+                </button>
+            </div>
+            <div class="status-msg" id="purchase-attempt-status" style="margin-top:.5rem;"></div>
+        </div>`;
+    lucide.createIcons();
+}
+
+async function purchaseExtraAttempt(escrowId) {
+    const btn = document.getElementById("buy-attempt-btn");
+    if (btn) btn.disabled = true;
+    showStatus("purchase-attempt-status", "⏳ Opening Xaman to pay 0.05 XRP…", "info");
+
+    try {
+        // Request a fee payload for 0.05 XRP
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, { method: "POST" });
+        const data = await res.json();
+        if (!data.nextUrl) throw new Error("No Xaman URL returned.");
+
+        window.open(data.nextUrl, "_blank");
+        showStatus("purchase-attempt-status", "Sign the 0.05 XRP payment in Xaman, then wait…", "info");
+
+        // Poll until signed
+        let attempts = 0;
+        const poll = setInterval(async () => {
+            attempts++;
+            if (attempts > 60) { clearInterval(poll); showStatus("purchase-attempt-status", "Timed out waiting for payment.", "error"); return; }
+            try {
+                const pr   = await safeFetch(`${REFEREE_URL}/xumm/payload/${data.uuid}`);
+                const pd   = await pr.json();
+                if (pd.signed && pd.tx_hash) {
+                    clearInterval(poll);
+                    // Submit purchase
+                    const cr = await safeFetch(`${REFEREE_URL}/evaluate/purchase-attempt`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ escrow_id: escrowId, fee_hash: pd.tx_hash }),
+                    });
+                    const cd = await cr.json();
+                    if (!cr.ok) throw new Error(cd.detail || "Purchase failed.");
+                    showStatus("purchase-attempt-status",
+                        `✅ Extra attempt unlocked! You now have ${cd.attempts_remaining} attempt${cd.attempts_remaining !== 1 ? "s" : ""} remaining.`,
+                        "success"
+                    );
+                    // Remove the panel and re-enable submit
+                    const panel = document.getElementById("purchase-attempt-panel");
+                    if (panel) panel.remove();
+                    const submitBtn = document.getElementById("submit-btn");
+                    if (submitBtn) submitBtn.disabled = false;
+                    // Reload job info to show updated count
+                    loadJobInfo(escrowId);
+                }
+            } catch(e) {
+                clearInterval(poll);
+                showStatus("purchase-attempt-status", `❌ ${e.message}`, "error");
+                if (btn) btn.disabled = false;
+            }
+        }, 3000);
+
+    } catch(err) {
+        showStatus("purchase-attempt-status", `❌ ${err.message}`, "error");
+        if (btn) btn.disabled = false;
+    }
+}
+
 function showManualClaimSection(result) {
     const section = document.getElementById("claim-section");
     if (!section) return;
