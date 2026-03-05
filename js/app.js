@@ -406,11 +406,8 @@ async function initVault() {
             buyer_attachments: buyerFiles.filter(f => f.data).map(f => ({
                 filename: f.filename, mime_type: f.mime_type, data: f.data,
             })),
-            spec_links: [
-                document.getElementById("spec-link-1")?.value.trim(),
-                document.getElementById("spec-link-2")?.value.trim(),
-                document.getElementById("spec-link-3")?.value.trim(),
-            ].filter(Boolean),
+            spec_links: Array.from(document.querySelectorAll("#spec-links-container .spec-link-input"))
+                .map(el => el.value.trim()).filter(Boolean),
         };
 
         if (currency === "RLUSD") {
@@ -606,11 +603,8 @@ async function submitWork() {
     }
 
     if (btn) btn.disabled = true;
-    const evidenceLinks = [
-        document.getElementById("evidence-link-1")?.value.trim(),
-        document.getElementById("evidence-link-2")?.value.trim(),
-        document.getElementById("evidence-link-3")?.value.trim(),
-    ].filter(Boolean);
+    const evidenceLinks = Array.from(document.querySelectorAll("#evidence-links-container .evidence-link-input"))
+        .map(el => el.value.trim()).filter(Boolean);
     const linkMsg = evidenceLinks.length > 0
         ? `⏳ Fetching ${evidenceLinks.length} evidence link${evidenceLinks.length > 1 ? "s" : ""} and submitting for AI audit…`
         : "⏳ Submitting work for AI audit...";
@@ -626,11 +620,7 @@ async function submitWork() {
                 worker_attachments: workerFiles.filter(f => f.data).map(f => ({
                     filename: f.filename, mime_type: f.mime_type, data: f.data,
                 })),
-                evidence_links: [
-                    document.getElementById("evidence-link-1")?.value.trim(),
-                    document.getElementById("evidence-link-2")?.value.trim(),
-                    document.getElementById("evidence-link-3")?.value.trim(),
-                ].filter(Boolean),
+                evidence_links: evidenceLinks,
             }),
         });
 
@@ -1156,3 +1146,27 @@ function b64toBlob(b64, mimeType) {
         if (f) { f.value = workerId; loadJobInfo(workerId); }
     }
 })();
+
+// ---------------------------------------------------------------------------
+// DYNAMIC LINK FIELDS (spec links + evidence links)
+// ---------------------------------------------------------------------------
+function addLinkField(containerId, btnId, maxExtra) {
+    const container = document.getElementById(containerId);
+    const btn       = document.getElementById(btnId);
+    if (!container || !btn) return;
+    const current = container.querySelectorAll("input").length;
+    if (current >= maxExtra + 1) return;  // already at max (1 default + maxExtra added)
+
+    const input = document.createElement("input");
+    input.type  = "url";
+    input.className = containerId.startsWith("spec") ? "spec-link-input" : "evidence-link-input";
+    input.placeholder = `https://… link ${current + 1} (optional)`;
+    input.style.marginBottom = "6px";
+    container.appendChild(input);
+
+    // Hide button if at max
+    if (container.querySelectorAll("input").length >= maxExtra + 1) {
+        btn.style.display = "none";
+    }
+    if (window.lucide) lucide.createIcons();
+}
