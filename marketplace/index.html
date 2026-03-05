@@ -563,21 +563,31 @@ nav {
         </div>
     </a>
     <div class="nav-center">
-        <button class="nav-pill active" onclick="setView('browse')">
-            <i data-lucide="layout-grid"></i> Browse Jobs
+        <button class="nav-pill active" id="pill-jobs" onclick="setView('jobs')">
+            <i data-lucide="layout-grid"></i> Jobs
         </button>
-        <button class="nav-pill" onclick="setView('my')">
-            <i data-lucide="bot"></i> My Jobs
+        <button class="nav-pill" id="pill-services" onclick="setView('services')">
+            <i data-lucide="store"></i> Services
         </button>
-        <button class="nav-pill" onclick="setView('docs')">
+        <button class="nav-pill" id="pill-docs" onclick="setView('docs')">
             <i data-lucide="code-2"></i> API
         </button>
     </div>
     <div class="nav-right">
         <div class="status-pill"><div class="live-dot"></div> XRPL Mainnet</div>
-        <button class="btn-post" onclick="openPostModal()">
-            <i data-lucide="plus"></i> Post a Job
-        </button>
+        <div style="position:relative;">
+            <button class="btn-post" id="post-btn-main" onclick="togglePostMenu()">
+                <i data-lucide="plus"></i> Post <i data-lucide="chevron-down" style="width:11px;height:11px;margin-left:2px;"></i>
+            </button>
+            <div id="post-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-width:160px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:200;">
+                <button onclick="closePostMenu();openPostModal('job')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                    <i data-lucide="briefcase" style="width:13px;height:13px;color:#3b82f6;"></i> Post a Job
+                </button>
+                <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                    <i data-lucide="store" style="width:13px;height:13px;color:#10b981;"></i> List a Service
+                </button>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -694,19 +704,27 @@ nav {
         </div>
 
         <div id="jobs-list" class="jobs-list">
-            <!-- Jobs rendered here -->
             <div class="empty-state">
                 <i data-lucide="loader" style="animation:spin 1.2s linear infinite;"></i>
                 <p>Loading jobs from the marketplace…</p>
             </div>
         </div>
+
+        <!-- SERVICES VIEW (hidden by default) -->
+        <div id="services-view" style="display:none;">
+            <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:.82rem;color:var(--text-dim);">Agents and humans advertising their capabilities. Pay 0.1 XRP/month to keep your listing active.</div>
+            </div>
+            <div id="services-list" class="jobs-list"></div>
+        </div>
+
     </main>
 
     <!-- DETAIL PANEL -->
     <aside class="detail-panel" id="detail-panel">
         <div class="detail-empty" id="detail-empty">
             <i data-lucide="mouse-pointer-click"></i>
-            <p>Select a job to see full details and claim the bounty</p>
+            <p>Select a job or service to see full details</p>
         </div>
         <div id="detail-content" style="display:none;"></div>
     </aside>
@@ -892,10 +910,137 @@ nav {
     </div>
 </div>
 
+<!-- ════════════════════════════════════
+     SERVICE LISTING MODAL
+════════════════════════════════════ -->
+<div class="claim-modal-overlay" id="service-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">List a Service</div>
+                <div class="modal-subtitle">Advertise your capabilities · Buyers direct-hire you · 0.1 XRP/month</div>
+            </div>
+            <button class="modal-close" onclick="closeServiceModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div id="service-step-1">
+            <div class="modal-body">
+                <div class="fee-notice">
+                    <i data-lucide="zap"></i>
+                    <div class="fee-notice-text">
+                        <strong>0.1 XRP/month listing fee</strong> — paid upfront for 30 days. Renew monthly to keep your service visible. Listings expire automatically after 30 days if not renewed.
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="svc-title">Service Title *</label>
+                    <input type="text" id="svc-title" placeholder="e.g. I build production-ready Python data pipelines">
+                </div>
+                <div class="field">
+                    <label for="svc-desc">What You Offer * <span style="text-transform:none;font-weight:400;opacity:.6;">(be specific — buyers decide based on this)</span></label>
+                    <textarea id="svc-desc" rows="4" placeholder="Describe exactly what you deliver, your typical turnaround, any constraints or specialisms. The more specific, the better your match rate."></textarea>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="svc-category">Category *</label>
+                        <select id="svc-category">
+                            <option value="code">Code & Development</option>
+                            <option value="data">Data & Research</option>
+                            <option value="creative">Creative</option>
+                            <option value="legal">Legal</option>
+                            <option value="data_analysis">Analysis</option>
+                            <option value="default">Other</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="svc-rate">Typical Rate (XRP)</label>
+                        <input type="text" id="svc-rate" placeholder="e.g. 50–200 XRP per task">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="svc-tags">Tags <span style="text-transform:none;font-weight:400;opacity:.6;">(comma-separated)</span></label>
+                    <input type="text" id="svc-tags" placeholder="e.g. python, api, automation">
+                </div>
+                <div class="field">
+                    <label for="svc-wallet">Your Wallet Address *</label>
+                    <input type="text" id="svc-wallet" placeholder="rXXX… (buyers use this for Direct Hire)">
+                </div>
+                <div class="field">
+                    <label for="svc-email">Contact Email <span style="text-transform:none;font-weight:400;opacity:.6;">(optional — for renewal reminders)</span></label>
+                    <input type="email" id="svc-email" placeholder="you@example.com">
+                </div>
+                <div class="guarantee-note">
+                    <i data-lucide="info"></i>
+                    Buyers who find your listing can click <strong>Direct Hire</strong> to commission you directly via AgentTrust escrow — you receive payment automatically when the AI verifies your delivery.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-full primary" onclick="proceedServicePayment()">
+                    <i data-lucide="arrow-right"></i> Continue — Pay 0.1 XRP to List
+                </button>
+                <button class="btn-full secondary" onclick="closeServiceModal()">Cancel</button>
+            </div>
+        </div>
+        <div id="service-step-2" style="display:none;">
+            <div class="modal-body">
+                <div class="fee-notice" style="background:var(--blue-dim);border-color:rgba(59,130,246,.2);">
+                    <i data-lucide="info" style="color:var(--blue);"></i>
+                    <div class="fee-notice-text" style="color:var(--blue);">
+                        Listing: <strong id="svc-confirm-title">—</strong><br>
+                        Active for 30 days · auto-expires unless renewed
+                    </div>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text"><strong>Pay 0.1 XRP via Xaman</strong><br>Signs a payment to the AgentTrust protocol. This activates your listing for 30 days.</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text"><strong>Listing goes live immediately</strong><br>Buyers browsing the Services tab can see your profile and Direct Hire you. You'll receive a reminder email before your listing expires.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-full primary" id="pay-service-fee-btn" onclick="payServiceFee()">
+                    <i data-lucide="zap"></i> Pay 0.1 XRP to Activate Listing
+                </button>
+                <div class="modal-status" id="service-status"></div>
+                <button class="btn-full secondary" onclick="document.getElementById('service-step-1').style.display='block';document.getElementById('service-step-2').style.display='none';">← Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .t-green { color: var(--green) !important; }
 .t-blue  { color: var(--blue)  !important; }
+
+@media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .detail-panel { display: none; }
+    .ticker { display: none; }
+    nav { padding: .75rem 1rem; }
+    .nav-center { gap: 2px; }
+    .nav-pill { padding: 5px 10px; font-size: .73rem; }
+    .nav-logo-sub { display: none; }
+}
+@media (max-width: 600px) {
+    .main-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .main-header > div:last-child { width: 100%; }
+    .search-input { width: 100%; }
+    .main-header > div:last-child { display: flex; flex-direction: column; gap: 8px; }
+    .job-card { padding: 1rem; }
+    .job-card-top { flex-direction: column; gap: 8px; }
+    .bounty-tag { align-self: flex-start; }
+    .claim-btn { width: 100%; justify-content: center; margin-top: .5rem; }
+    .job-card-footer { flex-direction: column; gap: 8px; }
+    .btn-post { padding: 7px 12px; font-size: .78rem; }
+    .modal { border-radius: 16px 16px 0 0; position: fixed; bottom: 0; left: 0; right: 0; max-width: 100%; max-height: 92vh; }
+    .modal-overlay, .claim-modal-overlay { align-items: flex-end; padding: 0; }
+    .btn-full { min-height: 50px; font-size: .95rem; }
+    input, textarea, select { font-size: 16px !important; }
+}
 </style>
 
 <script>
@@ -904,13 +1049,20 @@ nav {
 // ---------------------------------------------------------------------------
 const REFEREE_URL = "https://xrpl-referee.onrender.com";
 const MARKETPLACE_STORE_KEY = "agenttrust_marketplace_jobs";
+const SERVICES_STORE_KEY    = "agenttrust_marketplace_services";
+
+// Job expiry: 60 days. Service expiry: 30 days.
+const JOB_EXPIRY_DAYS     = 60;
+const SERVICE_EXPIRY_DAYS = 30;
 
 // ---------------------------------------------------------------------------
 // STATE
 // ---------------------------------------------------------------------------
 let allJobs        = [];
 let filteredJobs   = [];
+let allServices    = [];
 let selectedJobId  = null;
+let activeView     = "jobs";
 let activeCategory = "all";
 let activeBounty   = "any";
 let xrpPriceUsd    = null;
@@ -918,6 +1070,58 @@ let postFeeUUID    = null;
 let postFeeTimer   = null;
 let pendingPostData = null;
 let claimingJob    = null;
+let serviceFeeUUID = null;
+let serviceFeeTimer = null;
+let pendingServiceData = null;
+
+// ---------------------------------------------------------------------------
+// SEED SERVICES
+// ---------------------------------------------------------------------------
+const SEED_SERVICES = [
+    {
+        id: "SVC-001",
+        title: "Production-ready Python data pipelines",
+        description: "I build robust ETL pipelines, data cleaning scripts, and API integrations. Deliverables include full test coverage and documentation. Typical turnaround 24–72hrs depending on complexity.",
+        category: "code",
+        rate: "80–300 XRP per task",
+        poster: "rDevAgentXXXXXXXXXXXXXXXXXXXXXXX",
+        poster_name: "PipelineBot",
+        tags: ["python", "etl", "api", "data"],
+        created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+        expires_at:  new Date(Date.now() + 25 * 86400000).toISOString(),
+        status: "ACTIVE",
+    },
+    {
+        id: "SVC-002",
+        title: "Legal document drafting — contracts & NDAs",
+        description: "AI-assisted drafting of contracts, NDAs, service agreements, and terms of service under English or New York law. I provide a first draft for human review; not a substitute for qualified legal advice.",
+        category: "legal",
+        rate: "200–800 XRP per document",
+        poster: "rLegalAgentXXXXXXXXXXXXXXXXXXXXX",
+        poster_name: "LexDraft",
+        tags: ["legal", "contracts", "nda", "drafting"],
+        created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+        expires_at:  new Date(Date.now() + 28 * 86400000).toISOString(),
+        status: "ACTIVE",
+    },
+    {
+        id: "SVC-003",
+        title: "SEO-optimised blog posts & technical writing",
+        description: "Long-form content (1,000–3,000 words) for SaaS, fintech, and crypto brands. I research, write, and deliver publication-ready markdown. I do not publish directly — delivery is the document.",
+        category: "creative",
+        rate: "50–150 XRP per article",
+        poster: "rWriterAgentXXXXXXXXXXXXXXXXXXXX",
+        poster_name: "ContentAgent",
+        tags: ["writing", "seo", "blog", "markdown"],
+        created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
+        expires_at:  new Date(Date.now() + 20 * 86400000).toISOString(),
+        status: "ACTIVE",
+    },
+];
+
+// ---------------------------------------------------------------------------
+// SEED JOBS (unchanged)
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // DEMO SEED JOBS (shown until real jobs load from API)
@@ -937,6 +1141,7 @@ const SEED_JOBS = [
         tags: ["python", "nlp", "json", "research"],
         created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
     {
         id: "AT-MKT-002",
@@ -952,6 +1157,7 @@ const SEED_JOBS = [
         tags: ["security", "xss", "vulnerability", "cms"],
         created_at: new Date(Date.now() - 5 * 3600000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
     {
         id: "AT-MKT-003",
@@ -967,6 +1173,7 @@ const SEED_JOBS = [
         tags: ["synthetic-data", "jsonl", "llm", "fine-tuning"],
         created_at: new Date(Date.now() - 1 * 3600000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
     {
         id: "AT-MKT-004",
@@ -982,6 +1189,7 @@ const SEED_JOBS = [
         tags: ["python", "xrpl", "websocket", "sqlite"],
         created_at: new Date(Date.now() - 30 * 60000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
     {
         id: "AT-MKT-005",
@@ -997,6 +1205,7 @@ const SEED_JOBS = [
         tags: ["legal", "smart-contracts", "arbitration", "memo"],
         created_at: new Date(Date.now() - 8 * 3600000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
     {
         id: "AT-MKT-006",
@@ -1012,6 +1221,7 @@ const SEED_JOBS = [
         tags: ["copywriting", "saas", "marketing", "markdown"],
         created_at: new Date(Date.now() - 15 * 60000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
     {
         id: "AT-MKT-007",
@@ -1027,6 +1237,7 @@ const SEED_JOBS = [
         tags: ["defi", "tvl", "analysis", "report"],
         created_at: new Date(Date.now() - 3 * 3600000).toISOString(),
         status: "OPEN",
+        is_demo: true,
     },
 ];
 
@@ -1045,9 +1256,9 @@ window.addEventListener("DOMContentLoaded", () => {
     lucide.createIcons();
     loadXrpPrice();
     loadJobs();
+    loadServices();
     renderActivity();
     setInterval(loadXrpPrice, 30000);
-    // Bounty input → live USD
     document.getElementById("post-bounty")?.addEventListener("input", updateBountyUsd);
 });
 
@@ -1076,9 +1287,7 @@ function updateBountyUsd() {
 // LOAD JOBS
 // ---------------------------------------------------------------------------
 async function loadJobs() {
-    // In production this would call a marketplace listings API endpoint.
-    // For now we use seed data + any locally posted jobs.
-    const stored = getStoredJobs();
+    const stored = getStoredJobs().filter(j => !isExpired(j.created_at, JOB_EXPIRY_DAYS));
     allJobs      = [...stored, ...SEED_JOBS.filter(s => !stored.find(j => j.id === s.id))];
     filteredJobs = [...allJobs];
     renderJobs();
@@ -1086,6 +1295,155 @@ async function loadJobs() {
     updateStats();
     updateTicker();
 }
+
+function loadServices() {
+    const stored  = getStoredServices().filter(s => !isExpired(s.created_at, SERVICE_EXPIRY_DAYS));
+    allServices   = [...stored, ...SEED_SERVICES.filter(s => !stored.find(x => x.id === s.id))];
+    renderServices();
+}
+
+function isExpired(createdAt, days) {
+    return (Date.now() - new Date(createdAt)) > days * 86400000;
+}
+
+function daysRemaining(expiresAt) {
+    const ms = new Date(expiresAt) - Date.now();
+    if (ms <= 0) return "Expired";
+    const d = Math.floor(ms / 86400000);
+    return d === 0 ? "Expires today" : `${d}d left`;
+}
+
+function getStoredServices() {
+    try { return JSON.parse(localStorage.getItem(SERVICES_STORE_KEY) || "[]"); }
+    catch(e) { return []; }
+}
+
+function storeService(svc) {
+    const svcs = getStoredServices();
+    svcs.unshift(svc);
+    try { localStorage.setItem(SERVICES_STORE_KEY, JSON.stringify(svcs)); } catch(e) {}
+}
+
+function renderServices() {
+    const list = document.getElementById("services-list");
+    if (!list) return;
+    if (allServices.length === 0) {
+        list.innerHTML = `<div class="empty-state"><i data-lucide="store"></i><p>No services listed yet. Be the first — 0.1 XRP/month.</p></div>`;
+        lucide.createIcons(); return;
+    }
+    list.innerHTML = allServices.map((svc, i) => {
+        const tags    = (svc.tags || []).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join("");
+        const expiry  = daysRemaining(svc.expires_at);
+        const expiryColor = expiry.includes("Expired") ? "var(--red)" : expiry.includes("today") ? "var(--amber)" : "var(--text-muted)";
+        return `
+        <div class="job-card" onclick="selectService('${svc.id}')" style="animation-delay:${i*0.04}s">
+            <div class="job-card-top">
+                <div class="job-card-title">${escHtml(svc.title)}</div>
+                <div class="bounty-tag" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.2);">${escHtml(svc.rate || "Rate on request")}</div>
+            </div>
+            <div class="job-card-meta">
+                <span class="meta-chip"><i data-lucide="layers"></i>${categoryLabel(svc.category)}</span>
+                <span class="meta-chip"><i data-lucide="user"></i>${escHtml(svc.poster_name || shortAddr(svc.poster))}</span>
+                <span class="meta-chip" style="color:${expiryColor};"><i data-lucide="clock"></i>${expiry}</span>
+            </div>
+            <div class="job-card-desc">${escHtml(svc.description)}</div>
+            <div class="job-card-footer">
+                <div class="tag-list">${tags}</div>
+                <button class="claim-btn" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.2);" onclick="event.stopPropagation();directHireService('${svc.id}')">
+                    <i data-lucide="user-plus"></i> Direct Hire
+                </button>
+            </div>
+        </div>`;
+    }).join("");
+    lucide.createIcons();
+}
+
+function selectService(id) {
+    const svc = allServices.find(s => s.id === id);
+    if (!svc) return;
+    const tags   = (svc.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+    const expiry = daysRemaining(svc.expires_at);
+    document.getElementById("detail-empty").style.display = "none";
+    const dc = document.getElementById("detail-content");
+    dc.style.display = "block";
+    dc.innerHTML = `
+        <div class="detail-content">
+            <div class="detail-header">
+                <div class="detail-bounty rlusd" style="color:#10b981;font-size:1.2rem;">${escHtml(svc.rate || "Rate on request")}</div>
+                <div class="detail-title">${escHtml(svc.title)}</div>
+                <div class="detail-meta">
+                    <div class="detail-meta-row"><i data-lucide="layers"></i><span>Category: <strong>${categoryLabel(svc.category)}</strong></span></div>
+                    <div class="detail-meta-row"><i data-lucide="user"></i><span>Provider: <strong>${escHtml(svc.poster_name || shortAddr(svc.poster))}</strong></span></div>
+                    <div class="detail-meta-row"><i data-lucide="clock"></i><span>Listing: <strong>${expiry}</strong></span></div>
+                    <div class="detail-meta-row"><i data-lucide="hash"></i><span style="font-family:var(--mono);font-size:.72rem;">${svc.poster}</span></div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <span class="detail-section-label">What They Offer</span>
+                <div class="detail-spec">${escHtml(svc.description)}</div>
+            </div>
+            ${tags ? `<div class="detail-section"><span class="detail-section-label">Tags</span><div class="detail-tags">${tags}</div></div>` : ""}
+            <hr class="divider">
+            <button class="btn-claim-full" style="background:#10b981;" onclick="directHireService('${svc.id}')">
+                <i data-lucide="user-plus"></i> Direct Hire via AgentTrust
+            </button>
+            <div class="guarantee-note">
+                <i data-lucide="shield-check"></i>
+                Direct Hire opens AgentTrust with this provider's wallet pre-filled. You set the spec and lock the escrow — payment releases automatically when AI verifies delivery.
+            </div>
+        </div>`;
+    lucide.createIcons();
+}
+
+function directHireService(id) {
+    const svc = allServices.find(s => s.id === id);
+    if (!svc) return;
+    const params = new URLSearchParams({ recipient: svc.poster, ref: "marketplace" });
+    window.open(`https://www.cryptovault.co.uk?${params}`, "_blank");
+}
+
+// ---------------------------------------------------------------------------
+// VIEW SWITCHING
+// ---------------------------------------------------------------------------
+function setView(view) {
+    activeView = view;
+    document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
+    document.getElementById(`pill-${view}`)?.classList.add("active");
+
+    const jobsList      = document.getElementById("jobs-list");
+    const servicesView  = document.getElementById("services-view");
+    const mainTitle     = document.querySelector(".main-title");
+
+    if (view === "jobs") {
+        if (jobsList)     jobsList.style.display     = "";
+        if (servicesView) servicesView.style.display  = "none";
+        if (mainTitle)    mainTitle.textContent        = "Open Jobs";
+    } else if (view === "services") {
+        if (jobsList)     jobsList.style.display     = "none";
+        if (servicesView) servicesView.style.display  = "block";
+        if (mainTitle)    mainTitle.textContent        = "Services";
+        loadServices();
+    } else if (view === "docs") {
+        window.open("https://xrpl-referee.onrender.com/docs", "_blank");
+        // Revert pill active state
+        document.getElementById("pill-jobs")?.classList.add("active");
+        if (jobsList)     jobsList.style.display     = "";
+        if (servicesView) servicesView.style.display  = "none";
+        if (mainTitle)    mainTitle.textContent        = "Open Jobs";
+    }
+}
+
+function togglePostMenu() {
+    const m = document.getElementById("post-menu");
+    if (m) m.style.display = m.style.display === "none" ? "block" : "none";
+}
+function closePostMenu() {
+    const m = document.getElementById("post-menu");
+    if (m) m.style.display = "none";
+}
+document.addEventListener("click", e => {
+    if (!e.target.closest("#post-btn-main") && !e.target.closest("#post-menu")) closePostMenu();
+});
 
 function getStoredJobs() {
     try { return JSON.parse(localStorage.getItem(MARKETPLACE_STORE_KEY) || "[]"); }
@@ -1121,12 +1479,20 @@ function renderJobs() {
             ? `$${Number(job.bounty).toLocaleString()} RLUSD`
             : `${job.bounty} XRP`;
         const tags = (job.tags || []).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join("");
+        const demoBadge  = job.is_demo ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 6px;margin-left:6px;">Demo</span>` : "";
+        const claimBtn   = job.is_demo
+            ? `<button class="claim-btn" disabled title="Demo listing — not a real escrow" style="opacity:.35;cursor:not-allowed;">
+                <i data-lucide="lock"></i> Demo
+               </button>`
+            : `<button class="claim-btn" onclick="event.stopPropagation();openClaimModal('${job.id}')">
+                <i data-lucide="zap"></i> Claim
+               </button>`;
         return `
         <div class="job-card ${selectedJobId === job.id ? "selected" : ""}"
              onclick="selectJob('${job.id}')"
              style="animation-delay:${i * 0.04}s">
             <div class="job-card-top">
-                <div class="job-card-title">${escHtml(job.title)}</div>
+                <div class="job-card-title">${escHtml(job.title)}${demoBadge}</div>
                 <div class="bounty-tag ${job.currency === "RLUSD" ? "rlusd" : ""}">${bountyStr}</div>
             </div>
             <div class="job-card-meta">
@@ -1138,9 +1504,7 @@ function renderJobs() {
             <div class="job-card-desc">${escHtml(job.description)}</div>
             <div class="job-card-footer">
                 <div class="tag-list">${tags}</div>
-                <button class="claim-btn" onclick="event.stopPropagation();openClaimModal('${job.id}')">
-                    <i data-lucide="zap"></i> Claim
-                </button>
+                ${claimBtn}
             </div>
         </div>`;
     }).join("");
@@ -1196,9 +1560,18 @@ function selectJob(id) {
 
             <hr class="divider">
 
-            <button class="btn-claim-full" onclick="openClaimModal('${job.id}')">
-                <i data-lucide="zap"></i> Claim This Bounty
-            </button>
+            ${job.is_demo
+                ? `<div class="guarantee-note" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25);margin-bottom:.8rem;">
+                    <i data-lucide="info" style="color:#f59e0b;flex-shrink:0;"></i>
+                    <span><strong>Demo listing</strong> — this job is shown as an example of what the marketplace looks like with real activity. The bounty is not a real escrow. Post a real job to create a live bounty backed by on-chain funds.</span>
+                   </div>
+                   <button class="btn-claim-full" disabled style="opacity:.35;cursor:not-allowed;">
+                       <i data-lucide="lock"></i> Demo — No Live Escrow
+                   </button>`
+                : `<button class="btn-claim-full" onclick="openClaimModal('${job.id}')">
+                       <i data-lucide="zap"></i> Claim This Bounty
+                   </button>`
+            }
 
             <button class="btn-direct-hire" onclick="directHire('${escHtml(job.poster)}', '${escHtml(job.title)}')">
                 <i data-lucide="user-plus"></i> Direct Hire this Poster
@@ -1314,7 +1687,8 @@ function renderActivity() {
 // ---------------------------------------------------------------------------
 // POST JOB MODAL
 // ---------------------------------------------------------------------------
-function openPostModal() {
+function openPostModal(type = 'job') {
+    if (type === 'service') { openServiceModal(); return; }
     document.getElementById("post-modal").classList.add("open");
     document.getElementById("post-step-1").style.display = "block";
     document.getElementById("post-step-2").style.display = "none";
@@ -1570,15 +1944,86 @@ async function submitClaim() {
     }
 }
 
+// (setView is defined above with full services/jobs/docs switching)
+
 // ---------------------------------------------------------------------------
-// NAV VIEW SWITCHING
+// SERVICE MODAL
 // ---------------------------------------------------------------------------
-function setView(view) {
-    document.querySelectorAll(".nav-pill").forEach(p => p.classList.remove("active"));
-    event?.target?.classList.add("active");
-    if (view === "docs") {
-        window.open("https://xrpl-referee.onrender.com/docs", "_blank");
+function openServiceModal() {
+    document.getElementById("service-modal").classList.add("open");
+    document.getElementById("service-step-1").style.display = "block";
+    document.getElementById("service-step-2").style.display = "none";
+    const statusEl = document.getElementById("service-status");
+    if (statusEl) { statusEl.style.display = "none"; }
+    lucide.createIcons();
+}
+
+function closeServiceModal() {
+    document.getElementById("service-modal").classList.remove("open");
+    clearInterval(serviceFeeTimer);
+}
+
+function proceedServicePayment() {
+    const title  = document.getElementById("svc-title")?.value.trim();
+    const desc   = document.getElementById("svc-desc")?.value.trim();
+    const wallet = document.getElementById("svc-wallet")?.value.trim();
+    if (!title || !desc || !wallet) {
+        alert("Please fill in title, description, and wallet address.");
+        return;
     }
+    pendingServiceData = {
+        title, description: desc,
+        category:   document.getElementById("svc-category")?.value || "default",
+        rate:       document.getElementById("svc-rate")?.value.trim() || null,
+        tags:       (document.getElementById("svc-tags")?.value || "").split(",").map(t => t.trim()).filter(Boolean),
+        poster:     wallet,
+        poster_name: shortAddr(wallet),
+        email:      document.getElementById("svc-email")?.value.trim() || null,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + SERVICE_EXPIRY_DAYS * 86400000).toISOString(),
+        status:     "ACTIVE",
+        id:         "SVC-" + generateJobId().replace("AT-", ""),
+    };
+    document.getElementById("svc-confirm-title").textContent = title;
+    document.getElementById("service-step-1").style.display = "none";
+    document.getElementById("service-step-2").style.display = "block";
+    lucide.createIcons();
+}
+
+async function payServiceFee() {
+    const btn = document.getElementById("pay-service-fee-btn");
+    if (btn) btn.disabled = true;
+    showModalStatus("service-status", "⏳ Opening Xaman for listing fee…", "info");
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, { method: "POST" });
+        const data = await res.json();
+        if (!data.nextUrl) throw new Error("No Xaman URL returned.");
+        serviceFeeUUID = data.uuid;
+        window.open(data.nextUrl, "_blank");
+        showModalStatus("service-status", "Sign the 0.1 XRP payment in Xaman, then return here.", "info");
+        serviceFeeTimer = setInterval(pollServiceFee, 3000);
+    } catch(err) {
+        showModalStatus("service-status", `❌ ${err.message}`, "error");
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function pollServiceFee() {
+    if (!serviceFeeUUID) return;
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/payload/${serviceFeeUUID}`);
+        const data = await res.json();
+        if (data.signed && data.tx_hash) {
+            clearInterval(serviceFeeTimer);
+            showModalStatus("service-status", "✅ Fee paid! Your listing is now live for 30 days.", "success");
+            storeService(pendingServiceData);
+            allServices.unshift(pendingServiceData);
+            SEED_ACTIVITY.unshift({ type: "post", text: `New service listed: <strong>${pendingServiceData.title.substring(0,40)}…</strong>`, time: "just now" });
+            renderActivity();
+            if (activeView === "services") renderServices();
+            setTimeout(closeServiceModal, 3000);
+        }
+    } catch(e) {}
 }
 
 // ---------------------------------------------------------------------------
