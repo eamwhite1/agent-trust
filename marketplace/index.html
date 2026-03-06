@@ -1287,8 +1287,15 @@ function updateBountyUsd() {
 // LOAD JOBS
 // ---------------------------------------------------------------------------
 async function loadJobs() {
-    const stored = getStoredJobs().filter(j => !isExpired(j.created_at, JOB_EXPIRY_DAYS));
-    allJobs      = [...stored, ...SEED_JOBS.filter(s => !stored.find(j => j.id === s.id))];
+    try {
+        const res  = await fetch(`${REFEREE_URL}/marketplace/jobs?limit=100`);
+        const data = await res.json();
+        allJobs = data.jobs || [];
+    } catch(e) {
+        // API unavailable — fall back to localStorage + seed data
+        const stored = getStoredJobs().filter(j => !isExpired(j.created_at, JOB_EXPIRY_DAYS));
+        allJobs      = [...stored, ...SEED_JOBS.filter(s => !stored.find(j => j.id === s.id))];
+    }
     filteredJobs = [...allJobs];
     renderJobs();
     updateCounts();
@@ -1296,9 +1303,16 @@ async function loadJobs() {
     updateTicker();
 }
 
-function loadServices() {
-    const stored  = getStoredServices().filter(s => !isExpired(s.created_at, SERVICE_EXPIRY_DAYS));
-    allServices   = [...stored, ...SEED_SERVICES.filter(s => !stored.find(x => x.id === s.id))];
+async function loadServices() {
+    try {
+        const res  = await fetch(`${REFEREE_URL}/marketplace/skills?limit=100`);
+        const data = await res.json();
+        allServices = data.skills || [];
+    } catch(e) {
+        // API unavailable — fall back to localStorage + seed data
+        const stored  = getStoredServices().filter(s => !isExpired(s.created_at, SERVICE_EXPIRY_DAYS));
+        allServices   = [...stored, ...SEED_SERVICES.filter(s => !stored.find(x => x.id === s.id))];
+    }
     renderServices();
 }
 
@@ -1804,6 +1818,8 @@ async function createJobEscrow(feeHash) {
                 currency:         "XRP",
                 amount_xrp:       pendingPostData.bounty,
                 cancel_after_hrs: pendingPostData.deadline_hrs,
+                category:         pendingPostData.category || "default",
+                tags:             pendingPostData.tags || [],
             }),
         });
         const setupData = await res.json();
@@ -1830,12 +1846,8 @@ async function createJobEscrow(feeHash) {
                 `✅ Job ID: ${jobId}\nXaman opened — sign the EscrowCreate to lock your bounty.\nYour job will appear on the marketplace once signed.`,
                 "success");
 
-            // Store locally and add to list optimistically
-            storeJob(pendingPostData);
-            allJobs.unshift(pendingPostData);
-            filteredJobs.unshift(pendingPostData);
-            renderJobs();
-            updateCounts();
+            // Reload from backend so the new job (and any others) appear for all users
+            await loadJobs();
 
             // Add to activity feed
             SEED_ACTIVITY.unshift({
@@ -2015,12 +2027,26 @@ async function pollServiceFee() {
         const data = await res.json();
         if (data.signed && data.tx_hash) {
             clearInterval(serviceFeeTimer);
-            showModalStatus("service-status", "✅ Fee paid! Your listing is now live for 30 days.", "success");
-            storeService(pendingServiceData);
-            allServices.unshift(pendingServiceData);
-            SEED_ACTIVITY.unshift({ type: "post", text: `New service listed: <strong>${pendingServiceData.title.substring(0,40)}…</strong>`, time: "just now" });
+            // Persist to backend so all users (human + agent) can see this skill
+            await safeFetch(`${REFEREE_URL}/marketplace/skills`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id:          pendingServiceData.id,
+                    fee_hash:    data.tx_hash,
+                    title:       pendingServiceData.title,
+                    description: pendingServiceData.description,
+                    category:    pendingServiceData.category,
+                    rate:        pendingServiceData.rate,
+                    poster:      pendingServiceData.poster,
+                    poster_name: pendingServiceData.poster_name,
+                    tags:        pendingServiceData.tags || [],
+                }),
+            });
+            showModalStatus("service-status", "✅ Fee paid! Your skill listing is now live for 30 days.", "success");
+            SEED_ACTIVITY.unshift({ type: "post", text: `New skill listed: <strong>${pendingServiceData.title.substring(0,40)}…</strong>`, time: "just now" });
             renderActivity();
-            if (activeView === "services") renderServices();
+            if (activeView === "services") { await loadServices(); }
             setTimeout(closeServiceModal, 3000);
         }
     } catch(e) {}
