@@ -567,7 +567,7 @@ nav {
             <i data-lucide="layout-grid"></i> Jobs
         </button>
         <button class="nav-pill" id="pill-services" onclick="setView('services')">
-            <i data-lucide="store"></i> Services
+            <i data-lucide="zap"></i> Skills
         </button>
         <button class="nav-pill" id="pill-docs" onclick="setView('docs')">
             <i data-lucide="code-2"></i> API
@@ -584,7 +584,7 @@ nav {
                     <i data-lucide="briefcase" style="width:13px;height:13px;color:#3b82f6;"></i> Post a Job
                 </button>
                 <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
-                    <i data-lucide="store" style="width:13px;height:13px;color:#10b981;"></i> List a Service
+                    <i data-lucide="zap" style="width:13px;height:13px;color:#10b981;"></i> List a Skill
                 </button>
             </div>
         </div>
@@ -724,7 +724,7 @@ nav {
     <aside class="detail-panel" id="detail-panel">
         <div class="detail-empty" id="detail-empty">
             <i data-lucide="mouse-pointer-click"></i>
-            <p>Select a job or service to see full details</p>
+            <p>Select a job or skill to see full details</p>
         </div>
         <div id="detail-content" style="display:none;"></div>
     </aside>
@@ -917,7 +917,7 @@ nav {
     <div class="modal">
         <div class="modal-header">
             <div>
-                <div class="modal-title">List a Service</div>
+                <div class="modal-title">List a Skill</div>
                 <div class="modal-subtitle">Advertise your capabilities · Buyers direct-hire you · 0.1 XRP/month</div>
             </div>
             <button class="modal-close" onclick="closeServiceModal()"><i data-lucide="x"></i></button>
@@ -927,11 +927,11 @@ nav {
                 <div class="fee-notice">
                     <i data-lucide="zap"></i>
                     <div class="fee-notice-text">
-                        <strong>0.1 XRP/month listing fee</strong> — paid upfront for 30 days. Renew monthly to keep your service visible. Listings expire automatically after 30 days if not renewed.
+                        <strong>0.1 XRP/month listing fee</strong> — paid upfront for 30 days. Renew monthly to keep your skill visible. Listings expire automatically after 30 days if not renewed.
                     </div>
                 </div>
                 <div class="field">
-                    <label for="svc-title">Service Title *</label>
+                    <label for="svc-title">Skill Title *</label>
                     <input type="text" id="svc-title" placeholder="e.g. I build production-ready Python data pipelines">
                 </div>
                 <div class="field">
@@ -995,7 +995,7 @@ nav {
                     </div>
                     <div class="step">
                         <div class="step-num">2</div>
-                        <div class="step-text"><strong>Listing goes live immediately</strong><br>Buyers browsing the Services tab can see your profile and Direct Hire you. You'll receive a reminder email before your listing expires.</div>
+                        <div class="step-text"><strong>Listing goes live immediately</strong><br>Buyers browsing the Skills tab can see your profile and Direct Hire you. You'll receive a reminder email before your listing expires.</div>
                     </div>
                 </div>
             </div>
@@ -1328,7 +1328,7 @@ function renderServices() {
     const list = document.getElementById("services-list");
     if (!list) return;
     if (allServices.length === 0) {
-        list.innerHTML = `<div class="empty-state"><i data-lucide="store"></i><p>No services listed yet. Be the first — 0.1 XRP/month.</p></div>`;
+        list.innerHTML = `<div class="empty-state"><i data-lucide="zap"></i><p>No skills listed yet. Be the first — 0.1 XRP/month.</p></div>`;
         lucide.createIcons(); return;
     }
     list.innerHTML = allServices.map((svc, i) => {
@@ -1421,7 +1421,7 @@ function setView(view) {
     } else if (view === "services") {
         if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display  = "block";
-        if (mainTitle)    mainTitle.textContent        = "Services";
+        if (mainTitle)    mainTitle.textContent        = "Skills";
         loadServices();
     } else if (view === "docs") {
         window.open("https://xrpl-referee.onrender.com/docs", "_blank");
