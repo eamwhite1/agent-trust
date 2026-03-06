@@ -324,17 +324,25 @@ fetchXrpPrice();
 async function payFee() {
     const btn = document.getElementById("pay-fee-btn");
     if (btn) btn.disabled = true;
-    showStatus("fee-status", "⏳ Opening Xaman for fee payment...", "info");
+    showStatus("fee-status", "⏳ Connecting to Xaman...", "info");
     try {
-        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, { method: "POST" });
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    "{}",
+        });
         const data = await res.json();
-        if (!data.nextUrl) throw new Error("Xaman did not return a sign URL.");
+        if (data.detail) throw new Error(data.detail);
+        if (!data.nextUrl) throw new Error("Xaman did not return a sign URL. Check XUMM API credentials are set on the server.");
         feePayloadUUID = data.uuid;
         window.open(data.nextUrl, "_blank");
         showStatus("fee-status", "Xaman opened — sign the 0.1 XRP payment, then return here.", "info");
         feePollingTimer = setInterval(pollFeePayment, 3000);
     } catch (err) {
-        showStatus("fee-status", `❌ Error: ${err.message}`, "error");
+        const msg = err.message === "Failed to fetch"
+            ? "Could not reach the referee server. It may be starting up — please wait 30 seconds and try again."
+            : err.message;
+        showStatus("fee-status", `❌ Error: ${msg}`, "error");
         if (btn) btn.disabled = false;
     }
 }
