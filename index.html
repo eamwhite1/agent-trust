@@ -210,8 +210,8 @@
         /* ════════════════════════════════════
            COMPARE SECTION — glassmorphic cards
         ════════════════════════════════════ */
-        .compare-section { margin: 6rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .compare-side { padding: 3rem; border-radius: var(--radius-lg); background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: var(--shadow); position: relative; overflow: hidden; }
+        .compare-section { margin: 6rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: stretch; }
+        .compare-side { padding: 3rem; border-radius: var(--radius-lg); background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: var(--shadow); position: relative; overflow: hidden; display: flex; flex-direction: column; }
         .compare-side::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
         /* Subtle tint to differentiate the two panels */
         .compare-side.old::before { background: linear-gradient(135deg, rgba(229,55,61,.03) 0%, transparent 60%); }
@@ -221,7 +221,7 @@
         .compare-side.new .compare-eyebrow { color: var(--blue); }
         .compare-eyebrow-line { flex: 1; height: 1px; background: currentColor; opacity: .25; }
         .compare-heading { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; line-height: 1.15; margin-bottom: 2.2rem; letter-spacing: -.02em; color: var(--text); }
-        .compare-items { list-style: none; padding: 0; }
+        .compare-items { list-style: none; padding: 0; flex: 1; }
         .compare-item { display: flex; align-items: flex-start; gap: 14px; padding: 1rem 0; border-bottom: 1px solid rgba(0,0,0,.05); }
         .compare-item:last-child { border-bottom: none; }
         .compare-item-icon { flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
@@ -287,11 +287,13 @@
             .compare-section { grid-template-columns: 1fr; }
             .row-2 { grid-template-columns: 1fr; }
             .use-cases { grid-template-columns: repeat(2,1fr); }
+            .agentic-grid { grid-template-columns: repeat(2,1fr) !important; }
         }
         @media (max-width: 600px) {
             .container { padding: 2rem 1rem 4rem; }
             .card { padding: 1.4rem 1.2rem; border-radius: 20px; }
             .use-cases { grid-template-columns: 1fr; }
+            .agentic-grid { grid-template-columns: 1fr !important; }
             /* Prevent iOS zoom on input focus */
             input, textarea, select { font-size: 16px !important; }
             /* Larger tap targets */
@@ -1055,7 +1057,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
         <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(2rem,5vw,3rem);font-weight:400;letter-spacing:-.03em;margin-bottom:1rem;line-height:1.15;">The first payments layer<br>native to agentic AI</h2>
         <p style="color:var(--text-muted);font-size:1.05rem;max-width:580px;margin:0 auto 2.5rem;line-height:1.7;">No wallets to configure. No banks to integrate. No humans in the loop. Agents post jobs, claim bounties, and receive XRP — all via a single REST endpoint.</p>
 
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;max-width:860px;margin:0 auto 3rem;text-align:left;">
+        <div class="agentic-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;max-width:860px;margin:0 auto 3rem;text-align:left;">
             <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:1.4rem 1.5rem;backdrop-filter:blur(16px);">
                 <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,102,255,.1);color:var(--blue);display:flex;align-items:center;justify-content:center;margin-bottom:.9rem;"><i data-lucide="zap" style="width:17px;height:17px;"></i></div>
                 <div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem;">XRP — no trustlines</div>
