@@ -319,6 +319,90 @@ function updateUsdEquiv() {
 fetchXrpPrice();
 
 // ---------------------------------------------------------------------------
+// PAYSTRING RESOLUTION
+// ---------------------------------------------------------------------------
+// PayString format: user$domain.com → resolved to XRPL r-address via HTTP
+// Spec: GET https://domain.com/user  Accept: application/xrpl-mainnet+json
+// ---------------------------------------------------------------------------
+let _resolvedPayString = null;   // stores { paystring, address } after resolution
+
+function isPayString(val) {
+    // PayString looks like user$domain.tld — has exactly one $ and no leading 'r'
+    return val.includes("$") && !val.startsWith("r") && val.indexOf("$") > 0;
+}
+
+function onRecipientInput() {
+    const val = (document.getElementById("recipient")?.value || "").trim();
+    const badge = document.getElementById("paystring-badge");
+    const resolved = document.getElementById("paystring-resolved");
+    if (!badge) return;
+    _resolvedPayString = null;
+    if (resolved) { resolved.style.display = "none"; resolved.textContent = ""; }
+    if (isPayString(val)) {
+        badge.textContent = "PayString";
+        badge.style.display = "inline-block";
+        badge.style.background = "rgba(245,158,11,.15)";
+        badge.style.color = "#f59e0b";
+        badge.style.border = "1px solid rgba(245,158,11,.3)";
+    } else {
+        badge.style.display = "none";
+    }
+}
+
+async function resolvePayStringIfNeeded() {
+    const input = document.getElementById("recipient");
+    const val   = (input?.value || "").trim();
+    if (!isPayString(val)) return;
+
+    const badge    = document.getElementById("paystring-badge");
+    const resolved = document.getElementById("paystring-resolved");
+    if (badge) { badge.textContent = "Resolving…"; badge.style.color = "#64748b"; }
+
+    const [user, domain] = val.split("$");
+    try {
+        const res = await fetch(`https://${domain}/${user}`, {
+            headers: { "Accept": "application/xrpl-mainnet+json, application/payid+json" }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        // PayString response: { addresses: [{ addressDetails: { address: "rXXX" } }] }
+        const addr = data?.addresses?.find(
+            a => (a.paymentNetwork || "").toUpperCase() === "XRPL"
+        )?.addressDetails?.address;
+        if (!addr || !addr.startsWith("r")) throw new Error("No XRPL address found");
+        _resolvedPayString = { paystring: val, address: addr };
+        if (badge) {
+            badge.textContent = "✓ Resolved";
+            badge.style.background = "rgba(16,185,129,.12)";
+            badge.style.color = "#10b981";
+            badge.style.border = "1px solid rgba(16,185,129,.3)";
+        }
+        if (resolved) {
+            resolved.textContent = `→ ${addr}`;
+            resolved.style.display = "block";
+        }
+    } catch(e) {
+        if (badge) {
+            badge.textContent = "! Not found";
+            badge.style.background = "rgba(239,68,68,.1)";
+            badge.style.color = "#ef4444";
+            badge.style.border = "1px solid rgba(239,68,68,.2)";
+        }
+        if (resolved) {
+            resolved.textContent = `Could not resolve PayString — enter the r-address directly or check the format (user$domain.com).`;
+            resolved.style.display = "block";
+            resolved.style.color = "#ef4444";
+        }
+    }
+}
+
+function getResolvedRecipient() {
+    // Returns the resolved r-address if a PayString was resolved, otherwise raw input
+    if (_resolvedPayString) return _resolvedPayString.address;
+    return document.getElementById("recipient")?.value.trim() || "";
+}
+
+// ---------------------------------------------------------------------------
 // STEP 1A — PAY PROTOCOL FEE
 // ---------------------------------------------------------------------------
 async function payFee() {
@@ -379,7 +463,7 @@ async function initVault() {
     const workerEmail  = document.getElementById("worker-email-field")?.value.trim() || null;
     const projectLabel = document.getElementById("project-label")?.value.trim() || null;
     const taskDesc     = document.getElementById("job-description")?.value.trim();
-    const recipient    = document.getElementById("recipient")?.value.trim();
+    const recipient    = getResolvedRecipient();   // handles PayString → r-address resolution
     const amountVal    = document.getElementById("amt")?.value;
     const feeHash      = document.getElementById("audit-fee-hash")?.value.trim();
     const cancelHrs    = parseInt(document.getElementById("cancel-hours")?.value || "168");

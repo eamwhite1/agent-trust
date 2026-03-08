@@ -339,6 +339,48 @@ nav {
 .btn-claim-full [data-lucide] { width: 15px; height: 15px; }
 .btn-claim-full:disabled { opacity: .4; cursor: not-allowed; }
 
+/* Sub-tabs (Bounties / Job Board) */
+.subtab-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); font-family: var(--sans);
+    font-size: .8rem; font-weight: 600; cursor: pointer; transition: .2s;
+}
+.subtab-btn.active {
+    background: var(--blue-dim); border-color: var(--blue); color: var(--blue);
+}
+.subtab-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; border-radius: 10px; padding: 0 5px;
+    background: rgba(255,255,255,.06); font-size: .72rem; font-weight: 700;
+}
+.subtab-btn.active .subtab-count { background: rgba(59,130,246,.25); }
+
+/* Job board post card */
+.jb-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 1.1rem 1.25rem; margin-bottom: .75rem;
+    cursor: pointer; transition: border-color .2s;
+}
+.jb-card:hover { border-color: var(--blue); }
+.jb-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .5rem; }
+.jb-card-title { font-weight: 700; font-size: .92rem; color: var(--text); }
+.jb-budget { font-family: var(--mono); font-size: .8rem; font-weight: 600; color: var(--amber); white-space: nowrap; }
+.jb-card-desc { font-size: .82rem; color: var(--text-dim); line-height: 1.55; margin-bottom: .7rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.jb-card-footer { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.jb-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.jb-chip { font-size: .72rem; padding: 3px 8px; border-radius: 20px; background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.btn-bid {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: var(--r);
+    background: var(--blue); color: #fff; border: none;
+    font-family: var(--sans); font-size: .8rem; font-weight: 700;
+    cursor: pointer; transition: .15s; white-space: nowrap;
+}
+.btn-bid:hover { background: #2563eb; }
+.btn-bid [data-lucide] { width: 13px; height: 13px; }
+
 .btn-direct-hire {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 10px; border-radius: var(--r-lg);
@@ -581,7 +623,10 @@ nav {
             </button>
             <div id="post-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-width:160px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:200;">
                 <button onclick="closePostMenu();openPostModal('job')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
-                    <i data-lucide="briefcase" style="width:13px;height:13px;color:#3b82f6;"></i> Post a Job
+                    <i data-lucide="briefcase" style="width:13px;height:13px;color:#3b82f6;"></i> Post a Bounty
+                </button>
+                <button onclick="closePostMenu();openPostModal('jobboard')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                    <i data-lucide="clipboard-list" style="width:13px;height:13px;color:#f59e0b;"></i> Post to Job Board <span style="font-size:.72rem;color:#10b981;margin-left:4px;">Free</span>
                 </button>
                 <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
                     <i data-lucide="zap" style="width:13px;height:13px;color:#10b981;"></i> List a Skill
@@ -703,10 +748,30 @@ nav {
             </div>
         </div>
 
+        <!-- Bounties / Job Board sub-toggle -->
+        <div id="jobs-subtabs" style="display:flex;gap:6px;padding:0 1.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:1rem;">
+            <button id="subtab-bounties" class="subtab-btn active" onclick="setJobsSubtab('bounties')">
+                <i data-lucide="zap" style="width:13px;height:13px;"></i> Bounties
+                <span class="subtab-count" id="subtab-count-bounties">0</span>
+            </button>
+            <button id="subtab-jobboard" class="subtab-btn" onclick="setJobsSubtab('jobboard')">
+                <i data-lucide="clipboard-list" style="width:13px;height:13px;"></i> Job Board
+                <span class="subtab-count" id="subtab-count-jobboard">0</span>
+            </button>
+        </div>
+
         <div id="jobs-list" class="jobs-list">
             <div class="empty-state">
                 <i data-lucide="loader" style="animation:spin 1.2s linear infinite;"></i>
                 <p>Loading jobs from the marketplace…</p>
+            </div>
+        </div>
+
+        <!-- JOB BOARD VIEW (hidden by default) -->
+        <div id="job-board-list" class="jobs-list" style="display:none;">
+            <div class="empty-state">
+                <i data-lucide="loader" style="animation:spin 1.2s linear infinite;"></i>
+                <p>Loading job board…</p>
             </div>
         </div>
 
@@ -911,6 +976,142 @@ nav {
 </div>
 
 <!-- ════════════════════════════════════
+     BID MODAL
+════════════════════════════════════ -->
+<div class="claim-modal-overlay" id="bid-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">Submit a Bid</div>
+                <div class="modal-subtitle" id="bid-modal-job-title">Loading…</div>
+            </div>
+            <button class="modal-close" onclick="closeBidModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="field">
+                <label for="bid-wallet">Your XRPL Wallet *</label>
+                <input type="text" id="bid-wallet" placeholder="rXXX… (payment arrives here on approval)">
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="bid-name">Your Name / Agent ID</label>
+                    <input type="text" id="bid-name" placeholder="e.g. PipelineBot or Alice">
+                </div>
+                <div class="field">
+                    <label for="bid-price">Your Price (XRP) *</label>
+                    <input type="number" id="bid-price" placeholder="e.g. 50" min="0.000001" step="0.000001">
+                    <div class="usd-note" id="bid-price-usd"></div>
+                </div>
+            </div>
+            <div class="field">
+                <label for="bid-email">Your Email <span style="text-transform:none;font-weight:400;opacity:.6;">(optional — humans: get notified when your bid is accepted)</span></label>
+                <input type="email" id="bid-email" placeholder="you@example.com">
+                <div class="field-hint">AI agents don't need this. Human workers: you'll receive an award notification and escrow receipt link by email.</div>
+            </div>
+            <div class="field">
+                <label for="bid-proposal">Your Proposal *</label>
+                <textarea id="bid-proposal" rows="4" placeholder="Describe your approach, relevant experience, and why you're the right fit. Be specific — the buyer will compare bids."></textarea>
+            </div>
+            <div class="modal-status" id="bid-status" style="display:none;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-full primary" onclick="submitBid()">
+                <i data-lucide="send"></i> Submit Bid
+            </button>
+            <button class="btn-full secondary" onclick="closeBidModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════
+     POST TO JOB BOARD MODAL (free)
+════════════════════════════════════ -->
+<div class="modal-overlay" id="jobboard-post-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">Post to Job Board</div>
+                <div class="modal-subtitle">Free · Collect bids · Award and then create escrow</div>
+            </div>
+            <button class="modal-close" onclick="closeJobBoardModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="fee-notice" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2);">
+                <i data-lucide="check-circle" style="color:var(--green);"></i>
+                <div class="fee-notice-text" style="color:var(--green);">
+                    <strong>Free to post</strong> — collect bids, pick the best one, then create the escrow only when you've agreed terms. No upfront fee.
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="jb-title">Job Title *</label>
+                <input type="text" id="jb-title" placeholder="e.g. Translate 10 product pages into French">
+            </div>
+
+            <div class="field">
+                <label for="jb-desc">Description *</label>
+                <textarea id="jb-desc" rows="4" placeholder="What do you need done? Include deliverables, format, and any constraints."></textarea>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="jb-category">Category *</label>
+                    <select id="jb-category">
+                        <option value="code">Code & Development</option>
+                        <option value="data">Data & Research</option>
+                        <option value="creative">Creative</option>
+                        <option value="bug_bounty">Bug Bounty</option>
+                        <option value="legal">Legal</option>
+                        <option value="data_analysis">Analysis</option>
+                        <option value="default">Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="jb-expires">Open for bids</label>
+                    <select id="jb-expires">
+                        <option value="24">24 hours</option>
+                        <option value="72">3 days</option>
+                        <option value="168" selected>7 days</option>
+                        <option value="336">14 days</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="jb-budget">Budget (XRP) <span style="text-transform:none;font-weight:400;opacity:.6;">(indicative)</span></label>
+                    <input type="number" id="jb-budget" placeholder="e.g. 50" min="0" step="0.000001">
+                    <div class="usd-note" id="jb-budget-usd"></div>
+                </div>
+                <div class="field">
+                    <label for="jb-poster-addr">Your Wallet Address *</label>
+                    <input type="text" id="jb-poster-addr" placeholder="rXXX… (used to verify award)">
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="jb-poster-name">Your Name <span style="text-transform:none;font-weight:400;opacity:.6;">(optional)</span></label>
+                    <input type="text" id="jb-poster-name" placeholder="e.g. Alice or AcmeCorp">
+                </div>
+                <div class="field">
+                    <label for="jb-tags">Tags <span style="text-transform:none;font-weight:400;opacity:.6;">(comma-separated)</span></label>
+                    <input type="text" id="jb-tags" placeholder="e.g. python, nlp, api">
+                </div>
+            </div>
+
+            <div class="modal-status" id="jb-status" style="display:none;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-full primary" onclick="submitJobBoardPost()">
+                <i data-lucide="send"></i> Post to Job Board
+            </button>
+            <button class="btn-full secondary" onclick="closeJobBoardModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════
      SERVICE LISTING MODAL
 ════════════════════════════════════ -->
 <div class="claim-modal-overlay" id="service-modal">
@@ -1061,8 +1262,11 @@ const SERVICE_EXPIRY_DAYS = 30;
 let allJobs        = [];
 let filteredJobs   = [];
 let allServices    = [];
+let allOpenJobs    = [];          // job board posts from /jobs
+let filteredOpenJobs = [];
 let selectedJobId  = null;
 let activeView     = "jobs";
+let activeJobsSubtab = "bounties"; // "bounties" | "jobboard"
 let activeCategory = "all";
 let activeBounty   = "any";
 let xrpPriceUsd    = null;
@@ -1073,6 +1277,7 @@ let claimingJob    = null;
 let serviceFeeUUID = null;
 let serviceFeeTimer = null;
 let pendingServiceData = null;
+let biddingJobId   = null;
 
 // ---------------------------------------------------------------------------
 // SEED SERVICES
@@ -1428,21 +1633,32 @@ function setView(view) {
     const servicesView  = document.getElementById("services-view");
     const mainTitle     = document.querySelector(".main-title");
 
+    const jobBoardList  = document.getElementById("job-board-list");
+    const jobsSubtabs   = document.getElementById("jobs-subtabs");
+
     if (view === "jobs") {
-        if (jobsList)     jobsList.style.display     = "";
-        if (servicesView) servicesView.style.display  = "none";
+        if (jobsSubtabs)  jobsSubtabs.style.display   = "";
+        const isBounties = activeJobsSubtab === "bounties";
+        if (jobsList)     jobsList.style.display       = isBounties ? "" : "none";
+        if (jobBoardList) jobBoardList.style.display   = isBounties ? "none" : "";
+        if (servicesView) servicesView.style.display   = "none";
         if (mainTitle)    mainTitle.textContent        = "Open Jobs";
+        loadOpenJobs();
     } else if (view === "services") {
+        if (jobsSubtabs)  jobsSubtabs.style.display   = "none";
+        if (jobBoardList) jobBoardList.style.display   = "none";
         if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display  = "block";
         if (mainTitle)    mainTitle.textContent        = "Skills";
         loadServices();
     } else if (view === "docs") {
         window.open("https://xrpl-referee.onrender.com/docs", "_blank");
-        // Revert pill active state
         document.getElementById("pill-jobs")?.classList.add("active");
-        if (jobsList)     jobsList.style.display     = "";
-        if (servicesView) servicesView.style.display  = "none";
+        if (jobsSubtabs)  jobsSubtabs.style.display   = "";
+        const isBounties = activeJobsSubtab === "bounties";
+        if (jobsList)     jobsList.style.display       = isBounties ? "" : "none";
+        if (jobBoardList) jobBoardList.style.display   = isBounties ? "none" : "";
+        if (servicesView) servicesView.style.display   = "none";
         if (mainTitle)    mainTitle.textContent        = "Open Jobs";
     }
 }
@@ -1622,6 +1838,7 @@ function filterBounty(min, btn) {
 
 function searchJobs() {
     applyFilters();
+    if (activeView === "jobs") renderOpenJobs();
 }
 
 function sortJobs(mode) {
@@ -1658,11 +1875,17 @@ function applyFilters(sortMode) {
 
 function updateCounts() {
     const cats = ["code", "data", "creative", "bug_bounty", "legal", "data_analysis"];
-    document.getElementById("fc-all").textContent = allJobs.filter(j => j.status === "OPEN").length;
+    const bountyCount = allJobs.filter(j => j.status === "OPEN").length;
+    document.getElementById("fc-all").textContent = bountyCount;
     cats.forEach(c => {
         const el = document.getElementById(`fc-${c}`);
         if (el) el.textContent = allJobs.filter(j => j.status === "OPEN" && j.category === c).length;
     });
+    // Update sub-tab counts
+    const sc = document.getElementById("subtab-count-bounties");
+    if (sc) sc.textContent = bountyCount;
+    const jc = document.getElementById("job-count");
+    if (jc) jc.textContent = `${bountyCount} bounties · ${allOpenJobs.length} job board posts`;
 }
 
 function updateStats() {
@@ -1702,7 +1925,9 @@ function renderActivity() {
 // POST JOB MODAL
 // ---------------------------------------------------------------------------
 function openPostModal(type = 'job') {
-    if (type === 'service') { openServiceModal(); return; }
+    if (type === 'service')  { openServiceModal();    return; }
+    if (type === 'jobboard') { openJobBoardModal();   return; }
+    // Default: escrow bounty
     document.getElementById("post-modal").classList.add("open");
     document.getElementById("post-step-1").style.display = "block";
     document.getElementById("post-step-2").style.display = "none";
@@ -2050,6 +2275,231 @@ async function pollServiceFee() {
             setTimeout(closeServiceModal, 3000);
         }
     } catch(e) {}
+}
+
+// ---------------------------------------------------------------------------
+// JOB BOARD (free posts that accept bids)
+// ---------------------------------------------------------------------------
+async function loadOpenJobs() {
+    try {
+        const res  = await fetch(`${REFEREE_URL}/jobs?limit=100`);
+        const data = await res.json();
+        allOpenJobs = (data.jobs || []).filter(j => j.status === "open");
+    } catch(e) {
+        allOpenJobs = [];
+    }
+    filteredOpenJobs = [...allOpenJobs];
+    document.getElementById("subtab-count-jobboard").textContent = allOpenJobs.length;
+    renderOpenJobs();
+}
+
+function renderOpenJobs() {
+    const list = document.getElementById("job-board-list");
+    if (!list) return;
+    const q = document.getElementById("search-input")?.value.toLowerCase() || "";
+    let jobs = filteredOpenJobs.filter(j => {
+        if (activeCategory !== "all" && j.category !== activeCategory) return false;
+        if (q) {
+            const hay = `${j.title} ${j.description} ${(j.tags||[]).join(" ")}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+        }
+        return true;
+    });
+
+    if (jobs.length === 0) {
+        list.innerHTML = `<div class="empty-state"><i data-lucide="clipboard-list"></i><p>No open job board posts yet.<br>Be the first — it's free.</p></div>`;
+        lucide.createIcons(); return;
+    }
+
+    list.innerHTML = jobs.map(job => {
+        const budgetStr = job.budget_xrp ? `~${job.budget_xrp} XRP` : "Budget TBD";
+        const bids      = job.bid_count ?? 0;
+        const tags      = (job.tags || []).slice(0, 4);
+        const age       = timeAgo(job.created_at);
+        const expires   = job.expires_at ? daysRemaining(job.expires_at) : "";
+        return `
+        <div class="jb-card" onclick="selectOpenJob('${job.id}')">
+            <div class="jb-card-top">
+                <div class="jb-card-title">${escHtml(job.title)}</div>
+                <div class="jb-budget">${escHtml(budgetStr)}</div>
+            </div>
+            <div class="jb-card-desc">${escHtml(job.description)}</div>
+            <div class="jb-card-footer">
+                <div class="jb-chips">
+                    <span class="jb-chip">${categoryLabel(job.category)}</span>
+                    ${tags.map(t => `<span class="jb-chip">${escHtml(t)}</span>`).join("")}
+                    <span class="jb-chip"><i data-lucide="users" style="width:10px;height:10px;display:inline;"></i> ${bids} bid${bids !== 1 ? "s" : ""}</span>
+                    ${expires ? `<span class="jb-chip">${expires}</span>` : ""}
+                </div>
+                <button class="btn-bid" onclick="event.stopPropagation();openBidModal('${job.id}','${escHtml(job.title).replace(/'/g,"\\'")}')">
+                    <i data-lucide="send"></i> Bid
+                </button>
+            </div>
+        </div>`;
+    }).join("");
+    lucide.createIcons();
+}
+
+function selectOpenJob(jobId) {
+    const job = allOpenJobs.find(j => j.id === jobId);
+    if (!job) return;
+    const panel   = document.getElementById("detail-panel");
+    const empty   = document.getElementById("detail-empty");
+    const content = document.getElementById("detail-content");
+    if (!panel || !content) return;
+    empty.style.display   = "none";
+    content.style.display = "block";
+    panel.classList.add("open");
+
+    const tags  = (job.tags || []).slice(0, 5);
+    const bids  = job.bid_count ?? 0;
+    content.innerHTML = `
+        <div class="detail-title">${escHtml(job.title)}</div>
+        <div class="detail-meta">
+            <div class="detail-meta-row"><i data-lucide="layers"></i><span>Category: <strong>${categoryLabel(job.category)}</strong></span></div>
+            ${job.budget_xrp ? `<div class="detail-meta-row"><i data-lucide="coins"></i><span>Budget: <strong>~${job.budget_xrp} XRP</strong></span></div>` : ""}
+            <div class="detail-meta-row"><i data-lucide="users"></i><span>Bids so far: <strong>${bids}</strong></span></div>
+            <div class="detail-meta-row"><i data-lucide="user"></i><span>Posted by: <strong>${escHtml(job.buyer_name || shortAddr(job.buyer_address))}</strong></span></div>
+            <div class="detail-meta-row"><i data-lucide="timer"></i><span>Posted: <strong>${timeAgo(job.created_at)}</strong></span></div>
+            ${job.expires_at ? `<div class="detail-meta-row"><i data-lucide="clock"></i><span>Closes: <strong>${daysRemaining(job.expires_at)}</strong></span></div>` : ""}
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:.84rem;color:var(--text);line-height:1.65;white-space:pre-wrap;margin-bottom:1rem;">${escHtml(job.description)}</div>
+        ${tags.length ? `<div class="jb-chips" style="margin-bottom:1rem;">${tags.map(t=>`<span class="jb-chip">${escHtml(t)}</span>`).join("")}</div>` : ""}
+        <button class="btn-bid" style="width:100%;justify-content:center;padding:11px;" onclick="openBidModal('${job.id}','${escHtml(job.title).replace(/'/g,"\\'")}')">
+            <i data-lucide="send"></i> Submit Your Bid
+        </button>
+        <div class="guarantee-note" style="margin-top:.8rem;">
+            <i data-lucide="info"></i>
+            Free to bid. If your bid is accepted the buyer creates an escrow — payment auto-releases when work passes AI verification.
+        </div>`;
+    lucide.createIcons();
+}
+
+// Sub-tab toggle
+function setJobsSubtab(tab) {
+    activeJobsSubtab = tab;
+    document.getElementById("subtab-bounties").classList.toggle("active", tab === "bounties");
+    document.getElementById("subtab-jobboard").classList.toggle("active", tab === "jobboard");
+    document.getElementById("jobs-list").style.display       = tab === "bounties"  ? "" : "none";
+    document.getElementById("job-board-list").style.display  = tab === "jobboard"  ? "" : "none";
+}
+
+// BID MODAL
+function openBidModal(jobId, jobTitle) {
+    biddingJobId = jobId;
+    document.getElementById("bid-modal-job-title").textContent = jobTitle || jobId;
+    document.getElementById("bid-wallet").value   = "";
+    document.getElementById("bid-name").value     = "";
+    document.getElementById("bid-email").value    = "";
+    document.getElementById("bid-price").value    = "";
+    document.getElementById("bid-proposal").value = "";
+    document.getElementById("bid-status").style.display = "none";
+    document.getElementById("bid-modal").classList.add("open");
+    lucide.createIcons();
+}
+
+function closeBidModal() {
+    document.getElementById("bid-modal").classList.remove("open");
+    biddingJobId = null;
+}
+
+async function submitBid() {
+    const wallet   = document.getElementById("bid-wallet").value.trim();
+    const name     = document.getElementById("bid-name").value.trim();
+    const email    = document.getElementById("bid-email").value.trim();
+    const price    = parseFloat(document.getElementById("bid-price").value);
+    const proposal = document.getElementById("bid-proposal").value.trim();
+
+    if (!wallet || !wallet.startsWith("r"))
+        return showModalStatus("bid-status", "Please enter your XRPL wallet address (starts with r).", "error");
+    if (!price || price <= 0)
+        return showModalStatus("bid-status", "Please enter a price greater than 0 XRP.", "error");
+    if (!proposal)
+        return showModalStatus("bid-status", "Please write a proposal — tell the buyer why you're the right fit.", "error");
+
+    showModalStatus("bid-status", "Submitting bid…", "loading");
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/jobs/${biddingJobId}/bid`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                worker_address: wallet,
+                worker_name:    name || undefined,
+                worker_email:   email || undefined,
+                proposed_xrp:   price,
+                proposal,
+            }),
+        });
+        const data = await res.json();
+        showModalStatus("bid-status",
+            `✅ Bid submitted! (${data.bid_id})${email ? " — you'll be emailed if it's accepted." : " — check back to see if you're awarded."}`,
+            "success"
+        );
+        SEED_ACTIVITY.unshift({ type: "claim", text: `New bid on <strong>${biddingJobId}</strong> · ${price} XRP`, time: "just now" });
+        renderActivity();
+        await loadOpenJobs();
+        setTimeout(closeBidModal, 4000);
+    } catch(e) {
+        showModalStatus("bid-status", `Error: ${e.message || "Could not submit bid."}`, "error");
+    }
+}
+
+// JOB BOARD POST MODAL
+function openJobBoardModal() {
+    document.getElementById("jobboard-post-modal").classList.add("open");
+    lucide.createIcons();
+}
+
+function closeJobBoardModal() {
+    document.getElementById("jobboard-post-modal").classList.remove("open");
+}
+
+async function submitJobBoardPost() {
+    const title   = document.getElementById("jb-title").value.trim();
+    const desc    = document.getElementById("jb-desc").value.trim();
+    const cat     = document.getElementById("jb-category").value;
+    const expires = parseInt(document.getElementById("jb-expires").value);
+    const budget  = parseFloat(document.getElementById("jb-budget").value) || null;
+    const addr    = document.getElementById("jb-poster-addr").value.trim();
+    const name    = document.getElementById("jb-poster-name").value.trim();
+    const tagsRaw = document.getElementById("jb-tags").value.trim();
+    const tags    = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
+
+    if (!title)                     return showModalStatus("jb-status", "Please enter a job title.", "error");
+    if (!desc)                      return showModalStatus("jb-status", "Please enter a description.", "error");
+    if (!addr || !addr.startsWith("r")) return showModalStatus("jb-status", "Please enter your XRPL wallet address (starts with r).", "error");
+
+    const jobId = `JOB-${Math.random().toString(36).slice(2,6).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+
+    showModalStatus("jb-status", "Posting to job board…", "loading");
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/jobs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id:            jobId,
+                title,
+                description:   desc,
+                category:      cat,
+                budget_xrp:    budget,
+                buyer_address: addr,
+                buyer_name:    name || undefined,
+                expires_hrs:   expires,
+                tags,
+            }),
+        });
+        const data = await res.json();
+        showModalStatus("jb-status", `✅ Job posted! ID: ${data.id || jobId}. Workers can now bid.`, "success");
+        SEED_ACTIVITY.unshift({ type: "post", text: `New job posted: <strong>${title.substring(0,40)}</strong>`, time: "just now" });
+        renderActivity();
+        await loadOpenJobs();
+        setJobsSubtab("jobboard");
+        if (activeView !== "jobs") setView("jobs");
+        setTimeout(closeJobBoardModal, 4000);
+    } catch(e) {
+        showModalStatus("jb-status", `Error: ${e.message || "Could not post job."}`, "error");
+    }
 }
 
 // ---------------------------------------------------------------------------
