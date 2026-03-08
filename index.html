@@ -504,15 +504,13 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
 
             <div class="row-2">
                 <div class="field-group">
-                    <label class="field-label" for="recipient">Seller Wallet Address or PayString *</label>
+                    <label class="field-label" for="recipient">Seller Wallet Address *</label>
                     <div style="position:relative;">
-                        <input type="text" id="recipient" placeholder="rXXX… or user$domain.com" oninput="onRecipientInput()" onblur="resolvePayStringIfNeeded()">
-                        <span id="paystring-badge" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;"></span>
+                        <input type="text" id="recipient" placeholder="rXXX…">
                     </div>
-                    <p id="paystring-resolved" style="display:none;font-size:.74rem;color:#006644;margin-top:.3rem;font-weight:600;"></p>
                     <p style="font-size:.74rem;color:var(--text-muted);margin-top:.4rem;line-height:1.55;">
                         <i data-lucide="info" style="width:11px;height:11px;vertical-align:middle;margin-right:3px;color:var(--blue);"></i>
-                        Enter an XRPL wallet (rXXX…) or a PayString (user$domain.com). PayStrings are resolved automatically to the wallet address before the escrow is created.
+                        Enter the seller's XRPL wallet address (starts with r).
                     </p>
                 </div>
                 <div class="field-group">
