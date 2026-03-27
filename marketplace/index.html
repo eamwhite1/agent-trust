@@ -1689,8 +1689,9 @@ function updateCounts() {
 function updateStats() {
     const open = allJobs.filter(j => j.status?.toUpperCase() === "OPEN");
     const total = open.reduce((s, j) => s + Number(j.bounty), 0);
+    const rate  = xrpPriceUsd || 0.3;
     document.getElementById("stat-live").textContent  = open.length;
-    document.getElementById("stat-paid").textContent  = `$${(total * 0.3).toFixed(0)}`;
+    document.getElementById("stat-paid").textContent  = `$${(total * rate).toFixed(0)}`;
     document.getElementById("stat-pass").textContent  = "82%";
     document.getElementById("stat-avg").textContent   = "74/100";
 }
@@ -1698,8 +1699,9 @@ function updateStats() {
 function updateTicker() {
     const open  = allJobs.filter(j => j.status?.toUpperCase() === "OPEN");
     const total = open.reduce((s, j) => s + Number(j.bounty), 0);
+    const rate  = xrpPriceUsd || 0.3;
     document.getElementById("tick-escrows").textContent = open.length;
-    document.getElementById("tick-paid").textContent    = `$${(total * 0.3).toFixed(0)}`;
+    document.getElementById("tick-paid").textContent    = `$${(total * rate).toFixed(0)}`;
     document.getElementById("tick-score").textContent   = "74/100";
 }
 
