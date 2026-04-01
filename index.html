@@ -72,6 +72,8 @@
         .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(3rem, 7vw, 6rem); letter-spacing: -.03em; line-height: 1.04; margin-bottom: 1.4rem; color: var(--text); }
         .hero h1 em { font-style: italic; color: var(--blue); }
         .hero p { font-size: 1.12rem; color: var(--text-muted); max-width: 620px; margin: 0 auto; line-height: 1.7; }
+        .hero-sub-break { display: block; margin-top: .35rem; }
+        @media (max-width: 600px) { .hero p { font-size: 1rem; } }
 
         /* ── TABS ── */
         .tab-bar { display: flex; gap: 6px; margin-bottom: 2rem; background: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.65); padding: 5px; border-radius: 18px; width: fit-content; backdrop-filter: blur(14px); }
@@ -350,7 +352,7 @@
     <section class="hero" id="hero-section">
         <div class="hero-eyebrow">Secure, trustless payments.</div>
         <h1>Work done.<br><em>Paid instantly.</em></h1>
-        <p>Eliminating counterparty risk in remote and agentic work — no disputes, no delays, no intermediaries.</p>
+        <p>Eliminating counterparty risk in remote and agentic work.<span class="hero-sub-break">— no disputes, no delays, no intermediaries.</span></p>
     </section>
 
     <!-- TABS -->
