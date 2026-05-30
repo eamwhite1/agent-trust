@@ -922,6 +922,12 @@ nav {
                 </div>
             </div>
 
+            <div class="field">
+                <label for="jb-buyer-email">Your Email <span style="text-transform:none;font-weight:400;opacity:.6;">(optional — get notified when bids arrive)</span></label>
+                <input type="email" id="jb-buyer-email" placeholder="you@example.com">
+                <div class="field-hint">You'll receive an email each time a bid is submitted on your job.</div>
+            </div>
+
             <div class="modal-status" id="jb-status" style="display:none;"></div>
         </div>
         <div class="modal-footer">
@@ -1951,14 +1957,15 @@ function closeJobBoardModal() {
 
 async function submitJobBoardPost() {
     const title   = document.getElementById("jb-title").value.trim();
-    const desc    = document.getElementById("jb-desc").value.trim();
-    const cat     = document.getElementById("jb-category").value;
-    const expires = parseInt(document.getElementById("jb-expires").value);
-    const budget  = parseFloat(document.getElementById("jb-budget").value) || null;
-    const addr    = document.getElementById("jb-poster-addr").value.trim();
-    const name    = document.getElementById("jb-poster-name").value.trim();
-    const tagsRaw = document.getElementById("jb-tags").value.trim();
-    const tags    = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
+    const desc       = document.getElementById("jb-desc").value.trim();
+    const cat        = document.getElementById("jb-category").value;
+    const expires    = parseInt(document.getElementById("jb-expires").value);
+    const budget     = parseFloat(document.getElementById("jb-budget").value) || null;
+    const addr       = document.getElementById("jb-poster-addr").value.trim();
+    const name       = document.getElementById("jb-poster-name").value.trim();
+    const tagsRaw    = document.getElementById("jb-tags").value.trim();
+    const tags       = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
+    const buyerEmail = document.getElementById("jb-buyer-email").value.trim();
 
     if (!title)                     return showModalStatus("jb-status", "Please enter a job title.", "error");
     if (!desc)                      return showModalStatus("jb-status", "Please enter a description.", "error");
@@ -1979,6 +1986,7 @@ async function submitJobBoardPost() {
                 budget_xrp:    budget,
                 buyer_address: addr,
                 buyer_name:    name || undefined,
+                buyer_email:   buyerEmail || undefined,
                 expires_hrs:   expires,
                 tags,
             }),
@@ -2081,6 +2089,28 @@ function closeTrackModal() {
     document.getElementById("track-input").value = "";
 }
 
+async function awardBid(jobId, bidId) {
+    const buyerAddr = prompt("Enter your wallet address to confirm you posted this job (starts with r):");
+    if (!buyerAddr || !buyerAddr.trim().startsWith("r")) return;
+    const body = document.getElementById("track-modal-body");
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}/award`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ buyer_address: buyerAddr.trim(), bid_id: bidId }),
+        });
+        const data = await res.json();
+        if (data.detail) {
+            alert(`Could not award: ${data.detail}`);
+            return;
+        }
+        // Refresh the tracker view
+        fetchJobStatus(jobId);
+    } catch (e) {
+        alert(`Award failed: ${e.message}`);
+    }
+}
+
 async function fetchJobStatus(jobId) {
     const body = document.getElementById("track-modal-body");
     try {
@@ -2089,6 +2119,7 @@ async function fetchJobStatus(jobId) {
         if (job.detail) { body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Job not found: ${jobId}</div>`; return; }
 
         const statusColor = { open: "var(--green)", awarded: "var(--amber)", closed: "var(--text-dim)", cancelled: "var(--red)" }[job.status] || "var(--text-dim)";
+        const canAward = job.status === "open";
         const bidsHtml = (job.bids || []).length === 0
             ? `<p style="color:var(--text-dim);font-size:.82rem;">No bids yet.</p>`
             : (job.bids || []).map(b => {
@@ -2098,6 +2129,12 @@ async function fetchJobStatus(jobId) {
                     : b.status === "rejected"
                         ? `<span style="color:var(--text-muted);font-size:.72rem;">rejected</span>`
                         : `<span style="color:var(--text-dim);font-size:.72rem;">pending</span>`;
+                const awardBtn = (canAward && b.status === "pending")
+                    ? `<button onclick="awardBid('${job.id}','${b.bid_id}')"
+                         style="margin-top:8px;padding:5px 12px;background:var(--green);border:none;border-radius:6px;color:#000;font-family:var(--sans);font-size:.75rem;font-weight:700;cursor:pointer;">
+                         Award this bid
+                       </button>`
+                    : "";
                 return `<div style="background:var(--surface-2);border:1px solid ${isWinner ? 'var(--green)' : 'var(--border)'};border-radius:var(--r);padding:.75rem 1rem;margin-bottom:8px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
                         <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-dim);">${b.bid_id}</span>
@@ -2106,6 +2143,7 @@ async function fetchJobStatus(jobId) {
                     <div style="font-size:.82rem;font-weight:600;">${b.worker_name || shortAddr(b.worker_address)}</div>
                     <div style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</div>
                     <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;line-height:1.5;">${b.proposal}</div>
+                    ${awardBtn}
                 </div>`;
             }).join("");
 
