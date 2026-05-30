@@ -616,6 +616,11 @@ nav {
         </button>
     </div>
     <div class="nav-right">
+        <div style="display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:32px;">
+            <i data-lucide="search" style="width:12px;height:12px;color:var(--text-dim);flex-shrink:0;"></i>
+            <input id="track-input" type="text" placeholder="Track job ID…" style="background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:.75rem;width:130px;" onkeydown="if(event.key==='Enter')trackJob()">
+            <button onclick="trackJob()" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;padding:0;font-family:var(--sans);font-size:.72rem;font-weight:600;white-space:nowrap;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">Go</button>
+        </div>
         <div class="status-pill"><div class="live-dot"></div> XRPL Mainnet</div>
         <div style="position:relative;">
             <button class="btn-post" id="post-btn-main" onclick="togglePostMenu()">
@@ -779,6 +784,22 @@ nav {
 <!-- ════════════════════════════════════
      BID MODAL
 ════════════════════════════════════ -->
+<!-- TRACK JOB MODAL -->
+<div class="claim-modal-overlay" id="track-modal" onclick="if(event.target===this)closeTrackModal()">
+    <div class="modal" style="max-width:540px;">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">Job Status</div>
+                <div class="modal-sub" id="track-modal-sub">—</div>
+            </div>
+            <button class="modal-close" onclick="closeTrackModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body" id="track-modal-body" style="min-height:120px;display:flex;align-items:center;justify-content:center;">
+            <div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>
+        </div>
+    </div>
+</div>
+
 <div class="claim-modal-overlay" id="bid-modal">
     <div class="modal">
         <div class="modal-header">
@@ -2034,6 +2055,81 @@ function timeAgo(iso) {
     if (diff < 3600)   return `${Math.floor(diff/60)}m ago`;
     if (diff < 86400)  return `${Math.floor(diff/3600)}h ago`;
     return `${Math.floor(diff/86400)}d ago`;
+}
+
+// ---------------------------------------------------------------------------
+// JOB TRACKER
+// ---------------------------------------------------------------------------
+async function trackJob() {
+    const raw = (document.getElementById("track-input").value || "").trim().toUpperCase();
+    if (!raw) return;
+    const jobId = raw.startsWith("JOB-") ? raw : `JOB-${raw}`;
+    openTrackModal(jobId);
+}
+
+function openTrackModal(jobId) {
+    const overlay = document.getElementById("track-modal");
+    document.getElementById("track-modal-sub").textContent = jobId;
+    document.getElementById("track-modal-body").innerHTML =
+        `<div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>`;
+    overlay.style.display = "flex";
+    fetchJobStatus(jobId);
+}
+
+function closeTrackModal() {
+    document.getElementById("track-modal").style.display = "none";
+    document.getElementById("track-input").value = "";
+}
+
+async function fetchJobStatus(jobId) {
+    const body = document.getElementById("track-modal-body");
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}`);
+        const job  = await res.json();
+        if (job.detail) { body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Job not found: ${jobId}</div>`; return; }
+
+        const statusColor = { open: "var(--green)", awarded: "var(--amber)", closed: "var(--text-dim)", cancelled: "var(--red)" }[job.status] || "var(--text-dim)";
+        const bidsHtml = (job.bids || []).length === 0
+            ? `<p style="color:var(--text-dim);font-size:.82rem;">No bids yet.</p>`
+            : (job.bids || []).map(b => {
+                const isWinner = b.bid_id === job.awarded_bid_id;
+                const statusBadge = b.status === "accepted"
+                    ? `<span style="color:var(--green);font-size:.72rem;font-weight:700;">✓ AWARDED</span>`
+                    : b.status === "rejected"
+                        ? `<span style="color:var(--text-muted);font-size:.72rem;">rejected</span>`
+                        : `<span style="color:var(--text-dim);font-size:.72rem;">pending</span>`;
+                return `<div style="background:var(--surface-2);border:1px solid ${isWinner ? 'var(--green)' : 'var(--border)'};border-radius:var(--r);padding:.75rem 1rem;margin-bottom:8px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-dim);">${b.bid_id}</span>
+                        ${statusBadge}
+                    </div>
+                    <div style="font-size:.82rem;font-weight:600;">${b.worker_name || shortAddr(b.worker_address)}</div>
+                    <div style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</div>
+                    <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;line-height:1.5;">${b.proposal}</div>
+                </div>`;
+            }).join("");
+
+        document.getElementById("track-modal-sub").textContent = `${jobId} · ${job.title}`;
+        body.innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+                    <span style="font-size:.78rem;color:var(--text-dim);">Status</span>
+                    <span style="font-size:.8rem;font-weight:700;color:${statusColor};text-transform:uppercase;">${job.status}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+                    <span style="font-size:.78rem;color:var(--text-dim);">Budget</span>
+                    <span style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${job.budget_xrp} XRP</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:.78rem;color:var(--text-dim);">Bids received</span>
+                    <span style="font-size:.8rem;font-weight:600;">${(job.bids||[]).length}</span>
+                </div>
+            </div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">Bids</div>
+            ${bidsHtml}`;
+    } catch (e) {
+        body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Failed to load job. Check the ID and try again.</div>`;
+    }
 }
 </script>
 </body>
