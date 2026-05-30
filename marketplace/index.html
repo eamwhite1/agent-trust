@@ -1303,7 +1303,7 @@ window.addEventListener("DOMContentLoaded", () => {
     loadServices();
     renderActivity();
     setInterval(loadXrpPrice, 30000);
-
+    handleEmailLinks();
 });
 
 // ---------------------------------------------------------------------------
@@ -2089,25 +2089,46 @@ function closeTrackModal() {
     document.getElementById("track-input").value = "";
 }
 
-async function awardBid(jobId, bidId) {
-    const buyerAddr = prompt("Enter your wallet address to confirm you posted this job (starts with r):");
-    if (!buyerAddr || !buyerAddr.trim().startsWith("r")) return;
-    const body = document.getElementById("track-modal-body");
+async function awardBidWithToken(jobId, bidId, token) {
     try {
         const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}/award`, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ buyer_address: buyerAddr.trim(), bid_id: bidId }),
+            body:    JSON.stringify({ award_token: token, bid_id: bidId }),
         });
         const data = await res.json();
-        if (data.detail) {
-            alert(`Could not award: ${data.detail}`);
-            return;
-        }
-        // Refresh the tracker view
-        fetchJobStatus(jobId);
+        if (data.detail) return { ok: false, error: data.detail };
+        return { ok: true };
     } catch (e) {
-        alert(`Award failed: ${e.message}`);
+        return { ok: false, error: e.message };
+    }
+}
+
+// Handle ?award_job=&award_bid=&token= and ?track_job=&token= from email links
+async function handleEmailLinks() {
+    const params  = new URLSearchParams(window.location.search);
+    const awardJob = params.get("award_job");
+    const awardBid = params.get("award_bid");
+    const trackJob = params.get("track_job");
+    const token    = params.get("token");
+
+    if (awardJob && awardBid && token) {
+        // Clean the URL so the token isn't visible in the address bar after use
+        window.history.replaceState({}, "", window.location.pathname);
+        openTrackModal(awardJob);
+        // Wait for the modal content to render then award
+        setTimeout(async () => {
+            const result = await awardBidWithToken(awardJob, awardBid, token);
+            if (result.ok) {
+                fetchJobStatus(awardJob);
+            } else {
+                document.getElementById("track-modal-body").innerHTML =
+                    `<div style="color:var(--red);font-size:.85rem;">Could not award bid: ${result.error}</div>`;
+            }
+        }, 800);
+    } else if (trackJob && token) {
+        window.history.replaceState({}, "", window.location.pathname);
+        openTrackModal(trackJob);
     }
 }
 
@@ -2119,7 +2140,6 @@ async function fetchJobStatus(jobId) {
         if (job.detail) { body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Job not found: ${jobId}</div>`; return; }
 
         const statusColor = { open: "var(--green)", awarded: "var(--amber)", closed: "var(--text-dim)", cancelled: "var(--red)" }[job.status] || "var(--text-dim)";
-        const canAward = job.status === "open";
         const bidsHtml = (job.bids || []).length === 0
             ? `<p style="color:var(--text-dim);font-size:.82rem;">No bids yet.</p>`
             : (job.bids || []).map(b => {
@@ -2129,12 +2149,6 @@ async function fetchJobStatus(jobId) {
                     : b.status === "rejected"
                         ? `<span style="color:var(--text-muted);font-size:.72rem;">rejected</span>`
                         : `<span style="color:var(--text-dim);font-size:.72rem;">pending</span>`;
-                const awardBtn = (canAward && b.status === "pending")
-                    ? `<button onclick="awardBid('${job.id}','${b.bid_id}')"
-                         style="margin-top:8px;padding:5px 12px;background:var(--green);border:none;border-radius:6px;color:#000;font-family:var(--sans);font-size:.75rem;font-weight:700;cursor:pointer;">
-                         Award this bid
-                       </button>`
-                    : "";
                 return `<div style="background:var(--surface-2);border:1px solid ${isWinner ? 'var(--green)' : 'var(--border)'};border-radius:var(--r);padding:.75rem 1rem;margin-bottom:8px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
                         <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-dim);">${b.bid_id}</span>
@@ -2143,7 +2157,6 @@ async function fetchJobStatus(jobId) {
                     <div style="font-size:.82rem;font-weight:600;">${b.worker_name || shortAddr(b.worker_address)}</div>
                     <div style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</div>
                     <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;line-height:1.5;">${b.proposal}</div>
-                    ${awardBtn}
                 </div>`;
             }).join("");
 
