@@ -936,9 +936,9 @@ nav {
             </div>
 
             <div class="field">
-                <label for="jb-buyer-email">Your Email <span style="text-transform:none;font-weight:400;opacity:.6;">(optional — get notified when bids arrive)</span></label>
-                <input type="email" id="jb-buyer-email" placeholder="you@example.com">
-                <div class="field-hint">You'll receive an email each time a bid is submitted on your job.</div>
+                <label for="jb-buyer-email">Your Email *</label>
+                <input type="email" id="jb-buyer-email" placeholder="you@example.com" required>
+                <div class="field-hint">Required — you'll receive bid notifications and an award link by email. Without this you cannot select a winning bid.</div>
             </div>
 
             <div class="modal-status" id="jb-status" style="display:none;"></div>
@@ -1982,9 +1982,10 @@ async function submitJobBoardPost() {
     const tags       = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
     const buyerEmail = document.getElementById("jb-buyer-email").value.trim();
 
-    if (!title)                     return showModalStatus("jb-status", "Please enter a job title.", "error");
-    if (!desc)                      return showModalStatus("jb-status", "Please enter a description.", "error");
+    if (!title)                         return showModalStatus("jb-status", "Please enter a job title.", "error");
+    if (!desc)                          return showModalStatus("jb-status", "Please enter a description.", "error");
     if (!addr || !addr.startsWith("r")) return showModalStatus("jb-status", "Please enter your XRPL wallet address (starts with r).", "error");
+    if (!buyerEmail)                    return showModalStatus("jb-status", "Please enter your email — it's required so you can receive bids and award the job.", "error");
 
     const jobId = `JOB-${Math.random().toString(36).slice(2,6).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
 
@@ -2007,12 +2008,23 @@ async function submitJobBoardPost() {
             }),
         });
         const data = await res.json();
-        showModalStatus("jb-status", `✅ Job posted! ID: ${data.id || jobId}. Workers can now bid.`, "success");
+        const postedId    = data.id || jobId;
+        const awardToken  = data.award_token || "";
+        const tokenBlock  = awardToken
+            ? `<div style="margin-top:.75rem;padding:.75rem;background:var(--surface-3,#1e1e2e);border:1px solid var(--amber,#f59e0b);border-radius:var(--r);font-size:.8rem;">
+                 <div style="font-weight:700;color:var(--amber,#f59e0b);margin-bottom:.3rem;">⚠️ Save your Award Token — shown once only</div>
+                 <div style="font-family:var(--mono);word-break:break-all;user-select:all;font-size:.75rem;">${awardToken}</div>
+                 <div style="margin-top:.4rem;color:var(--text-dim);font-size:.72rem;">You'll also receive this via email. Keep it private — anyone with this token can award the job.</div>
+               </div>`
+            : "";
+        const statusEl = document.getElementById("jb-status");
+        statusEl.style.display = "";
+        statusEl.innerHTML = `<div style="color:var(--green);font-size:.85rem;font-weight:600;">✅ Job posted! ID: ${postedId}</div>${tokenBlock}`;
         SEED_ACTIVITY.unshift({ type: "post", text: `New job posted: <strong>${title.substring(0,40)}</strong>`, time: "just now" });
         renderActivity();
         await loadOpenJobs();
         if (activeView !== "jobs") setView("jobs");
-        setTimeout(closeJobBoardModal, 4000);
+        // Don't auto-close — let them read/copy the award token first
     } catch(e) {
         showModalStatus("jb-status", `Error: ${e.message || "Could not post job."}`, "error");
     }
