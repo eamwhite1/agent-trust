@@ -397,6 +397,15 @@ async function initVault() {
         showStatus("init-status", "❌ Please pay the 0.1 XRP fee first.", "error");
         return;
     }
+    if (!workerEmail) {
+        const proceed = confirm(
+            "⚠️ No seller email entered.\n\n" +
+            "Without an email, the seller won't receive their receipt code or submission link — " +
+            "you'll need to send these manually.\n\n" +
+            "Continue anyway?"
+        );
+        if (!proceed) return;
+    }
 
     const receiptCode = generateReceiptCode();
     if (btn) btn.disabled = true;
@@ -1147,15 +1156,25 @@ function b64toBlob(b64, mimeType) {
 
 // Auto-trigger from URL params
 (function() {
-    const params    = new URLSearchParams(window.location.search);
-    const collectId = params.get("collect");
-    const workerId  = params.get("worker");
+    const params      = new URLSearchParams(window.location.search);
+    const collectId   = params.get("collect");
+    const workerId    = params.get("worker");
+    const workerEmail = params.get("worker_email");
+    const amount      = params.get("amount");
     if (collectId) {
         loadDelivery(collectId.trim().toUpperCase());
     } else if (workerId) {
         switchTab("worker");
         const f = document.getElementById("worker-project-id");
         if (f) { f.value = workerId; loadJobInfo(workerId); }
+    }
+    if (workerEmail) {
+        const ef = document.getElementById("worker-email-field");
+        if (ef) ef.value = decodeURIComponent(workerEmail);
+    }
+    if (amount) {
+        const af = document.getElementById("amt");
+        if (af && !af.value) af.value = amount;
     }
 })();
 

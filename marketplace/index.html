@@ -794,8 +794,20 @@ nav {
             </div>
             <button class="modal-close" onclick="closeTrackModal()"><i data-lucide="x"></i></button>
         </div>
+        <div style="display:flex;gap:8px;padding:0 1.25rem;border-bottom:1px solid var(--border);">
+            <button id="tab-status" onclick="switchTrackTab('status')" style="flex:1;padding:8px 0;background:none;border:none;border-bottom:2px solid var(--green);color:var(--text);font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;">Status</button>
+            <button id="tab-chat" onclick="switchTrackTab('chat')" style="flex:1;padding:8px 0;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;">Chat</button>
+        </div>
         <div class="modal-body" id="track-modal-body" style="min-height:120px;display:flex;align-items:center;justify-content:center;">
             <div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>
+        </div>
+        <div id="track-chat-panel" style="display:none;padding:1rem 1.25rem;">
+            <div id="chat-messages" style="height:220px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:.75rem;font-size:.82rem;line-height:1.6;"></div>
+            <div style="display:flex;gap:8px;">
+                <input id="chat-input" type="text" placeholder="Type a message…" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:.82rem;padding:6px 10px;" onkeydown="if(event.key==='Enter')sendChatMessage()">
+                <button onclick="sendChatMessage()" style="padding:6px 14px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.82rem;font-weight:700;cursor:pointer;">Send</button>
+            </div>
+            <div id="chat-status" style="font-size:.75rem;color:var(--text-dim);margin-top:.4rem;"></div>
         </div>
     </div>
 </div>
@@ -826,9 +838,10 @@ nav {
                 </div>
             </div>
             <div class="field">
-                <label for="bid-email">Your Email <span style="text-transform:none;font-weight:400;opacity:.6;">(optional — humans: get notified when your bid is accepted)</span></label>
+                <label for="bid-email">Your Email <span style="text-transform:none;font-weight:400;opacity:.6;">(required for humans — agents use callback_url instead)</span></label>
                 <input type="email" id="bid-email" placeholder="you@example.com">
-                <div class="field-hint">AI agents don't need this. Human workers: you'll receive an award notification and escrow receipt link by email.</div>
+                <div id="bid-email-or-callback" style="display:none;" class="field-hint" style="color:var(--text-dim);">Or provide a <code>callback_url</code> via the API if you are an agent.</div>
+                <div class="field-hint">Human workers: you'll receive an award notification and escrow receipt link. AI agents bidding via API can use <code>callback_url</code> instead.</div>
             </div>
             <div class="field">
                 <label for="bid-proposal">Your Proposal *</label>
@@ -1913,6 +1926,8 @@ async function submitBid() {
 
     if (!wallet || !wallet.startsWith("r"))
         return showModalStatus("bid-status", "Please enter your XRPL wallet address (starts with r).", "error");
+    if (!email)
+        return showModalStatus("bid-status", "Email is required. You need this to receive your award notification and escrow receipt link.", "error");
     if (!price || price <= 0)
         return showModalStatus("bid-status", "Please enter a price greater than 0 XRP.", "error");
     if (!proposal)
@@ -2004,6 +2019,16 @@ async function submitJobBoardPost() {
 }
 
 // ---------------------------------------------------------------------------
+// ESCROW FROM AWARDED BID
+// ---------------------------------------------------------------------------
+function openEscrowForAwardedBid(workerAddress, workerEmail, agreedXrp) {
+    const params = new URLSearchParams({ recipient: workerAddress, ref: "marketplace" });
+    if (workerEmail) params.set("worker_email", workerEmail);
+    if (agreedXrp)   params.set("amount", agreedXrp);
+    window.open(`https://www.cryptovault.co.uk?${params.toString()}`, "_blank");
+}
+
+// ---------------------------------------------------------------------------
 // DIRECT HIRE
 // ---------------------------------------------------------------------------
 function directHire(posterAddr, jobTitle) {
@@ -2071,15 +2096,39 @@ function timeAgo(iso) {
 async function trackJob() {
     const raw = (document.getElementById("track-input").value || "").trim().toUpperCase();
     if (!raw) return;
+
+    // If it looks like a bid ID, look up the job it belongs to
+    if (raw.startsWith("BID-")) {
+        try {
+            const res  = await safeFetch(`${REFEREE_URL}/bids/${raw}`);
+            const data = await res.json();
+            if (data.job_id) {
+                openTrackModal(data.job_id);
+                return;
+            }
+        } catch(e) {}
+        document.getElementById("track-input").value = "";
+        alert(`"${raw}" is a Bid ID, not a Job ID. Check your bid confirmation email for the Job ID (starts with JOB-).`);
+        return;
+    }
+
     const jobId = raw.startsWith("JOB-") ? raw : `JOB-${raw}`;
     openTrackModal(jobId);
 }
 
 function openTrackModal(jobId) {
     const overlay = document.getElementById("track-modal");
+    _chatJobId = jobId;
     document.getElementById("track-modal-sub").textContent = jobId;
     document.getElementById("track-modal-body").innerHTML =
         `<div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>`;
+    document.getElementById("track-chat-panel").style.display = "none";
+    document.getElementById("track-modal-body").style.display = "";
+    // reset tab buttons
+    const sb = document.getElementById("tab-status");
+    const cb = document.getElementById("tab-chat");
+    if (sb) { sb.style.borderBottomColor="var(--green)"; sb.style.color="var(--text)"; }
+    if (cb) { cb.style.borderBottomColor="transparent"; cb.style.color="var(--text-dim)"; }
     overlay.style.display = "flex";
     fetchJobStatus(jobId);
 }
@@ -2087,6 +2136,9 @@ function openTrackModal(jobId) {
 function closeTrackModal() {
     document.getElementById("track-modal").style.display = "none";
     document.getElementById("track-input").value = "";
+    _chatJobId   = null;
+    _chatToken   = null;
+    _posterToken = null;
 }
 
 async function awardBidWithToken(jobId, bidId, token) {
@@ -2098,25 +2150,29 @@ async function awardBidWithToken(jobId, bidId, token) {
         });
         const data = await res.json();
         if (data.detail) return { ok: false, error: data.detail };
-        return { ok: true };
+        return { ok: true, workerAddress: data.worker_address, workerEmail: data.worker_email, agreedXrp: data.agreed_xrp };
     } catch (e) {
         return { ok: false, error: e.message };
     }
 }
 
-// Handle ?award_job=&award_bid=&token= and ?track_job=&token= from email links
+// Poster's award token — set when they arrive via an email link, cleared on modal close
+let _posterToken = null;
+
+// Handle ?award_job=&award_bid=&token=, ?track_job=&token=, and ?chat_job=&chat_token= from email links
 async function handleEmailLinks() {
-    const params  = new URLSearchParams(window.location.search);
-    const awardJob = params.get("award_job");
-    const awardBid = params.get("award_bid");
-    const trackJob = params.get("track_job");
-    const token    = params.get("token");
+    const params     = new URLSearchParams(window.location.search);
+    const awardJob   = params.get("award_job");
+    const awardBid   = params.get("award_bid");
+    const trackJob   = params.get("track_job");
+    const token      = params.get("token");
+    const chatJob    = params.get("chat_job");
+    const chatToken  = params.get("chat_token");
 
     if (awardJob && awardBid && token) {
-        // Clean the URL so the token isn't visible in the address bar after use
+        _posterToken = token;
         window.history.replaceState({}, "", window.location.pathname);
         openTrackModal(awardJob);
-        // Wait for the modal content to render then award
         setTimeout(async () => {
             const result = await awardBidWithToken(awardJob, awardBid, token);
             if (result.ok) {
@@ -2127,8 +2183,129 @@ async function handleEmailLinks() {
             }
         }, 800);
     } else if (trackJob && token) {
+        _posterToken = token;
         window.history.replaceState({}, "", window.location.pathname);
         openTrackModal(trackJob);
+    } else if (chatJob && chatToken) {
+        _chatToken = chatToken;
+        window.history.replaceState({}, "", window.location.pathname);
+        openTrackModal(chatJob);
+        // Auto-switch to chat tab after modal opens
+        setTimeout(() => switchTrackTab("chat"), 500);
+    }
+}
+
+async function cancelJob(jobId) {
+    if (!_posterToken) return;
+    if (!confirm(`Cancel job ${jobId}? This will remove it from the marketplace. This cannot be undone.`)) return;
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}`, {
+            method:  "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ award_token: _posterToken }),
+        });
+        const data = await res.json();
+        if (data.detail) {
+            alert(`Could not cancel: ${data.detail}`);
+            return;
+        }
+        document.getElementById("track-modal-body").innerHTML =
+            `<div style="color:var(--green);font-size:.9rem;text-align:center;padding:2rem 0;">
+                ✓ Job cancelled and removed from the marketplace.
+             </div>`;
+        loadJobs(); // refresh the job list
+    } catch (e) {
+        alert(`Cancel failed: ${e.message}`);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CHAT
+// ---------------------------------------------------------------------------
+let _chatJobId   = null;
+let _chatToken   = null;  // worker's chat_token (from bid confirmation email link)
+let _chatRole    = null;  // "buyer" or "worker"
+let _chatPollInterval = null;
+
+function switchTrackTab(tab) {
+    const statusBtn = document.getElementById("tab-status");
+    const chatBtn   = document.getElementById("tab-chat");
+    const bodyDiv   = document.getElementById("track-modal-body");
+    const chatPanel = document.getElementById("track-chat-panel");
+    if (tab === "status") {
+        statusBtn.style.borderBottomColor = "var(--green)";
+        statusBtn.style.color = "var(--text)";
+        chatBtn.style.borderBottomColor = "transparent";
+        chatBtn.style.color = "var(--text-dim)";
+        bodyDiv.style.display = "";
+        chatPanel.style.display = "none";
+    } else {
+        chatBtn.style.borderBottomColor = "var(--green)";
+        chatBtn.style.color = "var(--text)";
+        statusBtn.style.borderBottomColor = "transparent";
+        statusBtn.style.color = "var(--text-dim)";
+        bodyDiv.style.display = "none";
+        chatPanel.style.display = "";
+        loadChatMessages();
+    }
+}
+
+async function loadChatMessages() {
+    if (!_chatJobId) return;
+    const token = _posterToken || _chatToken;
+    if (!token) {
+        document.getElementById("chat-messages").innerHTML =
+            `<span style="color:var(--text-dim);">Open the tracker from your email link to access chat.</span>`;
+        return;
+    }
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/jobs/${_chatJobId}/messages?token=${encodeURIComponent(token)}`);
+        const data = await res.json();
+        if (data.detail) { document.getElementById("chat-messages").innerHTML = `<span style="color:var(--red);">${data.detail}</span>`; return; }
+        const msgs = data.messages || [];
+        const box  = document.getElementById("chat-messages");
+        if (msgs.length === 0) {
+            box.innerHTML = `<span style="color:var(--text-dim);font-size:.8rem;">No messages yet. Start the conversation!</span>`;
+        } else {
+            box.innerHTML = msgs.map(m => {
+                const align = m.sender_role === "buyer" ? "right" : "left";
+                const bg    = m.sender_role === "buyer" ? "var(--green)" : "var(--surface-3,#2a2a3a)";
+                const col   = m.sender_role === "buyer" ? "#000" : "var(--text)";
+                return `<div style="display:flex;justify-content:${align};margin-bottom:6px;">
+                    <div style="max-width:80%;background:${bg};color:${col};border-radius:8px;padding:5px 10px;font-size:.8rem;">
+                        <div style="font-weight:600;font-size:.72rem;opacity:.7;">${m.sender_name || m.sender_role}</div>
+                        ${m.message}
+                    </div>
+                </div>`;
+            }).join("");
+            box.scrollTop = box.scrollHeight;
+        }
+    } catch(e) {
+        document.getElementById("chat-messages").innerHTML = `<span style="color:var(--red);">Failed to load messages.</span>`;
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById("chat-input");
+    const msg   = input.value.trim();
+    if (!msg || !_chatJobId) return;
+    const token = _posterToken || _chatToken;
+    if (!token) return;
+    const status = document.getElementById("chat-status");
+    status.textContent = "Sending…";
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/jobs/${_chatJobId}/messages`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token, message: msg }),
+        });
+        const data = await res.json();
+        if (data.detail) { status.textContent = data.detail; return; }
+        input.value = "";
+        status.textContent = "";
+        loadChatMessages();
+    } catch(e) {
+        status.textContent = "Failed to send.";
     }
 }
 
@@ -2160,6 +2337,25 @@ async function fetchJobStatus(jobId) {
                 </div>`;
             }).join("");
 
+        const canCancel = _posterToken && !job.escrow_id && !["cancelled","expired"].includes(job.status);
+        const cancelBtn = canCancel
+            ? `<button onclick="cancelJob('${jobId}')"
+                 style="margin-top:1rem;width:100%;padding:8px;background:transparent;border:1px solid var(--red);border-radius:var(--r);color:var(--red);font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;"
+                 onmouseover="this.style.background='rgba(239,68,68,.1)'" onmouseout="this.style.background='transparent'">
+                 Remove this job listing
+               </button>`
+            : "";
+
+        // Show Create Escrow button when buyer has awarded and has poster token
+        const awardedBid = (job.bids || []).find(b => b.bid_id === job.awarded_bid_id);
+        const canCreateEscrow = _posterToken && job.status === "awarded" && !job.escrow_id && awardedBid;
+        const createEscrowBtn = canCreateEscrow
+            ? `<button onclick="openEscrowForAwardedBid('${awardedBid.worker_address}', '${awardedBid.worker_email || ''}', ${awardedBid.proposed_xrp})"
+                 style="margin-top:1rem;width:100%;padding:10px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.85rem;font-weight:700;cursor:pointer;">
+                 🔒 Create Escrow for Awarded Worker
+               </button>`
+            : "";
+
         document.getElementById("track-modal-sub").textContent = `${jobId} · ${job.title}`;
         body.innerHTML = `
             <div style="margin-bottom:1rem;">
@@ -2177,7 +2373,9 @@ async function fetchJobStatus(jobId) {
                 </div>
             </div>
             <div style="font-size:.8rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">Bids</div>
-            ${bidsHtml}`;
+            ${bidsHtml}
+            ${createEscrowBtn}
+            ${cancelBtn}`;
     } catch (e) {
         body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Failed to load job. Check the ID and try again.</div>`;
     }
