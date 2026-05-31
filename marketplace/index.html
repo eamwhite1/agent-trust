@@ -2096,6 +2096,22 @@ function timeAgo(iso) {
 async function trackJob() {
     const raw = (document.getElementById("track-input").value || "").trim().toUpperCase();
     if (!raw) return;
+
+    // If it looks like a bid ID, look up the job it belongs to
+    if (raw.startsWith("BID-")) {
+        try {
+            const res  = await safeFetch(`${REFEREE_URL}/bids/${raw}`);
+            const data = await res.json();
+            if (data.job_id) {
+                openTrackModal(data.job_id);
+                return;
+            }
+        } catch(e) {}
+        document.getElementById("track-input").value = "";
+        alert(`"${raw}" is a Bid ID, not a Job ID. Check your bid confirmation email for the Job ID (starts with JOB-).`);
+        return;
+    }
+
     const jobId = raw.startsWith("JOB-") ? raw : `JOB-${raw}`;
     openTrackModal(jobId);
 }
