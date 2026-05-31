@@ -2095,7 +2095,9 @@ function escHtml(str) {
 }
 
 function timeAgo(iso) {
+    if (!iso) return "recently";
     const diff = (Date.now() - new Date(iso)) / 1000;
+    if (!isFinite(diff) || diff < 0) return "recently";
     if (diff < 60)     return `${Math.floor(diff)}s ago`;
     if (diff < 3600)   return `${Math.floor(diff/60)}m ago`;
     if (diff < 86400)  return `${Math.floor(diff/3600)}h ago`;
