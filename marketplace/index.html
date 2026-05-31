@@ -2087,6 +2087,7 @@ function openTrackModal(jobId) {
 function closeTrackModal() {
     document.getElementById("track-modal").style.display = "none";
     document.getElementById("track-input").value = "";
+    _posterToken = null;
 }
 
 async function awardBidWithToken(jobId, bidId, token) {
@@ -2104,19 +2105,21 @@ async function awardBidWithToken(jobId, bidId, token) {
     }
 }
 
+// Poster's award token — set when they arrive via an email link, cleared on modal close
+let _posterToken = null;
+
 // Handle ?award_job=&award_bid=&token= and ?track_job=&token= from email links
 async function handleEmailLinks() {
-    const params  = new URLSearchParams(window.location.search);
+    const params   = new URLSearchParams(window.location.search);
     const awardJob = params.get("award_job");
     const awardBid = params.get("award_bid");
     const trackJob = params.get("track_job");
     const token    = params.get("token");
 
     if (awardJob && awardBid && token) {
-        // Clean the URL so the token isn't visible in the address bar after use
+        _posterToken = token;
         window.history.replaceState({}, "", window.location.pathname);
         openTrackModal(awardJob);
-        // Wait for the modal content to render then award
         setTimeout(async () => {
             const result = await awardBidWithToken(awardJob, awardBid, token);
             if (result.ok) {
@@ -2127,8 +2130,33 @@ async function handleEmailLinks() {
             }
         }, 800);
     } else if (trackJob && token) {
+        _posterToken = token;
         window.history.replaceState({}, "", window.location.pathname);
         openTrackModal(trackJob);
+    }
+}
+
+async function cancelJob(jobId) {
+    if (!_posterToken) return;
+    if (!confirm(`Cancel job ${jobId}? This will remove it from the marketplace. This cannot be undone.`)) return;
+    try {
+        const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}`, {
+            method:  "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ award_token: _posterToken }),
+        });
+        const data = await res.json();
+        if (data.detail) {
+            alert(`Could not cancel: ${data.detail}`);
+            return;
+        }
+        document.getElementById("track-modal-body").innerHTML =
+            `<div style="color:var(--green);font-size:.9rem;text-align:center;padding:2rem 0;">
+                ✓ Job cancelled and removed from the marketplace.
+             </div>`;
+        loadJobs(); // refresh the job list
+    } catch (e) {
+        alert(`Cancel failed: ${e.message}`);
     }
 }
 
@@ -2160,6 +2188,15 @@ async function fetchJobStatus(jobId) {
                 </div>`;
             }).join("");
 
+        const canCancel = _posterToken && !job.escrow_id && !["cancelled","expired"].includes(job.status);
+        const cancelBtn = canCancel
+            ? `<button onclick="cancelJob('${jobId}')"
+                 style="margin-top:1rem;width:100%;padding:8px;background:transparent;border:1px solid var(--red);border-radius:var(--r);color:var(--red);font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;"
+                 onmouseover="this.style.background='rgba(239,68,68,.1)'" onmouseout="this.style.background='transparent'">
+                 Remove this job listing
+               </button>`
+            : "";
+
         document.getElementById("track-modal-sub").textContent = `${jobId} · ${job.title}`;
         body.innerHTML = `
             <div style="margin-bottom:1rem;">
@@ -2177,7 +2214,8 @@ async function fetchJobStatus(jobId) {
                 </div>
             </div>
             <div style="font-size:.8rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">Bids</div>
-            ${bidsHtml}`;
+            ${bidsHtml}
+            ${cancelBtn}`;
     } catch (e) {
         body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Failed to load job. Check the ID and try again.</div>`;
     }
