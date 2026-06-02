@@ -2077,7 +2077,7 @@ function directHire(posterAddr, jobTitle) {
 // HELPERS
 // ---------------------------------------------------------------------------
 async function safeFetch(url, opts = {}) {
-    const res = await fetch(url, opts);
+    const res = await fetch(url, { signal: AbortSignal.timeout(30000), ...opts });
     const ct  = res.headers.get("content-type") || "";
     if (!ct.includes("application/json")) {
         const body = await res.text();
@@ -2085,6 +2085,11 @@ async function safeFetch(url, opts = {}) {
     }
     return res;
 }
+
+// Ping the server on page load so Render wakes up before the user does anything
+(function pingServer() {
+    fetch(`${REFEREE_URL}/health`).catch(() => {});
+})();
 
 function showModalStatus(id, msg, type) {
     const el = document.getElementById(id);
@@ -2174,17 +2179,30 @@ function closeTrackModal() {
 }
 
 async function awardBidWithToken(jobId, bidId, token) {
-    try {
-        const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}/award`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ award_token: token, bid_id: bidId }),
-        });
-        const data = await res.json();
-        if (data.detail) return { ok: false, error: data.detail };
-        return { ok: true, workerAddress: data.worker_address, workerEmail: data.worker_email, agreedXrp: data.agreed_xrp };
-    } catch (e) {
-        return { ok: false, error: e.message };
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY = 4000; // 4s between retries — Render cold start can take ~30s
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const res  = await safeFetch(`${REFEREE_URL}/jobs/${jobId}/award`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify({ award_token: token, bid_id: bidId }),
+            });
+            const data = await res.json();
+            if (data.detail) return { ok: false, error: data.detail };
+            return { ok: true, workerAddress: data.worker_address, workerEmail: data.worker_email, agreedXrp: data.agreed_xrp };
+        } catch (e) {
+            if (attempt < MAX_RETRIES) {
+                document.getElementById("track-modal-body").innerHTML =
+                    `<div style="color:var(--text-dim);font-size:.85rem;text-align:center;padding:1rem 0;">
+                        ⏳ Server is waking up… (attempt ${attempt}/${MAX_RETRIES})<br>
+                        <span style="font-size:.75rem;">This can take up to 30 seconds on first load.</span>
+                    </div>`;
+                await new Promise(r => setTimeout(r, RETRY_DELAY));
+            } else {
+                return { ok: false, error: "Server did not respond after several attempts. Please try again in a minute." };
+            }
+        }
     }
 }
 
