@@ -2152,6 +2152,7 @@ async function trackJob() {
 
 function openTrackModal(jobId) {
     const overlay = document.getElementById("track-modal");
+    _currentTrackJobId = jobId;
     document.getElementById("track-modal-sub").textContent = jobId;
     document.getElementById("track-modal-body").innerHTML =
         `<div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>`;
@@ -2165,8 +2166,9 @@ function openTrackModal(jobId) {
 function closeTrackModal() {
     document.getElementById("track-modal").style.display = "none";
     document.getElementById("track-input").value = "";
-    _activeChatBidId = null;
-    _chatToken       = null;
+    _activeChatBidId   = null;
+    _chatToken         = null;
+    _currentTrackJobId = null;
     if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
     _posterToken = null;
 }
@@ -2274,12 +2276,20 @@ let _chatPollTimer   = null;
 
 // Open the chat panel for a specific bid thread.
 // workerName is shown in the panel header so the buyer knows who they're talking to.
-function openBidChat(bidId, workerName, authToken) {
+function openBidChat(bidId, workerName) {
     _activeChatBidId = bidId;
     const label = document.getElementById("chat-with-name");
     if (label) label.textContent = workerName ? `Chat with ${workerName}` : "Chat";
     switchTrackTab("chat");
 }
+
+// Mark all current worker messages for this bid as read (called after messages load).
+function _ackChat(bidId, workerMessageCount) {
+    localStorage.setItem(`chat_ack_${bidId}`, String(workerMessageCount));
+}
+
+// _currentTrackJobId tracks which job is open so we can refresh it
+let _currentTrackJobId = null;
 
 function switchTrackTab(tab) {
     const bodyDiv   = document.getElementById("track-modal-body");
@@ -2288,6 +2298,8 @@ function switchTrackTab(tab) {
         bodyDiv.style.display   = "";
         chatPanel.style.display = "none";
         if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
+        // Refresh bid cards so unread badges update after closing chat
+        if (_currentTrackJobId) fetchJobStatus(_currentTrackJobId);
     } else {
         bodyDiv.style.display   = "none";
         chatPanel.style.display = "";
@@ -2328,6 +2340,11 @@ async function loadChatMessages() {
                 </div>`;
             }).join("");
             box.scrollTop = box.scrollHeight;
+        }
+        // Acknowledge all worker messages now that buyer has seen them
+        if (_posterToken && _activeChatBidId) {
+            const workerCount = (data.messages || []).filter(m => m.sender_role === "worker").length;
+            _ackChat(_activeChatBidId, workerCount);
         }
     } catch(e) {
         box.innerHTML = `<span style="color:var(--red);font-size:.8rem;">Failed to load messages.</span>`;
@@ -2376,15 +2393,22 @@ async function fetchJobStatus(jobId) {
                     : b.status === "rejected"
                         ? `<span style="color:var(--text-muted);font-size:.72rem;">rejected</span>`
                         : `<span style="color:var(--text-dim);font-size:.72rem;">pending</span>`;
+                // Unread badge: worker messages since buyer last acknowledged this bid's chat
+                const ackKey      = `chat_ack_${b.bid_id}`;
+                const ackedCount  = parseInt(localStorage.getItem(ackKey) || "0", 10);
+                const unread      = _posterToken ? Math.max(0, (b.worker_message_count || 0) - ackedCount) : 0;
+                const unreadBadge = unread > 0
+                    ? `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:var(--green);color:#000;border-radius:9px;font-size:.68rem;font-weight:800;margin-left:4px;">${unread}</span>`
+                    : "";
+
                 // Buyer sees a Chat button on every bid; worker sees it only on their own bid
-                // (worker's _chatToken is scoped to one bid via _activeChatBidId set on arrival)
                 const canChat = _posterToken || (_chatToken && b.bid_id === _activeChatBidId);
                 const chatBtn = canChat
                     ? `<button onclick="openBidChat('${b.bid_id}','${workerLabel}',null)"
-                         style="padding:3px 10px;background:none;border:1px solid var(--border);border-radius:var(--r);color:var(--text-dim);font-family:var(--sans);font-size:.72rem;cursor:pointer;margin-left:6px;"
+                         style="padding:3px 10px;background:none;border:1px solid ${unread > 0 ? 'var(--green)' : 'var(--border)'};border-radius:var(--r);color:${unread > 0 ? 'var(--green)' : 'var(--text-dim)'};font-family:var(--sans);font-size:.72rem;cursor:pointer;margin-left:6px;display:inline-flex;align-items:center;gap:4px;"
                          onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'"
-                         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">
-                         💬 Chat
+                         onmouseout="this.style.borderColor='${unread > 0 ? 'var(--green)' : 'var(--border)'}';this.style.color='${unread > 0 ? 'var(--green)' : 'var(--text-dim)'}'">
+                         💬 Chat${unreadBadge}
                        </button>`
                     : "";
                 return `<div style="background:var(--surface-2);border:1px solid ${isWinner ? 'var(--green)' : 'var(--border)'};border-radius:var(--r);padding:.75rem 1rem;margin-bottom:8px;">
