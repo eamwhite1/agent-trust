@@ -2393,7 +2393,10 @@ async function fetchJobStatus(jobId) {
                         <span style="display:flex;align-items:center;">${statusBadge}${chatBtn}</span>
                     </div>
                     <div style="font-size:.82rem;font-weight:600;">${workerLabel}</div>
-                    <div style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</span>
+                        <span style="font-size:.7rem;color:var(--text-dim);">${b.created_at ? timeAgo(b.created_at) : ""}</span>
+                    </div>
                     <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;line-height:1.5;">${escHtml(b.proposal)}</div>
                 </div>`;
             }).join("");
