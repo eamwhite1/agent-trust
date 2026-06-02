@@ -944,7 +944,7 @@ nav {
             <div class="modal-status" id="jb-status" style="display:none;"></div>
         </div>
         <div class="modal-footer">
-            <button class="btn-full primary" onclick="submitJobBoardPost()">
+            <button class="btn-full primary" id="jb-submit-btn" onclick="submitJobBoardPost()">
                 <i data-lucide="send"></i> Post to Job Board
             </button>
             <button class="btn-full secondary" onclick="closeJobBoardModal()">Cancel</button>
@@ -1987,7 +1987,9 @@ async function submitJobBoardPost() {
     if (!addr || !addr.startsWith("r")) return showModalStatus("jb-status", "Please enter your XRPL wallet address (starts with r).", "error");
     if (!buyerEmail)                    return showModalStatus("jb-status", "Please enter your email — it's required so you can receive bids and award the job.", "error");
 
-    const jobId = `JOB-${Math.random().toString(36).slice(2,6).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+    const jobId  = `JOB-${Math.random().toString(36).slice(2,6).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+    const btn    = document.getElementById("jb-submit-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "Posting…"; }
 
     showModalStatus("jb-status", "Posting to job board…", "loading");
     try {
@@ -2025,8 +2027,10 @@ async function submitJobBoardPost() {
         await loadOpenJobs();
         if (activeView !== "jobs") setView("jobs");
         // Don't auto-close — let them read/copy the award token first
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="send"></i> Post to Job Board'; lucide.createIcons(); }
     } catch(e) {
         showModalStatus("jb-status", `Error: ${e.message || "Could not post job."}`, "error");
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="send"></i> Post to Job Board'; lucide.createIcons(); }
     }
 }
 
