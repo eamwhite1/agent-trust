@@ -1966,8 +1966,17 @@ function openJobBoardModal() {
     lucide.createIcons();
 }
 
+let _jobModalOriginalHTML = null;
+
 function closeJobBoardModal() {
-    document.getElementById("jobboard-post-modal").classList.remove("open");
+    const modal = document.getElementById("jobboard-post-modal");
+    // Restore original form HTML if it was replaced by the success screen
+    if (_jobModalOriginalHTML) {
+        modal.querySelector(".modal").innerHTML = _jobModalOriginalHTML;
+        lucide.createIcons();
+        _jobModalOriginalHTML = null;
+    }
+    modal.classList.remove("open");
 }
 
 async function submitJobBoardPost() {
@@ -2010,24 +2019,31 @@ async function submitJobBoardPost() {
             }),
         });
         const data = await res.json();
-        const postedId    = data.id || jobId;
-        const awardToken  = data.award_token || "";
-        const tokenBlock  = awardToken
-            ? `<div style="margin-top:.75rem;padding:.75rem;background:var(--surface-3,#1e1e2e);border:1px solid var(--amber,#f59e0b);border-radius:var(--r);font-size:.8rem;">
-                 <div style="font-weight:700;color:var(--amber,#f59e0b);margin-bottom:.3rem;">⚠️ Save your Award Token — shown once only</div>
-                 <div style="font-family:var(--mono);word-break:break-all;user-select:all;font-size:.75rem;">${awardToken}</div>
-                 <div style="margin-top:.4rem;color:var(--text-dim);font-size:.72rem;">You'll also receive this via email. Keep it private — anyone with this token can award the job.</div>
-               </div>`
-            : "";
-        const statusEl = document.getElementById("jb-status");
-        statusEl.style.display = "";
-        statusEl.innerHTML = `<div style="color:var(--green);font-size:.85rem;font-weight:600;">✅ Job posted! ID: ${postedId}</div>${tokenBlock}`;
+        if (data.detail) throw new Error(data.detail);
+        const postedId   = data.id || jobId;
+        const awardToken = data.award_token || "";
+
+        // Replace the entire modal contents with a clear success screen
+        _jobModalOriginalHTML = document.querySelector("#jobboard-post-modal .modal").innerHTML;
+        document.querySelector("#jobboard-post-modal .modal").innerHTML = `
+            <div style="padding:2rem 1.75rem;text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:.5rem;">✅</div>
+                <div style="font-size:1.2rem;font-weight:700;color:var(--green);margin-bottom:.25rem;">Job posted!</div>
+                <div style="font-family:var(--mono);font-size:.85rem;color:var(--text-dim);margin-bottom:1.25rem;">${postedId}</div>
+                ${awardToken ? `
+                <div style="text-align:left;padding:.9rem;background:var(--surface-2);border:1px solid var(--amber,#f59e0b);border-radius:var(--r);margin-bottom:1rem;">
+                    <div style="font-weight:700;color:var(--amber,#f59e0b);font-size:.82rem;margin-bottom:.4rem;">⚠️ Your Award Token — shown once</div>
+                    <div style="font-family:var(--mono);word-break:break-all;font-size:.75rem;user-select:all;cursor:text;">${awardToken}</div>
+                    <div style="margin-top:.4rem;font-size:.72rem;color:var(--text-dim);">Also sent to your email. Keep it private — needed to accept bids or cancel this job.</div>
+                </div>` : ""}
+                <p style="font-size:.83rem;color:var(--text-dim);margin-bottom:1.25rem;">Workers can now bid. You'll get an email for each bid with a one-click award link.</p>
+                <button onclick="closeJobBoardModal()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;">Done</button>
+            </div>`;
+
         SEED_ACTIVITY.unshift({ type: "post", text: `New job posted: <strong>${title.substring(0,40)}</strong>`, time: "just now" });
         renderActivity();
         await loadOpenJobs();
         if (activeView !== "jobs") setView("jobs");
-        // Don't auto-close — let them read/copy the award token first
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="send"></i> Post to Job Board'; lucide.createIcons(); }
     } catch(e) {
         showModalStatus("jb-status", `Error: ${e.message || "Could not post job."}`, "error");
         if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="send"></i> Post to Job Board'; lucide.createIcons(); }
