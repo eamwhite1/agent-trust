@@ -794,15 +794,15 @@ nav {
             </div>
             <button class="modal-close" onclick="closeTrackModal()"><i data-lucide="x"></i></button>
         </div>
-        <div style="display:flex;gap:8px;padding:0 1.25rem;border-bottom:1px solid var(--border);">
-            <button id="tab-status" onclick="switchTrackTab('status')" style="flex:1;padding:8px 0;background:none;border:none;border-bottom:2px solid var(--green);color:var(--text);font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;">Status</button>
-            <button id="tab-chat" onclick="switchTrackTab('chat')" style="flex:1;padding:8px 0;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);font-family:var(--sans);font-size:.8rem;font-weight:600;cursor:pointer;">Chat</button>
-        </div>
         <div class="modal-body" id="track-modal-body" style="min-height:120px;display:flex;align-items:center;justify-content:center;">
             <div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>
         </div>
         <div id="track-chat-panel" style="display:none;padding:1rem 1.25rem;">
-            <div id="chat-messages" style="height:220px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:.75rem;font-size:.82rem;line-height:1.6;"></div>
+            <div id="chat-with-label" style="font-size:.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;display:flex;align-items:center;gap:8px;">
+                <button onclick="switchTrackTab('status')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;font-size:.85rem;" title="Back to status">←</button>
+                <span id="chat-with-name">Chat</span>
+            </div>
+            <div id="chat-messages" style="height:240px;overflow-y:auto;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:.75rem;font-size:.82rem;line-height:1.6;"></div>
             <div style="display:flex;gap:8px;">
                 <input id="chat-input" type="text" placeholder="Type a message…" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:.82rem;padding:6px 10px;" onkeydown="if(event.key==='Enter')sendChatMessage()">
                 <button onclick="sendChatMessage()" style="padding:6px 14px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.82rem;font-weight:700;cursor:pointer;">Send</button>
@@ -2152,17 +2152,12 @@ async function trackJob() {
 
 function openTrackModal(jobId) {
     const overlay = document.getElementById("track-modal");
-    _chatJobId = jobId;
     document.getElementById("track-modal-sub").textContent = jobId;
     document.getElementById("track-modal-body").innerHTML =
         `<div style="color:var(--text-dim);font-size:.85rem;">Loading…</div>`;
     document.getElementById("track-chat-panel").style.display = "none";
     document.getElementById("track-modal-body").style.display = "";
-    // reset tab buttons
-    const sb = document.getElementById("tab-status");
-    const cb = document.getElementById("tab-chat");
-    if (sb) { sb.style.borderBottomColor="var(--green)"; sb.style.color="var(--text)"; }
-    if (cb) { cb.style.borderBottomColor="transparent"; cb.style.color="var(--text-dim)"; }
+    _activeChatBidId = null;
     overlay.style.display = "flex";
     fetchJobStatus(jobId);
 }
@@ -2170,8 +2165,9 @@ function openTrackModal(jobId) {
 function closeTrackModal() {
     document.getElementById("track-modal").style.display = "none";
     document.getElementById("track-input").value = "";
-    _chatJobId   = null;
-    _chatToken   = null;
+    _activeChatBidId = null;
+    _chatToken       = null;
+    if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
     _posterToken = null;
 }
 
@@ -2220,12 +2216,25 @@ async function handleEmailLinks() {
         _posterToken = token;
         window.history.replaceState({}, "", window.location.pathname);
         openTrackModal(trackJob);
-    } else if (chatJob && chatToken) {
-        _chatToken = chatToken;
+    } else if (params.get("chat_bid") && params.get("chat_token")) {
+        const chatBid   = params.get("chat_bid").toUpperCase();
+        const chatTok   = params.get("chat_token");
+        _chatToken = chatTok;
         window.history.replaceState({}, "", window.location.pathname);
-        openTrackModal(chatJob);
-        // Auto-switch to chat tab after modal opens
-        setTimeout(() => switchTrackTab("chat"), 500);
+        // Look up the job this bid belongs to, then open the tracker and jump straight to chat
+        try {
+            const res  = await safeFetch(`${REFEREE_URL}/bids/${chatBid}`);
+            const data = await res.json();
+            if (data.job_id) {
+                openTrackModal(data.job_id);
+                setTimeout(() => {
+                    _activeChatBidId = chatBid;
+                    const label = document.getElementById("chat-with-name");
+                    if (label) label.textContent = "Chat with buyer";
+                    switchTrackTab("chat");
+                }, 600);
+            }
+        } catch(e) {}
     }
 }
 
@@ -2254,92 +2263,98 @@ async function cancelJob(jobId) {
 }
 
 // ---------------------------------------------------------------------------
-// CHAT
+// CHAT  — one private thread per bid (buyer ↔ worker only)
 // ---------------------------------------------------------------------------
-let _chatJobId   = null;
-let _chatToken   = null;  // worker's chat_token (from bid confirmation email link)
-let _chatRole    = null;  // "buyer" or "worker"
-let _chatPollInterval = null;
+// _activeChatBidId  = which bid thread is currently open in the chat panel
+// _chatToken        = worker's chat_token (from bid confirmation email ?chat_bid= link)
+// _posterToken      = buyer's award_token (from job email link) — also used as chat auth
+let _activeChatBidId = null;
+let _chatToken       = null;
+let _chatPollTimer   = null;
+
+// Open the chat panel for a specific bid thread.
+// workerName is shown in the panel header so the buyer knows who they're talking to.
+function openBidChat(bidId, workerName, authToken) {
+    _activeChatBidId = bidId;
+    const label = document.getElementById("chat-with-name");
+    if (label) label.textContent = workerName ? `Chat with ${workerName}` : "Chat";
+    switchTrackTab("chat");
+}
 
 function switchTrackTab(tab) {
-    const statusBtn = document.getElementById("tab-status");
-    const chatBtn   = document.getElementById("tab-chat");
     const bodyDiv   = document.getElementById("track-modal-body");
     const chatPanel = document.getElementById("track-chat-panel");
     if (tab === "status") {
-        statusBtn.style.borderBottomColor = "var(--green)";
-        statusBtn.style.color = "var(--text)";
-        chatBtn.style.borderBottomColor = "transparent";
-        chatBtn.style.color = "var(--text-dim)";
-        bodyDiv.style.display = "";
+        bodyDiv.style.display   = "";
         chatPanel.style.display = "none";
+        if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
     } else {
-        chatBtn.style.borderBottomColor = "var(--green)";
-        chatBtn.style.color = "var(--text)";
-        statusBtn.style.borderBottomColor = "transparent";
-        statusBtn.style.color = "var(--text-dim)";
-        bodyDiv.style.display = "none";
+        bodyDiv.style.display   = "none";
         chatPanel.style.display = "";
         loadChatMessages();
+        // Poll for new messages every 5 seconds while chat is open
+        if (_chatPollTimer) clearInterval(_chatPollTimer);
+        _chatPollTimer = setInterval(loadChatMessages, 5000);
     }
 }
 
 async function loadChatMessages() {
-    if (!_chatJobId) return;
+    if (!_activeChatBidId) return;
     const token = _posterToken || _chatToken;
+    const box   = document.getElementById("chat-messages");
     if (!token) {
-        document.getElementById("chat-messages").innerHTML =
-            `<span style="color:var(--text-dim);">Open the tracker from your email link to access chat.</span>`;
+        box.innerHTML = `<span style="color:var(--text-dim);font-size:.8rem;">Open this chat from your email link to authenticate.</span>`;
         return;
     }
     try {
-        const res  = await safeFetch(`${REFEREE_URL}/jobs/${_chatJobId}/messages?token=${encodeURIComponent(token)}`);
+        const res  = await safeFetch(`${REFEREE_URL}/bids/${_activeChatBidId}/messages?token=${encodeURIComponent(token)}`);
         const data = await res.json();
-        if (data.detail) { document.getElementById("chat-messages").innerHTML = `<span style="color:var(--red);">${data.detail}</span>`; return; }
+        if (data.detail) { box.innerHTML = `<span style="color:var(--red);font-size:.8rem;">${data.detail}</span>`; return; }
         const msgs = data.messages || [];
-        const box  = document.getElementById("chat-messages");
         if (msgs.length === 0) {
-            box.innerHTML = `<span style="color:var(--text-dim);font-size:.8rem;">No messages yet. Start the conversation!</span>`;
+            box.innerHTML = `<span style="color:var(--text-dim);font-size:.8rem;">No messages yet — start the conversation!</span>`;
         } else {
+            // "buyer" messages align right (green), "worker" messages align left
             box.innerHTML = msgs.map(m => {
-                const align = m.sender_role === "buyer" ? "right" : "left";
-                const bg    = m.sender_role === "buyer" ? "var(--green)" : "var(--surface-3,#2a2a3a)";
-                const col   = m.sender_role === "buyer" ? "#000" : "var(--text)";
-                return `<div style="display:flex;justify-content:${align};margin-bottom:6px;">
-                    <div style="max-width:80%;background:${bg};color:${col};border-radius:8px;padding:5px 10px;font-size:.8rem;">
-                        <div style="font-weight:600;font-size:.72rem;opacity:.7;">${m.sender_name || m.sender_role}</div>
-                        ${m.message}
+                const isBuyer = m.sender_role === "buyer";
+                const align   = isBuyer ? "flex-end" : "flex-start";
+                const bg      = isBuyer ? "var(--green)" : "var(--surface-3,#2a2a3a)";
+                const col     = isBuyer ? "#000" : "var(--text)";
+                return `<div style="display:flex;justify-content:${align};margin-bottom:8px;">
+                    <div style="max-width:78%;background:${bg};color:${col};border-radius:10px;padding:6px 11px;font-size:.81rem;">
+                        <div style="font-weight:700;font-size:.7rem;opacity:.65;margin-bottom:2px;">${escHtml(m.sender_name || m.sender_role)}</div>
+                        <div>${escHtml(m.message)}</div>
                     </div>
                 </div>`;
             }).join("");
             box.scrollTop = box.scrollHeight;
         }
     } catch(e) {
-        document.getElementById("chat-messages").innerHTML = `<span style="color:var(--red);">Failed to load messages.</span>`;
+        box.innerHTML = `<span style="color:var(--red);font-size:.8rem;">Failed to load messages.</span>`;
     }
 }
 
 async function sendChatMessage() {
     const input = document.getElementById("chat-input");
     const msg   = input.value.trim();
-    if (!msg || !_chatJobId) return;
+    if (!msg || !_activeChatBidId) return;
     const token = _posterToken || _chatToken;
     if (!token) return;
-    const status = document.getElementById("chat-status");
-    status.textContent = "Sending…";
+    const statusEl = document.getElementById("chat-status");
+    statusEl.textContent = "Sending…";
     try {
-        const res = await safeFetch(`${REFEREE_URL}/jobs/${_chatJobId}/messages`, {
-            method: "POST",
+        const res = await safeFetch(`${REFEREE_URL}/bids/${_activeChatBidId}/messages`, {
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token, message: msg }),
+            body:    JSON.stringify({ token, message: msg }),
         });
         const data = await res.json();
-        if (data.detail) { status.textContent = data.detail; return; }
+        if (data.detail) { statusEl.textContent = data.detail; return; }
         input.value = "";
-        status.textContent = "";
+        statusEl.textContent = "";
         loadChatMessages();
     } catch(e) {
-        status.textContent = "Failed to send.";
+        statusEl.textContent = "Failed to send.";
     }
 }
 
@@ -2354,20 +2369,32 @@ async function fetchJobStatus(jobId) {
         const bidsHtml = (job.bids || []).length === 0
             ? `<p style="color:var(--text-dim);font-size:.82rem;">No bids yet.</p>`
             : (job.bids || []).map(b => {
-                const isWinner = b.bid_id === job.awarded_bid_id;
+                const isWinner    = b.bid_id === job.awarded_bid_id;
+                const workerLabel = escHtml(b.worker_name || shortAddr(b.worker_address));
                 const statusBadge = b.status === "accepted"
                     ? `<span style="color:var(--green);font-size:.72rem;font-weight:700;">✓ AWARDED</span>`
                     : b.status === "rejected"
                         ? `<span style="color:var(--text-muted);font-size:.72rem;">rejected</span>`
                         : `<span style="color:var(--text-dim);font-size:.72rem;">pending</span>`;
+                // Buyer sees a Chat button on every bid; worker sees it only on their own bid
+                // (worker's _chatToken is scoped to one bid via _activeChatBidId set on arrival)
+                const canChat = _posterToken || (_chatToken && b.bid_id === _activeChatBidId);
+                const chatBtn = canChat
+                    ? `<button onclick="openBidChat('${b.bid_id}','${workerLabel}',null)"
+                         style="padding:3px 10px;background:none;border:1px solid var(--border);border-radius:var(--r);color:var(--text-dim);font-family:var(--sans);font-size:.72rem;cursor:pointer;margin-left:6px;"
+                         onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'"
+                         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">
+                         💬 Chat
+                       </button>`
+                    : "";
                 return `<div style="background:var(--surface-2);border:1px solid ${isWinner ? 'var(--green)' : 'var(--border)'};border-radius:var(--r);padding:.75rem 1rem;margin-bottom:8px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
                         <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-dim);">${b.bid_id}</span>
-                        ${statusBadge}
+                        <span style="display:flex;align-items:center;">${statusBadge}${chatBtn}</span>
                     </div>
-                    <div style="font-size:.82rem;font-weight:600;">${b.worker_name || shortAddr(b.worker_address)}</div>
+                    <div style="font-size:.82rem;font-weight:600;">${workerLabel}</div>
                     <div style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</div>
-                    <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;line-height:1.5;">${b.proposal}</div>
+                    <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;line-height:1.5;">${escHtml(b.proposal)}</div>
                 </div>`;
             }).join("");
 
