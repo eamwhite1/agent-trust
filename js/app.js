@@ -217,7 +217,7 @@ function generateReceiptCode() {
 // SAFE FETCH
 // ---------------------------------------------------------------------------
 async function safeFetch(url, options = {}) {
-    const res         = await fetch(url, options);
+    const res         = await fetch(url, { signal: AbortSignal.timeout(30000), ...options });
     const contentType = res.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
         const body = await res.text();
@@ -225,6 +225,9 @@ async function safeFetch(url, options = {}) {
     }
     return res;
 }
+
+// Pre-warm Render on page load so the server is awake before the user acts
+fetch(`${REFEREE_URL}/health`).catch(() => {});
 
 // ---------------------------------------------------------------------------
 // CURRENCY HELPERS
@@ -631,19 +634,38 @@ async function submitWork() {
         : "⏳ Submitting work for AI audit...";
     showStatus("submit-status", linkMsg, "info");
 
+    const submitBody = JSON.stringify({
+        escrow_id:          projectID,
+        work:               workProof,
+        callback_url:       callbackUrl,
+        worker_attachments: workerFiles.filter(f => f.data).map(f => ({
+            filename: f.filename, mime_type: f.mime_type, data: f.data,
+        })),
+        evidence_links: evidenceLinks,
+    });
+
+    const MAX_RETRIES = 5;
+    let res;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            res = await safeFetch(`${REFEREE_URL}/evaluate`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: submitBody,
+            });
+            break; // success — exit retry loop
+        } catch (err) {
+            if (attempt < MAX_RETRIES) {
+                showStatus("submit-status",
+                    `⏳ Server is waking up… (attempt ${attempt}/${MAX_RETRIES}) — this can take up to 30 seconds.`,
+                    "info");
+                await new Promise(r => setTimeout(r, 4000));
+            } else {
+                throw err; // rethrow after final attempt
+            }
+        }
+    }
+
     try {
-        const res = await safeFetch(`${REFEREE_URL}/evaluate`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                escrow_id:          projectID,
-                work:               workProof,
-                callback_url:       callbackUrl,
-                worker_attachments: workerFiles.filter(f => f.data).map(f => ({
-                    filename: f.filename, mime_type: f.mime_type, data: f.data,
-                })),
-                evidence_links: evidenceLinks,
-            }),
-        });
 
         const result = await res.json();
         console.log("📋 Audit response:", result);
