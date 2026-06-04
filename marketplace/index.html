@@ -1067,6 +1067,14 @@ nav {
     .nav-pill { padding: 5px 10px; font-size: .73rem; }
     .nav-logo-sub { display: none; }
 }
+@media (max-width: 640px) {
+    nav { flex-wrap: wrap; gap: 8px; padding: .6rem .75rem; }
+    .nav-logo { flex: 0 0 auto; }
+    .nav-center { order: 3; width: 100%; justify-content: center; }
+    .nav-right { flex: 1; justify-content: flex-end; gap: 6px; }
+    .nav-right > div:first-child input { width: 80px; }
+    .status-pill { display: none; }
+}
 @media (max-width: 600px) {
     .main-header { flex-direction: column; align-items: flex-start; gap: 10px; }
     .main-header > div:last-child { width: 100%; }
@@ -1912,8 +1920,16 @@ function openBidModal(jobId, jobTitle) {
     lucide.createIcons();
 }
 
+let _bidModalOriginalHTML = null;
+
 function closeBidModal() {
-    document.getElementById("bid-modal").classList.remove("open");
+    const modal = document.getElementById("bid-modal");
+    if (_bidModalOriginalHTML) {
+        modal.querySelector(".modal").innerHTML = _bidModalOriginalHTML;
+        lucide.createIcons();
+        _bidModalOriginalHTML = null;
+    }
+    modal.classList.remove("open");
     biddingJobId = null;
 }
 
@@ -1947,14 +1963,21 @@ async function submitBid() {
             }),
         });
         const data = await res.json();
-        showModalStatus("bid-status",
-            `✅ Bid submitted! (${data.bid_id})${email ? " — you'll be emailed if it's accepted." : " — check back to see if you're awarded."}`,
-            "success"
-        );
+        // Replace modal content with a clean success screen
+        _bidModalOriginalHTML = document.querySelector("#bid-modal .modal").innerHTML;
+        document.querySelector("#bid-modal .modal").innerHTML = `
+            <div style="padding:2rem 1.75rem;text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:.5rem;">✅</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--green);margin-bottom:.25rem;">Bid submitted!</div>
+                <div style="font-family:var(--mono);font-size:.8rem;color:var(--text-dim);margin-bottom:1rem;">${data.bid_id}</div>
+                <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:1.25rem;">
+                    ${email ? "You'll receive an email if your bid is accepted." : "Check back to see if you're awarded."}
+                </p>
+                <button onclick="closeBidModal()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;">Done</button>
+            </div>`;
         SEED_ACTIVITY.unshift({ type: "claim", text: `New bid on <strong>${biddingJobId}</strong> · ${price} XRP`, time: "just now" });
         renderActivity();
         await loadOpenJobs();
-        setTimeout(closeBidModal, 4000);
     } catch(e) {
         showModalStatus("bid-status", `Error: ${e.message || "Could not submit bid."}`, "error");
     }

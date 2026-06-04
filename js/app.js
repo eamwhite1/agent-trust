@@ -887,7 +887,10 @@ async function purchaseExtraAttempt(escrowId) {
 
     try {
         // Request a fee payload for 0.05 XRP
-        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, { method: "POST" });
+        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount_xrp: 0.05 }),
+        });
         const data = await res.json();
         if (!data.nextUrl) throw new Error("No Xaman URL returned.");
 
