@@ -759,6 +759,16 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                     <div class="file-list" id="worker-file-list"></div>
                 </div>
 
+                <!-- NFT Proof -->
+                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:8px;">
+                    <div style="font-size:.78rem;font-weight:700;color:#a78bfa;margin-bottom:.4rem;">🔗 NFT Proof <span style="font-weight:400;color:var(--text-dim);">(optional)</span></div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">If the buyer requires an NFT from a trusted issuer (e.g. a ticket, bill of lading), paste your NFT Token ID below. The system verifies it on-chain automatically.</div>
+                    <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.2rem;">NFT Token ID</label>
+                    <input type="text" id="nft-token-id-field" placeholder="e.g. 000800006B0A50…" style="width:100%;margin-bottom:.5rem;">
+                    <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.2rem;">Wallet holding the NFT <span style="font-weight:400;">(leave blank to use your worker address)</span></label>
+                    <input type="text" id="nft-wallet-field" placeholder="rXXX… (optional)" style="width:100%;">
+                </div>
+
                 <!-- W3C Verifiable Credential -->
                 <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;">
                     <div style="font-size:.78rem;font-weight:700;color:#10b981;margin-bottom:.4rem;">📜 W3C Verifiable Credential <span style="font-weight:400;color:var(--text-dim);">(optional)</span></div>
