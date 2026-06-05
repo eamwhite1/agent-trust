@@ -579,6 +579,16 @@ nav {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
 
+/* ── TOOLTIPS ── */
+.tip { position: relative; display: inline-flex; align-items: center; }
+.tip-icon { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(99,102,241,.12); color: #818cf8; cursor: help; margin-left: 5px; flex-shrink: 0; font-size: .65rem; font-weight: 800; border: 1px solid rgba(99,102,241,.2); transition: background .2s; }
+.tip-icon:hover { background: rgba(99,102,241,.25); }
+.tip-box { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 260px; background: #0d1117; color: rgba(255,255,255,.88); font-size: .76rem; font-weight: 400; line-height: 1.6; padding: .8rem 1rem; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.4); z-index: 500; pointer-events: none; border: 1px solid rgba(255,255,255,.08); }
+.tip-box::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #0d1117; }
+.tip-box strong { color: #fff; display: block; margin-bottom: .25rem; }
+.tip.active .tip-box { display: block; }
+@media (hover: hover) { .tip:hover .tip-box { display: block; } }
+
 @media (max-width: 1100px) {
     .layout { grid-template-columns: 220px 1fr; }
     .detail-panel { display: none; }
@@ -847,6 +857,9 @@ nav {
                 <label for="bid-proposal">Your Proposal *</label>
                 <textarea id="bid-proposal" rows="4" placeholder="Describe your approach, relevant experience, and why you're the right fit. Be specific — the buyer will compare bids."></textarea>
             </div>
+            <div style="font-size:.72rem;color:var(--text-dim);margin-top:.5rem;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:6px;border-left:2px solid var(--border);">
+                If this job requires NFT, domain, or credential proof — you'll submit that when completing the work, not at bid time.
+            </div>
             <div class="modal-status" id="bid-status" style="display:none;"></div>
         </div>
         <div class="modal-footer">
@@ -941,8 +954,20 @@ nav {
                 <div class="field-hint">Required — you'll receive bid notifications and an award link by email. Without this you cannot select a winning bid.</div>
             </div>
 
-            <div style="margin-top:1rem;padding:1rem;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;">
-                <div style="font-size:.8rem;font-weight:700;color:#a78bfa;margin-bottom:.5rem;">🔗 Require NFT Proof (optional)</div>
+            <div style="margin-top:1rem;padding:.5rem .75rem;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);font-size:.72rem;color:var(--text-dim);display:flex;align-items:center;gap:6px;">
+                <span style="font-size:.85rem;">🔒</span>
+                <span>Trust Requirements — optional proof mechanisms sellers must satisfy.
+                    <span class="tip" style="display:inline-flex;align-items:center;">
+                        <span class="tip-icon">?</span>
+                        <span class="tip-box"><strong>Why require proof?</strong>Standard job posts rely on the AI evaluating uploaded files and text — which could be faked. Proof requirements force the seller to provide cryptographically verifiable evidence that a specific event happened or that they are who they claim to be. Harder to fake, more trustworthy outcomes.</span>
+                    </span>
+                </span>
+            </div>
+
+            <div style="margin-top:.75rem;padding:1rem;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;">
+                <div style="font-size:.8rem;font-weight:700;color:#a78bfa;margin-bottom:.5rem;">🔗 Require NFT Proof (optional)
+                    <span class="tip"><span class="tip-icon">?</span><span class="tip-box"><strong>NFT from Trusted Issuer</strong>Require the seller to hold an XRPL NFT minted by a specific issuer — for example, a concert ticket minted by Ticketmaster, or a bill of lading NFT minted by a shipping company.<br><br>How to get one: The seller must have received this NFT from the official issuer's XRPL wallet. They paste the NFT Token ID when submitting work — the system verifies it on-chain automatically.</span></span>
+                </div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require the worker to present an XRPL NFT from a trusted issuer as proof of completion. More tamper-proof than uploaded files.</div>
                 <div class="field">
                     <label for="jb-nft-issuer">Required Issuer Wallet Address</label>
@@ -955,7 +980,9 @@ nav {
             </div>
 
             <div style="margin-top:.75rem;padding:1rem;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;">
-                <div style="font-size:.8rem;font-weight:700;color:#3b82f6;margin-bottom:.5rem;">🌐 XRPL Domain Verification (optional)</div>
+                <div style="font-size:.8rem;font-weight:700;color:#3b82f6;margin-bottom:.5rem;">🌐 XRPL Domain Verification (optional)
+                    <span class="tip"><span class="tip-icon" style="background:rgba(59,130,246,.12);color:#3b82f6;border-color:rgba(59,130,246,.25);">?</span><span class="tip-box"><strong>XRPL Domain Verification</strong>Requires the seller's XRPL wallet to be cryptographically linked to a domain they control. For example, a law firm sets their wallet's Domain field to "smithandco.law" and lists their wallet in a .toml file on that domain.<br><br>How sellers set this up: Add a Domain field to your XRPL account in Xaman, then publish a /.well-known/xrp-ledger.toml file on your website listing your wallet address.</span></span>
+                </div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require the worker's XRPL wallet to be verified against a domain's xrp-ledger.toml.</div>
                 <div class="field">
                     <label for="jb-required-domain">Required Domain</label>
@@ -964,7 +991,9 @@ nav {
             </div>
 
             <div style="margin-top:.75rem;padding:1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;">
-                <div style="font-size:.8rem;font-weight:700;color:#10b981;margin-bottom:.5rem;">📜 W3C Verifiable Credential (optional)</div>
+                <div style="font-size:.8rem;font-weight:700;color:#10b981;margin-bottom:.5rem;">📜 W3C Verifiable Credential (optional)
+                    <span class="tip"><span class="tip-icon" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);">?</span><span class="tip-box"><strong>W3C Verifiable Credential</strong>A cryptographically signed digital credential from a trusted institution — for example, a business registration credential from Companies House, or a professional qualification from a university.<br><br>How to get one: Your credential issuer provides a JWT string. Paste it into the VC field when submitting work. The system verifies the issuer's digital signature automatically.</span></span>
+                </div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require the worker to present a credential from a trusted DID issuer.</div>
                 <div class="field">
                     <label for="jb-required-vc-issuer">Required Issuer DID</label>
@@ -977,7 +1006,9 @@ nav {
             </div>
 
             <div style="margin-top:.75rem;padding:1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;">
-                <div style="font-size:.8rem;font-weight:700;color:#f59e0b;margin-bottom:.5rem;">🛡️ Gitcoin Passport Min Score (optional)</div>
+                <div style="font-size:.8rem;font-weight:700;color:#f59e0b;margin-bottom:.5rem;">🛡️ Gitcoin Passport Min Score (optional)
+                    <span class="tip"><span class="tip-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.25);">?</span><span class="tip-box"><strong>Gitcoin Passport Score</strong>A trust score showing the seller is a real, legitimate actor — not a throwaway wallet. Built from verified stamps: GitHub account, Twitter, ENS name, on-chain history etc.<br><br>Note: This is supplementary evidence — a low score adds a warning to the AI's evaluation but doesn't hard-block submission. Sellers build their score at passport.gitcoin.co</span></span>
+                </div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require a minimum Gitcoin Passport trust score (supplementary evidence).</div>
                 <div class="field">
                     <label for="jb-min-passport-score">Minimum Score</label>
@@ -1651,6 +1682,29 @@ function setView(view) {
   </div>
 
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem;">For Sellers: How to Provide Proof</h2>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">If a job requires one or more proof mechanisms, you'll submit the relevant evidence when you complete the work (not at bid time). Here's what each one requires from you:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+      <div style="background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:var(--r);padding:1rem;">
+        <div style="font-weight:700;font-size:.85rem;color:#a855f7;margin-bottom:.5rem;">🔗 NFT Proof</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Paste the <strong style="color:var(--text);">NFT Token ID</strong> from your XRPL wallet (e.g. in Xaman: view NFT → copy token ID). The referee verifies on-chain that you hold it and it was minted by the required issuer.</div>
+      </div>
+      <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:var(--r);padding:1rem;">
+        <div style="font-weight:700;font-size:.85rem;color:#3b82f6;margin-bottom:.5rem;">🌐 Domain Verification</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Set a <strong style="color:var(--text);">Domain field</strong> on your XRPL wallet (in Xaman: Account Settings → Domain). Then publish a <code style="font-family:var(--mono);font-size:.74rem;">/.well-known/xrp-ledger.toml</code> file on your website listing your wallet address.</div>
+      </div>
+      <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:var(--r);padding:1rem;">
+        <div style="font-weight:700;font-size:.85rem;color:#10b981;margin-bottom:.5rem;">📜 W3C Credential</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Paste the <strong style="color:var(--text);">JWT string</strong> from your credential issuer (looks like <code style="font-family:var(--mono);font-size:.72rem;">eyJhbGci…</code>). Contact the issuing body (government registry, certification provider) to obtain yours.</div>
+      </div>
+      <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--r);padding:1rem;">
+        <div style="font-weight:700;font-size:.85rem;color:#f59e0b;margin-bottom:.5rem;">🛡️ Gitcoin Passport</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Paste your <strong style="color:var(--text);">Ethereum wallet address (0x…)</strong>. Build your score for free at <a href="https://passport.gitcoin.co" target="_blank" style="color:#f59e0b;">passport.gitcoin.co</a> by connecting GitHub, Twitter, ENS and other stamps.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
     <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;">Trusted Issuer Registry</h2>
     <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.75rem;">Any organisation that mints NFTs as proof-of-events (shipping companies, certification bodies, IoT oracles, freelance platforms) can register as a trusted issuer. Registered issuers appear in the registry so buyers can discover them.</p>
     <div style="background:var(--surface-2);border-radius:var(--r);padding:.75rem 1rem;font-family:var(--mono);font-size:.78rem;color:var(--text-dim);margin-bottom:.75rem;">POST /nft/issuers — register your organisation<br>GET /nft/issuers — list all verified issuers<br>POST /nft/verify — one-shot NFT verification</div>
@@ -1729,6 +1783,17 @@ function closePostMenu() {
     if (m) m.style.display = "none";
 }
 document.addEventListener("click", e => {
+    // Tooltip touch support
+    const icon = e.target.closest(".tip-icon");
+    if (icon) {
+        e.stopPropagation();
+        const tip = icon.closest(".tip");
+        const wasActive = tip.classList.contains("active");
+        document.querySelectorAll(".tip.active").forEach(t => t.classList.remove("active"));
+        if (!wasActive) tip.classList.add("active");
+    } else {
+        document.querySelectorAll(".tip.active").forEach(t => t.classList.remove("active"));
+    }
     if (!e.target.closest("#post-btn-main") && !e.target.closest("#post-menu")) closePostMenu();
 });
 
