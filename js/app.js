@@ -415,6 +415,19 @@ async function initVault() {
     showStatus("init-status", "⏳ Verifying fee and creating vault...", "info");
 
     try {
+        const nftIssuer   = document.getElementById("nft-issuer-field")?.value.trim() || null;
+        const nftMetaRaw  = document.getElementById("nft-metadata-field")?.value.trim() || null;
+        let nftMetadata = null;
+        if (nftMetaRaw) {
+            try { nftMetadata = JSON.parse(nftMetaRaw); } catch(e) { /* ignore invalid JSON */ }
+        }
+
+        const requiredDomain      = document.getElementById("required-domain-field")?.value.trim() || null;
+        const requiredVcIssuer    = document.getElementById("required-vc-issuer-field")?.value.trim() || null;
+        const requiredVcType      = document.getElementById("required-vc-type-field")?.value.trim() || null;
+        const minPassportScoreRaw = document.getElementById("min-passport-score-field")?.value.trim();
+        const minPassportScore    = minPassportScoreRaw ? parseFloat(minPassportScoreRaw) : null;
+
         const body = {
             escrow_id:         receiptCode,
             fee_hash:          feeHash,
@@ -432,6 +445,12 @@ async function initVault() {
             })),
             spec_links: Array.from(document.querySelectorAll("#spec-links-container .spec-link-input"))
                 .map(el => el.value.trim()).filter(Boolean),
+            required_nft_issuer:    nftIssuer,
+            required_nft_metadata:  nftMetadata,
+            required_domain:        requiredDomain    || undefined,
+            required_vc_issuer_did: requiredVcIssuer  || undefined,
+            required_vc_type:       requiredVcType     || undefined,
+            min_passport_score:     minPassportScore  !== null ? minPassportScore : undefined,
         };
 
         if (currency === "RLUSD") {
@@ -634,6 +653,11 @@ async function submitWork() {
         : "⏳ Submitting work for AI audit...";
     showStatus("submit-status", linkMsg, "info");
 
+    const nftTokenId          = document.getElementById("nft-token-id-field")?.value.trim() || null;
+    const nftWallet           = document.getElementById("nft-wallet-field")?.value.trim() || null;
+    const vcJwt               = document.getElementById("vc-jwt-field")?.value.trim() || null;
+    const passportEthAddress  = document.getElementById("passport-eth-field")?.value.trim() || null;
+
     const submitBody = JSON.stringify({
         escrow_id:          projectID,
         work:               workProof,
@@ -642,6 +666,10 @@ async function submitWork() {
             filename: f.filename, mime_type: f.mime_type, data: f.data,
         })),
         evidence_links: evidenceLinks,
+        nft_token_id:          nftTokenId          || undefined,
+        nft_wallet:            nftWallet            || undefined,
+        vc_jwt:                vcJwt                || undefined,
+        passport_eth_address:  passportEthAddress   || undefined,
     });
 
     const MAX_RETRIES = 5;
