@@ -1655,6 +1655,25 @@ function setView(view) {
     </div>
   </div>
 
+  <div style="background:var(--surface);border:1px solid rgba(16,185,129,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;"><span style="color:#10b981;font-size:1.1rem;">🔄</span> NFT Delivery-vs-Payment (DvP)</h2>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">When a job involves delivering an NFT to the buyer (e.g. buying a concert ticket on their behalf), enable DvP mode to guarantee the buyer receives the NFT before payment releases.</p>
+    <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">
+      <div style="font-weight:700;font-size:.85rem;color:#10b981;margin-bottom:.6rem;">Flow</div>
+      <ol style="font-size:.8rem;color:var(--text-dim);line-height:1.85;padding-left:1.2rem;margin:0;">
+        <li>Buyer enables DvP when creating the escrow</li>
+        <li>Seller obtains the NFT and submits work — AI evaluates as normal</li>
+        <li>On PASS: escrow enters <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">PASS_AWAITING_NFT</code> state (payment does NOT release yet)</li>
+        <li>Seller creates an <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">NFTokenCreateOffer</code> on XRPL: <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">Destination=buyer, Amount=0</code></li>
+        <li>Seller registers the offer: <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">POST /escrow/{"{id}"}/nft-offer</code></li>
+        <li>Buyer is emailed to accept the NFT in Xaman</li>
+        <li>Buyer accepts — system detects it on-chain — payment releases automatically</li>
+      </ol>
+    </div>
+    <p style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">The seller cannot cancel the offer after the buyer accepts it. The buyer cannot be charged — the NFT transfer costs nothing (payment comes from the locked escrow).</p>
+    <div style="font-size:.82rem;color:var(--text-dim);margin-top:.75rem;"><strong style="color:var(--text);">API:</strong> <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">POST /escrow/{"{id}"}/nft-offer</code> — register offer &nbsp;·&nbsp; <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">GET /escrow/{"{id}"}/nft-status</code> — poll acceptance</div>
+  </div>
+
   <div style="background:var(--surface);border:1px solid rgba(59,130,246,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
     <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;"><span style="color:#3b82f6;font-size:1.1rem;">🌐</span> XRPL Domain Verification</h2>
     <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">An XRPL wallet can set a <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">Domain</code> field (hex-encoded domain name). The referee verifies both directions: the wallet's on-chain domain field, and that the domain's <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">xrp-ledger.toml</code> file lists that wallet address.</p>
@@ -1719,6 +1738,8 @@ function setView(view) {
             ["POST","/escrow/{id}/confirm","Register EscrowCreate tx hash to activate the vault"],
             ["POST","/evaluate","Submit work for AI evaluation — auto-releases payment on PASS"],
             ["GET","/escrow/{id}","Get vault status, task description, submission counts"],
+            ["POST","/escrow/{id}/nft-offer","Register NFT sell offer for DvP — triggers buyer notification"],
+            ["GET","/escrow/{id}/nft-status","Poll NFT acceptance status for DvP escrows"],
             ["POST","/jobs","Post a job to the board — free, accepts bids"],
             ["GET","/jobs","List open jobs available for bidding"],
             ["POST","/jobs/{id}/bid","Submit a bid on a job"],
@@ -1746,6 +1767,29 @@ function setView(view) {
           </tr>`).join("")}
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid rgba(99,102,241,.2);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.25rem;display:flex;align-items:center;gap:8px;"><span style="color:#818cf8;">&#9201;</span> On the Roadmap</h2>
+    <p style="font-size:.8rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">Protocol upgrades that are already designed — blocked only by upstream dependencies.</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      <div style="padding:.75rem 1rem;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#818cf8;margin-bottom:.2rem;">Atomic NFT Swaps (XLS-30 Hooks) <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">In progress upstream</span></div>
+        Both NFT transfer and payment will happen in a single ledger entry — truly atomic, zero back-out window. Requires XLS-30 on XRPL mainnet.
+      </div>
+      <div style="padding:.75rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#f59e0b;margin-bottom:.2rem;">RLUSD-to-RLUSD Escrow <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">Waiting on Ripple</span></div>
+        Native RLUSD escrow requires Ripple to enable lsfAllowTrustLineLocking on their issuer account (XLS-85). We're ready to activate the moment they do.
+      </div>
+      <div style="padding:.75rem 1rem;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.12);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#10b981;margin-bottom:.2rem;">Multi-chain NFT Verification <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(16,185,129,.08);color:#10b981;border:1px solid rgba(16,185,129,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">Coming soon</span></div>
+        Ethereum ERC-721 and Solana NFTs as proof — same on-chain verification guarantees across any chain.
+      </div>
+      <div style="padding:.75rem 1rem;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.12);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#10b981;margin-bottom:.2rem;">On-chain Identity (XLS-26 DIDs) <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(16,185,129,.08);color:#10b981;border:1px solid rgba(16,185,129,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">Coming soon</span></div>
+        W3C Decentralised Identifiers natively on XRPL — DID-based identity as a first-class proof mechanism alongside domain and VC verification.
+      </div>
     </div>
   </div>
 

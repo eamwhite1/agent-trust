@@ -275,6 +275,22 @@
         .use-case h4 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; }
         .use-case p { font-size: .82rem; color: var(--text-muted); line-height: 1.6; }
 
+        /* ── ROADMAP ── */
+        .roadmap-section { margin: 5rem 0; }
+        .roadmap-title { font-family: 'DM Serif Display', serif; font-size: 2.2rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: .5rem; }
+        .roadmap-sub { text-align: center; color: var(--text-muted); font-size: .92rem; margin-bottom: 2.5rem; }
+        .roadmap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+        .roadmap-card { padding: 1.5rem; border-radius: 18px; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); display: flex; flex-direction: column; }
+        .roadmap-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+        .roadmap-card h4 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; }
+        .roadmap-card p { font-size: .8rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
+        .roadmap-badge { display: inline-block; margin-top: .9rem; font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; }
+        .badge-upstream { background: rgba(99,102,241,.12); color: #818cf8; border: 1px solid rgba(99,102,241,.2); }
+        .badge-waiting { background: rgba(245,158,11,.1); color: #f59e0b; border: 1px solid rgba(245,158,11,.2); }
+        .badge-soon { background: rgba(16,185,129,.08); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
+        @media (max-width: 900px) { .roadmap-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 600px) { .roadmap-grid { grid-template-columns: 1fr; } }
+
         .use-case { cursor: pointer; }
         .use-case-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 1.5rem; }
         .use-case-modal-overlay.open { display: flex; }
@@ -1182,6 +1198,53 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
         <div class="use-case" onclick="openUcModal('Real Estate')"><div class="use-case-icon"><i data-lucide="home"></i></div><h4>Real Estate</h4><p>AI verifies land registry and structural reports to release deposits instantly, bypassing slow solicitors.</p></div>
         <div class="use-case" onclick="openUcModal('Corporate M&A')"><div class="use-case-icon"><i data-lucide="trending-up"></i></div><h4>Corporate M&amp;A</h4><p>Hold funds during mergers. AI verifies financial audit benchmarks to trigger tranches of payout automatically.</p></div>
     </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         ROADMAP — COMING SOON
+    ════════════════════════════════════════════════════════════ -->
+    <section class="roadmap-section">
+        <h2 class="roadmap-title">On the roadmap</h2>
+        <p class="roadmap-sub">Protocol upgrades that are already designed — blocked only by upstream dependencies.</p>
+        <div class="roadmap-grid">
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(99,102,241,.1);color:#818cf8;">
+                    <i data-lucide="zap" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>Atomic NFT Swaps</h4>
+                <p>Today's NFT Delivery-vs-Payment uses two sequential transactions — buyer accepts the NFT, then payment releases automatically. With XRPL Hooks (XLS-30), both will happen in a single ledger entry: truly atomic, with zero window for either party to back out. Coming when XLS-30 launches on XRPL mainnet.</p>
+                <span class="roadmap-badge badge-upstream">In progress upstream</span>
+            </div>
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
+                    <i data-lucide="dollar-sign" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>RLUSD-to-RLUSD Escrow</h4>
+                <p>RLUSD is already supported for payments, but native RLUSD escrow (locking stablecoin funds on-chain) requires Ripple to enable the lsfAllowTrustLineLocking flag on their issuer account — a requirement of the XLS-85 token escrow standard. We're ready to activate this the moment they do.</p>
+                <span class="roadmap-badge badge-waiting">Waiting on Ripple</span>
+            </div>
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(0,102,255,.1);color:var(--blue);">
+                    <i data-lucide="layers" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>Multi-chain NFT Verification</h4>
+                <p>Currently NFT proof verification covers XRPL native NFTs. Ethereum ERC-721 and Solana NFTs are next — allowing buyers to require proof of ownership from any chain, with the same on-chain verification guarantees.</p>
+                <span class="roadmap-badge badge-soon">Coming soon</span>
+            </div>
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(168,85,247,.1);color:#a855f7;">
+                    <i data-lucide="fingerprint" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>On-chain Identity (XLS-26)</h4>
+                <p>XLS-26 brings W3C Decentralised Identifiers (DIDs) natively to XRPL, enabling cryptographically verifiable identity without any central registry. We'll integrate DID-based identity as a first-class proof mechanism alongside our existing domain and VC verification.</p>
+                <span class="roadmap-badge badge-soon">Coming soon</span>
+            </div>
+
+        </div>
+    </section>
 
     <!-- ════════════════════════════════════════════════════════════
          AGENTIC AI MARKETPLACE CTA
