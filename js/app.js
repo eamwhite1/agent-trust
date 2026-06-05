@@ -425,8 +425,7 @@ async function initVault() {
         const requiredDomain      = document.getElementById("required-domain-field")?.value.trim() || null;
         const requiredVcIssuer    = document.getElementById("required-vc-issuer-field")?.value.trim() || null;
         const requiredVcType      = document.getElementById("required-vc-type-field")?.value.trim() || null;
-        const minPassportScoreRaw = document.getElementById("min-passport-score-field")?.value.trim();
-        const minPassportScore    = minPassportScoreRaw ? parseFloat(minPassportScoreRaw) : null;
+        const proofPolicy         = document.querySelector('input[name="proof-policy"]:checked')?.value || "ALL";
 
         const body = {
             escrow_id:         receiptCode,
@@ -450,7 +449,7 @@ async function initVault() {
             required_domain:        requiredDomain    || undefined,
             required_vc_issuer_did: requiredVcIssuer  || undefined,
             required_vc_type:       requiredVcType     || undefined,
-            min_passport_score:     minPassportScore  !== null ? minPassportScore : undefined,
+            proof_policy:           proofPolicy,
         };
 
         if (currency === "RLUSD") {
@@ -656,7 +655,6 @@ async function submitWork() {
     const nftTokenId          = document.getElementById("nft-token-id-field")?.value.trim() || null;
     const nftWallet           = document.getElementById("nft-wallet-field")?.value.trim() || null;
     const vcJwt               = document.getElementById("vc-jwt-field")?.value.trim() || null;
-    const passportEthAddress  = document.getElementById("passport-eth-field")?.value.trim() || null;
 
     const submitBody = JSON.stringify({
         escrow_id:          projectID,
@@ -669,7 +667,6 @@ async function submitWork() {
         nft_token_id:          nftTokenId          || undefined,
         nft_wallet:            nftWallet            || undefined,
         vc_jwt:                vcJwt                || undefined,
-        passport_eth_address:  passportEthAddress   || undefined,
     });
 
     const MAX_RETRIES = 5;
@@ -1253,4 +1250,75 @@ function addLinkField(containerId, btnId, maxExtra) {
         btn.style.display = "none";
     }
     if (window.lucide) lucide.createIcons();
+}
+
+// ---------------------------------------------------------------------------
+// GLEIF COMPANY SEARCH
+// ---------------------------------------------------------------------------
+let _gleifTimer = null;
+async function gleifSearch(query, resultsId, targetId) {
+    const resultsEl = document.getElementById(resultsId);
+    if (!query || query.length < 3) { if (resultsEl) resultsEl.style.display = "none"; return; }
+
+    // If it looks like an XRPL address, use directly
+    if (query.startsWith("r") && query.length > 20) {
+        const target = document.getElementById(targetId);
+        if (target) target.value = query;
+        if (resultsEl) resultsEl.style.display = "none";
+        return;
+    }
+
+    clearTimeout(_gleifTimer);
+    _gleifTimer = setTimeout(async () => {
+        try {
+            const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
+            const data = await res.json();
+            const results = data.results || [];
+
+            if (!resultsEl) return;
+            if (!results.length) { resultsEl.style.display = "none"; return; }
+
+            resultsEl.innerHTML = results.map(r => `
+                <div onclick="selectGleifResult('${r.lei}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                    <div style="font-weight:600;">${r.name}</div>
+                    <div style="font-size:.72rem;opacity:.6;">LEI: ${r.lei} · GLEIF verified</div>
+                </div>
+            `).join("");
+            resultsEl.style.display = "block";
+        } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
+    }, 350);
+}
+
+async function selectGleifResult(lei, name, targetId, resultsId) {
+    const resultsEl = document.getElementById(resultsId);
+    if (resultsEl) resultsEl.style.display = "none";
+    // Set visible search input to the company name
+    const searchInput = resultsEl ? resultsEl.previousElementSibling : null;
+    if (searchInput) searchInput.value = name;
+    // Look up XRPL wallet
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        const match = data.results?.find(r => r.lei === lei);
+        const target = document.getElementById(targetId);
+        if (match?.xrpl_wallet && target) {
+            target.value = match.xrpl_wallet;
+        }
+        // Show status
+        const statusId = resultsId + "-status";
+        let statusEl = document.getElementById(statusId);
+        if (!statusEl && resultsEl) {
+            statusEl = document.createElement("div");
+            statusEl.id = statusId;
+            statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
+            resultsEl.parentNode.appendChild(statusEl);
+        }
+        if (statusEl) {
+            statusEl.textContent = match?.xrpl_wallet
+                ? "✅ GLEIF verified · XRPL wallet found"
+                : "✅ GLEIF verified · No XRPL wallet on record — ask the company for their wallet address";
+        }
+    } catch(e) {}
 }

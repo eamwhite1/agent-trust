@@ -612,7 +612,11 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         </span>
                     </div>
                     <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Require the seller to hold an XRPL NFT minted by a specific issuer — e.g. a bill of lading from a shipping company.</div>
-                    <input type="text" id="nft-issuer-field" placeholder="Issuer wallet address (rIssuer…)" style="width:100%;margin-bottom:.4rem;">
+                    <div style="position:relative;">
+                        <input type="text" id="nft-issuer-search" placeholder="Search company name or paste wallet address…" oninput="gleifSearch(this.value,'nft-issuer-results','nft-issuer-field')" autocomplete="off" style="width:100%;margin-bottom:.4rem;">
+                        <div id="nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                    </div>
+                    <input type="hidden" id="nft-issuer-field">
                     <input type="text" id="nft-metadata-field" placeholder='Required metadata JSON e.g. {"destination":"Liverpool"}' style="width:100%;">
                 </div>
 
@@ -649,20 +653,15 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                     <input type="text" id="required-vc-type-field" placeholder="Credential type e.g. BusinessRegistrationCredential" style="width:100%;">
                 </div>
 
-                <!-- Gitcoin Passport -->
-                <div style="margin-top:.5rem;padding:.75rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;">
-                    <div style="font-size:.78rem;font-weight:700;color:#f59e0b;margin-bottom:.4rem;">🛡️ Gitcoin Passport Min Score (optional)
-                        <span class="tooltip-wrap">
-                            <span class="tooltip-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.25);">?</span>
-                            <span class="tooltip-box">
-                                <strong>Gitcoin Passport Score</strong>
-                                A trust score showing the seller is a real, legitimate actor — not a throwaway wallet. Built from verified stamps: GitHub account, Twitter, ENS name, on-chain history etc.<br><br>
-                                Note: This is supplementary evidence — a low score adds a warning to the AI's evaluation but doesn't hard-block submission. Sellers build their score at passport.gitcoin.co
-                            </span>
-                        </span>
-                    </div>
-                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Require a minimum Gitcoin Passport trust score. Score treated as supplementary evidence (warning only, not hard block).</div>
-                    <input type="number" id="min-passport-score-field" placeholder="e.g. 15" min="0" max="100" style="width:100%;">
+                <!-- Proof Policy -->
+                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:8px;">
+                    <div style="font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:.5rem;">Proof policy</div>
+                    <label style="display:block;margin-bottom:.3rem;font-size:.8rem;cursor:pointer;">
+                        <input type="radio" name="proof-policy" value="ALL" checked> Seller must pass <strong>all</strong> selected proofs
+                    </label>
+                    <label style="display:block;font-size:.8rem;cursor:pointer;">
+                        <input type="radio" name="proof-policy" value="ANY"> Seller must pass <strong>any one</strong> of the selected proofs
+                    </label>
                 </div>
             </details>
 
@@ -843,21 +842,6 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                     <textarea id="vc-jwt-field" rows="3" placeholder="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." style="width:100%;font-family:var(--mono);font-size:.72rem;"></textarea>
                 </div>
 
-                <!-- Gitcoin Passport -->
-                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;">
-                    <div style="font-size:.78rem;font-weight:700;color:#f59e0b;margin-bottom:.4rem;">🛡️ Gitcoin Passport <span style="font-weight:400;color:var(--text-dim);">(optional)</span>
-                        <span class="tooltip-wrap">
-                            <span class="tooltip-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.25);">?</span>
-                            <span class="tooltip-box">
-                                <strong>Your Ethereum address</strong>
-                                Paste your Ethereum wallet address (0x…) that holds your Gitcoin Passport. This is your EVM wallet, not your XRPL wallet.<br><br>
-                                Don't have a Passport? Build one free at passport.gitcoin.co by connecting accounts like GitHub and Twitter to earn trust stamps.
-                            </span>
-                        </span>
-                    </div>
-                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Your Ethereum address to include your Passport trust score as supporting evidence.</div>
-                    <input id="passport-eth-field" type="text" placeholder="0x..." style="width:100%;">
-                </div>
 
                 <div class="field-group" style="display:none;">
                     <label class="field-label" for="callback-url">Webhook URL (agents only)</label>
