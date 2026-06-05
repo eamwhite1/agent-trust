@@ -580,6 +580,43 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                 </div>
             </div>
 
+            <!-- TRUST REQUIREMENTS (optional) -->
+            <details style="margin-bottom:1rem;">
+                <summary style="cursor:pointer;font-size:.8rem;font-weight:700;color:var(--text-dim);padding:.5rem 0;list-style:none;display:flex;align-items:center;gap:6px;">
+                    <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Trust Requirements <span class="opt">(optional — require proof from seller)</span>
+                </summary>
+
+                <!-- NFT Proof -->
+                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:8px;margin-bottom:.5rem;">
+                    <div style="font-size:.78rem;font-weight:700;color:#a855f7;margin-bottom:.4rem;">🔗 NFT from Trusted Issuer (optional)</div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Require the seller to hold an XRPL NFT minted by a specific issuer — e.g. a bill of lading from a shipping company.</div>
+                    <input type="text" id="nft-issuer-field" placeholder="Issuer wallet address (rIssuer…)" style="width:100%;margin-bottom:.4rem;">
+                    <input type="text" id="nft-metadata-field" placeholder='Required metadata JSON e.g. {"destination":"Liverpool"}' style="width:100%;">
+                </div>
+
+                <!-- Domain Verification -->
+                <div style="margin-top:.5rem;padding:.75rem 1rem;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:8px;margin-bottom:.5rem;">
+                    <div style="font-size:.78rem;font-weight:700;color:#3b82f6;margin-bottom:.4rem;">🌐 XRPL Domain Verification (optional)</div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Require the seller's XRPL wallet to be cryptographically linked to a domain via xrp-ledger.toml.</div>
+                    <input type="text" id="required-domain-field" placeholder="e.g. maersk.com" style="width:100%;">
+                </div>
+
+                <!-- W3C Verifiable Credential -->
+                <div style="margin-top:.5rem;padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;margin-bottom:.5rem;">
+                    <div style="font-size:.78rem;font-weight:700;color:#10b981;margin-bottom:.4rem;">📜 W3C Verifiable Credential (optional)</div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Require the seller to present a VC from a specific DID issuer (e.g. government registry, certification body).</div>
+                    <input type="text" id="required-vc-issuer-field" placeholder="Issuer DID e.g. did:web:companieshouse.gov.uk" style="width:100%;margin-bottom:.4rem;">
+                    <input type="text" id="required-vc-type-field" placeholder="Credential type e.g. BusinessRegistrationCredential" style="width:100%;">
+                </div>
+
+                <!-- Gitcoin Passport -->
+                <div style="margin-top:.5rem;padding:.75rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;">
+                    <div style="font-size:.78rem;font-weight:700;color:#f59e0b;margin-bottom:.4rem;">🛡️ Gitcoin Passport Min Score (optional)</div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Require a minimum Gitcoin Passport trust score. Score treated as supplementary evidence (warning only, not hard block).</div>
+                    <input type="number" id="min-passport-score-field" placeholder="e.g. 15" min="0" max="100" style="width:100%;">
+                </div>
+            </details>
+
             <button class="btn btn-primary" id="init-btn" onclick="initVault()">
                 <i data-lucide="lock"></i> Initialize Vault &amp; Create Escrow
             </button>
@@ -720,6 +757,20 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                         <div class="drop-zone-sub">PDF, Images, DOCX, TXT, MD — max 15 MB each · 50 MB total</div>
                     </div>
                     <div class="file-list" id="worker-file-list"></div>
+                </div>
+
+                <!-- W3C Verifiable Credential -->
+                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;">
+                    <div style="font-size:.78rem;font-weight:700;color:#10b981;margin-bottom:.4rem;">📜 W3C Verifiable Credential <span style="font-weight:400;color:var(--text-dim);">(optional)</span></div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Paste a Verifiable Credential JWT if the buyer requires institutional proof.</div>
+                    <textarea id="vc-jwt-field" rows="3" placeholder="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." style="width:100%;font-family:var(--mono);font-size:.72rem;"></textarea>
+                </div>
+
+                <!-- Gitcoin Passport -->
+                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;">
+                    <div style="font-size:.78rem;font-weight:700;color:#f59e0b;margin-bottom:.4rem;">🛡️ Gitcoin Passport <span style="font-weight:400;color:var(--text-dim);">(optional)</span></div>
+                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Your Ethereum address to include your Passport trust score as supporting evidence.</div>
+                    <input id="passport-eth-field" type="text" placeholder="0x..." style="width:100%;">
                 </div>
 
                 <div class="field-group" style="display:none;">
