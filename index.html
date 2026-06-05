@@ -599,8 +599,19 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                     <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Trust Requirements <span class="opt">(optional — require proof from seller)</span>
                 </summary>
 
+                <!-- NFT Delivery-vs-Payment mode -->
+                <div style="padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;margin-bottom:.75rem;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="nft-dvp-toggle" onchange="toggleNftDvpMode(this.checked)" style="width:16px;height:16px;">
+                        <div>
+                            <div style="font-size:.82rem;font-weight:700;color:#10b981;">🔄 NFT Delivery-vs-Payment mode</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Seller must transfer an NFT to you before payment releases. Prevents seller receiving payment without delivering the NFT.</div>
+                        </div>
+                    </label>
+                </div>
+
                 <!-- NFT Proof -->
-                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:8px;margin-bottom:.5rem;">
+                <div id="nft-proof-buyer-section" style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:8px;margin-bottom:.5rem;">
                     <div style="font-size:.78rem;font-weight:700;color:#a855f7;margin-bottom:.4rem;">🔗 NFT from Trusted Issuer (optional)
                         <span class="tooltip-wrap">
                             <span class="tooltip-icon" style="background:rgba(168,85,247,.12);color:#a855f7;border-color:rgba(168,85,247,.25);">?</span>
