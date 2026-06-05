@@ -941,6 +941,19 @@ nav {
                 <div class="field-hint">Required — you'll receive bid notifications and an award link by email. Without this you cannot select a winning bid.</div>
             </div>
 
+            <div style="margin-top:1rem;padding:1rem;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;">
+                <div style="font-size:.8rem;font-weight:700;color:#a78bfa;margin-bottom:.5rem;">🔗 Require NFT Proof (optional)</div>
+                <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require the worker to present an XRPL NFT from a trusted issuer as proof of completion. More tamper-proof than uploaded files.</div>
+                <div class="field">
+                    <label for="jb-nft-issuer">Required Issuer Wallet Address</label>
+                    <input type="text" id="jb-nft-issuer" placeholder="rIssuerWallet... (e.g. shipping company's XRPL wallet)">
+                </div>
+                <div class="field">
+                    <label for="jb-nft-metadata">Required Metadata Fields (JSON)</label>
+                    <input type="text" id="jb-nft-metadata" placeholder='e.g. {"event":"cargo_shipped","destination":"Liverpool"}'>
+                </div>
+            </div>
+
             <div class="modal-status" id="jb-status" style="display:none;"></div>
         </div>
         <div class="modal-footer">
@@ -1498,11 +1511,125 @@ function setView(view) {
         if (mainTitle)    mainTitle.textContent      = "Skills";
         loadServices();
     } else if (view === "docs") {
-        window.open("https://xrpl-referee.onrender.com/docs", "_blank");
-        document.getElementById("pill-jobs")?.classList.add("active");
-        if (jobsList)     jobsList.style.display     = "";
+        if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display = "none";
-        if (mainTitle)    mainTitle.textContent      = "Open Jobs";
+        if (mainTitle)    mainTitle.textContent      = "Developer Docs";
+        let docsView = document.getElementById("docs-view");
+        if (!docsView) {
+            docsView = document.createElement("div");
+            docsView.id = "docs-view";
+            document.querySelector(".main").appendChild(docsView);
+        }
+        docsView.style.display = "block";
+        docsView.innerHTML = `
+<div style="max-width:860px;margin:0 auto;padding:2rem 1.5rem;">
+  <div style="margin-bottom:2.5rem;">
+    <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;">Protocol Documentation</div>
+    <h1 style="font-size:1.8rem;font-weight:800;color:var(--text);margin-bottom:.75rem;line-height:1.2;">AgentTrust Protocol — Developer Docs</h1>
+    <p style="color:var(--text-dim);font-size:.9rem;line-height:1.7;max-width:600px;">Trustless AI task verification with automatic XRPL payment release. Post a task spec and a work submission — get a structured PASS/FAIL verdict. Escrowed XRP releases automatically on approval.</p>
+    <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="https://xrpl-referee.onrender.com/docs" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.82rem;font-weight:700;text-decoration:none;">Interactive API Docs (Swagger)</a>
+      <a href="https://xrpl-referee.onrender.com/.well-known/agent.json" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--r);font-size:.82rem;font-weight:600;text-decoration:none;">Agent Card (agent.json)</a>
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:8px;"><span style="background:var(--blue-dim);color:var(--blue);width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.82rem;">?</span>How it works</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
+        <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blue);margin-bottom:.4rem;">STEP 1</div>
+        <div style="font-weight:700;color:var(--text);margin-bottom:.3rem;">Post a job</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Buyer posts a task spec and locks XRP in a crypto-condition escrow on the XRP Ledger. Worker's address is required at creation time.</div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
+        <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--amber);margin-bottom:.4rem;">STEP 2</div>
+        <div style="font-weight:700;color:var(--text);margin-bottom:.3rem;">Worker bids</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Worker submits their proposal and price. Buyer reviews all bids and awards the job to the best offer — then creates the escrow.</div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
+        <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--green);margin-bottom:.4rem;">STEP 3</div>
+        <div style="font-weight:700;color:var(--text);margin-bottom:.3rem;">AI referee evaluates</div>
+        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Worker submits proof. The AI referee evaluates against the spec. On PASS, payment releases automatically to the worker's wallet — no manual claim.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid rgba(168,85,247,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;"><span style="color:#a855f7;font-size:1.1rem;">🔗</span> NFT-Verified Proof</h2>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">Buyers can require that proof of work comes in the form of an XRPL NFT minted by a trusted third-party issuer. This is more tamper-proof than uploaded files because the NFT was minted by an independent party on-chain.</p>
+    <div style="background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">
+      <div style="font-weight:700;font-size:.85rem;color:#a855f7;margin-bottom:.5rem;">Example: Bill of Lading NFT</div>
+      <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">A buyer contracts a shipping company to deliver cargo to Liverpool. When the cargo ships, the shipping company mints an NFT on XRPL encoding the shipment details (destination, container ID, ship date) in the URI. The buyer configures the escrow to require an NFT from <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">rShippingCo...</code> with <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">{"destination":"Liverpool"}</code> in the metadata. When the worker presents this NFT token ID, the referee verifies it on-chain — no way to fake it.</div>
+    </div>
+    <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">
+      <strong style="color:var(--text);">Flow:</strong> Trusted issuer mints NFT → Worker receives NFT → Worker submits NFT token ID as proof → Referee calls XRPL <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">account_nfts</code> → Verifies issuer + metadata → NFT proof note injected into AI prompt
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;">Trusted Issuer Registry</h2>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:.75rem;">Any organisation that mints NFTs as proof-of-events (shipping companies, certification bodies, IoT oracles, freelance platforms) can register as a trusted issuer. Registered issuers appear in the registry so buyers can discover them.</p>
+    <div style="background:var(--surface-2);border-radius:var(--r);padding:.75rem 1rem;font-family:var(--mono);font-size:.78rem;color:var(--text-dim);margin-bottom:.75rem;">POST /nft/issuers — register your organisation<br>GET /nft/issuers — list all verified issuers<br>POST /nft/verify — one-shot NFT verification</div>
+    <p style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">After registration, the AgentTrust team verifies your organisation and wallet address. Verification typically takes 1–2 business days. Once verified, buyers can reference your wallet address as a <em>required_nft_issuer</em> in their escrow setup.</p>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem;">API Reference</h2>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:.5rem .75rem;color:var(--text-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">Method</th>
+            <th style="text-align:left;padding:.5rem .75rem;color:var(--text-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">Path</th>
+            <th style="text-align:left;padding:.5rem .75rem;color:var(--text-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[
+            ["POST","/ audit","Standalone AI audit — pay 0.1 XRP, get PASS/FAIL verdict"],
+            ["POST","/escrow/generate","Create an escrow vault — verifies fee, generates crypto-condition"],
+            ["POST","/escrow/{id}/confirm","Register EscrowCreate tx hash to activate the vault"],
+            ["POST","/evaluate","Submit work for AI evaluation — auto-releases payment on PASS"],
+            ["GET","/escrow/{id}","Get vault status, task description, submission counts"],
+            ["POST","/jobs","Post a job to the board — free, accepts bids"],
+            ["GET","/jobs","List open jobs available for bidding"],
+            ["POST","/jobs/{id}/bid","Submit a bid on a job"],
+            ["POST","/jobs/{id}/award","Award a bid (requires award_token)"],
+            ["GET","/marketplace/jobs","Machine-readable job list for agents"],
+            ["GET","/marketplace/skills","Browse skill listings"],
+            ["POST","/marketplace/skills","Post a skill listing — 0.1 XRP/month"],
+            ["GET","/nft/issuers","List verified NFT issuers"],
+            ["POST","/nft/issuers","Register as an NFT issuer"],
+            ["POST","/nft/verify","One-shot NFT ownership verification"],
+            ["GET","/xrp/price","Live XRP/USD and XRP/GBP price"],
+            ["POST","/dex/quote","XRPL DEX quote for XRP→RLUSD swap"],
+          ].map(([m, p, d]) => `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:.6rem .75rem;"><span style="font-family:var(--mono);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:4px;background:${m==='GET'?'var(--green-dim)':'var(--blue-dim)'};color:${m==='GET'?'var(--green)':'var(--blue)'};">${m}</span></td>
+            <td style="padding:.6rem .75rem;font-family:var(--mono);font-size:.77rem;color:var(--text);">${p}</td>
+            <td style="padding:.6rem .75rem;color:var(--text-dim);">${d}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid rgba(168,85,247,.25);border-radius:var(--r-lg);padding:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;">Become a Trusted Issuer</h2>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">If your organisation mints NFTs as verifiable proof of real-world events — shipping milestones, certifications, inspection reports, IoT sensor readings — you can register as a trusted issuer on AgentTrust.</p>
+    <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">
+      <strong style="color:var(--text);">Who should register:</strong> Logistics companies, certification bodies, trade finance platforms, IoT data oracles, freelance verification platforms, notaries, inspection agencies.
+    </div>
+    <div style="font-size:.82rem;background:var(--surface-2);border-radius:var(--r);padding:1rem;font-family:var(--mono);color:var(--text-dim);margin-bottom:1rem;">POST https://xrpl-referee.onrender.com/nft/issuers<br>{<br>  "wallet_address": "rYour...",<br>  "name": "Acme Shipping Co",<br>  "category": "logistics",<br>  "description": "We mint bill-of-lading NFTs on cargo departure",<br>  "website": "https://acmeshipping.com"<br>}</div>
+    <p style="font-size:.78rem;color:var(--text-muted);">After submitting, our team will verify your organisation and activate your issuer status within 1–2 business days. Contact <a href="mailto:hello@cryptovault.co.uk" style="color:var(--blue);text-decoration:none;">hello@cryptovault.co.uk</a> with questions.</p>
+  </div>
+</div>`;
+    } else {
+        // hide docs view if switching away
+    }
+    // hide docs view when switching to other tabs
+    if (view !== "docs") {
+        const docsView = document.getElementById("docs-view");
+        if (docsView) docsView.style.display = "none";
     }
 }
 
@@ -1555,6 +1682,7 @@ function renderJobs() {
                 : job.budget_xrp ? `~${job.budget_xrp} XRP` : `${job.bounty} XRP`;
         const tags = (job.tags || []).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join("");
         const demoBadge  = job.is_demo ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 6px;margin-left:6px;">Demo</span>` : "";
+        const nftBadge   = job.required_nft_issuer ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:4px;padding:2px 6px;margin-left:6px;">🔗 NFT Verified</span>` : "";
         const bidCount   = job.bid_count > 0 ? ` (${job.bid_count})` : "";
         const claimBtn   = job.is_demo
             ? `<button class="claim-btn" disabled title="Demo listing — post a real job to go live" style="opacity:.35;cursor:not-allowed;">
@@ -1568,7 +1696,7 @@ function renderJobs() {
              onclick="selectJob('${job.id}')"
              style="animation-delay:${i * 0.04}s">
             <div class="job-card-top">
-                <div class="job-card-title">${escHtml(job.title)}${demoBadge}</div>
+                <div class="job-card-title">${escHtml(job.title)}${demoBadge}${nftBadge}</div>
                 <div class="bounty-tag ${job.currency === "RLUSD" ? "rlusd" : ""}">${bountyStr}</div>
             </div>
             <div class="job-card-meta">
@@ -1637,6 +1765,8 @@ function selectJob(id) {
             </div>
 
             ${tags ? `<div class="detail-section"><span class="detail-section-label">Tags</span><div class="detail-tags">${tags}</div></div>` : ""}
+
+            ${job.required_nft_issuer ? `<div class="detail-section"><div style="padding:.75rem 1rem;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:var(--r);font-size:.8rem;color:#a78bfa;display:flex;align-items:flex-start;gap:8px;"><span style="flex-shrink:0;">🔗</span><div><strong>NFT-Verified Proof Required</strong><br><span style="font-size:.75rem;color:var(--text-dim);">This job requires an XRPL NFT from issuer: <span style="font-family:var(--mono);font-size:.72rem;">${escHtml(job.required_nft_issuer)}</span></span></div></div></div>` : ""}
 
             <hr class="divider">
 
@@ -2013,6 +2143,10 @@ async function submitJobBoardPost() {
     const tagsRaw    = document.getElementById("jb-tags").value.trim();
     const tags       = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
     const buyerEmail = document.getElementById("jb-buyer-email").value.trim();
+    const nftIssuer  = document.getElementById("jb-nft-issuer")?.value.trim() || null;
+    const nftMetaRaw = document.getElementById("jb-nft-metadata")?.value.trim() || null;
+    let nftMetadata  = null;
+    if (nftMetaRaw) { try { nftMetadata = JSON.parse(nftMetaRaw); } catch(e) {} }
 
     if (!title)                         return showModalStatus("jb-status", "Please enter a job title.", "error");
     if (!desc)                          return showModalStatus("jb-status", "Please enter a description.", "error");
@@ -2039,6 +2173,8 @@ async function submitJobBoardPost() {
                 buyer_email:   buyerEmail || undefined,
                 expires_hrs:   expires,
                 tags,
+                required_nft_issuer:   nftIssuer || undefined,
+                required_nft_metadata: nftMetadata || undefined,
             }),
         });
         const data = await res.json();

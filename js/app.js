@@ -415,6 +415,13 @@ async function initVault() {
     showStatus("init-status", "⏳ Verifying fee and creating vault...", "info");
 
     try {
+        const nftIssuer   = document.getElementById("nft-issuer-field")?.value.trim() || null;
+        const nftMetaRaw  = document.getElementById("nft-metadata-field")?.value.trim() || null;
+        let nftMetadata = null;
+        if (nftMetaRaw) {
+            try { nftMetadata = JSON.parse(nftMetaRaw); } catch(e) { /* ignore invalid JSON */ }
+        }
+
         const body = {
             escrow_id:         receiptCode,
             fee_hash:          feeHash,
@@ -432,6 +439,8 @@ async function initVault() {
             })),
             spec_links: Array.from(document.querySelectorAll("#spec-links-container .spec-link-input"))
                 .map(el => el.value.trim()).filter(Boolean),
+            required_nft_issuer:   nftIssuer,
+            required_nft_metadata: nftMetadata,
         };
 
         if (currency === "RLUSD") {
@@ -634,6 +643,9 @@ async function submitWork() {
         : "⏳ Submitting work for AI audit...";
     showStatus("submit-status", linkMsg, "info");
 
+    const nftTokenId = document.getElementById("nft-token-id-field")?.value.trim() || null;
+    const nftWallet  = document.getElementById("nft-wallet-field")?.value.trim() || null;
+
     const submitBody = JSON.stringify({
         escrow_id:          projectID,
         work:               workProof,
@@ -642,6 +654,8 @@ async function submitWork() {
             filename: f.filename, mime_type: f.mime_type, data: f.data,
         })),
         evidence_links: evidenceLinks,
+        nft_token_id: nftTokenId || undefined,
+        nft_wallet:   nftWallet   || undefined,
     });
 
     const MAX_RETRIES = 5;
