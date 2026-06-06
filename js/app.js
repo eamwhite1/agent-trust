@@ -1508,45 +1508,35 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     clearTimeout(_issuerTimer);
     _issuerTimer = setTimeout(async () => {
         try {
-            const [regRes, ocResults] = await Promise.allSettled([
-                safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
-                _ocSearch(query, 6),
-            ]);
+            const res = await safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`);
             const q = query.toLowerCase();
             let items = [];
-            if (regRes.status === "fulfilled") {
-                const d = await regRes.value.json();
+            if (res.ok) {
+                const d = await res.json();
                 items = (d.issuers || [])
                     .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ source: "registry", name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category, verified: i.verified }));
+                    .map(i => ({ name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category }));
             }
-            (ocResults.status === "fulfilled" ? ocResults.value : []).forEach(r => {
-                if (!items.find(i => i.name.toLowerCase() === r.name.toLowerCase()))
-                    items.push(r);
-            });
             if (!resultsEl) return;
             if (!items.length) {
                 resultsEl.innerHTML = `
                     <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
-                        <div style="color:var(--text-muted);margin-bottom:6px;">
-                            No results for <strong style="color:var(--text);">"${query}"</strong> — not in the AgentTrust registry or SEC EDGAR.<br>
-                            <span style="font-size:.72rem;">Try the parent company name (e.g. "Live Nation" for Ticketmaster), or paste their XRPL wallet directly.</span>
+                        <div style="color:var(--text-muted);margin-bottom:8px;">
+                            <strong style="color:var(--text);">"${query}"</strong> isn't in the AgentTrust registry yet.
                         </div>
-                        <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
+                        <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet address? Paste it here:</div>
                         <input type="text" placeholder="rXXX… wallet address"
                             style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(168,85,247,.4);color:var(--text);box-sizing:border-box;"
                             oninput="applyManualIssuerWallet(this.value)">
-                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
+                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;">Or ask them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
                     </div>`;
                 resultsEl.style.display = "block";
                 return;
             }
             resultsEl.innerHTML = items.slice(0,8).map(r => {
-                const badge = r.source === "registry"
-                    ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
+                const badge = `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
-                return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+                return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
                     onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;color:var(--text);">${r.name}</div>
@@ -1558,21 +1548,6 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-/// Company search: referee proxy → SEC EDGAR
-async function _ocSearch(query, limit = 8) {
-    const results = [];
-    try {
-        const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
-        if (res.ok) {
-            const d = await res.json();
-            for (const r of (d.results || [])) {
-                results.push({ source: r.source || "sec-edgar", name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "", wallet: null });
-            }
-        }
-    } catch(e) {}
-    return results.slice(0, limit);
-}
-
 
 function applyManualIssuerWallet(val) {
     const target = document.getElementById("nft-issuer-field");
@@ -1582,27 +1557,13 @@ function applyManualIssuerWallet(val) {
     }
 }
 
-async function selectIssuer(wallet, name, lei, source, targetId, resultsId, wrapId, rgb) {
+function selectIssuer(wallet, name, targetId, resultsId, wrapId, rgb) {
     const resultsEl = document.getElementById(resultsId);
     const input = document.getElementById("nft-issuer-search");
     if (resultsEl) resultsEl.style.display = "none";
     if (input) input.value = name;
-
-    if (wallet) {
-        document.getElementById(targetId).value = wallet;
-        setProofVerified(wrapId, rgb, source === "registry" ? `✅ AgentTrust verified issuer` : `✅ SEC EDGAR verified · wallet set`);
-        return;
-    }
-    // SEC EDGAR hit — attempt wallet lookup
-    document.getElementById(targetId).value = "";
-    const statusEl = document.getElementById("nft-issuer-status");
-    if (statusEl) statusEl.innerHTML = `<span style="color:var(--text-muted);">Looking up XRPL wallet…</span>`;
-    await selectOcResult(lei, name, targetId, resultsId, null);
-    // Check if wallet was resolved
-    const val = document.getElementById(targetId)?.value;
-    if (val && val.startsWith("r")) {
-        setProofVerified(wrapId, rgb, `✅ SEC EDGAR verified · XRPL wallet found`);
-    }
+    document.getElementById(targetId).value = wallet || "";
+    setProofVerified(wrapId, rgb, wallet ? `✅ AgentTrust verified issuer` : `Issuer selected — no wallet on record`);
 }
 
 function setProofVerified(wrapId, rgb, message) {
@@ -1768,14 +1729,13 @@ async function resolveDid(did, wrapId) {
 }
 
 // ---------------------------------------------------------------------------
-// OPENCORPORATES COMPANY SEARCH
+// AGENTTRUST REGISTRY SEARCH
 // ---------------------------------------------------------------------------
 let _ocTimer = null;
 async function gleifSearch(query, resultsId, targetId) {
     const resultsEl = document.getElementById(resultsId);
     if (!query || query.length < 3) { if (resultsEl) resultsEl.style.display = "none"; return; }
 
-    // If it looks like an XRPL address, use directly
     if (query.startsWith("r") && query.length > 20) {
         const target = document.getElementById(targetId);
         if (target) target.value = query;
@@ -1786,36 +1746,22 @@ async function gleifSearch(query, resultsId, targetId) {
     clearTimeout(_ocTimer);
     _ocTimer = setTimeout(async () => {
         try {
-            // Query AgentTrust registry and SEC EDGAR in parallel
-            const [registryRes, ocResults] = await Promise.allSettled([
-                safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
-                _ocSearch(query, 8),
-            ]);
-
-            // AgentTrust registered issuers — filter client-side by query
-            let registryItems = [];
-            if (registryRes.status === "fulfilled") {
-                const d = await registryRes.value.json();
-                const q = query.toLowerCase();
-                registryItems = (d.issuers || [])
+            const res = await safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`);
+            const q = query.toLowerCase();
+            let items = [];
+            if (res.ok) {
+                const d = await res.json();
+                items = (d.issuers || [])
                     .filter(i => i.name?.toLowerCase().includes(q) || i.wallet_address?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ source: "registry", name: i.name, wallet: i.wallet_address, category: i.category }));
+                    .map(i => ({ name: i.name, wallet: i.wallet_address, category: i.category }));
             }
-
-            const ocItems = ocResults.status === "fulfilled" ? ocResults.value : [];
-            const combined = [...registryItems, ...ocItems].slice(0, 10);
             if (!resultsEl) return;
-            if (!combined.length) { resultsEl.style.display = "none"; return; }
+            if (!items.length) { resultsEl.style.display = "none"; return; }
 
-            resultsEl.innerHTML = combined.map(r => {
+            resultsEl.innerHTML = items.slice(0,10).map(r => {
                 const nameEsc = r.name.replace(/'/g, "\\'");
-                const badge = r.source === "registry"
-                    ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : r.source === "wikipedia"
-                    ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">Wikipedia</span>`
-                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
-                const clickVal = r.wallet || r.company_number || "";
-                return `<div onclick="selectOcResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
+                const badge = `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`;
+                return `<div onclick="selectOcResult('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
                      style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
                      onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;color:var(--text);">${r.name}</div>
@@ -1843,49 +1789,34 @@ async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet
         resultsEl.parentNode.appendChild(statusEl);
     }
 
-    // Registry hit: wallet already known
     if (knownWallet) {
         if (target) target.value = knownWallet;
         if (statusEl) statusEl.textContent = "✅ AgentTrust verified issuer · XRPL wallet set";
         return;
     }
 
-    // SEC EDGAR hit: attempt XRPL wallet lookup via registry
+    // Not in registry — prompt manual entry
     if (target) target.value = "";
-    try {
-        const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
-        const data = await res.json();
-        const match = data.results?.find(r => r.xrpl_wallet);
-        if (match?.xrpl_wallet && target) {
-            target.value = match.xrpl_wallet;
-            if (statusEl) statusEl.innerHTML = "✅ SEC EDGAR verified · XRPL wallet found";
-        } else {
-            if (target) target.value = "";
-            if (statusEl) {
-                const subject = encodeURIComponent(`${name} — join the AgentTrust Trusted Issuer Registry`);
-                const body = encodeURIComponent(
-                    `Hi,\n\nI'm setting up a payment escrow on AgentTrust (https://www.cryptovault.co.uk) and would like to require proof of a ${name}-issued NFT.\n\n` +
-                    `To make this possible, ${name} would need to register its XRPL wallet address in the AgentTrust Trusted Issuer Registry — it only takes a few minutes:\n\n` +
-                    `https://www.cryptovault.co.uk/marketplace#issuers\n\n` +
-                    `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
-                );
-                statusEl.innerHTML = `
-                    <span style="color:#f59e0b;">⚠️ SEC EDGAR verified company — but no XRPL wallet on record.</span>
-                    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                        <a href="mailto:?subject=${subject}&body=${body}" target="_blank"
-                            style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:6px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;white-space:nowrap;">
-                            ✉️ Invite ${name} to register
-                        </a>
-                    </div>
-                    <div style="margin-top:6px;font-size:.72rem;color:var(--text-muted);">Or paste their XRPL wallet address if you already know it:</div>
-                    <input type="text" placeholder="rXXX… issuer wallet address"
-                        style="margin-top:4px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(245,158,11,.4);color:var(--text);"
-                        oninput="document.getElementById('${targetId}').value=this.value.trim()">
-                    <span style="font-size:.68rem;color:var(--text-muted);">Leave blank to skip NFT issuer verification.</span>`;
-            }
-        }
-    } catch(e) {
-        if (target) target.value = "";
-        if (statusEl) statusEl.textContent = "⚠️ Could not look up XRPL wallet — paste the issuer wallet address manually if known.";
+    if (statusEl) {
+        const subject = encodeURIComponent(`${name} — join the AgentTrust Trusted Issuer Registry`);
+        const body = encodeURIComponent(
+            `Hi,\n\nI'm setting up a payment escrow on AgentTrust (https://www.cryptovault.co.uk) and would like to require proof of a ${name}-issued NFT.\n\n` +
+            `To make this possible, ${name} would need to register its XRPL wallet address in the AgentTrust Trusted Issuer Registry — it only takes a few minutes:\n\n` +
+            `https://www.cryptovault.co.uk/marketplace#issuers\n\n` +
+            `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
+        );
+        statusEl.innerHTML = `
+            <span style="color:#f59e0b;">⚠️ Not in the AgentTrust registry — no XRPL wallet on record.</span>
+            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                <a href="mailto:?subject=${subject}&body=${body}" target="_blank"
+                    style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:6px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;white-space:nowrap;">
+                    ✉️ Invite ${name} to register
+                </a>
+            </div>
+            <div style="margin-top:6px;font-size:.72rem;color:var(--text-muted);">Or paste their XRPL wallet address if you already know it:</div>
+            <input type="text" placeholder="rXXX… issuer wallet address"
+                style="margin-top:4px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(245,158,11,.4);color:var(--text);"
+                oninput="document.getElementById('${targetId}').value=this.value.trim()">
+            <span style="font-size:.68rem;color:var(--text-muted);">Leave blank to skip NFT issuer verification.</span>`;
     }
 }
