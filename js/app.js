@@ -271,19 +271,23 @@ window.addEventListener("DOMContentLoaded", () => {
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
 
-    // Position tooltips via fixed coords so they never get clipped by overflow
-    document.querySelectorAll(".tooltip-wrap").forEach(wrap => {
-        const box = wrap.querySelector(".tooltip-box");
-        if (!box) return;
-        wrap.addEventListener("mouseenter", () => {
-            const icon = wrap.querySelector(".tooltip-icon");
-            if (!icon) return;
-            const r = icon.getBoundingClientRect();
-            box.style.left  = Math.max(8, r.left - 12) + "px";
-            box.style.top   = (r.top - 8) + "px";
-            box.style.transform = "translateY(-100%)";
-        });
+    // Tooltips — use event delegation on document so dynamically added ones work too.
+    // stopPropagation on click prevents bubbling into parent buttons/summaries.
+    document.addEventListener("mouseover", e => {
+        const wrap = e.target.closest(".tooltip-wrap");
+        if (!wrap) return;
+        const box  = wrap.querySelector(".tooltip-box");
+        const icon = wrap.querySelector(".tooltip-icon");
+        if (!box || !icon) return;
+        const r = icon.getBoundingClientRect();
+        box.style.left      = Math.max(8, r.left - 12) + "px";
+        box.style.top       = (r.top - 8) + "px";
+        box.style.transform = "translateY(-100%)";
     });
+    document.addEventListener("click", e => {
+        const icon = e.target.closest(".tooltip-icon");
+        if (icon) e.stopPropagation();
+    }, true); // capture phase so it fires before the button handler
 });
 
 // ---------------------------------------------------------------------------
@@ -1521,7 +1525,10 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
             }
             if (!resultsEl) return;
             if (!items.length) {
-                resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">No matches found. <button type="button" onclick="gleifSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="color:#818cf8;background:none;border:none;cursor:pointer;font-size:.78rem;text-decoration:underline;">Search GLEIF →</button></div>`;
+                resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;line-height:1.6;">
+                    <span style="color:var(--text-muted);">Not in AgentTrust registry yet.</span>
+                    <button type="button" onclick="gleifSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="display:block;margin-top:4px;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#818cf8;cursor:pointer;">Search GLEIF (regulated companies) →</button>
+                </div>`;
                 resultsEl.style.display = "block";
                 return;
             }
@@ -1550,7 +1557,19 @@ async function gleifSearchDirect(query, resultsId, targetId, wrapId, rgb) {
         const d = await res.json();
         const results = d.results || [];
         if (!results.length) {
-            if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">No GLEIF record found for "${query}".</div>`;
+            if (resultsEl) resultsEl.innerHTML = `
+                <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
+                    <div style="color:var(--text-muted);margin-bottom:6px;">
+                        <strong style="color:var(--text);">"${query}"</strong> not found in GLEIF.<br>
+                        <span style="font-size:.72rem;">GLEIF only covers companies with a Legal Entity Identifier — mainly banks, brokers, and large regulated corporations. Many businesses (entertainment, logistics, crypto-native) aren't registered.</span>
+                    </div>
+                    <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
+                    <input type="text" placeholder="rXXX… wallet address"
+                        style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
+                        oninput="applyManualIssuerWallet(this.value)">
+                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
+                </div>`;
+            resultsEl.style.display = "block";
             return;
         }
         if (resultsEl) resultsEl.innerHTML = results.map(r => {
@@ -1563,6 +1582,14 @@ async function gleifSearchDirect(query, resultsId, targetId, wrapId, rgb) {
             </div>`;
         }).join("");
     } catch(e) {}
+}
+
+function applyManualIssuerWallet(val) {
+    const target = document.getElementById("nft-issuer-field");
+    if (target) target.value = val.trim();
+    if (val.trim().startsWith("r") && val.trim().length > 20) {
+        setProofVerified("pt-nft-wrap", "168,85,247", "Wallet address set — unverified (not in AgentTrust registry)");
+    }
 }
 
 async function selectIssuer(wallet, name, lei, source, targetId, resultsId, wrapId, rgb) {
