@@ -1515,11 +1515,25 @@ async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
         const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
         const data = await res.json();
         const match = data.results?.find(r => r.lei === lei);
-        if (match?.xrpl_wallet && target) target.value = match.xrpl_wallet;
-        if (statusEl) {
-            statusEl.textContent = match?.xrpl_wallet
-                ? "✅ GLEIF verified · XRPL wallet found"
-                : "✅ GLEIF verified · No XRPL wallet on record — ask the company for their wallet address";
+        if (match?.xrpl_wallet && target) {
+            target.value = match.xrpl_wallet;
+            if (statusEl) statusEl.innerHTML = "✅ GLEIF verified · XRPL wallet found";
+        } else {
+            // Clear the hidden field — LEI is not a valid issuer wallet
+            if (target) target.value = "";
+            // Show manual wallet input
+            if (statusEl) {
+                statusEl.innerHTML = `
+                    <span style="color:#f59e0b;">⚠️ GLEIF verified company — but no XRPL wallet on record.</span>
+                    <br>If you know their XRPL wallet address, paste it below:
+                    <input type="text" placeholder="rXXX… issuer wallet address"
+                        style="margin-top:5px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(245,158,11,.3);color:var(--text);"
+                        oninput="document.getElementById('${targetId}').value=this.value.trim()">
+                    <span style="font-size:.68rem;color:var(--text-muted);">Leave blank to skip NFT issuer verification.</span>`;
+            }
         }
-    } catch(e) {}
+    } catch(e) {
+        if (target) target.value = "";
+        if (statusEl) statusEl.textContent = "⚠️ Could not look up XRPL wallet — paste the issuer wallet address manually if known.";
+    }
 }
