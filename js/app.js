@@ -1530,9 +1530,10 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 return;
             }
             resultsEl.innerHTML = items.slice(0,8).map(r => {
+                const srcLabel = r.source === "sec-edgar" ? "SEC EDGAR · us" : `OpenCorporates${r.jurisdiction_code ? " · " + r.jurisdiction_code : ""}`;
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">OpenCorporates${r.jurisdiction_code ? " · " + r.jurisdiction_code : ""}</span>`;
+                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">${srcLabel}</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
@@ -1546,16 +1547,40 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-// Call OpenCorporates directly from the browser — avoids Render server IP block
-const OC_API = "https://api.opencorporates.com/v0.4";
+// Company search: SEC EDGAR (US public companies) called direct from browser + referee proxy for others
 async function _ocSearch(query, limit = 8) {
+    const results = [];
     try {
-        const res = await fetch(`${OC_API}/companies/search?q=${encodeURIComponent(query)}&per_page=${limit}&format=json`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return (data?.results?.companies || []).map(c => c.company).filter(Boolean)
-            .map(c => ({ source: "opencorporates", name: c.name || "", company_number: c.company_number || "", jurisdiction_code: c.jurisdiction_code || "", wallet: null }));
-    } catch(e) { return []; }
+        // SEC EDGAR full-text company search — free, CORS-enabled, no key required
+        const res = await fetch(
+            `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent('"' + query + '"')}&forms=10-K&hits.hits._source=entity_name,file_num&hits.hits.total=1`,
+            { headers: { "User-Agent": "AgentTrust/1.0 admin@cryptovault.co.uk" } }
+        );
+        if (res.ok) {
+            const data = await res.json();
+            const seen = new Set();
+            for (const hit of (data?.hits?.hits || [])) {
+                const name = hit._source?.entity_name;
+                if (name && !seen.has(name.toLowerCase()) && name.toLowerCase().includes(query.toLowerCase())) {
+                    seen.add(name.toLowerCase());
+                    results.push({ source: "sec-edgar", name, company_number: hit._source?.file_num || "", jurisdiction_code: "us", wallet: null });
+                    if (results.length >= limit) break;
+                }
+            }
+        }
+    } catch(e) {}
+    // Also query our referee proxy (which tries OpenCorporates — may work from some IPs)
+    try {
+        const res2 = await fetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+        if (res2.ok) {
+            const d = await res2.json();
+            for (const r of (d.results || [])) {
+                if (!results.find(x => x.name.toLowerCase() === r.name.toLowerCase()))
+                    results.push({ source: "opencorporates", name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "", wallet: null });
+            }
+        }
+    } catch(e) {}
+    return results.slice(0, limit);
 }
 
 async function ocSearchDirect(query, resultsId, targetId, wrapId, rgb) {

@@ -3008,17 +3008,39 @@ async function fetchJobStatus(jobId) {
 }
 
 // ---------------------------------------------------------------------------
-// OPENCORPORATES COMPANY SEARCH  (direct browser fetch — avoids server IP block)
+// COMPANY SEARCH  (SEC EDGAR for US + referee proxy for others)
 // ---------------------------------------------------------------------------
-const OC_API = "https://api.opencorporates.com/v0.4";
 async function _ocSearch(query, limit = 8) {
+    const results = [];
     try {
-        const res = await fetch(`${OC_API}/companies/search?q=${encodeURIComponent(query)}&per_page=${limit}&format=json`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return (data?.results?.companies || []).map(c => c.company).filter(Boolean)
-            .map(c => ({ name: c.name || "", company_number: c.company_number || "", jurisdiction_code: c.jurisdiction_code || "" }));
-    } catch(e) { return []; }
+        const res = await fetch(
+            `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent('"' + query + '"')}&forms=10-K&hits.hits._source=entity_name,file_num&hits.hits.total=1`,
+            { headers: { "User-Agent": "AgentTrust/1.0 admin@cryptovault.co.uk" } }
+        );
+        if (res.ok) {
+            const data = await res.json();
+            const seen = new Set();
+            for (const hit of (data?.hits?.hits || [])) {
+                const name = hit._source?.entity_name;
+                if (name && !seen.has(name.toLowerCase()) && name.toLowerCase().includes(query.toLowerCase())) {
+                    seen.add(name.toLowerCase());
+                    results.push({ name, company_number: hit._source?.file_num || "", jurisdiction_code: "us" });
+                    if (results.length >= limit) break;
+                }
+            }
+        }
+    } catch(e) {}
+    try {
+        const res2 = await fetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+        if (res2.ok) {
+            const d = await res2.json();
+            for (const r of (d.results || [])) {
+                if (!results.find(x => x.name.toLowerCase() === r.name.toLowerCase()))
+                    results.push({ name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "" });
+            }
+        }
+    } catch(e) {}
+    return results.slice(0, limit);
 }
 
 let _ocTimer = null;
