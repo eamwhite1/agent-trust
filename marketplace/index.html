@@ -3008,14 +3008,24 @@ async function fetchJobStatus(jobId) {
 }
 
 // ---------------------------------------------------------------------------
-// OPENCORPORATES COMPANY SEARCH
+// OPENCORPORATES COMPANY SEARCH  (direct browser fetch — avoids server IP block)
 // ---------------------------------------------------------------------------
+const OC_API = "https://api.opencorporates.com/v0.4";
+async function _ocSearch(query, limit = 8) {
+    try {
+        const res = await fetch(`${OC_API}/companies/search?q=${encodeURIComponent(query)}&per_page=${limit}&format=json`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data?.results?.companies || []).map(c => c.company).filter(Boolean)
+            .map(c => ({ name: c.name || "", company_number: c.company_number || "", jurisdiction_code: c.jurisdiction_code || "" }));
+    } catch(e) { return []; }
+}
+
 let _ocTimer = null;
 async function gleifSearch(query, resultsId, targetId) {
     const resultsEl = document.getElementById(resultsId);
     if (!query || query.length < 3) { if (resultsEl) resultsEl.style.display = "none"; return; }
 
-    // If it looks like an XRPL address, use directly
     if (query.startsWith("r") && query.length > 20) {
         const target = document.getElementById(targetId);
         if (target) target.value = query;
@@ -3025,24 +3035,20 @@ async function gleifSearch(query, resultsId, targetId) {
 
     clearTimeout(_ocTimer);
     _ocTimer = setTimeout(async () => {
-        try {
-            const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
-            const data = await res.json();
-            const results = data.results || [];
-            if (!resultsEl) return;
-            if (!results.length) { resultsEl.style.display = "none"; return; }
-            resultsEl.innerHTML = results.map(r => {
-                const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
-                return `
-                <div onclick="selectOcResult('${r.company_number||""}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
-                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
-                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-                    <div style="font-weight:600;color:var(--text);">${r.name}</div>
-                    <div style="font-size:.72rem;color:var(--text-dim);">OpenCorporates${ocBadge ? " · " + ocBadge : ""}</div>
-                </div>`;
-            }).join("");
-            resultsEl.style.display = "block";
-        } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
+        const results = await _ocSearch(query, 8);
+        if (!resultsEl) return;
+        if (!results.length) { resultsEl.style.display = "none"; return; }
+        resultsEl.innerHTML = results.map(r => {
+            const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
+            return `
+            <div onclick="selectOcResult('${r.company_number||""}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
+                 style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+                 onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                <div style="font-weight:600;color:var(--text);">${r.name}</div>
+                <div style="font-size:.72rem;color:var(--text-dim);">OpenCorporates${ocBadge ? " · " + ocBadge : ""}</div>
+            </div>`;
+        }).join("");
+        resultsEl.style.display = "block";
     }, 350);
 }
 
