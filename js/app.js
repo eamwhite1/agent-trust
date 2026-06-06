@@ -423,13 +423,9 @@ async function initVault() {
         return;
     }
     if (!workerEmail) {
-        const proceed = confirm(
-            "⚠️ No seller email entered.\n\n" +
-            "Without an email, the seller won't receive their receipt code or submission link — " +
-            "you'll need to send these manually.\n\n" +
-            "Continue anyway?"
-        );
-        if (!proceed) return;
+        showStatus("init-status", "❌ Seller's email is required — they need it to receive their receipt code and submission link.", "error");
+        document.getElementById("worker-email-field")?.focus();
+        return;
     }
 
     const receiptCode = generateReceiptCode();
