@@ -179,7 +179,56 @@ Content-Type: application/json
 }
 ```
 
-### 6.3 XRPL Wallet Lookup
+### 6.3 Registry Feed (for explorers, wallets, DEXs)
+
+```
+GET /nft/issuers/feed
+```
+
+A paginated, versioned feed designed for external systems to consume and cache. Returns a stable envelope with pagination metadata, generation timestamp, and spec version so consumers can detect schema changes.
+
+**Query parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `page` | integer | 1 | Page number |
+| `per_page` | integer | 100 | Results per page (max 200) |
+| `since` | ISO 8601 string | — | Return only records created after this timestamp (for incremental sync) |
+| `category` | string | — | Filter by category slug |
+| `verified` | string | — | Filter by status: `verified`, `public`, or omit for both |
+
+**Response envelope:**
+
+```json
+{
+  "spec_version": "1.0.0",
+  "spec": "https://www.cryptovault.co.uk/docs/issuer-registry-spec.md",
+  "generated_at": "2026-06-06T12:00:00Z",
+  "pagination": {
+    "page": 1,
+    "per_page": 100,
+    "total": 8,
+    "total_pages": 1,
+    "next": null
+  },
+  "filters": { "category": null, "verified": null, "since": null },
+  "issuers": [ /* array of issuer records with created_at timestamp */ ]
+}
+```
+
+**Incremental sync example** — fetch only records added since your last poll:
+
+```
+GET /nft/issuers/feed?since=2026-06-01T00:00:00Z
+```
+
+**Verified-only feed:**
+
+```
+GET /nft/issuers/feed?verified=verified
+```
+
+### 6.4 XRPL Wallet Lookup
 
 ```
 GET /gleif/xrpl-lookup?q=<organisation name>
