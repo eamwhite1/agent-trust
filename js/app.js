@@ -271,11 +271,10 @@ window.addEventListener("DOMContentLoaded", () => {
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
 
-    // Global tooltip — single fixed div at body level avoids clipping by parent buttons/overflow:hidden.
+    // Tooltips — attach directly to each icon (event delegation unreliable inside <button>).
     const _gt = document.getElementById("global-tooltip");
-    document.addEventListener("mouseover", e => {
-        const icon = e.target.closest(".tooltip-icon");
-        if (!icon || !_gt) return;
+    function _showTip(icon) {
+        if (!_gt) return;
         const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
         if (!box) return;
         _gt.innerHTML = box.innerHTML;
@@ -286,15 +285,13 @@ window.addEventListener("DOMContentLoaded", () => {
         _gt.style.top       = (r.top - 10) + "px";
         _gt.style.transform = "translateY(-100%)";
         _gt.style.display   = "block";
+    }
+    function _hideTip() { if (_gt) _gt.style.display = "none"; }
+    document.querySelectorAll(".tooltip-icon").forEach(icon => {
+        icon.addEventListener("mouseenter", e => { e.stopPropagation(); _showTip(icon); });
+        icon.addEventListener("mouseleave", () => _hideTip());
+        icon.addEventListener("click", e => { e.stopPropagation(); e.preventDefault(); });
     });
-    document.addEventListener("mouseout", e => {
-        const icon = e.target.closest(".tooltip-icon");
-        if (icon && _gt) _gt.style.display = "none";
-    });
-    document.addEventListener("click", e => {
-        const icon = e.target.closest(".tooltip-icon");
-        if (icon) { e.stopPropagation(); e.preventDefault(); }
-    }, true);
 });
 
 // ---------------------------------------------------------------------------
@@ -1547,8 +1544,6 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
             resultsEl.innerHTML = items.slice(0,8).map(r => {
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : r.source === "wikipedia"
-                    ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">Wikipedia</span>`
                     : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
@@ -1563,36 +1558,15 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-// Company search: Wikipedia opensearch (CORS-friendly, no key, works from browser)
-// Falls back to referee proxy (SEC EDGAR) if Wikipedia returns nothing useful
+/// Company search: referee proxy → SEC EDGAR
 async function _ocSearch(query, limit = 8) {
     const results = [];
     try {
-        // Wikipedia OpenSearch — returns company/org article titles matching query
-        const res = await fetch(
-            `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=10&namespace=0&format=json&origin=*`
-        );
+        const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
         if (res.ok) {
-            const data = await res.json();
-            const titles = data[1] || [];
-            const descs  = data[2] || [];
-            // Filter to titles that look like organisations (contain query term)
-            for (let i = 0; i < titles.length && results.length < limit; i++) {
-                const t = titles[i];
-                if (t.toLowerCase().includes(query.toLowerCase())) {
-                    results.push({ source: "wikipedia", name: t, description: descs[i] || "", company_number: "", jurisdiction_code: "", wallet: null });
-                }
-            }
-        }
-    } catch(e) {}
-    // Also try referee proxy (SEC EDGAR) for any additional results
-    try {
-        const res2 = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
-        if (res2.ok) {
-            const d = await res2.json();
+            const d = await res.json();
             for (const r of (d.results || [])) {
-                if (!results.find(x => x.name.toLowerCase() === r.name.toLowerCase()))
-                    results.push({ source: r.source || "sec-edgar", name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "", wallet: null });
+                results.push({ source: r.source || "sec-edgar", name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "", wallet: null });
             }
         }
     } catch(e) {}
