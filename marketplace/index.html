@@ -624,6 +624,9 @@ nav {
         <button class="nav-pill" id="pill-docs" onclick="setView('docs')">
             <i data-lucide="code-2"></i> API
         </button>
+        <button class="nav-pill" id="pill-issuers" onclick="setView('issuers')">
+            <i data-lucide="badge-check"></i> Issuers
+        </button>
     </div>
     <div class="nav-right">
         <div style="display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:32px;">
@@ -764,6 +767,123 @@ nav {
             <div class="empty-state">
                 <i data-lucide="loader" style="animation:spin 1.2s linear infinite;"></i>
                 <p>Loading jobs from the marketplace…</p>
+            </div>
+        </div>
+
+        <!-- ISSUERS VIEW (hidden by default) -->
+        <div id="view-issuers" style="display:none;">
+            <div style="max-width:860px;margin:0 auto;padding:0 1.5rem 3rem;">
+
+                <!-- HERO -->
+                <div style="text-align:center;padding:3rem 1rem 2rem;">
+                    <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:16px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);margin-bottom:1.25rem;">
+                        <i data-lucide="badge-check" style="width:26px;height:26px;color:#10b981;"></i>
+                    </div>
+                    <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:.5rem;">Trusted Issuer Registry</h2>
+                    <p style="color:var(--text-dim);max-width:560px;margin:0 auto;font-size:.9rem;line-height:1.7;">
+                        Organisations registered here can issue XRPL NFTs that AgentTrust buyers accept as
+                        cryptographic proof of real-world events — a shipped container, a sold ticket, a completed
+                        certification. Verification combines GLEIF company records, XRPL domain cryptography, and
+                        manual review.
+                    </p>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;">
+                        <a href="#issuer-register" onclick="document.getElementById('issuer-register').scrollIntoView({behavior:'smooth'});return false;"
+                           style="display:inline-flex;align-items:center;gap:6px;background:#10b981;color:#fff;padding:.6rem 1.25rem;border-radius:8px;font-size:.85rem;font-weight:700;text-decoration:none;">
+                            <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Register your organisation
+                        </a>
+                        <span style="font-size:.8rem;color:var(--text-dim);">Free · Verified within 2 business days</span>
+                    </div>
+                </div>
+
+                <!-- REGISTRY TABLE -->
+                <div style="margin-bottom:2rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+                        <h3 style="font-size:1rem;font-weight:700;margin:0;">Verified Issuers</h3>
+                        <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:32px;">
+                            <i data-lucide="search" style="width:13px;height:13px;color:var(--text-dim);"></i>
+                            <input id="issuer-search-input" type="text" placeholder="Search issuers…"
+                                   oninput="filterIssuers(this.value)"
+                                   style="background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:.75rem;width:160px;">
+                        </div>
+                    </div>
+                    <div id="issuers-list">
+                        <div style="text-align:center;padding:3rem;color:var(--text-dim);font-size:.85rem;">Loading issuers…</div>
+                    </div>
+                </div>
+
+                <!-- REGISTRATION FORM -->
+                <div id="issuer-register" style="margin-top:2rem;padding:2rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;">
+                    <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.25rem;">Register your organisation</h3>
+                    <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.6;">
+                        Register your XRPL wallet as a trusted issuer so buyers on AgentTrust can require your NFTs as
+                        proof of real-world events. We verify your identity against GLEIF company records and your
+                        XRPL domain field before approving.
+                    </p>
+
+                    <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.8rem;color:var(--text-dim);line-height:1.7;">
+                        <strong style="color:#3b82f6;display:block;margin-bottom:.4rem;">How verification works</strong>
+                        <ol style="margin:0;padding-left:1.2rem;">
+                            <li>Submit this form with your XRPL wallet and organisation details</li>
+                            <li>Set your wallet's <strong>Domain field</strong> in Xaman to match your website domain</li>
+                            <li>Publish <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px;">https://yourdomain.com/.well-known/xrp-ledger.toml</code> listing your wallet</li>
+                            <li>We cross-reference with GLEIF and confirm within 2 business days</li>
+                        </ol>
+                    </div>
+
+                    <div class="issuer-form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Organisation Name *</label>
+                            <input type="text" id="reg-name" placeholder="e.g. Maersk Line Ltd" style="width:100%;">
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Category *</label>
+                            <select id="reg-category" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;color:var(--text);font-family:var(--sans);font-size:.83rem;">
+                                <option value="">Select category…</option>
+                                <option value="logistics">Logistics &amp; Shipping</option>
+                                <option value="ticketing">Ticketing &amp; Events</option>
+                                <option value="legal">Legal &amp; Compliance</option>
+                                <option value="finance">Finance &amp; Banking</option>
+                                <option value="certification">Certification &amp; Qualifications</option>
+                                <option value="iot">IoT &amp; Sensors</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="government">Government &amp; Public Sector</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">XRPL Wallet Address *</label>
+                            <input type="text" id="reg-wallet" placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="width:100%;font-family:var(--mono);font-size:.8rem;">
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Website / Domain *</label>
+                            <input type="text" id="reg-website" placeholder="https://yourcompany.com" style="width:100%;">
+                        </div>
+                        <div class="field" style="margin:0;grid-column:1/-1;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Contact Email *</label>
+                            <input type="email" id="reg-email" placeholder="contact@yourcompany.com" style="width:100%;">
+                        </div>
+                        <div class="field" style="margin:0;grid-column:1/-1;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Description <span style="font-weight:400;opacity:.6;">(optional)</span></label>
+                            <textarea id="reg-description" rows="2" placeholder="What kind of NFTs does your organisation issue? e.g. 'Bills of lading for container shipments departing EU ports'" style="width:100%;resize:vertical;"></textarea>
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">GLEIF LEI <span style="font-weight:400;opacity:.6;">(optional — speeds up verification)</span></label>
+                            <input type="text" id="reg-lei" placeholder="e.g. 549300G4WDPNJJHMQZ38" style="width:100%;font-family:var(--mono);font-size:.8rem;">
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">NFT Types You Issue <span style="font-weight:400;opacity:.6;">(optional)</span></label>
+                            <input type="text" id="reg-nft-types" placeholder="e.g. bill_of_lading, delivery_confirmation" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <div id="reg-status" style="display:none;margin-top:1rem;font-size:.83rem;"></div>
+
+                    <button onclick="submitIssuerRegistration()" id="reg-submit-btn"
+                            style="margin-top:1.25rem;display:inline-flex;align-items:center;gap:8px;background:#10b981;color:#fff;border:none;border-radius:8px;padding:.65rem 1.4rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--sans);">
+                        <i data-lucide="send" style="width:15px;height:15px;"></i> Submit Registration
+                    </button>
+                </div>
+
             </div>
         </div>
 
@@ -970,8 +1090,12 @@ nav {
                 </div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require the worker to present an XRPL NFT from a trusted issuer as proof of completion. More tamper-proof than uploaded files.</div>
                 <div class="field">
-                    <label for="jb-nft-issuer">Required Issuer Wallet Address</label>
-                    <input type="text" id="jb-nft-issuer" placeholder="rIssuerWallet... (e.g. shipping company's XRPL wallet)">
+                    <label for="jb-nft-issuer-search">Required Issuer Wallet Address</label>
+                    <div style="position:relative;">
+                        <input type="text" id="jb-nft-issuer-search" placeholder="Search company name or paste wallet address..." oninput="gleifSearch(this.value,'jb-nft-issuer-results','jb-nft-issuer')" autocomplete="off" style="width:100%;">
+                        <div id="jb-nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                        <input type="hidden" id="jb-nft-issuer">
+                    </div>
                 </div>
                 <div class="field">
                     <label for="jb-nft-metadata">Required Metadata Fields (JSON)</label>
@@ -1005,14 +1129,15 @@ nav {
                 </div>
             </div>
 
-            <div style="margin-top:.75rem;padding:1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;">
-                <div style="font-size:.8rem;font-weight:700;color:#f59e0b;margin-bottom:.5rem;">🛡️ Gitcoin Passport Min Score (optional)
-                    <span class="tip"><span class="tip-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.25);">?</span><span class="tip-box"><strong>Gitcoin Passport Score</strong>A trust score showing the seller is a real, legitimate actor — not a throwaway wallet. Built from verified stamps: GitHub account, Twitter, ENS name, on-chain history etc.<br><br>Note: This is supplementary evidence — a low score adds a warning to the AI's evaluation but doesn't hard-block submission. Sellers build their score at passport.gitcoin.co</span></span>
-                </div>
-                <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require a minimum Gitcoin Passport trust score (supplementary evidence).</div>
-                <div class="field">
-                    <label for="jb-min-passport-score">Minimum Score</label>
-                    <input type="number" id="jb-min-passport-score" placeholder="e.g. 15" min="0" max="100">
+            <div style="margin-top:.75rem;">
+                <div style="font-size:.78rem;font-weight:600;color:var(--text-dim);margin-bottom:.5rem;">Proof policy</div>
+                <div style="display:flex;gap:8px;">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;">
+                        <input type="radio" name="jb-proof-policy" value="ALL" checked> Require ALL selected proofs
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;">
+                        <input type="radio" name="jb-proof-policy" value="ANY"> Require ANY ONE proof
+                    </label>
                 </div>
             </div>
 
@@ -1165,6 +1290,13 @@ nav {
     .modal-overlay, .claim-modal-overlay { align-items: flex-end; padding: 0; }
     .btn-full { min-height: 50px; font-size: .95rem; }
     input, textarea, select { font-size: 16px !important; }
+    .issuer-form-grid { grid-template-columns: 1fr !important; }
+    .field-row { grid-template-columns: 1fr !important; }
+    .tip-box { width: calc(100vw - 2rem); left: auto; right: 0; transform: none; max-width: 260px; }
+    .tip-box::after { left: auto; right: 16px; transform: none; }
+    .issuers-hero { padding: 1.5rem 1rem; }
+    .issuer-table th, .issuer-table td { padding: 0.6rem 0.5rem; font-size: .8rem; }
+    .issuer-badges { flex-wrap: wrap; }
 }
 </style>
 
@@ -1560,21 +1692,32 @@ function setView(view) {
 
     const jobsList     = document.getElementById("jobs-list");
     const servicesView = document.getElementById("services-view");
+    const issuersView  = document.getElementById("view-issuers");
     const mainTitle    = document.querySelector(".main-title");
 
     if (view === "jobs") {
         if (jobsList)     jobsList.style.display     = "";
         if (servicesView) servicesView.style.display = "none";
+        if (issuersView)  issuersView.style.display  = "none";
         if (mainTitle)    mainTitle.textContent      = "Open Jobs";
         loadOpenJobs();
     } else if (view === "services") {
         if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display = "block";
+        if (issuersView)  issuersView.style.display  = "none";
         if (mainTitle)    mainTitle.textContent      = "Skills";
         loadServices();
+    } else if (view === "issuers") {
+        if (jobsList)     jobsList.style.display     = "none";
+        if (servicesView) servicesView.style.display = "none";
+        if (issuersView)  issuersView.style.display  = "block";
+        if (mainTitle)    mainTitle.textContent      = "Trusted Issuers";
+        loadIssuers();
+        if (window.lucide) lucide.createIcons();
     } else if (view === "docs") {
         if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display = "none";
+        if (issuersView)  issuersView.style.display  = "none";
         if (mainTitle)    mainTitle.textContent      = "Developer Docs";
         let docsView = document.getElementById("docs-view");
         if (!docsView) {
@@ -1632,7 +1775,6 @@ function setView(view) {
           <tr style="border-bottom:1px solid var(--border);"><td style="padding:.6rem .75rem;color:#a855f7;font-weight:600;">🔗 NFT from known issuer</td><td style="padding:.6rem .75rem;color:var(--text-dim);">A specific event happened</td><td style="padding:.6rem .75rem;color:var(--text-dim);">Concert ticket, bill of lading</td></tr>
           <tr style="border-bottom:1px solid var(--border);"><td style="padding:.6rem .75rem;color:#3b82f6;font-weight:600;">🌐 XRPL Domain Verification</td><td style="padding:.6rem .75rem;color:var(--text-dim);">This wallet = this organisation</td><td style="padding:.6rem .75rem;color:var(--text-dim);">Law firm, shipping company</td></tr>
           <tr style="border-bottom:1px solid var(--border);"><td style="padding:.6rem .75rem;color:#10b981;font-weight:600;">📜 W3C Verifiable Credential</td><td style="padding:.6rem .75rem;color:var(--text-dim);">A trusted authority attested X</td><td style="padding:.6rem .75rem;color:var(--text-dim);">Business registration, qualification</td></tr>
-          <tr><td style="padding:.6rem .75rem;color:#f59e0b;font-weight:600;">🛡️ Gitcoin Passport Score</td><td style="padding:.6rem .75rem;color:var(--text-dim);">This is a legitimate actor</td><td style="padding:.6rem .75rem;color:var(--text-dim);">Worker reputation baseline</td></tr>
         </tbody>
       </table>
     </div>
@@ -1649,6 +1791,25 @@ function setView(view) {
     <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">
       <strong style="color:var(--text);">Flow:</strong> Trusted issuer mints NFT → Worker receives NFT → Worker submits NFT token ID as proof → Referee calls XRPL <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">account_nfts</code> → Verifies issuer + metadata → NFT proof note injected into AI prompt
     </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid rgba(16,185,129,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;"><span style="color:#10b981;font-size:1.1rem;">🔄</span> NFT Delivery-vs-Payment (DvP)</h2>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">When a job involves delivering an NFT to the buyer (e.g. buying a concert ticket on their behalf), enable DvP mode to guarantee the buyer receives the NFT before payment releases.</p>
+    <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">
+      <div style="font-weight:700;font-size:.85rem;color:#10b981;margin-bottom:.6rem;">Flow</div>
+      <ol style="font-size:.8rem;color:var(--text-dim);line-height:1.85;padding-left:1.2rem;margin:0;">
+        <li>Buyer enables DvP when creating the escrow</li>
+        <li>Seller obtains the NFT and submits work — AI evaluates as normal</li>
+        <li>On PASS: escrow enters <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">PASS_AWAITING_NFT</code> state (payment does NOT release yet)</li>
+        <li>Seller creates an <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">NFTokenCreateOffer</code> on XRPL: <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">Destination=buyer, Amount=0</code></li>
+        <li>Seller registers the offer: <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">POST /escrow/{"{id}"}/nft-offer</code></li>
+        <li>Buyer is emailed to accept the NFT in Xaman</li>
+        <li>Buyer accepts — system detects it on-chain — payment releases automatically</li>
+      </ol>
+    </div>
+    <p style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">The seller cannot cancel the offer after the buyer accepts it. The buyer cannot be charged — the NFT transfer costs nothing (payment comes from the locked escrow).</p>
+    <div style="font-size:.82rem;color:var(--text-dim);margin-top:.75rem;"><strong style="color:var(--text);">API:</strong> <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">POST /escrow/{"{id}"}/nft-offer</code> — register offer &nbsp;·&nbsp; <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">GET /escrow/{"{id}"}/nft-status</code> — poll acceptance</div>
   </div>
 
   <div style="background:var(--surface);border:1px solid rgba(59,130,246,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
@@ -1671,16 +1832,6 @@ function setView(view) {
     <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;"><strong style="color:var(--text);">API:</strong> <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">POST /vc/verify</code> — standalone VC verification endpoint</div>
   </div>
 
-  <div style="background:var(--surface);border:1px solid rgba(245,158,11,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
-    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;"><span style="color:#f59e0b;font-size:1.1rem;">🛡️</span> Gitcoin Passport Score</h2>
-    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">Gitcoin Passport aggregates trust stamps from GitHub, Twitter, ENS, on-chain history and more into a single Unique Humanity Score. Buyers can set a minimum score as a baseline sybil-resistance check. Unlike the other mechanisms, a low Passport score is a <em>warning</em> injected into the AI prompt — not a hard block — since it's supplementary evidence, not proof of a specific event.</p>
-    <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">
-      <div style="font-weight:700;font-size:.85rem;color:#f59e0b;margin-bottom:.5rem;">Build your Passport</div>
-      <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">Visit <a href="https://passport.gitcoin.co" target="_blank" style="color:#f59e0b;">passport.gitcoin.co</a> → connect stamps (GitHub, Twitter, ENS, Proof of Humanity, etc.) → your score updates automatically. A score of 15+ indicates a likely real, unique human actor. Workers provide their Ethereum address; the referee fetches the score via the Gitcoin Passport API.</div>
-    </div>
-    <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;"><strong style="color:var(--text);">API:</strong> <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">GET /passport/score/{eth_address}</code> — get score for any Ethereum address</div>
-  </div>
-
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
     <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem;">For Sellers: How to Provide Proof</h2>
     <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">If a job requires one or more proof mechanisms, you'll submit the relevant evidence when you complete the work (not at bid time). Here's what each one requires from you:</p>
@@ -1696,10 +1847,6 @@ function setView(view) {
       <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:var(--r);padding:1rem;">
         <div style="font-weight:700;font-size:.85rem;color:#10b981;margin-bottom:.5rem;">📜 W3C Credential</div>
         <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Paste the <strong style="color:var(--text);">JWT string</strong> from your credential issuer (looks like <code style="font-family:var(--mono);font-size:.72rem;">eyJhbGci…</code>). Contact the issuing body (government registry, certification provider) to obtain yours.</div>
-      </div>
-      <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--r);padding:1rem;">
-        <div style="font-weight:700;font-size:.85rem;color:#f59e0b;margin-bottom:.5rem;">🛡️ Gitcoin Passport</div>
-        <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Paste your <strong style="color:var(--text);">Ethereum wallet address (0x…)</strong>. Build your score for free at <a href="https://passport.gitcoin.co" target="_blank" style="color:#f59e0b;">passport.gitcoin.co</a> by connecting GitHub, Twitter, ENS and other stamps.</div>
       </div>
     </div>
   </div>
@@ -1729,6 +1876,8 @@ function setView(view) {
             ["POST","/escrow/{id}/confirm","Register EscrowCreate tx hash to activate the vault"],
             ["POST","/evaluate","Submit work for AI evaluation — auto-releases payment on PASS"],
             ["GET","/escrow/{id}","Get vault status, task description, submission counts"],
+            ["POST","/escrow/{id}/nft-offer","Register NFT sell offer for DvP — triggers buyer notification"],
+            ["GET","/escrow/{id}/nft-status","Poll NFT acceptance status for DvP escrows"],
             ["POST","/jobs","Post a job to the board — free, accepts bids"],
             ["GET","/jobs","List open jobs available for bidding"],
             ["POST","/jobs/{id}/bid","Submit a bid on a job"],
@@ -1741,7 +1890,12 @@ function setView(view) {
             ["POST","/nft/verify","One-shot NFT ownership verification"],
             ["POST","/domain/verify","Verify XRPL wallet domain ownership via xrp-ledger.toml"],
             ["POST","/vc/verify","Verify a W3C Verifiable Credential JWT"],
-            ["GET","/passport/score/{address}","Get Gitcoin Passport Unique Humanity Score"],
+            ["GET","/wallet/score/{address}","Get XRPL trust score for a wallet address"],
+            ["GET","/gleif/search","Search GLEIF for verified legal entities by name"],
+            ["GET","/gleif/entity/{lei}","Get full GLEIF entity details"],
+            ["GET","/gleif/xrpl-lookup","Find a company's XRPL wallet via GLEIF + registry"],
+            ["POST","/eth/challenge","Get a challenge string for ETH address ownership proof"],
+            ["POST","/eth/verify-signature","Verify ETH wallet ownership via EIP-191 signature"],
             ["GET","/xrp/price","Live XRP/USD and XRP/GBP price"],
             ["POST","/dex/quote","XRPL DEX quote for XRP→RLUSD swap"],
           ].map(([m, p, d]) => `<tr style="border-bottom:1px solid var(--border);">
@@ -1751,6 +1905,29 @@ function setView(view) {
           </tr>`).join("")}
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid rgba(99,102,241,.2);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.25rem;display:flex;align-items:center;gap:8px;"><span style="color:#818cf8;">&#9201;</span> On the Roadmap</h2>
+    <p style="font-size:.8rem;color:var(--text-dim);line-height:1.6;margin-bottom:1rem;">Protocol upgrades that are already designed — blocked only by upstream dependencies.</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      <div style="padding:.75rem 1rem;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#818cf8;margin-bottom:.2rem;">Atomic NFT Swaps (XLS-30 Hooks) <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">In progress upstream</span></div>
+        Both NFT transfer and payment will happen in a single ledger entry — truly atomic, zero back-out window. Requires XLS-30 on XRPL mainnet.
+      </div>
+      <div style="padding:.75rem 1rem;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#f59e0b;margin-bottom:.2rem;">RLUSD-to-RLUSD Escrow <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">Waiting on Ripple</span></div>
+        Native RLUSD escrow requires Ripple to enable lsfAllowTrustLineLocking on their issuer account (XLS-85). We're ready to activate the moment they do.
+      </div>
+      <div style="padding:.75rem 1rem;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.12);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#10b981;margin-bottom:.2rem;">Multi-chain NFT Verification <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(16,185,129,.08);color:#10b981;border:1px solid rgba(16,185,129,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">Coming soon</span></div>
+        Ethereum ERC-721 and Solana NFTs as proof — same on-chain verification guarantees across any chain.
+      </div>
+      <div style="padding:.75rem 1rem;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.12);border-radius:var(--r);font-size:.8rem;color:var(--text-dim);line-height:1.55;">
+        <div style="font-weight:700;color:#10b981;margin-bottom:.2rem;">On-chain Identity (XLS-26 DIDs) <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(16,185,129,.08);color:#10b981;border:1px solid rgba(16,185,129,.2);padding:2px 7px;border-radius:20px;margin-left:6px;">Coming soon</span></div>
+        W3C Decentralised Identifiers natively on XRPL — DID-based identity as a first-class proof mechanism alongside domain and VC verification.
+      </div>
     </div>
   </div>
 
@@ -1837,7 +2014,6 @@ function renderJobs() {
         const nftBadge      = job.required_nft_issuer ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:4px;padding:2px 6px;margin-left:6px;">🔗 NFT Verified</span>` : "";
         const domainBadge   = job.required_domain ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#3b82f6;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:4px;padding:2px 6px;margin-left:6px;">🌐 Domain Verified</span>` : "";
         const vcBadge       = job.required_vc_issuer_did ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:4px;padding:2px 6px;margin-left:6px;">📜 VC Required</span>` : "";
-        const passportBadge = job.min_passport_score ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:4px;padding:2px 6px;margin-left:6px;">🛡️ Passport Score</span>` : "";
         const bidCount   = job.bid_count > 0 ? ` (${job.bid_count})` : "";
         const claimBtn   = job.is_demo
             ? `<button class="claim-btn" disabled title="Demo listing — post a real job to go live" style="opacity:.35;cursor:not-allowed;">
@@ -1851,7 +2027,7 @@ function renderJobs() {
              onclick="selectJob('${job.id}')"
              style="animation-delay:${i * 0.04}s">
             <div class="job-card-top">
-                <div class="job-card-title">${escHtml(job.title)}${demoBadge}${nftBadge}${domainBadge}${vcBadge}${passportBadge}</div>
+                <div class="job-card-title">${escHtml(job.title)}${demoBadge}${nftBadge}${domainBadge}${vcBadge}</div>
                 <div class="bounty-tag ${job.currency === "RLUSD" ? "rlusd" : ""}">${bountyStr}</div>
             </div>
             <div class="job-card-meta">
@@ -1926,8 +2102,6 @@ function selectJob(id) {
             ${job.required_domain ? `<div class="detail-section"><div style="padding:.75rem 1rem;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:var(--r);font-size:.8rem;color:#3b82f6;display:flex;align-items:flex-start;gap:8px;"><span style="flex-shrink:0;">🌐</span><div><strong>XRPL Domain Verification Required</strong><br><span style="font-size:.75rem;color:var(--text-dim);">Worker's XRPL wallet must be verified as: <span style="font-family:var(--mono);font-size:.72rem;">${escHtml(job.required_domain)}</span> via xrp-ledger.toml</span></div></div></div>` : ""}
 
             ${job.required_vc_issuer_did ? `<div class="detail-section"><div style="padding:.75rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:var(--r);font-size:.8rem;color:#10b981;display:flex;align-items:flex-start;gap:8px;"><span style="flex-shrink:0;">📜</span><div><strong>W3C Verifiable Credential Required</strong><br><span style="font-size:.75rem;color:var(--text-dim);">Issuer DID: <span style="font-family:var(--mono);font-size:.72rem;">${escHtml(job.required_vc_issuer_did)}</span>${job.required_vc_type ? ` · Type: <span style="font-family:var(--mono);font-size:.72rem;">${escHtml(job.required_vc_type)}</span>` : ""}</span></div></div></div>` : ""}
-
-            ${job.min_passport_score ? `<div class="detail-section"><div style="padding:.75rem 1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);font-size:.8rem;color:#f59e0b;display:flex;align-items:flex-start;gap:8px;"><span style="flex-shrink:0;">🛡️</span><div><strong>Gitcoin Passport Score Required</strong><br><span style="font-size:.75rem;color:var(--text-dim);">Minimum score: <strong>${job.min_passport_score}</strong> — submit your Ethereum address as supporting evidence</span></div></div></div>` : ""}
 
             <hr class="divider">
 
@@ -2311,8 +2485,7 @@ async function submitJobBoardPost() {
     const requiredDomain    = document.getElementById("jb-required-domain")?.value.trim() || null;
     const requiredVcIssuer  = document.getElementById("jb-required-vc-issuer")?.value.trim() || null;
     const requiredVcType    = document.getElementById("jb-required-vc-type")?.value.trim() || null;
-    const minPassportRaw    = document.getElementById("jb-min-passport-score")?.value.trim();
-    const minPassportScore  = minPassportRaw ? parseFloat(minPassportRaw) : null;
+    const proofPolicy       = document.querySelector('input[name="jb-proof-policy"]:checked')?.value || "ALL";
 
     if (!title)                         return showModalStatus("jb-status", "Please enter a job title.", "error");
     if (!desc)                          return showModalStatus("jb-status", "Please enter a description.", "error");
@@ -2344,7 +2517,7 @@ async function submitJobBoardPost() {
                 required_domain:        requiredDomain  || undefined,
                 required_vc_issuer_did: requiredVcIssuer || undefined,
                 required_vc_type:       requiredVcType   || undefined,
-                min_passport_score:     minPassportScore !== null ? minPassportScore : undefined,
+                proof_policy:           proofPolicy,
             }),
         });
         const data = await res.json();
@@ -2763,7 +2936,15 @@ async function fetchJobStatus(jobId) {
                         <span style="font-family:var(--mono);font-size:.75rem;color:var(--text-dim);">${b.bid_id}</span>
                         <span style="display:flex;align-items:center;">${statusBadge}${chatBtn}</span>
                     </div>
-                    <div style="font-size:.82rem;font-weight:600;">${workerLabel}</div>
+                    <div style="font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:6px;">${workerLabel}${
+                        b.xrpl_trust_score != null
+                            ? b.xrpl_trust_score >= 60
+                                ? `<span style="font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.3);">🟢 Trust: ${b.xrpl_trust_score}</span>`
+                                : b.xrpl_trust_score >= 30
+                                    ? `<span style="font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);">🟡 Trust: ${b.xrpl_trust_score}</span>`
+                                    : `<span style="font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);">🔴 Trust: ${b.xrpl_trust_score}</span>`
+                            : ""
+                    }</div>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <span style="font-family:var(--mono);font-size:.8rem;color:var(--green);">${b.proposed_xrp} XRP</span>
                         <span style="font-size:.7rem;color:var(--text-dim);">${b.created_at ? timeAgo(b.created_at) : ""}</span>
@@ -2814,6 +2995,218 @@ async function fetchJobStatus(jobId) {
     } catch (e) {
         body.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Failed to load job. Check the ID and try again.</div>`;
     }
+}
+
+// ---------------------------------------------------------------------------
+// GLEIF COMPANY SEARCH
+// ---------------------------------------------------------------------------
+let _gleifTimer = null;
+async function gleifSearch(query, resultsId, targetId) {
+    const resultsEl = document.getElementById(resultsId);
+    if (!query || query.length < 3) { if (resultsEl) resultsEl.style.display = "none"; return; }
+
+    // If it looks like an XRPL address, use directly
+    if (query.startsWith("r") && query.length > 20) {
+        const target = document.getElementById(targetId);
+        if (target) target.value = query;
+        if (resultsEl) resultsEl.style.display = "none";
+        return;
+    }
+
+    clearTimeout(_gleifTimer);
+    _gleifTimer = setTimeout(async () => {
+        try {
+            const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
+            const data = await res.json();
+            const results = data.results || [];
+            if (!resultsEl) return;
+            if (!results.length) { resultsEl.style.display = "none"; return; }
+            resultsEl.innerHTML = results.map(r => `
+                <div onclick="selectGleifResult('${r.lei}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                    <div style="font-weight:600;color:var(--text);">${r.name}</div>
+                    <div style="font-size:.72rem;color:var(--text-dim);">LEI: ${r.lei} · GLEIF verified</div>
+                </div>
+            `).join("");
+            resultsEl.style.display = "block";
+        } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
+    }, 350);
+}
+
+async function selectGleifResult(lei, name, targetId, resultsId) {
+    const resultsEl = document.getElementById(resultsId);
+    if (resultsEl) resultsEl.style.display = "none";
+    const searchInput = document.getElementById(resultsId.replace("-results", "-search"));
+    if (searchInput) searchInput.value = name;
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        const match = data.results?.find(r => r.lei === lei);
+        const target = document.getElementById(targetId);
+        if (match?.xrpl_wallet && target) target.value = match.xrpl_wallet;
+        const statusId = resultsId + "-status";
+        let statusEl = document.getElementById(statusId);
+        if (!statusEl && resultsEl) {
+            statusEl = document.createElement("div");
+            statusEl.id = statusId;
+            statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
+            resultsEl.parentNode.appendChild(statusEl);
+        }
+        if (statusEl) {
+            statusEl.textContent = match?.xrpl_wallet
+                ? "✅ GLEIF verified · XRPL wallet found"
+                : "✅ GLEIF verified · No XRPL wallet on record — ask the company for their wallet address";
+        }
+    } catch(e) {}
+}
+
+// ---------------------------------------------------------------------------
+// ISSUERS REGISTRY
+// ---------------------------------------------------------------------------
+let _allIssuers = [];
+
+async function loadIssuers() {
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/nft/issuers?include_pending=true`);
+        const data = await res.json();
+        _allIssuers = data.issuers || [];
+        renderIssuers(_allIssuers);
+        if (window.lucide) lucide.createIcons();
+    } catch(e) {
+        document.getElementById("issuers-list").innerHTML =
+            `<div style="text-align:center;padding:2rem;color:var(--text-dim);">Could not load issuers. ${e.message}</div>`;
+    }
+}
+
+function renderIssuers(list) {
+    const el = document.getElementById("issuers-list");
+    if (!el) return;
+    if (!list.length) {
+        el.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-dim);font-size:.85rem;">No verified issuers yet. <a href="#issuer-register" onclick="document.getElementById('issuer-register').scrollIntoView({behavior:'smooth'});return false;" style="color:var(--blue);">Be the first to register.</a></div>`;
+        return;
+    }
+    el.innerHTML = list.map(renderIssuerCard).join("");
+    if (window.lucide) lucide.createIcons();
+}
+
+function filterIssuers(query) {
+    if (!query.trim()) { renderIssuers(_allIssuers); return; }
+    const q = query.toLowerCase();
+    renderIssuers(_allIssuers.filter(i =>
+        i.name?.toLowerCase().includes(q) ||
+        i.category?.toLowerCase().includes(q) ||
+        i.wallet_address?.toLowerCase().includes(q) ||
+        i.description?.toLowerCase().includes(q)
+    ));
+}
+
+function renderIssuerCard(issuer) {
+    const verifiedBadge = issuer.verified === "verified"
+        ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:4px;padding:2px 7px;">✓ Verified</span>`
+        : `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:4px;padding:2px 7px;">⏳ Pending</span>`;
+    const categoryColours = {
+        logistics:     ["#3b82f6","rgba(59,130,246,.1)"],
+        ticketing:     ["#a855f7","rgba(168,85,247,.1)"],
+        legal:         ["#10b981","rgba(16,185,129,.1)"],
+        finance:       ["#f59e0b","rgba(245,158,11,.1)"],
+        certification: ["#06b6d4","rgba(6,182,212,.1)"],
+        iot:           ["#ec4899","rgba(236,72,153,.1)"],
+        default:       ["#94a3b8","rgba(148,163,184,.1)"],
+    };
+    const [col, bg] = categoryColours[issuer.category?.toLowerCase()] || categoryColours.default;
+    return `
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;">
+            <div style="width:40px;height:40px;border-radius:10px;background:${bg};border:1px solid ${col}33;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i data-lucide="building-2" style="width:18px;height:18px;color:${col};"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="font-weight:700;font-size:.88rem;">${escHtml(issuer.name)}</span>
+                    ${verifiedBadge}
+                    ${issuer.category ? `<span style="font-size:.68rem;font-weight:600;color:${col};background:${bg};border:1px solid ${col}33;border-radius:4px;padding:1px 6px;text-transform:capitalize;">${escHtml(issuer.category)}</span>` : ""}
+                </div>
+                <div style="font-size:.75rem;color:var(--text-dim);margin-top:.2rem;font-family:var(--mono);">${escHtml(issuer.wallet_address)}</div>
+                ${issuer.description ? `<div style="font-size:.77rem;color:var(--text-dim);margin-top:.25rem;">${escHtml(issuer.description)}</div>` : ""}
+            </div>
+            ${issuer.website ? `<a href="${escHtml(issuer.website)}" target="_blank" rel="noopener" style="flex-shrink:0;font-size:.75rem;color:var(--blue);text-decoration:none;white-space:nowrap;">↗ Website</a>` : ""}
+        </div>
+    `;
+}
+
+async function submitIssuerRegistration() {
+    const btn      = document.getElementById("reg-submit-btn");
+    const name     = document.getElementById("reg-name")?.value.trim();
+    const category = document.getElementById("reg-category")?.value;
+    const wallet   = document.getElementById("reg-wallet")?.value.trim();
+    const website  = document.getElementById("reg-website")?.value.trim();
+    const email    = document.getElementById("reg-email")?.value.trim();
+    const desc     = document.getElementById("reg-description")?.value.trim();
+    const lei      = document.getElementById("reg-lei")?.value.trim();
+    const nftTypes = document.getElementById("reg-nft-types")?.value.trim();
+
+    if (!name || !category || !wallet || !website || !email) {
+        showIssuerRegStatus("Please fill in all required fields.", "error");
+        return;
+    }
+    if (!wallet.startsWith("r") || wallet.length < 25) {
+        showIssuerRegStatus("Please enter a valid XRPL wallet address (starts with r).", "error");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+    showIssuerRegStatus("⏳ Submitting registration…", "info");
+
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/nft/issuers`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                wallet_address: wallet,
+                name, category,
+                description: desc || undefined,
+                website,
+                contact_email: email,
+                lei: lei || undefined,
+                nft_types: nftTypes || undefined,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Registration failed.");
+
+        document.getElementById("issuer-register").innerHTML = `
+            <div style="text-align:center;padding:2rem;">
+                <div style="font-size:2.5rem;margin-bottom:.75rem;">✅</div>
+                <div style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">Registration received!</div>
+                <p style="color:var(--text-dim);font-size:.85rem;max-width:420px;margin:0 auto;line-height:1.7;">
+                    We'll verify your organisation against GLEIF records and your XRPL domain field.
+                    Expect confirmation at <strong>${escHtml(email)}</strong> within 2 business days.
+                </p>
+                <div style="margin-top:1.25rem;padding:.75rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.8rem;color:#10b981;text-align:left;max-width:420px;margin:1.25rem auto 0;">
+                    <strong>While you wait:</strong> Make sure your XRPL wallet's Domain field is set to your
+                    website domain in Xaman, and that
+                    <code style="font-family:var(--mono);font-size:.75rem;">/.well-known/xrp-ledger.toml</code>
+                    lists your wallet address. This is required for full verification.
+                </div>
+            </div>
+        `;
+        loadIssuers();
+    } catch(e) {
+        showIssuerRegStatus(`❌ ${e.message}`, "error");
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="send" style="width:15px;height:15px;"></i> Submit Registration`;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function showIssuerRegStatus(msg, type) {
+    const el = document.getElementById("reg-status");
+    if (!el) return;
+    const colours = { error: "#ff3b30", info: "#3b82f6", success: "#10b981" };
+    el.style.display = "block";
+    el.style.color = colours[type] || colours.info;
+    el.textContent = msg;
 }
 </script>
 </body>

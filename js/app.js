@@ -425,8 +425,8 @@ async function initVault() {
         const requiredDomain      = document.getElementById("required-domain-field")?.value.trim() || null;
         const requiredVcIssuer    = document.getElementById("required-vc-issuer-field")?.value.trim() || null;
         const requiredVcType      = document.getElementById("required-vc-type-field")?.value.trim() || null;
-        const minPassportScoreRaw = document.getElementById("min-passport-score-field")?.value.trim();
-        const minPassportScore    = minPassportScoreRaw ? parseFloat(minPassportScoreRaw) : null;
+        const proofPolicy         = document.querySelector('input[name="proof-policy"]:checked')?.value || "ALL";
+        const nftDvp              = document.getElementById("nft-dvp-toggle")?.checked || false;
 
         const body = {
             escrow_id:         receiptCode,
@@ -450,7 +450,8 @@ async function initVault() {
             required_domain:        requiredDomain    || undefined,
             required_vc_issuer_did: requiredVcIssuer  || undefined,
             required_vc_type:       requiredVcType     || undefined,
-            min_passport_score:     minPassportScore  !== null ? minPassportScore : undefined,
+            proof_policy:           proofPolicy,
+            nft_dvp:                nftDvp,
         };
 
         if (currency === "RLUSD") {
@@ -550,6 +551,60 @@ async function pollEscrowCreate(uuid, receiptCode) {
 }
 
 // ---------------------------------------------------------------------------
+// NFT DvP MODE TOGGLE
+// ---------------------------------------------------------------------------
+function toggleNftDvpMode(enabled) {
+    const nftSection = document.getElementById("nft-proof-buyer-section");
+    if (nftSection) nftSection.style.display = enabled ? "block" : "none";
+}
+
+// ---------------------------------------------------------------------------
+// NFT DvP — SELLER REGISTERS OFFER + BUYER ACCEPTANCE POLLING
+// ---------------------------------------------------------------------------
+let _nftDvpPollTimer = null;
+
+async function registerNftOffer(escrowId) {
+    const nftTokenId = document.getElementById("dvp-nft-token-id")?.value.trim();
+    if (!nftTokenId) { showStatus("dvp-status", "Please enter the NFT Token ID.", "error"); return; }
+    showStatus("dvp-status", "⏳ Verifying NFT sell offer on XRPL...", "info");
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/escrow/${encodeURIComponent(escrowId)}/nft-offer`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ escrow_id: escrowId, nft_token_id: nftTokenId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to register offer.");
+        showStatus("dvp-status",
+            "✅ Offer verified! The buyer has been notified to accept the NFT. Payment will release automatically once they accept.",
+            "success");
+        // Start polling for acceptance
+        startNftDvpPolling(escrowId);
+    } catch(e) {
+        showStatus("dvp-status", `❌ ${e.message}`, "error");
+    }
+}
+
+function startNftDvpPolling(escrowId) {
+    if (_nftDvpPollTimer) clearInterval(_nftDvpPollTimer);
+    _nftDvpPollTimer = setInterval(async () => {
+        try {
+            const res  = await safeFetch(`${REFEREE_URL}/escrow/${encodeURIComponent(escrowId)}/nft-status`);
+            const data = await res.json();
+            if (data.status === "accepted") {
+                clearInterval(_nftDvpPollTimer);
+                _nftDvpPollTimer = null;
+                showStatus("dvp-status", "🎉 NFT accepted by buyer! Payment is being released to your wallet.", "success");
+            } else if (data.status === "expired") {
+                clearInterval(_nftDvpPollTimer);
+                _nftDvpPollTimer = null;
+                showStatus("dvp-status", "⚠️ NFT offer expired. Please create a new sell offer and register it again.", "warning");
+            }
+        } catch (e) { /* ignore transient poll errors */ }
+    }, 10000);
+}
+
+// ---------------------------------------------------------------------------
 // SELLER — Load job info
 // ---------------------------------------------------------------------------
 async function loadJobInfo(projectId) {
@@ -623,6 +678,41 @@ async function loadJobInfo(projectId) {
             await fetchDexQuote(data.worker_address, data.amount_xrp);
         }
 
+        // NFT DvP panel — shown when work passed but awaiting NFT transfer
+        const dvpPanel = document.getElementById("nft-dvp-seller-panel");
+        if (data.nft_dvp && data.status === "PASS_AWAITING_NFT") {
+            if (dvpPanel) {
+                dvpPanel.style.display = "block";
+            } else {
+                // Inject panel dynamically
+                const submitSection = document.getElementById("submit-section") || document.getElementById("job-info-panel");
+                if (submitSection) {
+                    const panel = document.createElement("div");
+                    panel.id = "nft-dvp-seller-panel";
+                    panel.style.cssText = "margin-top:1rem;padding:1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;";
+                    panel.innerHTML = `
+                        <div style="font-size:.85rem;font-weight:700;color:#10b981;margin-bottom:.5rem;">✅ Work passed! Transfer your NFT to release payment.</div>
+                        <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">
+                            Create an NFTokenCreateOffer in Xaman with:<br>
+                            &bull; Destination = ${data.buyer_address || "buyer's wallet"}<br>
+                            &bull; Amount = 0 (payment comes from escrow)<br>
+                            Then paste the NFT Token ID below.
+                        </p>
+                        <input type="text" id="dvp-nft-token-id" placeholder="NFT Token ID (64-char hex)" style="width:100%;margin-bottom:.5rem;">
+                        <button onclick="registerNftOffer('${projectId}')" style="padding:.55rem 1.2rem;background:#10b981;color:#fff;border:none;border-radius:7px;font-weight:700;cursor:pointer;font-size:.85rem;">Register NFT Offer</button>
+                        <div class="status-msg" id="dvp-status" style="margin-top:.5rem;"></div>
+                    `;
+                    submitSection.parentNode.insertBefore(panel, submitSection.nextSibling);
+                }
+            }
+            // If offer already created, start polling
+            if (data.nft_dvp_status === "offer_created") {
+                startNftDvpPolling(projectId);
+            }
+        } else if (dvpPanel) {
+            dvpPanel.style.display = "none";
+        }
+
         console.log("✅ Job info loaded:", data);
 
     } catch (err) {
@@ -640,8 +730,17 @@ async function submitWork() {
     const workProof   = document.getElementById("work-proof")?.value.trim();
     const callbackUrl = document.getElementById("callback-url")?.value.trim() || null;
 
-    if (!projectID || !workProof) {
-        showStatus("submit-status", "❌ Please enter your Receipt Code and proof of work.", "error");
+    const evidenceLinksCheck = Array.from(document.querySelectorAll("#evidence-links-container .evidence-link-input"))
+        .map(el => el.value.trim()).filter(Boolean);
+    const nftTokenIdCheck = document.getElementById("nft-token-id-field")?.value.trim();
+    const vcJwtCheck      = document.getElementById("vc-jwt-field")?.value.trim();
+
+    const hasProof = workProof || evidenceLinksCheck.length > 0 || workerFiles.length > 0 || nftTokenIdCheck || vcJwtCheck;
+    if (!projectID || !hasProof) {
+        const msg = !projectID
+            ? "❌ Please enter your Receipt Code."
+            : "❌ Please provide at least one form of proof: a description, URL, file upload, NFT token ID, or Verifiable Credential.";
+        showStatus("submit-status", msg, "error");
         return;
     }
 
@@ -656,7 +755,6 @@ async function submitWork() {
     const nftTokenId          = document.getElementById("nft-token-id-field")?.value.trim() || null;
     const nftWallet           = document.getElementById("nft-wallet-field")?.value.trim() || null;
     const vcJwt               = document.getElementById("vc-jwt-field")?.value.trim() || null;
-    const passportEthAddress  = document.getElementById("passport-eth-field")?.value.trim() || null;
 
     const submitBody = JSON.stringify({
         escrow_id:          projectID,
@@ -669,7 +767,6 @@ async function submitWork() {
         nft_token_id:          nftTokenId          || undefined,
         nft_wallet:            nftWallet            || undefined,
         vc_jwt:                vcJwt                || undefined,
-        passport_eth_address:  passportEthAddress   || undefined,
     });
 
     const MAX_RETRIES = 5;
@@ -715,6 +812,41 @@ async function submitWork() {
 
         lastEvaluateResult = result;
         const verdict      = result.verdict;
+
+        // NFT DvP — work passed but awaiting NFT transfer
+        if (result.status === "pass_awaiting_nft") {
+            showVerdictPanel(verdict);
+            showStatus("submit-status",
+                `✅ Work PASSED! Score: ${verdict?.score}/100\n\n` +
+                `🔄 NFT Delivery required before payment releases.\n\n` +
+                (result.nft_dvp_instructions || "Create an NFTokenCreateOffer in Xaman and register it below."),
+                "success");
+            // Inject NFT DvP panel below submit section
+            const existingDvpPanel = document.getElementById("nft-dvp-seller-panel");
+            if (!existingDvpPanel) {
+                const submitSection = document.getElementById("submit-status");
+                if (submitSection && submitSection.parentNode) {
+                    const panel = document.createElement("div");
+                    panel.id = "nft-dvp-seller-panel";
+                    panel.style.cssText = "margin-top:1rem;padding:1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;";
+                    panel.innerHTML = `
+                        <div style="font-size:.85rem;font-weight:700;color:#10b981;margin-bottom:.5rem;">🔄 Register your NFT sell offer</div>
+                        <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">
+                            In Xaman: create an NFTokenCreateOffer<br>
+                            &bull; Destination = ${result.buyer_address || "buyer's wallet"}<br>
+                            &bull; Amount = 0<br>
+                            Then paste the NFT Token ID below.
+                        </p>
+                        <input type="text" id="dvp-nft-token-id" placeholder="NFT Token ID (64-char hex)" style="width:100%;margin-bottom:.5rem;">
+                        <button onclick="registerNftOffer('${result.escrow_id}')" style="padding:.55rem 1.2rem;background:#10b981;color:#fff;border:none;border-radius:7px;font-weight:700;cursor:pointer;font-size:.85rem;">Register NFT Offer</button>
+                        <div class="status-msg" id="dvp-status" style="margin-top:.5rem;"></div>
+                    `;
+                    submitSection.parentNode.insertBefore(panel, submitSection.nextSibling);
+                }
+            }
+            if (btn) btn.disabled = false;
+            return;
+        }
 
         if (result.status === "approved") {
             showVerdictPanel(verdict);
@@ -1253,4 +1385,75 @@ function addLinkField(containerId, btnId, maxExtra) {
         btn.style.display = "none";
     }
     if (window.lucide) lucide.createIcons();
+}
+
+// ---------------------------------------------------------------------------
+// GLEIF COMPANY SEARCH
+// ---------------------------------------------------------------------------
+let _gleifTimer = null;
+async function gleifSearch(query, resultsId, targetId) {
+    const resultsEl = document.getElementById(resultsId);
+    if (!query || query.length < 3) { if (resultsEl) resultsEl.style.display = "none"; return; }
+
+    // If it looks like an XRPL address, use directly
+    if (query.startsWith("r") && query.length > 20) {
+        const target = document.getElementById(targetId);
+        if (target) target.value = query;
+        if (resultsEl) resultsEl.style.display = "none";
+        return;
+    }
+
+    clearTimeout(_gleifTimer);
+    _gleifTimer = setTimeout(async () => {
+        try {
+            const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
+            const data = await res.json();
+            const results = data.results || [];
+
+            if (!resultsEl) return;
+            if (!results.length) { resultsEl.style.display = "none"; return; }
+
+            resultsEl.innerHTML = results.map(r => `
+                <div onclick="selectGleifResult('${r.lei}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                    <div style="font-weight:600;">${r.name}</div>
+                    <div style="font-size:.72rem;opacity:.6;">LEI: ${r.lei} · GLEIF verified</div>
+                </div>
+            `).join("");
+            resultsEl.style.display = "block";
+        } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
+    }, 350);
+}
+
+async function selectGleifResult(lei, name, targetId, resultsId) {
+    const resultsEl = document.getElementById(resultsId);
+    if (resultsEl) resultsEl.style.display = "none";
+    // Set visible search input to the company name
+    const searchInput = resultsEl ? resultsEl.previousElementSibling : null;
+    if (searchInput) searchInput.value = name;
+    // Look up XRPL wallet
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        const match = data.results?.find(r => r.lei === lei);
+        const target = document.getElementById(targetId);
+        if (match?.xrpl_wallet && target) {
+            target.value = match.xrpl_wallet;
+        }
+        // Show status
+        const statusId = resultsId + "-status";
+        let statusEl = document.getElementById(statusId);
+        if (!statusEl && resultsEl) {
+            statusEl = document.createElement("div");
+            statusEl.id = statusId;
+            statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
+            resultsEl.parentNode.appendChild(statusEl);
+        }
+        if (statusEl) {
+            statusEl.textContent = match?.xrpl_wallet
+                ? "✅ GLEIF verified · XRPL wallet found"
+                : "✅ GLEIF verified · No XRPL wallet on record — ask the company for their wallet address";
+        }
+    } catch(e) {}
 }
