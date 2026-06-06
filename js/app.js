@@ -1524,15 +1524,16 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
             if (!items.length) {
                 resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;line-height:1.6;">
                     <span style="color:var(--text-muted);">Not in AgentTrust registry yet.</span>
-                    <button type="button" onclick="ocSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="display:block;margin-top:4px;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#818cf8;cursor:pointer;">Search OpenCorporates (200M+ companies) →</button>
+                    <button type="button" onclick="ocSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="display:block;margin-top:4px;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#818cf8;cursor:pointer;">Search SEC EDGAR (US public companies) →</button>
                 </div>`;
                 resultsEl.style.display = "block";
                 return;
             }
             resultsEl.innerHTML = items.slice(0,8).map(r => {
+                const srcLabel = r.source === "sec-edgar" ? "SEC EDGAR · us" : `SEC EDGAR`;
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">OpenCorporates${r.jurisdiction_code ? " · " + r.jurisdiction_code : ""}</span>`;
+                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">${srcLabel}</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
@@ -1546,28 +1547,38 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-// Call OpenCorporates directly from the browser — avoids Render server IP block
-const OC_API = "https://api.opencorporates.com/v0.4";
+// Company search via SEC EDGAR — free, no key, CORS-enabled from the browser
 async function _ocSearch(query, limit = 8) {
     try {
-        const res = await fetch(`${OC_API}/companies/search?q=${encodeURIComponent(query)}&per_page=${limit}&format=json`);
+        const url = `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent(query)}&forms=10-K`;
+        const res = await fetch(url, { headers: { "User-Agent": "AgentTrust/1.0 admin@cryptovault.co.uk" } });
         if (!res.ok) return [];
         const data = await res.json();
-        return (data?.results?.companies || []).map(c => c.company).filter(Boolean)
-            .map(c => ({ source: "opencorporates", name: c.name || "", company_number: c.company_number || "", jurisdiction_code: c.jurisdiction_code || "", wallet: null }));
+        const seen = new Set();
+        const results = [];
+        for (const hit of (data?.hits?.hits || [])) {
+            const name = hit._source?.entity_name;
+            if (!name) continue;
+            const key = name.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            results.push({ source: "sec-edgar", name, company_number: hit._source?.file_num || "", jurisdiction_code: "us", wallet: null });
+            if (results.length >= limit) break;
+        }
+        return results;
     } catch(e) { return []; }
 }
 
 async function ocSearchDirect(query, resultsId, targetId, wrapId, rgb) {
     const resultsEl = document.getElementById(resultsId);
-    if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">Searching OpenCorporates…</div>`;
+    if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">Searching SEC EDGAR…</div>`;
     const results = await _ocSearch(query, 8);
     if (!results.length) {
         if (resultsEl) resultsEl.innerHTML = `
             <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
                 <div style="color:var(--text-muted);margin-bottom:6px;">
-                    <strong style="color:var(--text);">"${query}"</strong> not found in OpenCorporates.<br>
-                    <span style="font-size:.72rem;">OpenCorporates covers 200M+ companies across 140 jurisdictions. Try searching with the official registered name.</span>
+                    <strong style="color:var(--text);">"${query}"</strong> not found in SEC EDGAR.<br>
+                    <span style="font-size:.72rem;">SEC EDGAR covers US public companies (SEC-registered). Private companies and non-US companies won't appear here.</span>
                 </div>
                 <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
                 <input type="text" placeholder="rXXX… wallet address"
@@ -1580,12 +1591,12 @@ async function ocSearchDirect(query, resultsId, targetId, wrapId, rgb) {
     }
     if (resultsEl) resultsEl.innerHTML = results.map(r => {
         const nameEsc = r.name.replace(/'/g, "\\'");
-        const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
-        return `<div onclick="selectIssuer('','${nameEsc}','${r.company_number||""}','opencorporates','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+        const ocBadge = r.company_number || "";
+        return `<div onclick="selectIssuer('','${nameEsc}','${r.company_number||""}','sec-edgar','${targetId}','${resultsId}','${wrapId}','${rgb}')"
             style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
             onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
             <div style="font-weight:600;">${r.name}</div>
-            <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">OpenCorporates${ocBadge ? " · " + ocBadge : ""}</div>
+            <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">SEC EDGAR${ocBadge ? " · " + ocBadge : ""}</div>
         </div>`;
     }).join("");
     resultsEl.style.display = "block";
@@ -1607,10 +1618,10 @@ async function selectIssuer(wallet, name, lei, source, targetId, resultsId, wrap
 
     if (wallet) {
         document.getElementById(targetId).value = wallet;
-        setProofVerified(wrapId, rgb, source === "registry" ? `✅ AgentTrust verified issuer` : `✅ OpenCorporates verified · wallet set`);
+        setProofVerified(wrapId, rgb, source === "registry" ? `✅ AgentTrust verified issuer` : `✅ SEC EDGAR verified · wallet set`);
         return;
     }
-    // OpenCorporates hit — attempt wallet lookup
+    // SEC EDGAR hit — attempt wallet lookup
     document.getElementById(targetId).value = "";
     const statusEl = document.getElementById("nft-issuer-status");
     if (statusEl) statusEl.innerHTML = `<span style="color:var(--text-muted);">Looking up XRPL wallet…</span>`;
@@ -1618,7 +1629,7 @@ async function selectIssuer(wallet, name, lei, source, targetId, resultsId, wrap
     // Check if wallet was resolved
     const val = document.getElementById(targetId)?.value;
     if (val && val.startsWith("r")) {
-        setProofVerified(wrapId, rgb, `✅ OpenCorporates verified · XRPL wallet found`);
+        setProofVerified(wrapId, rgb, `✅ SEC EDGAR verified · XRPL wallet found`);
     }
 }
 
@@ -1803,7 +1814,7 @@ async function gleifSearch(query, resultsId, targetId) {
     clearTimeout(_ocTimer);
     _ocTimer = setTimeout(async () => {
         try {
-            // Query AgentTrust registry and OpenCorporates in parallel
+            // Query AgentTrust registry and SEC EDGAR in parallel
             const [registryRes, ocResults] = await Promise.allSettled([
                 safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
                 _ocSearch(query, 8),
@@ -1828,7 +1839,7 @@ async function gleifSearch(query, resultsId, targetId) {
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">OpenCorporates${r.jurisdiction_code ? " · " + r.jurisdiction_code : ""}</span>`;
+                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
                 const clickVal = r.wallet || r.company_number || "";
                 return `<div onclick="selectOcResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
                      style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
@@ -1865,7 +1876,7 @@ async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet
         return;
     }
 
-    // OpenCorporates hit: attempt XRPL wallet lookup via registry
+    // SEC EDGAR hit: attempt XRPL wallet lookup via registry
     if (target) target.value = "";
     try {
         const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
@@ -1873,7 +1884,7 @@ async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet
         const match = data.results?.find(r => r.xrpl_wallet);
         if (match?.xrpl_wallet && target) {
             target.value = match.xrpl_wallet;
-            if (statusEl) statusEl.innerHTML = "✅ OpenCorporates verified · XRPL wallet found";
+            if (statusEl) statusEl.innerHTML = "✅ SEC EDGAR verified · XRPL wallet found";
         } else {
             if (target) target.value = "";
             if (statusEl) {
@@ -1885,7 +1896,7 @@ async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet
                     `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
                 );
                 statusEl.innerHTML = `
-                    <span style="color:#f59e0b;">⚠️ OpenCorporates verified company — but no XRPL wallet on record.</span>
+                    <span style="color:#f59e0b;">⚠️ SEC EDGAR verified company — but no XRPL wallet on record.</span>
                     <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
                         <a href="mailto:?subject=${subject}&body=${body}" target="_blank"
                             style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:6px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;white-space:nowrap;">
