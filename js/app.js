@@ -271,19 +271,23 @@ window.addEventListener("DOMContentLoaded", () => {
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
 
-    // Position tooltips via fixed coords so they never get clipped by overflow
-    document.querySelectorAll(".tooltip-wrap").forEach(wrap => {
-        const box = wrap.querySelector(".tooltip-box");
-        if (!box) return;
-        wrap.addEventListener("mouseenter", () => {
-            const icon = wrap.querySelector(".tooltip-icon");
-            if (!icon) return;
-            const r = icon.getBoundingClientRect();
-            box.style.left  = Math.max(8, r.left - 12) + "px";
-            box.style.top   = (r.top - 8) + "px";
-            box.style.transform = "translateY(-100%)";
-        });
+    // Tooltips — use event delegation on document so dynamically added ones work too.
+    // stopPropagation on click prevents bubbling into parent buttons/summaries.
+    document.addEventListener("mouseover", e => {
+        const wrap = e.target.closest(".tooltip-wrap");
+        if (!wrap) return;
+        const box  = wrap.querySelector(".tooltip-box");
+        const icon = wrap.querySelector(".tooltip-icon");
+        if (!box || !icon) return;
+        const r = icon.getBoundingClientRect();
+        box.style.left      = Math.max(8, r.left - 12) + "px";
+        box.style.top       = (r.top - 8) + "px";
+        box.style.transform = "translateY(-100%)";
     });
+    document.addEventListener("click", e => {
+        const icon = e.target.closest(".tooltip-icon");
+        if (icon) e.stopPropagation();
+    }, true); // capture phase so it fires before the button handler
 });
 
 // ---------------------------------------------------------------------------
@@ -1500,7 +1504,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     clearTimeout(_issuerTimer);
     _issuerTimer = setTimeout(async () => {
         try {
-            const [regRes, gleifRes] = await Promise.allSettled([
+            const [regRes, ocRes] = await Promise.allSettled([
                 safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
                 safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=6`),
             ]);
@@ -1512,25 +1516,28 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                     .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
                     .map(i => ({ source: "registry", name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category, verified: i.verified }));
             }
-            if (gleifRes.status === "fulfilled") {
-                const d = await gleifRes.value.json();
+            if (ocRes.status === "fulfilled") {
+                const d = await ocRes.value.json();
                 (d.results || []).forEach(r => {
                     if (!items.find(i => i.name.toLowerCase() === r.name.toLowerCase()))
-                        items.push({ source: "gleif", name: r.name, lei: r.lei, wallet: null });
+                        items.push({ source: "opencorporates", name: r.name, company_number: r.company_number, jurisdiction_code: r.jurisdiction_code, wallet: null });
                 });
             }
             if (!resultsEl) return;
             if (!items.length) {
-                resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">No matches found. <button type="button" onclick="gleifSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="color:#818cf8;background:none;border:none;cursor:pointer;font-size:.78rem;text-decoration:underline;">Search GLEIF →</button></div>`;
+                resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;line-height:1.6;">
+                    <span style="color:var(--text-muted);">Not in AgentTrust registry yet.</span>
+                    <button type="button" onclick="ocSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="display:block;margin-top:4px;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#818cf8;cursor:pointer;">Search OpenCorporates (200M+ companies) →</button>
+                </div>`;
                 resultsEl.style.display = "block";
                 return;
             }
             resultsEl.innerHTML = items.slice(0,8).map(r => {
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">GLEIF</span>`;
+                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">OpenCorporates${r.jurisdiction_code ? " · " + r.jurisdiction_code : ""}</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
-                return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.lei||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+                return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;">${r.name}</div>
@@ -1542,27 +1549,48 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-async function gleifSearchDirect(query, resultsId, targetId, wrapId, rgb) {
+async function ocSearchDirect(query, resultsId, targetId, wrapId, rgb) {
     const resultsEl = document.getElementById(resultsId);
-    if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">Searching GLEIF…</div>`;
+    if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">Searching OpenCorporates…</div>`;
     try {
         const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
         const d = await res.json();
         const results = d.results || [];
         if (!results.length) {
-            if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">No GLEIF record found for "${query}".</div>`;
+            if (resultsEl) resultsEl.innerHTML = `
+                <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
+                    <div style="color:var(--text-muted);margin-bottom:6px;">
+                        <strong style="color:var(--text);">"${query}"</strong> not found in OpenCorporates.<br>
+                        <span style="font-size:.72rem;">OpenCorporates covers 200M+ companies across 140 jurisdictions. Try searching with the official registered name.</span>
+                    </div>
+                    <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
+                    <input type="text" placeholder="rXXX… wallet address"
+                        style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
+                        oninput="applyManualIssuerWallet(this.value)">
+                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
+                </div>`;
+            resultsEl.style.display = "block";
             return;
         }
         if (resultsEl) resultsEl.innerHTML = results.map(r => {
             const nameEsc = r.name.replace(/'/g, "\\'");
-            return `<div onclick="selectIssuer('','${nameEsc}','${r.lei}','gleif','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+            const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
+            return `<div onclick="selectIssuer('','${nameEsc}','${r.company_number||""}','opencorporates','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                 style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
                 onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
                 <div style="font-weight:600;">${r.name}</div>
-                <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">GLEIF · LEI ${r.lei}</div>
+                <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">OpenCorporates${ocBadge ? " · " + ocBadge : ""}</div>
             </div>`;
         }).join("");
     } catch(e) {}
+}
+
+function applyManualIssuerWallet(val) {
+    const target = document.getElementById("nft-issuer-field");
+    if (target) target.value = val.trim();
+    if (val.trim().startsWith("r") && val.trim().length > 20) {
+        setProofVerified("pt-nft-wrap", "168,85,247", "Wallet address set — unverified (not in AgentTrust registry)");
+    }
 }
 
 async function selectIssuer(wallet, name, lei, source, targetId, resultsId, wrapId, rgb) {
@@ -1573,18 +1601,18 @@ async function selectIssuer(wallet, name, lei, source, targetId, resultsId, wrap
 
     if (wallet) {
         document.getElementById(targetId).value = wallet;
-        setProofVerified(wrapId, rgb, source === "registry" ? `✅ AgentTrust verified issuer` : `✅ GLEIF verified · wallet set`);
+        setProofVerified(wrapId, rgb, source === "registry" ? `✅ AgentTrust verified issuer` : `✅ OpenCorporates verified · wallet set`);
         return;
     }
-    // GLEIF hit — attempt wallet lookup
+    // OpenCorporates hit — attempt wallet lookup
     document.getElementById(targetId).value = "";
     const statusEl = document.getElementById("nft-issuer-status");
     if (statusEl) statusEl.innerHTML = `<span style="color:var(--text-muted);">Looking up XRPL wallet…</span>`;
-    await selectGleifResult(lei, name, targetId, resultsId, null);
+    await selectOcResult(lei, name, targetId, resultsId, null);
     // Check if wallet was resolved
     const val = document.getElementById(targetId)?.value;
     if (val && val.startsWith("r")) {
-        setProofVerified(wrapId, rgb, `✅ GLEIF verified · XRPL wallet found`);
+        setProofVerified(wrapId, rgb, `✅ OpenCorporates verified · XRPL wallet found`);
     }
 }
 
@@ -1751,9 +1779,9 @@ async function resolveDid(did, wrapId) {
 }
 
 // ---------------------------------------------------------------------------
-// GLEIF COMPANY SEARCH
+// OPENCORPORATES COMPANY SEARCH
 // ---------------------------------------------------------------------------
-let _gleifTimer = null;
+let _ocTimer = null;
 async function gleifSearch(query, resultsId, targetId) {
     const resultsEl = document.getElementById(resultsId);
     if (!query || query.length < 3) { if (resultsEl) resultsEl.style.display = "none"; return; }
@@ -1766,11 +1794,11 @@ async function gleifSearch(query, resultsId, targetId) {
         return;
     }
 
-    clearTimeout(_gleifTimer);
-    _gleifTimer = setTimeout(async () => {
+    clearTimeout(_ocTimer);
+    _ocTimer = setTimeout(async () => {
         try {
-            // Query AgentTrust registry and GLEIF in parallel
-            const [registryRes, gleifRes] = await Promise.allSettled([
+            // Query AgentTrust registry and OpenCorporates in parallel
+            const [registryRes, ocRes] = await Promise.allSettled([
                 safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
                 safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`),
             ]);
@@ -1782,17 +1810,17 @@ async function gleifSearch(query, resultsId, targetId) {
                 const q = query.toLowerCase();
                 registryItems = (d.issuers || [])
                     .filter(i => i.name?.toLowerCase().includes(q) || i.wallet_address?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ source: "registry", lei: null, name: i.name, wallet: i.wallet_address, category: i.category }));
+                    .map(i => ({ source: "registry", name: i.name, wallet: i.wallet_address, category: i.category }));
             }
 
-            // GLEIF legal entities
-            let gleifItems = [];
-            if (gleifRes.status === "fulfilled") {
-                const d = await gleifRes.value.json();
-                gleifItems = (d.results || []).map(r => ({ source: "gleif", lei: r.lei, name: r.name, wallet: null, category: null }));
+            // OpenCorporates legal entities
+            let ocItems = [];
+            if (ocRes.status === "fulfilled") {
+                const d = await ocRes.value.json();
+                ocItems = (d.results || []).map(r => ({ source: "opencorporates", name: r.name, company_number: r.company_number, jurisdiction_code: r.jurisdiction_code, wallet: null, category: null }));
             }
 
-            const combined = [...registryItems, ...gleifItems].slice(0, 10);
+            const combined = [...registryItems, ...ocItems].slice(0, 10);
             if (!resultsEl) return;
             if (!combined.length) { resultsEl.style.display = "none"; return; }
 
@@ -1800,9 +1828,9 @@ async function gleifSearch(query, resultsId, targetId) {
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">GLEIF · LEI ${r.lei}</span>`;
-                const clickVal = r.wallet || r.lei || "";
-                return `<div onclick="selectGleifResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
+                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">OpenCorporates${r.jurisdiction_code ? " · " + r.jurisdiction_code : ""}</span>`;
+                const clickVal = r.wallet || r.company_number || "";
+                return `<div onclick="selectOcResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
                      style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
                      onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;">${r.name}</div>
@@ -1814,7 +1842,7 @@ async function gleifSearch(query, resultsId, targetId) {
     }, 350);
 }
 
-async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
+async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet) {
     const resultsEl = document.getElementById(resultsId);
     if (resultsEl) resultsEl.style.display = "none";
     const searchInput = resultsEl ? resultsEl.previousElementSibling : null;
@@ -1837,19 +1865,17 @@ async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
         return;
     }
 
-    // GLEIF hit: attempt XRPL wallet lookup via domain chain
-    if (target) target.value = lei || "";
+    // OpenCorporates hit: attempt XRPL wallet lookup via registry
+    if (target) target.value = "";
     try {
         const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
         const data = await res.json();
-        const match = data.results?.find(r => r.lei === lei);
+        const match = data.results?.find(r => r.xrpl_wallet);
         if (match?.xrpl_wallet && target) {
             target.value = match.xrpl_wallet;
-            if (statusEl) statusEl.innerHTML = "✅ GLEIF verified · XRPL wallet found";
+            if (statusEl) statusEl.innerHTML = "✅ OpenCorporates verified · XRPL wallet found";
         } else {
-            // Clear the hidden field — LEI is not a valid issuer wallet
             if (target) target.value = "";
-            // Show manual wallet input
             if (statusEl) {
                 const subject = encodeURIComponent(`${name} — join the AgentTrust Trusted Issuer Registry`);
                 const body = encodeURIComponent(
@@ -1859,7 +1885,7 @@ async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
                     `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
                 );
                 statusEl.innerHTML = `
-                    <span style="color:#f59e0b;">⚠️ GLEIF verified company — but no XRPL wallet on record.</span>
+                    <span style="color:#f59e0b;">⚠️ OpenCorporates verified company — but no XRPL wallet on record.</span>
                     <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
                         <a href="mailto:?subject=${subject}&body=${body}" target="_blank"
                             style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:6px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;white-space:nowrap;">
