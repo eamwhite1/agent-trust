@@ -280,6 +280,7 @@
         .roadmap-title { font-family: 'DM Serif Display', serif; font-size: 2.2rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: .5rem; }
         .roadmap-sub { text-align: center; color: var(--text-muted); font-size: .92rem; margin-bottom: 2.5rem; }
         .roadmap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+        .roadmap-card-wide { grid-column: 2 / 4; }
         .roadmap-card { padding: 1.5rem; border-radius: 18px; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); display: flex; flex-direction: column; }
         .roadmap-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
         .roadmap-card h4 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; }
@@ -288,7 +289,7 @@
         .badge-upstream { background: rgba(99,102,241,.12); color: #818cf8; border: 1px solid rgba(99,102,241,.2); }
         .badge-waiting { background: rgba(245,158,11,.1); color: #f59e0b; border: 1px solid rgba(245,158,11,.2); }
         .badge-soon { background: rgba(16,185,129,.08); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
-        @media (max-width: 900px) { .roadmap-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 900px) { .roadmap-grid { grid-template-columns: repeat(2,1fr); } .roadmap-card-wide { grid-column: span 2; } }
         @media (max-width: 600px) { .roadmap-grid { grid-template-columns: 1fr; } }
 
         .use-case { cursor: pointer; }
@@ -1270,7 +1271,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
     ════════════════════════════════════════════════════════════ -->
     <section class="roadmap-section">
         <h2 class="roadmap-title">On the roadmap</h2>
-        <p class="roadmap-sub">Protocol upgrades that are already designed — blocked only by upstream dependencies.</p>
+        <p class="roadmap-sub">What we're building next — and what we're pushing the ecosystem to make possible.</p>
         <div class="roadmap-grid">
 
             <div class="roadmap-card">
@@ -1307,6 +1308,15 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                 <h4>On-chain Identity (XLS-26)</h4>
                 <p>W3C Verifiable Credentials are already live on AgentTrust today. XLS-26 goes further — it brings Decentralised Identifiers (DIDs) natively to the XRPL ledger itself, so identity anchors to the chain rather than an external DID document. We'll add DID-based identity as a first-class proof option the moment XLS-26 hits mainnet.</p>
                 <span class="roadmap-badge badge-soon">Coming soon</span>
+            </div>
+
+            <div class="roadmap-card roadmap-card-wide">
+                <div class="roadmap-icon" style="background:rgba(0,102,255,.1);color:var(--blue);">
+                    <i data-lucide="database" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>Open NFT Issuer Registry</h4>
+                <p>There is no public database mapping company names to their NFT-issuing wallet addresses — across any chain. AgentTrust is building it. Anchored to GLEIF legal identity and cryptographically verified via domain records, the registry will be published as an open standard any protocol or chain can reference. We're in early conversations with the XRPL Foundation about making this ecosystem infrastructure.</p>
+                <span class="roadmap-badge badge-soon">Proposed</span>
             </div>
 
         </div>
