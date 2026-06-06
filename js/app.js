@@ -271,34 +271,25 @@ window.addEventListener("DOMContentLoaded", () => {
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
 
-    // Tooltips — JS-driven so position is set before box becomes visible.
-    // Using mouseenter/mouseleave on delegation avoids button-inside-button issues.
-    let _activeTooltip = null;
-    function _showTooltip(icon) {
-        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
-        if (!box) return;
-        if (_activeTooltip && _activeTooltip !== box) _activeTooltip.classList.remove("visible");
-        const r = icon.getBoundingClientRect();
-        let left = Math.max(8, r.left - 12);
-        if (left + 280 > window.innerWidth - 8) left = window.innerWidth - 288;
-        box.style.left      = left + "px";
-        box.style.top       = (r.top - 8) + "px";
-        box.style.transform = "translateY(-100%)";
-        box.classList.add("visible");
-        _activeTooltip = box;
-    }
-    function _hideTooltip(icon) {
-        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
-        if (box) box.classList.remove("visible");
-        if (_activeTooltip === box) _activeTooltip = null;
-    }
+    // Global tooltip — single fixed div at body level avoids clipping by parent buttons/overflow:hidden.
+    const _gt = document.getElementById("global-tooltip");
     document.addEventListener("mouseover", e => {
         const icon = e.target.closest(".tooltip-icon");
-        if (icon) _showTooltip(icon);
+        if (!icon || !_gt) return;
+        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
+        if (!box) return;
+        _gt.innerHTML = box.innerHTML;
+        const r = icon.getBoundingClientRect();
+        let left = r.left + r.width / 2 - 20;
+        left = Math.max(8, Math.min(left, window.innerWidth - 268));
+        _gt.style.left      = left + "px";
+        _gt.style.top       = (r.top - 10) + "px";
+        _gt.style.transform = "translateY(-100%)";
+        _gt.style.display   = "block";
     });
     document.addEventListener("mouseout", e => {
         const icon = e.target.closest(".tooltip-icon");
-        if (icon) _hideTooltip(icon);
+        if (icon && _gt) _gt.style.display = "none";
     });
     document.addEventListener("click", e => {
         const icon = e.target.closest(".tooltip-icon");
