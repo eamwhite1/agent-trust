@@ -783,7 +783,7 @@ nav {
                     <p style="color:var(--text-dim);max-width:560px;margin:0 auto;font-size:.9rem;line-height:1.7;">
                         Organisations registered here can issue XRPL NFTs that AgentTrust buyers accept as
                         cryptographic proof of real-world events — a shipped container, a sold ticket, a completed
-                        certification. Verification combines SEC EDGAR public company records, XRPL domain cryptography, and
+                        certification. Verification combines XRPL domain cryptography and
                         manual review.
                     </p>
                     <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;">
@@ -816,8 +816,7 @@ nav {
                     <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.25rem;">Register your organisation</h3>
                     <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.6;">
                         Register your XRPL wallet as a trusted issuer so buyers on AgentTrust can require your NFTs as
-                        proof of real-world events. We verify your identity against SEC EDGAR public company records and your
-                        XRPL domain field before approving.
+                        proof of real-world events. We verify your identity via your XRPL domain field before approving.
                     </p>
 
                     <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.8rem;color:var(--text-dim);line-height:1.7;">
@@ -826,7 +825,7 @@ nav {
                             <li>Submit this form with your XRPL wallet and organisation details</li>
                             <li>Set your wallet's <strong>Domain field</strong> in Xaman to match your website domain</li>
                             <li>Publish <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px;">https://yourdomain.com/.well-known/xrp-ledger.toml</code> listing your wallet</li>
-                            <li>We cross-reference with SEC EDGAR and confirm within 2 business days</li>
+                            <li>We review your submission and confirm within 2 business days</li>
                         </ol>
                     </div>
 
@@ -1126,7 +1125,7 @@ nav {
 
             <div style="margin-top:.75rem;padding:1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;">
                 <div style="font-size:.8rem;font-weight:700;color:#10b981;margin-bottom:.5rem;">📜 W3C Verifiable Credential (optional)
-                    <span class="tip"><span class="tip-icon" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);">?</span><span class="tip-box"><strong>W3C Verifiable Credential</strong>A cryptographically signed digital credential from a trusted institution — for example, a business registration credential from Companies House, or a professional qualification from a university.<br><br>How to get one: Your credential issuer provides a JWT string. Paste it into the VC field when submitting work. The system verifies the issuer's digital signature automatically.</span></span>
+                    <span class="tip"><span class="tip-icon" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);">?</span><span class="tip-box"><strong>W3C Verifiable Credential</strong>A cryptographically signed digital credential from a trusted institution — for example, a business registration credential from a government authority, or a professional qualification from a university.<br><br>How to get one: Your credential issuer provides a JWT string. Paste it into the VC field when submitting work. The system verifies the issuer's digital signature automatically.</span></span>
                 </div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:.75rem;">Require the worker to present a credential from a trusted DID issuer.</div>
                 <div class="field">
@@ -1837,7 +1836,7 @@ function setView(view) {
     <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">A W3C Verifiable Credential (VC) is a tamper-proof JSON-LD document signed by a DID (Decentralised Identifier) issuer — a government, certification body, or company registry. Workers submit a VC JWT; the referee decodes it, checks expiry and issuer, and optionally resolves the DID via the Universal Resolver.</p>
     <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">
       <div style="font-weight:700;font-size:.85rem;color:#10b981;margin-bottom:.5rem;">Example: Business Registration VC</div>
-      <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">Companies House issues a <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">BusinessRegistrationCredential</code> VC signed with DID <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">did:web:companieshouse.gov.uk</code>. A buyer sets <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">required_vc_issuer_did</code> — only legally registered companies can pass. No uploaded PDFs, no forgeable screenshots.</div>
+      <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;">A trusted authority issues a <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">BusinessRegistrationCredential</code> VC signed with their DID. A buyer sets <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">required_vc_issuer_did</code> — only credentialed companies can pass. No uploaded PDFs, no forgeable screenshots.</div>
     </div>
     <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;"><strong style="color:var(--text);">API:</strong> <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">POST /vc/verify</code> — standalone VC verification endpoint</div>
   </div>
@@ -1901,9 +1900,8 @@ function setView(view) {
             ["POST","/domain/verify","Verify XRPL wallet domain ownership via xrp-ledger.toml"],
             ["POST","/vc/verify","Verify a W3C Verifiable Credential JWT"],
             ["GET","/wallet/score/{address}","Get XRPL trust score for a wallet address"],
-            ["GET","/gleif/search","Search OpenCorporates for verified legal entities by name (200M+ companies)"],
-            ["GET","/gleif/entity/{company_number}","Get full OpenCorporates entity details"],
-            ["GET","/gleif/xrpl-lookup","Find a company's XRPL wallet via OpenCorporates + registry"],
+            ["GET","/nft/issuers","Search the AgentTrust Trusted Issuer Registry by name or category"],
+            ["GET","/gleif/xrpl-lookup","Find a company's XRPL wallet via the AgentTrust registry"],
             ["POST","/eth/challenge","Get a challenge string for ETH address ownership proof"],
             ["POST","/eth/verify-signature","Verify ETH wallet ownership via EIP-191 signature"],
             ["GET","/xrp/price","Live XRP/USD and XRP/GBP price"],
@@ -3008,17 +3006,8 @@ async function fetchJobStatus(jobId) {
 }
 
 // ---------------------------------------------------------------------------
-// COMPANY SEARCH  (SEC EDGAR for US + referee proxy for others)
+// AGENTTRUST REGISTRY SEARCH
 // ---------------------------------------------------------------------------
-async function _ocSearch(query, limit = 8) {
-    try {
-        const res = await fetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return (data.results || []).map(r => ({ name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "us" }));
-    } catch(e) { return []; }
-}
-
 let _ocTimer = null;
 async function gleifSearch(query, resultsId, targetId) {
     const resultsEl = document.getElementById(resultsId);
@@ -3033,48 +3022,56 @@ async function gleifSearch(query, resultsId, targetId) {
 
     clearTimeout(_ocTimer);
     _ocTimer = setTimeout(async () => {
-        const results = await _ocSearch(query, 8);
-        if (!resultsEl) return;
-        if (!results.length) { resultsEl.style.display = "none"; return; }
-        resultsEl.innerHTML = results.map(r => {
-            const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
-            return `
-            <div onclick="selectOcResult('${r.company_number||""}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
-                 style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
-                 onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-                <div style="font-weight:600;color:var(--text);">${r.name}</div>
-                <div style="font-size:.72rem;color:var(--text-dim);">SEC EDGAR${ocBadge ? " · " + ocBadge : ""}</div>
-            </div>`;
-        }).join("");
-        resultsEl.style.display = "block";
+        try {
+            const res = await safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`);
+            const q = query.toLowerCase();
+            let items = [];
+            if (res.ok) {
+                const d = await res.json();
+                items = (d.issuers || [])
+                    .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
+                    .map(i => ({ name: i.name, wallet: i.wallet_address, category: i.category, verified: i.verified }));
+            }
+            if (!resultsEl) return;
+            if (!items.length) { resultsEl.style.display = "none"; return; }
+            resultsEl.innerHTML = items.slice(0,10).map(r => {
+                const nameEsc = r.name.replace(/'/g, "\\'");
+                const badgeText = r.verified === "verified"
+                    ? `<span style="font-size:.72rem;color:#10b981;">✓ AgentTrust verified${r.category ? " · " + r.category : ""}</span>`
+                    : `<span style="font-size:.72rem;color:#818cf8;">◎ Public record${r.category ? " · " + r.category : ""}</span>`;
+                return `
+                <div onclick="selectOcResult('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}')"
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                    <div style="font-weight:600;color:var(--text);">${r.name}</div>
+                    <div>${badgeText}</div>
+                </div>`;
+            }).join("");
+            resultsEl.style.display = "block";
+        } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
     }, 350);
 }
 
-async function selectOcResult(companyRef, name, targetId, resultsId) {
+async function selectOcResult(wallet, name, targetId, resultsId) {
     const resultsEl = document.getElementById(resultsId);
     if (resultsEl) resultsEl.style.display = "none";
     const searchInput = document.getElementById(resultsId.replace("-results", "-search"));
     if (searchInput) searchInput.value = name;
-    try {
-        const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
-        const data = await res.json();
-        const match = data.results?.find(r => r.xrpl_wallet);
-        const target = document.getElementById(targetId);
-        if (match?.xrpl_wallet && target) target.value = match.xrpl_wallet;
-        const statusId = resultsId + "-status";
-        let statusEl = document.getElementById(statusId);
-        if (!statusEl && resultsEl) {
-            statusEl = document.createElement("div");
-            statusEl.id = statusId;
-            statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
-            resultsEl.parentNode.appendChild(statusEl);
-        }
-        if (statusEl) {
-            statusEl.textContent = match?.xrpl_wallet
-                ? "✅ SEC EDGAR verified · XRPL wallet found"
-                : "✅ SEC EDGAR verified · No XRPL wallet on record — ask the company for their wallet address";
-        }
-    } catch(e) {}
+    const target = document.getElementById(targetId);
+    if (target) target.value = wallet || "";
+    const statusId = resultsId + "-status";
+    let statusEl = document.getElementById(statusId);
+    if (!statusEl && resultsEl) {
+        statusEl = document.createElement("div");
+        statusEl.id = statusId;
+        statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
+        resultsEl.parentNode.appendChild(statusEl);
+    }
+    if (statusEl) {
+        statusEl.textContent = wallet
+            ? "✅ AgentTrust verified issuer · XRPL wallet set"
+            : "⚠️ Not in the AgentTrust registry — paste their XRPL wallet address if known";
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -3216,7 +3213,7 @@ async function submitIssuerRegistration() {
                 <div style="font-size:2.5rem;margin-bottom:.75rem;">✅</div>
                 <div style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">Registration received!</div>
                 <p style="color:var(--text-dim);font-size:.85rem;max-width:420px;margin:0 auto;line-height:1.7;">
-                    We'll verify your organisation against SEC EDGAR public records and your XRPL domain field.
+                    We'll verify your organisation via your XRPL domain field and confirm within 2 business days.
                     Expect confirmation at <strong>${escHtml(email)}</strong> within 2 business days.
                 </p>
                 <div style="margin-top:1.25rem;padding:.75rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.8rem;color:#10b981;text-align:left;max-width:420px;margin:1.25rem auto 0;">
