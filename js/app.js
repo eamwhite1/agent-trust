@@ -270,6 +270,20 @@ window.addEventListener("DOMContentLoaded", () => {
     setPaymentMode("auto");
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
+
+    // Position tooltips via fixed coords so they never get clipped by overflow
+    document.querySelectorAll(".tooltip-wrap").forEach(wrap => {
+        const box = wrap.querySelector(".tooltip-box");
+        if (!box) return;
+        wrap.addEventListener("mouseenter", () => {
+            const icon = wrap.querySelector(".tooltip-icon");
+            if (!icon) return;
+            const r = icon.getBoundingClientRect();
+            box.style.left  = Math.max(8, r.left - 12) + "px";
+            box.style.top   = (r.top - 8) + "px";
+            box.style.transform = "translateY(-100%)";
+        });
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -415,18 +429,21 @@ async function initVault() {
     showStatus("init-status", "⏳ Verifying fee and creating vault...", "info");
 
     try {
-        const nftIssuer   = document.getElementById("nft-issuer-field")?.value.trim() || null;
-        const nftMetaRaw  = document.getElementById("nft-metadata-field")?.value.trim() || null;
+        // Only send proof requirements for toggled-on types
+        const nftIssuer   = _proofState.nft ? (document.getElementById("nft-issuer-field")?.value.trim() || null) : null;
+        const nftMetaRaw  = _proofState.nft ? (document.getElementById("nft-metadata-field")?.value.trim() || null) : null;
         let nftMetadata = null;
         if (nftMetaRaw) {
             try { nftMetadata = JSON.parse(nftMetaRaw); } catch(e) { /* ignore invalid JSON */ }
         }
+        // Signal to backend that NFT proof is required even without a specific issuer
+        const requireNft  = _proofState.nft || null;
 
-        const requiredDomain      = document.getElementById("required-domain-field")?.value.trim() || null;
-        const requiredVcIssuer    = document.getElementById("required-vc-issuer-field")?.value.trim() || null;
-        const requiredVcType      = document.getElementById("required-vc-type-field")?.value.trim() || null;
-        const proofPolicy         = document.getElementById("proof-policy-value")?.value || "ALL";
-        const nftDvp              = document.getElementById("nft-dvp-toggle")?.checked || false;
+        const requiredDomain   = _proofState.domain ? (document.getElementById("required-domain-field")?.value.trim() || "ANY") : null;
+        const requiredVcIssuer = _proofState.vc ? (document.getElementById("required-vc-issuer-field")?.value.trim() || null) : null;
+        const requiredVcType   = _proofState.vc ? (document.getElementById("required-vc-type-field")?.value.trim() || null) : null;
+        const proofPolicy      = document.getElementById("proof-policy-value")?.value || "ALL";
+        const nftDvp           = document.getElementById("nft-dvp-toggle")?.checked || false;
 
         const body = {
             escrow_id:         receiptCode,
@@ -445,8 +462,9 @@ async function initVault() {
             })),
             spec_links: Array.from(document.querySelectorAll("#spec-links-container .spec-link-input"))
                 .map(el => el.value.trim()).filter(Boolean),
-            required_nft_issuer:    nftIssuer,
-            required_nft_metadata:  nftMetadata,
+            require_nft_proof:      requireNft || undefined,
+            required_nft_issuer:    nftIssuer  || undefined,
+            required_nft_metadata:  nftMetadata || undefined,
             required_domain:        requiredDomain    || undefined,
             required_vc_issuer_did: requiredVcIssuer  || undefined,
             required_vc_type:       requiredVcType     || undefined,
@@ -553,6 +571,35 @@ async function pollEscrowCreate(uuid, receiptCode) {
 // ---------------------------------------------------------------------------
 // NFT DvP MODE TOGGLE
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// PROOF TYPE TOGGLES
+// ---------------------------------------------------------------------------
+const _proofState = { nft: false, domain: false, vc: false };
+
+function toggleProof(type) {
+    _proofState[type] = !_proofState[type];
+    const on = _proofState[type];
+
+    const colourMap = { nft: "168,85,247", domain: "59,130,246", vc: "245,158,11" };
+    const rgb = colourMap[type];
+    const wrap   = document.getElementById(`pt-${type}-wrap`);
+    const pill   = document.getElementById(`pt-${type}-pill`);
+    const detail = document.getElementById(`pt-${type}-detail`);
+
+    if (pill) {
+        pill.textContent = on ? "ON" : "OFF";
+        pill.classList.toggle("on", on);
+    }
+    if (wrap) wrap.style.borderColor = on ? `rgba(${rgb},.5)` : `rgba(${rgb},.2)`;
+    if (detail) detail.style.display = on ? "block" : "none";
+
+    // Show proof policy selector only when 2+ proof types are on
+    const activeCount = Object.values(_proofState).filter(Boolean).length
+        + (document.getElementById("nft-dvp-toggle")?.checked ? 0 : 0); // dvp doesn't count as a proof type
+    const policyWrap = document.getElementById("proof-policy-wrap");
+    if (policyWrap) policyWrap.style.display = activeCount >= 2 ? "block" : "none";
+}
+
 function toggleNftDvpMode() {
     const checkbox   = document.getElementById("nft-dvp-toggle");
     const expanded   = document.getElementById("dvp-expanded");
