@@ -624,6 +624,9 @@ nav {
         <button class="nav-pill" id="pill-docs" onclick="setView('docs')">
             <i data-lucide="code-2"></i> API
         </button>
+        <button class="nav-pill" id="pill-issuers" onclick="setView('issuers')">
+            <i data-lucide="badge-check"></i> Issuers
+        </button>
     </div>
     <div class="nav-right">
         <div style="display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:32px;">
@@ -764,6 +767,123 @@ nav {
             <div class="empty-state">
                 <i data-lucide="loader" style="animation:spin 1.2s linear infinite;"></i>
                 <p>Loading jobs from the marketplace…</p>
+            </div>
+        </div>
+
+        <!-- ISSUERS VIEW (hidden by default) -->
+        <div id="view-issuers" style="display:none;">
+            <div style="max-width:860px;margin:0 auto;padding:0 1.5rem 3rem;">
+
+                <!-- HERO -->
+                <div style="text-align:center;padding:3rem 1rem 2rem;">
+                    <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:16px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);margin-bottom:1.25rem;">
+                        <i data-lucide="badge-check" style="width:26px;height:26px;color:#10b981;"></i>
+                    </div>
+                    <h2 style="font-size:1.8rem;font-weight:700;margin-bottom:.5rem;">Trusted Issuer Registry</h2>
+                    <p style="color:var(--text-dim);max-width:560px;margin:0 auto;font-size:.9rem;line-height:1.7;">
+                        Organisations registered here can issue XRPL NFTs that AgentTrust buyers accept as
+                        cryptographic proof of real-world events — a shipped container, a sold ticket, a completed
+                        certification. Verification combines GLEIF company records, XRPL domain cryptography, and
+                        manual review.
+                    </p>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;">
+                        <a href="#issuer-register" onclick="document.getElementById('issuer-register').scrollIntoView({behavior:'smooth'});return false;"
+                           style="display:inline-flex;align-items:center;gap:6px;background:#10b981;color:#fff;padding:.6rem 1.25rem;border-radius:8px;font-size:.85rem;font-weight:700;text-decoration:none;">
+                            <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Register your organisation
+                        </a>
+                        <span style="font-size:.8rem;color:var(--text-dim);">Free · Verified within 2 business days</span>
+                    </div>
+                </div>
+
+                <!-- REGISTRY TABLE -->
+                <div style="margin-bottom:2rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+                        <h3 style="font-size:1rem;font-weight:700;margin:0;">Verified Issuers</h3>
+                        <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:32px;">
+                            <i data-lucide="search" style="width:13px;height:13px;color:var(--text-dim);"></i>
+                            <input id="issuer-search-input" type="text" placeholder="Search issuers…"
+                                   oninput="filterIssuers(this.value)"
+                                   style="background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:.75rem;width:160px;">
+                        </div>
+                    </div>
+                    <div id="issuers-list">
+                        <div style="text-align:center;padding:3rem;color:var(--text-dim);font-size:.85rem;">Loading issuers…</div>
+                    </div>
+                </div>
+
+                <!-- REGISTRATION FORM -->
+                <div id="issuer-register" style="margin-top:2rem;padding:2rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;">
+                    <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.25rem;">Register your organisation</h3>
+                    <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:1.5rem;line-height:1.6;">
+                        Register your XRPL wallet as a trusted issuer so buyers on AgentTrust can require your NFTs as
+                        proof of real-world events. We verify your identity against GLEIF company records and your
+                        XRPL domain field before approving.
+                    </p>
+
+                    <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.8rem;color:var(--text-dim);line-height:1.7;">
+                        <strong style="color:#3b82f6;display:block;margin-bottom:.4rem;">How verification works</strong>
+                        <ol style="margin:0;padding-left:1.2rem;">
+                            <li>Submit this form with your XRPL wallet and organisation details</li>
+                            <li>Set your wallet's <strong>Domain field</strong> in Xaman to match your website domain</li>
+                            <li>Publish <code style="font-family:var(--mono);background:rgba(255,255,255,.06);padding:1px 4px;border-radius:3px;">https://yourdomain.com/.well-known/xrp-ledger.toml</code> listing your wallet</li>
+                            <li>We cross-reference with GLEIF and confirm within 2 business days</li>
+                        </ol>
+                    </div>
+
+                    <div class="issuer-form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Organisation Name *</label>
+                            <input type="text" id="reg-name" placeholder="e.g. Maersk Line Ltd" style="width:100%;">
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Category *</label>
+                            <select id="reg-category" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;color:var(--text);font-family:var(--sans);font-size:.83rem;">
+                                <option value="">Select category…</option>
+                                <option value="logistics">Logistics &amp; Shipping</option>
+                                <option value="ticketing">Ticketing &amp; Events</option>
+                                <option value="legal">Legal &amp; Compliance</option>
+                                <option value="finance">Finance &amp; Banking</option>
+                                <option value="certification">Certification &amp; Qualifications</option>
+                                <option value="iot">IoT &amp; Sensors</option>
+                                <option value="real-estate">Real Estate</option>
+                                <option value="government">Government &amp; Public Sector</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">XRPL Wallet Address *</label>
+                            <input type="text" id="reg-wallet" placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="width:100%;font-family:var(--mono);font-size:.8rem;">
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Website / Domain *</label>
+                            <input type="text" id="reg-website" placeholder="https://yourcompany.com" style="width:100%;">
+                        </div>
+                        <div class="field" style="margin:0;grid-column:1/-1;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Contact Email *</label>
+                            <input type="email" id="reg-email" placeholder="contact@yourcompany.com" style="width:100%;">
+                        </div>
+                        <div class="field" style="margin:0;grid-column:1/-1;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Description <span style="font-weight:400;opacity:.6;">(optional)</span></label>
+                            <textarea id="reg-description" rows="2" placeholder="What kind of NFTs does your organisation issue? e.g. 'Bills of lading for container shipments departing EU ports'" style="width:100%;resize:vertical;"></textarea>
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">GLEIF LEI <span style="font-weight:400;opacity:.6;">(optional — speeds up verification)</span></label>
+                            <input type="text" id="reg-lei" placeholder="e.g. 549300G4WDPNJJHMQZ38" style="width:100%;font-family:var(--mono);font-size:.8rem;">
+                        </div>
+                        <div class="field" style="margin:0;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">NFT Types You Issue <span style="font-weight:400;opacity:.6;">(optional)</span></label>
+                            <input type="text" id="reg-nft-types" placeholder="e.g. bill_of_lading, delivery_confirmation" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <div id="reg-status" style="display:none;margin-top:1rem;font-size:.83rem;"></div>
+
+                    <button onclick="submitIssuerRegistration()" id="reg-submit-btn"
+                            style="margin-top:1.25rem;display:inline-flex;align-items:center;gap:8px;background:#10b981;color:#fff;border:none;border-radius:8px;padding:.65rem 1.4rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--sans);">
+                        <i data-lucide="send" style="width:15px;height:15px;"></i> Submit Registration
+                    </button>
+                </div>
+
             </div>
         </div>
 
@@ -1170,6 +1290,7 @@ nav {
     .modal-overlay, .claim-modal-overlay { align-items: flex-end; padding: 0; }
     .btn-full { min-height: 50px; font-size: .95rem; }
     input, textarea, select { font-size: 16px !important; }
+    .issuer-form-grid { grid-template-columns: 1fr !important; }
 }
 </style>
 
@@ -1565,21 +1686,32 @@ function setView(view) {
 
     const jobsList     = document.getElementById("jobs-list");
     const servicesView = document.getElementById("services-view");
+    const issuersView  = document.getElementById("view-issuers");
     const mainTitle    = document.querySelector(".main-title");
 
     if (view === "jobs") {
         if (jobsList)     jobsList.style.display     = "";
         if (servicesView) servicesView.style.display = "none";
+        if (issuersView)  issuersView.style.display  = "none";
         if (mainTitle)    mainTitle.textContent      = "Open Jobs";
         loadOpenJobs();
     } else if (view === "services") {
         if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display = "block";
+        if (issuersView)  issuersView.style.display  = "none";
         if (mainTitle)    mainTitle.textContent      = "Skills";
         loadServices();
+    } else if (view === "issuers") {
+        if (jobsList)     jobsList.style.display     = "none";
+        if (servicesView) servicesView.style.display = "none";
+        if (issuersView)  issuersView.style.display  = "block";
+        if (mainTitle)    mainTitle.textContent      = "Trusted Issuers";
+        loadIssuers();
+        if (window.lucide) lucide.createIcons();
     } else if (view === "docs") {
         if (jobsList)     jobsList.style.display     = "none";
         if (servicesView) servicesView.style.display = "none";
+        if (issuersView)  issuersView.style.display  = "none";
         if (mainTitle)    mainTitle.textContent      = "Developer Docs";
         let docsView = document.getElementById("docs-view");
         if (!docsView) {
@@ -2921,6 +3053,154 @@ async function selectGleifResult(lei, name, targetId, resultsId) {
                 : "✅ GLEIF verified · No XRPL wallet on record — ask the company for their wallet address";
         }
     } catch(e) {}
+}
+
+// ---------------------------------------------------------------------------
+// ISSUERS REGISTRY
+// ---------------------------------------------------------------------------
+let _allIssuers = [];
+
+async function loadIssuers() {
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/nft/issuers?include_pending=true`);
+        const data = await res.json();
+        _allIssuers = data.issuers || [];
+        renderIssuers(_allIssuers);
+        if (window.lucide) lucide.createIcons();
+    } catch(e) {
+        document.getElementById("issuers-list").innerHTML =
+            `<div style="text-align:center;padding:2rem;color:var(--text-dim);">Could not load issuers. ${e.message}</div>`;
+    }
+}
+
+function renderIssuers(list) {
+    const el = document.getElementById("issuers-list");
+    if (!el) return;
+    if (!list.length) {
+        el.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-dim);font-size:.85rem;">No verified issuers yet. <a href="#issuer-register" onclick="document.getElementById('issuer-register').scrollIntoView({behavior:'smooth'});return false;" style="color:var(--blue);">Be the first to register.</a></div>`;
+        return;
+    }
+    el.innerHTML = list.map(renderIssuerCard).join("");
+    if (window.lucide) lucide.createIcons();
+}
+
+function filterIssuers(query) {
+    if (!query.trim()) { renderIssuers(_allIssuers); return; }
+    const q = query.toLowerCase();
+    renderIssuers(_allIssuers.filter(i =>
+        i.name?.toLowerCase().includes(q) ||
+        i.category?.toLowerCase().includes(q) ||
+        i.wallet_address?.toLowerCase().includes(q) ||
+        i.description?.toLowerCase().includes(q)
+    ));
+}
+
+function renderIssuerCard(issuer) {
+    const verifiedBadge = issuer.verified === "verified"
+        ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:4px;padding:2px 7px;">✓ Verified</span>`
+        : `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:4px;padding:2px 7px;">⏳ Pending</span>`;
+    const categoryColours = {
+        logistics:     ["#3b82f6","rgba(59,130,246,.1)"],
+        ticketing:     ["#a855f7","rgba(168,85,247,.1)"],
+        legal:         ["#10b981","rgba(16,185,129,.1)"],
+        finance:       ["#f59e0b","rgba(245,158,11,.1)"],
+        certification: ["#06b6d4","rgba(6,182,212,.1)"],
+        iot:           ["#ec4899","rgba(236,72,153,.1)"],
+        default:       ["#94a3b8","rgba(148,163,184,.1)"],
+    };
+    const [col, bg] = categoryColours[issuer.category?.toLowerCase()] || categoryColours.default;
+    return `
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:.5rem;">
+            <div style="width:40px;height:40px;border-radius:10px;background:${bg};border:1px solid ${col}33;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i data-lucide="building-2" style="width:18px;height:18px;color:${col};"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="font-weight:700;font-size:.88rem;">${escHtml(issuer.name)}</span>
+                    ${verifiedBadge}
+                    ${issuer.category ? `<span style="font-size:.68rem;font-weight:600;color:${col};background:${bg};border:1px solid ${col}33;border-radius:4px;padding:1px 6px;text-transform:capitalize;">${escHtml(issuer.category)}</span>` : ""}
+                </div>
+                <div style="font-size:.75rem;color:var(--text-dim);margin-top:.2rem;font-family:var(--mono);">${escHtml(issuer.wallet_address)}</div>
+                ${issuer.description ? `<div style="font-size:.77rem;color:var(--text-dim);margin-top:.25rem;">${escHtml(issuer.description)}</div>` : ""}
+            </div>
+            ${issuer.website ? `<a href="${escHtml(issuer.website)}" target="_blank" rel="noopener" style="flex-shrink:0;font-size:.75rem;color:var(--blue);text-decoration:none;white-space:nowrap;">↗ Website</a>` : ""}
+        </div>
+    `;
+}
+
+async function submitIssuerRegistration() {
+    const btn      = document.getElementById("reg-submit-btn");
+    const name     = document.getElementById("reg-name")?.value.trim();
+    const category = document.getElementById("reg-category")?.value;
+    const wallet   = document.getElementById("reg-wallet")?.value.trim();
+    const website  = document.getElementById("reg-website")?.value.trim();
+    const email    = document.getElementById("reg-email")?.value.trim();
+    const desc     = document.getElementById("reg-description")?.value.trim();
+    const lei      = document.getElementById("reg-lei")?.value.trim();
+    const nftTypes = document.getElementById("reg-nft-types")?.value.trim();
+
+    if (!name || !category || !wallet || !website || !email) {
+        showIssuerRegStatus("Please fill in all required fields.", "error");
+        return;
+    }
+    if (!wallet.startsWith("r") || wallet.length < 25) {
+        showIssuerRegStatus("Please enter a valid XRPL wallet address (starts with r).", "error");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+    showIssuerRegStatus("⏳ Submitting registration…", "info");
+
+    try {
+        const res = await safeFetch(`${REFEREE_URL}/nft/issuers`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                wallet_address: wallet,
+                name, category,
+                description: desc || undefined,
+                website,
+                contact_email: email,
+                lei: lei || undefined,
+                nft_types: nftTypes || undefined,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Registration failed.");
+
+        document.getElementById("issuer-register").innerHTML = `
+            <div style="text-align:center;padding:2rem;">
+                <div style="font-size:2.5rem;margin-bottom:.75rem;">✅</div>
+                <div style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">Registration received!</div>
+                <p style="color:var(--text-dim);font-size:.85rem;max-width:420px;margin:0 auto;line-height:1.7;">
+                    We'll verify your organisation against GLEIF records and your XRPL domain field.
+                    Expect confirmation at <strong>${escHtml(email)}</strong> within 2 business days.
+                </p>
+                <div style="margin-top:1.25rem;padding:.75rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.8rem;color:#10b981;text-align:left;max-width:420px;margin:1.25rem auto 0;">
+                    <strong>While you wait:</strong> Make sure your XRPL wallet's Domain field is set to your
+                    website domain in Xaman, and that
+                    <code style="font-family:var(--mono);font-size:.75rem;">/.well-known/xrp-ledger.toml</code>
+                    lists your wallet address. This is required for full verification.
+                </div>
+            </div>
+        `;
+        loadIssuers();
+    } catch(e) {
+        showIssuerRegStatus(`❌ ${e.message}`, "error");
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="send" style="width:15px;height:15px;"></i> Submit Registration`;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function showIssuerRegStatus(msg, type) {
+    const el = document.getElementById("reg-status");
+    if (!el) return;
+    const colours = { error: "#ff3b30", info: "#3b82f6", success: "#10b981" };
+    el.style.display = "block";
+    el.style.color = colours[type] || colours.info;
+    el.textContent = msg;
 }
 </script>
 </body>

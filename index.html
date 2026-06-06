@@ -312,6 +312,9 @@
         footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,255,.65); padding: 3.5rem 5%; text-align: center; }
         .disclaimer { font-size: .8rem; color: var(--text-muted); max-width: 860px; margin: 1.5rem auto; line-height: 1.75; }
 
+        /* ── DETAILS CHEVRON ROTATION ── */
+        details[id="trust-requirements-details"][open] .details-chevron { transform: rotate(180deg); }
+
         @media (max-width: 960px) {
             .flow-diagram { grid-template-columns: 1fr; }
             .flow-arrow { transform: rotate(90deg); }
@@ -610,9 +613,20 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
             </div>
 
             <!-- TRUST REQUIREMENTS (optional) -->
-            <details style="margin-bottom:1rem;">
-                <summary style="cursor:pointer;font-size:.8rem;font-weight:700;color:var(--text-dim);padding:.5rem 0;list-style:none;display:flex;align-items:center;gap:6px;">
-                    <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Trust Requirements <span class="opt">(optional — require proof from seller)</span>
+            <details style="margin-bottom:1rem;" id="trust-requirements-details">
+                <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.75rem 1rem;background:var(--surface-2, rgba(255,255,255,.25));border:1px solid var(--border, rgba(255,255,255,.65));border-radius:10px;transition:background .2s;"
+                         onmouseover="this.style.background='rgba(255,255,255,.06)'"
+                         onmouseout="this.style.background='var(--surface-2, rgba(255,255,255,.25))'">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div style="width:28px;height:28px;border-radius:7px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i data-lucide="shield-check" style="width:14px;height:14px;color:#818cf8;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.83rem;font-weight:700;color:var(--text);">Trust Requirements</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);">Optional — require NFT, domain, or credential proof from seller</div>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-down" style="width:15px;height:15px;color:var(--text-muted);flex-shrink:0;transition:transform .2s;" class="details-chevron"></i>
                 </summary>
 
                 <!-- NFT Delivery-vs-Payment mode -->
@@ -799,8 +813,8 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                 </div>
 
                 <div class="field-group">
-                    <label class="field-label" for="work-proof">Work / Proof of Completion *</label>
-                    <textarea id="work-proof" rows="5" placeholder="Describe or paste your completed work here. The AI referee will evaluate this against the buyer's task requirements."></textarea>
+                    <label class="field-label" for="work-proof">Description of Work <span class="opt">(optional if submitting via URL, file, or NFT)</span></label>
+                    <textarea id="work-proof" rows="4" placeholder="Describe your completed work, or paste text output here. Not required if you're submitting via URL, file upload, or NFT token ID below."></textarea>
                 </div>
 
                 <div class="field-group">
@@ -823,51 +837,83 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                     <div class="field-hint" style="margin-top:.4rem;">Snapshotted at submission time. XRPL tx hashes in your work text are verified on-chain automatically.</div>
                 </div>
 
-                <div class="field-group">
-                    <label class="field-label" for="worker-drop-zone">Upload Proof Documents <span class="opt">(optional — screenshots, reports, deliverables)</span></label>
-                    <div class="drop-zone" id="worker-drop-zone">
-                        <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.docx,.txt,.md">
-                        <div class="drop-zone-icon"><i data-lucide="upload"></i></div>
-                        <div class="drop-zone-label">Drag & drop or click to browse</div>
-                        <div class="drop-zone-sub">PDF, Images, DOCX, TXT, MD — max 15 MB each · 50 MB total</div>
+                <!-- Section 2: Upload Files (collapsible) -->
+                <details style="margin-bottom:.75rem;">
+                    <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.6rem .9rem;background:var(--surface-2, rgba(255,255,255,.2));border:1px solid var(--border, rgba(255,255,255,.65));border-radius:9px;transition:background .2s;"
+                             onmouseover="this.style.background='rgba(255,255,255,.05)'"
+                             onmouseout="this.style.background='var(--surface-2, rgba(255,255,255,.2))'">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <i data-lucide="upload" style="width:14px;height:14px;color:var(--text-muted);"></i>
+                            <div>
+                                <span style="font-size:.82rem;font-weight:700;color:var(--text);">Upload Files</span>
+                                <span style="font-size:.72rem;color:var(--text-muted);margin-left:6px;">PDF, images, documents, code</span>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;" class="details-chevron"></i>
+                    </summary>
+                    <div style="padding:.75rem 0 0;">
+                        <label class="field-label" for="worker-drop-zone">Upload Proof Documents <span class="opt">(optional — screenshots, reports, deliverables)</span></label>
+                        <div class="drop-zone" id="worker-drop-zone">
+                            <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.docx,.txt,.md">
+                            <div class="drop-zone-icon"><i data-lucide="upload"></i></div>
+                            <div class="drop-zone-label">Drag &amp; drop or click to browse</div>
+                            <div class="drop-zone-sub">PDF, Images, DOCX, TXT, MD — max 15 MB each · 50 MB total</div>
+                        </div>
+                        <div class="file-list" id="worker-file-list"></div>
                     </div>
-                    <div class="file-list" id="worker-file-list"></div>
-                </div>
+                </details>
 
-                <!-- NFT Proof -->
-                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:8px;">
-                    <div style="font-size:.78rem;font-weight:700;color:#a78bfa;margin-bottom:.4rem;">🔗 NFT Proof <span style="font-weight:400;color:var(--text-dim);">(optional)</span></div>
-                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">If the buyer requires an NFT from a trusted issuer (e.g. a ticket, bill of lading), paste your NFT Token ID below. The system verifies it on-chain automatically.</div>
-                    <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.2rem;">NFT Token ID
-                        <span class="tooltip-wrap">
-                            <span class="tooltip-icon" style="background:rgba(168,85,247,.12);color:#a78bfa;border-color:rgba(168,85,247,.25);">?</span>
-                            <span class="tooltip-box">
-                                <strong>What to paste here</strong>
-                                Paste the NFT Token ID from your XRPL wallet. You can find it in Xaman by viewing the NFT. It's a long hex string starting with 8 zeros, e.g. 000800006B0A50…<br><br>
-                                The system will automatically verify on-chain that this NFT exists in your wallet and was minted by the required issuer.
-                            </span>
-                        </span>
-                    </label>
-                    <input type="text" id="nft-token-id-field" placeholder="e.g. 000800006B0A50…" style="width:100%;margin-bottom:.5rem;">
-                    <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.2rem;">Wallet holding the NFT <span style="font-weight:400;">(leave blank to use your worker address)</span></label>
-                    <input type="text" id="nft-wallet-field" placeholder="rXXX… (optional)" style="width:100%;">
-                </div>
+                <!-- Section 3: On-chain Proof (collapsible) -->
+                <details style="margin-bottom:.75rem;">
+                    <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.6rem .9rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:9px;transition:background .2s;"
+                             onmouseover="this.style.background='rgba(168,85,247,.1)'"
+                             onmouseout="this.style.background='rgba(168,85,247,.06)'">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <i data-lucide="link" style="width:14px;height:14px;color:#a78bfa;"></i>
+                            <div>
+                                <span style="font-size:.82rem;font-weight:700;color:#a78bfa;">On-chain Proof</span>
+                                <span style="font-size:.72rem;color:var(--text-muted);margin-left:6px;">NFT token ID or Verifiable Credential</span>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-down" style="width:14px;height:14px;color:#a78bfa;flex-shrink:0;" class="details-chevron"></i>
+                    </summary>
+                    <div style="padding:.75rem 0 0;">
+                        <!-- NFT Proof -->
+                        <div style="padding:.75rem 1rem;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:8px;margin-bottom:.75rem;">
+                            <div style="font-size:.78rem;font-weight:700;color:#a78bfa;margin-bottom:.4rem;">🔗 NFT Proof <span style="font-weight:400;color:var(--text-muted);">(optional)</span></div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-bottom:.5rem;">If the buyer requires an NFT from a trusted issuer (e.g. a ticket, bill of lading), paste your NFT Token ID below. The system verifies it on-chain automatically.</div>
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.2rem;">NFT Token ID
+                                <span class="tooltip-wrap">
+                                    <span class="tooltip-icon" style="background:rgba(168,85,247,.12);color:#a78bfa;border-color:rgba(168,85,247,.25);">?</span>
+                                    <span class="tooltip-box">
+                                        <strong>What to paste here</strong>
+                                        Paste the NFT Token ID from your XRPL wallet. You can find it in Xaman by viewing the NFT. It's a long hex string starting with 8 zeros, e.g. 000800006B0A50…<br><br>
+                                        The system will automatically verify on-chain that this NFT exists in your wallet and was minted by the required issuer.
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="text" id="nft-token-id-field" placeholder="e.g. 000800006B0A50…" style="width:100%;margin-bottom:.5rem;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.2rem;">Wallet holding the NFT <span style="font-weight:400;">(leave blank to use your worker address)</span></label>
+                            <input type="text" id="nft-wallet-field" placeholder="rXXX… (optional)" style="width:100%;">
+                        </div>
 
-                <!-- W3C Verifiable Credential -->
-                <div style="margin-top:.75rem;padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;">
-                    <div style="font-size:.78rem;font-weight:700;color:#10b981;margin-bottom:.4rem;">📜 W3C Verifiable Credential <span style="font-weight:400;color:var(--text-dim);">(optional)</span>
-                        <span class="tooltip-wrap">
-                            <span class="tooltip-icon" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);">?</span>
-                            <span class="tooltip-box">
-                                <strong>What to paste here</strong>
-                                Paste the full JWT string of your Verifiable Credential. This is provided by your credential issuer and looks like: eyJhbGciOiJFZERTQSIs…<br><br>
-                                If you don't have one, contact the issuing institution (e.g. your professional body, government registry, or certification provider).
-                            </span>
-                        </span>
+                        <!-- W3C Verifiable Credential -->
+                        <div style="padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;">
+                            <div style="font-size:.78rem;font-weight:700;color:#10b981;margin-bottom:.4rem;">📜 W3C Verifiable Credential <span style="font-weight:400;color:var(--text-muted);">(optional)</span>
+                                <span class="tooltip-wrap">
+                                    <span class="tooltip-icon" style="background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.25);">?</span>
+                                    <span class="tooltip-box">
+                                        <strong>What to paste here</strong>
+                                        Paste the full JWT string of your Verifiable Credential. This is provided by your credential issuer and looks like: eyJhbGciOiJFZERTQSIs…<br><br>
+                                        If you don't have one, contact the issuing institution (e.g. your professional body, government registry, or certification provider).
+                                    </span>
+                                </span>
+                            </div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-bottom:.5rem;">Paste a Verifiable Credential JWT if the buyer requires institutional proof.</div>
+                            <textarea id="vc-jwt-field" rows="3" placeholder="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." style="width:100%;font-family:var(--mono);font-size:.72rem;"></textarea>
+                        </div>
                     </div>
-                    <div style="font-size:.73rem;color:var(--text-dim);margin-bottom:.5rem;">Paste a Verifiable Credential JWT if the buyer requires institutional proof.</div>
-                    <textarea id="vc-jwt-field" rows="3" placeholder="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..." style="width:100%;font-family:var(--mono);font-size:.72rem;"></textarea>
-                </div>
+                </details>
 
 
                 <div class="field-group" style="display:none;">
@@ -1308,6 +1354,16 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
 </footer>
 
 <script>
+// Details chevron rotation
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("details").forEach(d => {
+        d.addEventListener("toggle", () => {
+            const chevron = d.querySelector(".details-chevron");
+            if (chevron) chevron.style.transform = d.open ? "rotate(180deg)" : "";
+        });
+    });
+});
+
 // Tooltip touch support
 document.addEventListener("click", e => {
     const icon = e.target.closest(".tooltip-icon");

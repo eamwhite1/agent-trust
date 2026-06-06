@@ -730,8 +730,17 @@ async function submitWork() {
     const workProof   = document.getElementById("work-proof")?.value.trim();
     const callbackUrl = document.getElementById("callback-url")?.value.trim() || null;
 
-    if (!projectID || !workProof) {
-        showStatus("submit-status", "❌ Please enter your Receipt Code and proof of work.", "error");
+    const evidenceLinksCheck = Array.from(document.querySelectorAll("#evidence-links-container .evidence-link-input"))
+        .map(el => el.value.trim()).filter(Boolean);
+    const nftTokenIdCheck = document.getElementById("nft-token-id-field")?.value.trim();
+    const vcJwtCheck      = document.getElementById("vc-jwt-field")?.value.trim();
+
+    const hasProof = workProof || evidenceLinksCheck.length > 0 || workerFiles.length > 0 || nftTokenIdCheck || vcJwtCheck;
+    if (!projectID || !hasProof) {
+        const msg = !projectID
+            ? "❌ Please enter your Receipt Code."
+            : "❌ Please provide at least one form of proof: a description, URL, file upload, NFT token ID, or Verifiable Credential.";
+        showStatus("submit-status", msg, "error");
         return;
     }
 
