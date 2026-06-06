@@ -1504,9 +1504,9 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     clearTimeout(_issuerTimer);
     _issuerTimer = setTimeout(async () => {
         try {
-            const [regRes, ocRes] = await Promise.allSettled([
+            const [regRes, ocResults] = await Promise.allSettled([
                 safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
-                safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=6`),
+                _ocSearch(query, 6),
             ]);
             const q = query.toLowerCase();
             let items = [];
@@ -1516,13 +1516,10 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                     .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
                     .map(i => ({ source: "registry", name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category, verified: i.verified }));
             }
-            if (ocRes.status === "fulfilled") {
-                const d = await ocRes.value.json();
-                (d.results || []).forEach(r => {
-                    if (!items.find(i => i.name.toLowerCase() === r.name.toLowerCase()))
-                        items.push({ source: "opencorporates", name: r.name, company_number: r.company_number, jurisdiction_code: r.jurisdiction_code, wallet: null });
-                });
-            }
+            (ocResults.status === "fulfilled" ? ocResults.value : []).forEach(r => {
+                if (!items.find(i => i.name.toLowerCase() === r.name.toLowerCase()))
+                    items.push(r);
+            });
             if (!resultsEl) return;
             if (!items.length) {
                 resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;line-height:1.6;">
@@ -1549,40 +1546,49 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
+// Call OpenCorporates directly from the browser — avoids Render server IP block
+const OC_API = "https://api.opencorporates.com/v0.4";
+async function _ocSearch(query, limit = 8) {
+    try {
+        const res = await fetch(`${OC_API}/companies/search?q=${encodeURIComponent(query)}&per_page=${limit}&format=json`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data?.results?.companies || []).map(c => c.company).filter(Boolean)
+            .map(c => ({ source: "opencorporates", name: c.name || "", company_number: c.company_number || "", jurisdiction_code: c.jurisdiction_code || "", wallet: null }));
+    } catch(e) { return []; }
+}
+
 async function ocSearchDirect(query, resultsId, targetId, wrapId, rgb) {
     const resultsEl = document.getElementById(resultsId);
     if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">Searching OpenCorporates…</div>`;
-    try {
-        const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
-        const d = await res.json();
-        const results = d.results || [];
-        if (!results.length) {
-            if (resultsEl) resultsEl.innerHTML = `
-                <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
-                    <div style="color:var(--text-muted);margin-bottom:6px;">
-                        <strong style="color:var(--text);">"${query}"</strong> not found in OpenCorporates.<br>
-                        <span style="font-size:.72rem;">OpenCorporates covers 200M+ companies across 140 jurisdictions. Try searching with the official registered name.</span>
-                    </div>
-                    <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
-                    <input type="text" placeholder="rXXX… wallet address"
-                        style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
-                        oninput="applyManualIssuerWallet(this.value)">
-                    <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
-                </div>`;
-            resultsEl.style.display = "block";
-            return;
-        }
-        if (resultsEl) resultsEl.innerHTML = results.map(r => {
-            const nameEsc = r.name.replace(/'/g, "\\'");
-            const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
-            return `<div onclick="selectIssuer('','${nameEsc}','${r.company_number||""}','opencorporates','${targetId}','${resultsId}','${wrapId}','${rgb}')"
-                style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
-                onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-                <div style="font-weight:600;">${r.name}</div>
-                <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">OpenCorporates${ocBadge ? " · " + ocBadge : ""}</div>
+    const results = await _ocSearch(query, 8);
+    if (!results.length) {
+        if (resultsEl) resultsEl.innerHTML = `
+            <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
+                <div style="color:var(--text-muted);margin-bottom:6px;">
+                    <strong style="color:var(--text);">"${query}"</strong> not found in OpenCorporates.<br>
+                    <span style="font-size:.72rem;">OpenCorporates covers 200M+ companies across 140 jurisdictions. Try searching with the official registered name.</span>
+                </div>
+                <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
+                <input type="text" placeholder="rXXX… wallet address"
+                    style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
+                    oninput="applyManualIssuerWallet(this.value)">
+                <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
             </div>`;
-        }).join("");
-    } catch(e) {}
+        resultsEl.style.display = "block";
+        return;
+    }
+    if (resultsEl) resultsEl.innerHTML = results.map(r => {
+        const nameEsc = r.name.replace(/'/g, "\\'");
+        const ocBadge = [r.jurisdiction_code, r.company_number].filter(Boolean).join(" · ");
+        return `<div onclick="selectIssuer('','${nameEsc}','${r.company_number||""}','opencorporates','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+            style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+            onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+            <div style="font-weight:600;">${r.name}</div>
+            <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">OpenCorporates${ocBadge ? " · " + ocBadge : ""}</div>
+        </div>`;
+    }).join("");
+    resultsEl.style.display = "block";
 }
 
 function applyManualIssuerWallet(val) {
@@ -1798,9 +1804,9 @@ async function gleifSearch(query, resultsId, targetId) {
     _ocTimer = setTimeout(async () => {
         try {
             // Query AgentTrust registry and OpenCorporates in parallel
-            const [registryRes, ocRes] = await Promise.allSettled([
+            const [registryRes, ocResults] = await Promise.allSettled([
                 safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
-                safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`),
+                _ocSearch(query, 8),
             ]);
 
             // AgentTrust registered issuers — filter client-side by query
@@ -1813,13 +1819,7 @@ async function gleifSearch(query, resultsId, targetId) {
                     .map(i => ({ source: "registry", name: i.name, wallet: i.wallet_address, category: i.category }));
             }
 
-            // OpenCorporates legal entities
-            let ocItems = [];
-            if (ocRes.status === "fulfilled") {
-                const d = await ocRes.value.json();
-                ocItems = (d.results || []).map(r => ({ source: "opencorporates", name: r.name, company_number: r.company_number, jurisdiction_code: r.jurisdiction_code, wallet: null, category: null }));
-            }
-
+            const ocItems = ocResults.status === "fulfilled" ? ocResults.value : [];
             const combined = [...registryItems, ...ocItems].slice(0, 10);
             if (!resultsEl) return;
             if (!combined.length) { resultsEl.style.display = "none"; return; }
