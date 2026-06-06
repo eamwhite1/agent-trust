@@ -1547,25 +1547,19 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-// Company search via SEC EDGAR — free, no key, CORS-enabled from the browser
+// Company search proxied through referee → SEC EDGAR (avoids browser CORS restriction)
 async function _ocSearch(query, limit = 8) {
     try {
-        const url = `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent(query)}&forms=10-K`;
-        const res = await fetch(url, { headers: { "User-Agent": "AgentTrust/1.0 admin@cryptovault.co.uk" } });
+        const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
         if (!res.ok) return [];
         const data = await res.json();
-        const seen = new Set();
-        const results = [];
-        for (const hit of (data?.hits?.hits || [])) {
-            const name = hit._source?.entity_name;
-            if (!name) continue;
-            const key = name.toLowerCase();
-            if (seen.has(key)) continue;
-            seen.add(key);
-            results.push({ source: "sec-edgar", name, company_number: hit._source?.file_num || "", jurisdiction_code: "us", wallet: null });
-            if (results.length >= limit) break;
-        }
-        return results;
+        return (data.results || []).map(r => ({
+            source: r.source || "sec-edgar",
+            name: r.name,
+            company_number: r.company_number || "",
+            jurisdiction_code: r.jurisdiction_code || "us",
+            wallet: null,
+        }));
     } catch(e) { return []; }
 }
 
