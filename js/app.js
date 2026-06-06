@@ -1522,10 +1522,18 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
             });
             if (!resultsEl) return;
             if (!items.length) {
-                resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;line-height:1.6;">
-                    <span style="color:var(--text-muted);">Not in AgentTrust registry yet.</span>
-                    <button type="button" onclick="ocSearchDirect('${query}','${resultsId}','${targetId}','${wrapId}','${rgb}')" style="display:block;margin-top:4px;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:#818cf8;cursor:pointer;">Search SEC EDGAR (US public companies) →</button>
-                </div>`;
+                resultsEl.innerHTML = `
+                    <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
+                        <div style="color:var(--text-muted);margin-bottom:6px;">
+                            No results for <strong style="color:var(--text);">"${query}"</strong> — not in the AgentTrust registry or SEC EDGAR.<br>
+                            <span style="font-size:.72rem;">Try the parent company name (e.g. "Live Nation" for Ticketmaster), or paste their XRPL wallet directly.</span>
+                        </div>
+                        <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
+                        <input type="text" placeholder="rXXX… wallet address"
+                            style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
+                            oninput="applyManualIssuerWallet(this.value)">
+                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
+                    </div>`;
                 resultsEl.style.display = "block";
                 return;
             }
@@ -1563,38 +1571,6 @@ async function _ocSearch(query, limit = 8) {
     } catch(e) { return []; }
 }
 
-async function ocSearchDirect(query, resultsId, targetId, wrapId, rgb) {
-    const resultsEl = document.getElementById(resultsId);
-    if (resultsEl) resultsEl.innerHTML = `<div style="padding:8px 12px;font-size:.78rem;color:var(--text-muted);">Searching SEC EDGAR…</div>`;
-    const results = await _ocSearch(query, 8);
-    if (!results.length) {
-        if (resultsEl) resultsEl.innerHTML = `
-            <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
-                <div style="color:var(--text-muted);margin-bottom:6px;">
-                    <strong style="color:var(--text);">"${query}"</strong> not found in SEC EDGAR.<br>
-                    <span style="font-size:.72rem;">SEC EDGAR covers US public companies (SEC-registered). Private companies and non-US companies won't appear here.</span>
-                </div>
-                <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
-                <input type="text" placeholder="rXXX… wallet address"
-                    style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
-                    oninput="applyManualIssuerWallet(this.value)">
-                <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
-            </div>`;
-        resultsEl.style.display = "block";
-        return;
-    }
-    if (resultsEl) resultsEl.innerHTML = results.map(r => {
-        const nameEsc = r.name.replace(/'/g, "\\'");
-        const ocBadge = r.company_number || "";
-        return `<div onclick="selectIssuer('','${nameEsc}','${r.company_number||""}','sec-edgar','${targetId}','${resultsId}','${wrapId}','${rgb}')"
-            style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
-            onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-            <div style="font-weight:600;">${r.name}</div>
-            <div style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);display:inline-block;">SEC EDGAR${ocBadge ? " · " + ocBadge : ""}</div>
-        </div>`;
-    }).join("");
-    resultsEl.style.display = "block";
-}
 
 function applyManualIssuerWallet(val) {
     const target = document.getElementById("nft-issuer-field");
