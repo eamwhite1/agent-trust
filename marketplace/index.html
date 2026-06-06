@@ -3012,26 +3012,11 @@ async function fetchJobStatus(jobId) {
 // ---------------------------------------------------------------------------
 async function _ocSearch(query, limit = 8) {
     try {
-        const res = await fetch(
-            `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent(query)}&forms=10-K`,
-            { headers: { "User-Agent": "AgentTrust/1.0 admin@cryptovault.co.uk" } }
-        );
+        const res = await fetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
         if (!res.ok) return [];
         const data = await res.json();
-        const seen = new Set();
-        const results = [];
-        for (const hit of (data?.hits?.hits || [])) {
-            const name = hit._source?.entity_name;
-            if (!name) continue;
-            const key = name.toLowerCase();
-            if (seen.has(key)) continue;
-            seen.add(key);
-            results.push({ name, company_number: hit._source?.file_num || "", jurisdiction_code: "us" });
-            if (results.length >= limit) break;
-        }
-        return results;
+        return (data.results || []).map(r => ({ name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "us" }));
     } catch(e) { return []; }
-    return results.slice(0, limit);
 }
 
 let _ocTimer = null;
