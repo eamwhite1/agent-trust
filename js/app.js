@@ -593,6 +593,9 @@ function toggleProof(type) {
     if (wrap) wrap.style.borderColor = on ? `rgba(${rgb},.5)` : `rgba(${rgb},.2)`;
     if (detail) detail.style.display = on ? "block" : "none";
 
+    // When NFT proof is first toggled on, initialise mode to "verify"
+    if (type === "nft" && on) setNftMode("verify");
+
     // Show proof policy selector only when 2+ proof types are on
     const activeCount = Object.values(_proofState).filter(Boolean).length
         + (document.getElementById("nft-dvp-toggle")?.checked ? 0 : 0); // dvp doesn't count as a proof type
@@ -600,24 +603,27 @@ function toggleProof(type) {
     if (policyWrap) policyWrap.style.display = activeCount >= 2 ? "block" : "none";
 }
 
-function toggleNftDvpMode() {
-    const checkbox   = document.getElementById("nft-dvp-toggle");
-    const expanded   = document.getElementById("dvp-expanded");
-    const pill       = document.getElementById("dvp-pill");
-    const btn        = document.getElementById("nft-dvp-btn");
-    const wrap       = document.getElementById("dvp-toggle-wrap");
-    checkbox.checked = !checkbox.checked;
-    const on = checkbox.checked;
-    if (expanded) expanded.style.display = on ? "block" : "none";
-    if (pill) {
-        pill.textContent = on ? "ON" : "OFF";
-        pill.style.background = on ? "rgba(16,185,129,.2)" : "rgba(255,255,255,.07)";
-        pill.style.color       = on ? "#10b981" : "var(--text-muted)";
-        pill.style.borderColor = on ? "rgba(16,185,129,.4)" : "rgba(255,255,255,.12)";
-    }
-    if (btn) btn.style.background = on ? "rgba(16,185,129,.14)" : "rgba(16,185,129,.06)";
-    if (wrap) wrap.style.borderColor = on ? "rgba(16,185,129,.5)" : "rgba(16,185,129,.25)";
+// nftMode: "verify" (proof only) or "transfer" (DvP)
+let _nftMode = "verify";
+
+function setNftMode(mode) {
+    _nftMode = mode;
+    const verifyLabel   = document.getElementById("nft-mode-verify-label");
+    const transferLabel = document.getElementById("nft-mode-transfer-label");
+    const checkbox      = document.getElementById("nft-dvp-toggle");
+
+    const activeStyle   = "border:1.5px solid rgba(168,85,247,.5);background:rgba(168,85,247,.1);";
+    const inactiveStyle = "border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);";
+
+    const baseStyle = "display:flex;align-items:flex-start;gap:9px;padding:.55rem .7rem;border-radius:8px;cursor:pointer;";
+    if (verifyLabel)   verifyLabel.style.cssText   = baseStyle + (mode === "verify"   ? activeStyle : inactiveStyle);
+    if (transferLabel) transferLabel.style.cssText = baseStyle + (mode === "transfer" ? activeStyle : inactiveStyle);
+
+    // Drive the hidden checkbox that initVault reads for nft_dvp
+    if (checkbox) checkbox.checked = (mode === "transfer");
 }
+
+function toggleNftDvpMode() {} // no-op — kept for any lingering references
 
 function setProofPolicy(value) {
     document.getElementById("proof-policy-value").value = value;
