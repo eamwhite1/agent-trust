@@ -271,34 +271,25 @@ window.addEventListener("DOMContentLoaded", () => {
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
 
-    // Tooltips — JS-driven so position is set before box becomes visible.
-    // Using mouseenter/mouseleave on delegation avoids button-inside-button issues.
-    let _activeTooltip = null;
-    function _showTooltip(icon) {
-        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
-        if (!box) return;
-        if (_activeTooltip && _activeTooltip !== box) _activeTooltip.classList.remove("visible");
-        const r = icon.getBoundingClientRect();
-        let left = Math.max(8, r.left - 12);
-        if (left + 280 > window.innerWidth - 8) left = window.innerWidth - 288;
-        box.style.left      = left + "px";
-        box.style.top       = (r.top - 8) + "px";
-        box.style.transform = "translateY(-100%)";
-        box.classList.add("visible");
-        _activeTooltip = box;
-    }
-    function _hideTooltip(icon) {
-        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
-        if (box) box.classList.remove("visible");
-        if (_activeTooltip === box) _activeTooltip = null;
-    }
+    // Global tooltip — single fixed div at body level avoids clipping by parent buttons/overflow:hidden.
+    const _gt = document.getElementById("global-tooltip");
     document.addEventListener("mouseover", e => {
         const icon = e.target.closest(".tooltip-icon");
-        if (icon) _showTooltip(icon);
+        if (!icon || !_gt) return;
+        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
+        if (!box) return;
+        _gt.innerHTML = box.innerHTML;
+        const r = icon.getBoundingClientRect();
+        let left = r.left + r.width / 2 - 20;
+        left = Math.max(8, Math.min(left, window.innerWidth - 268));
+        _gt.style.left      = left + "px";
+        _gt.style.top       = (r.top - 10) + "px";
+        _gt.style.transform = "translateY(-100%)";
+        _gt.style.display   = "block";
     });
     document.addEventListener("mouseout", e => {
         const icon = e.target.closest(".tooltip-icon");
-        if (icon) _hideTooltip(icon);
+        if (icon && _gt) _gt.style.display = "none";
     });
     document.addEventListener("click", e => {
         const icon = e.target.closest(".tooltip-icon");
@@ -1546,7 +1537,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                         </div>
                         <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet? Enter it directly:</div>
                         <input type="text" placeholder="rXXX… wallet address"
-                            style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);color:var(--text);box-sizing:border-box;"
+                            style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(168,85,247,.4);color:var(--text);box-sizing:border-box;"
                             oninput="applyManualIssuerWallet(this.value)">
                         <div style="font-size:.7rem;color:var(--text-muted);margin-top:5px;">Or invite them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
                     </div>`;
@@ -1561,8 +1552,8 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                     : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
-                    style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
-                    onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                    style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
+                    onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;color:var(--text);">${r.name}</div>
                     <div>${badge}</div>
                 </div>`;
@@ -1671,8 +1662,8 @@ async function domainSearch(query, resultsId, wrapId) {
                 resultsEl.innerHTML = matches.slice(0,6).map(i => {
                     const domain = (i.website || "").replace(/https?:\/\//, "").replace(/\/$/, "");
                     return `<div onclick="selectDomain('${domain}','${i.name}','${wrapId}')"
-                        style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:2px;"
-                        onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                        style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:2px;"
+                        onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                         <div style="font-weight:600;">${i.name}</div>
                         <div style="display:flex;gap:6px;align-items:center;">
                             <span style="font-size:.7rem;color:var(--text-muted);font-family:monospace;">${domain}</span>
@@ -1751,8 +1742,8 @@ async function vcIssuerSearch(query, resultsId, wrapId) {
                     const domain = (i.website || "").replace(/https?:\/\//, "").replace(/\/$/, "");
                     const inferredDid = domain ? `did:web:${domain}` : "";
                     return `<div onclick="selectVcIssuer('${inferredDid}','${i.name}','${wrapId}')"
-                        style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
-                        onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                        style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);"
+                        onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                         <div style="font-weight:600;">${i.name}</div>
                         <div style="font-size:.7rem;color:var(--text-muted);font-family:monospace;">${inferredDid || "DID unknown"}</div>
                     </div>`;
@@ -1851,8 +1842,8 @@ async function gleifSearch(query, resultsId, targetId) {
                     : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
                 const clickVal = r.wallet || r.company_number || "";
                 return `<div onclick="selectOcResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
-                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
-                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
+                     onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;color:var(--text);">${r.name}</div>
                     <div>${badge}</div>
                 </div>`;
@@ -1914,7 +1905,7 @@ async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet
                     </div>
                     <div style="margin-top:6px;font-size:.72rem;color:var(--text-muted);">Or paste their XRPL wallet address if you already know it:</div>
                     <input type="text" placeholder="rXXX… issuer wallet address"
-                        style="margin-top:4px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(245,158,11,.3);color:var(--text);"
+                        style="margin-top:4px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(245,158,11,.4);color:var(--text);"
                         oninput="document.getElementById('${targetId}').value=this.value.trim()">
                     <span style="font-size:.68rem;color:var(--text-muted);">Leave blank to skip NFT issuer verification.</span>`;
             }

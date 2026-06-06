@@ -192,15 +192,16 @@
         #share-project-id { flex: 1; font-family: 'DM Mono', 'Courier New', monospace; font-size: 1.05rem; font-weight: 700; background: rgba(255,255,255,.65); border: 1px solid rgba(255,255,255,.85); border-radius: var(--radius-sm); padding: .85rem 1rem; letter-spacing: .04em; }
 
         /* ── TOOLTIP ── */
-        .tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+        .tooltip-wrap { display: inline-flex; align-items: center; }
         .tooltip-icon { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(0,102,255,.12); color: var(--blue); cursor: help; margin-left: 5px; flex-shrink: 0; font-size: .65rem; font-weight: 800; border: 1px solid rgba(0,102,255,.2); transition: background .2s; }
         .tooltip-icon:hover { background: rgba(0,102,255,.22); }
-        .tooltip-box { display: none; position: fixed; width: 280px; background: #0d0d12; color: rgba(255,255,255,.88); font-size: .78rem; font-weight: 400; line-height: 1.6; padding: .85rem 1rem; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.4); z-index: 9999; pointer-events: none; text-transform: none; letter-spacing: 0; }
-        .tooltip-box.visible { display: block; }
-        .tooltip-box::after { content: ''; position: absolute; top: 100%; left: 20px; border: 6px solid transparent; border-top-color: #0d0d12; }
-        .tooltip-box strong { color: #fff; display: block; margin-bottom: .3rem; font-size: .8rem; }
-        .tooltip-box ol { padding-left: 1.1rem; margin: .4rem 0 0; }
-        .tooltip-box ol li { margin-bottom: .25rem; }
+        /* .tooltip-box content is copied into #global-tooltip on hover */
+        .tooltip-box { display: none; }
+        #global-tooltip { display: none; position: fixed; width: 260px; background: #0d0d12; color: rgba(255,255,255,.88); font-size: .78rem; font-weight: 400; line-height: 1.6; padding: .85rem 1rem; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.35); z-index: 99999; pointer-events: none; text-transform: none; letter-spacing: 0; white-space: normal; }
+        #global-tooltip::after { content: ''; position: absolute; top: 100%; left: 20px; border: 6px solid transparent; border-top-color: #0d0d12; }
+        #global-tooltip strong { color: #fff; display: block; margin-bottom: .3rem; font-size: .8rem; }
+        #global-tooltip ol { padding-left: 1.1rem; margin: .4rem 0 0; }
+        #global-tooltip ol li { margin-bottom: .25rem; }
         .usd-equiv { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; min-height: 1.2em; }
         .divider { border: none; border-top: 1px solid rgba(0,0,0,.06); margin: 1.5rem 0; }
 
@@ -358,9 +359,8 @@
             .compare-heading { font-size: 1.6rem; }
             /* Card title */
             h2.card-title { font-size: 1.6rem; }
-            /* Tooltip — open upward but don't overflow screen */
-            .tooltip-box { width: 240px; left: auto; right: 0; transform: none; }
-            .tooltip-box::after { left: auto; right: 16px; transform: none; }
+            /* Global tooltip narrower on mobile */
+            #global-tooltip { width: 220px; }
             /* Marketplace nav link — hide on small screens, accessed via direct URL */
             .nav-marketplace-link { display: none; }
             /* Use-case modal — sheet from bottom on mobile */
@@ -376,6 +376,7 @@
 <body>
 
 <div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+<div id="global-tooltip"></div>
 
 <nav>
     <div class="logo">AgentTrust<span>.</span></div>
@@ -704,7 +705,7 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         <div style="font-size:.72rem;color:#a855f7;font-weight:600;margin-bottom:.4rem;">Restrict to a specific issuer? <span style="font-weight:400;color:var(--text-muted);">(optional — leave blank to accept any NFT)</span></div>
                         <div style="position:relative;">
                             <input type="text" id="nft-issuer-search" placeholder="Type a company name to search…" oninput="issuerSearch(this.value,'nft-issuer-results','nft-issuer-field','pt-nft-wrap','168,85,247')" autocomplete="off" style="width:100%;margin-bottom:.4rem;font-size:.8rem;">
-                            <div id="nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                            <div id="nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.12);"></div>
                         </div>
                         <div id="nft-issuer-status" style="font-size:.72rem;margin-bottom:.4rem;"></div>
                         <input type="hidden" id="nft-issuer-field">
@@ -742,7 +743,7 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         <div style="font-size:.72rem;color:#3b82f6;font-weight:600;margin-bottom:.4rem;">Restrict to a specific domain? <span style="font-weight:400;color:var(--text-muted);">(optional — leave blank to accept any verified domain)</span></div>
                         <div style="position:relative;">
                             <input type="text" id="required-domain-field" placeholder="Type a domain or company name to search…" oninput="domainSearch(this.value,'domain-results','pt-domain-wrap')" autocomplete="off" style="width:100%;font-size:.8rem;">
-                            <div id="domain-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                            <div id="domain-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.12);"></div>
                         </div>
                         <div id="domain-status" style="font-size:.72rem;margin-top:.35rem;"></div>
                     </div>
@@ -774,7 +775,7 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         <div style="font-size:.72rem;color:#f59e0b;font-weight:600;margin-bottom:.4rem;">Restrict to a specific issuer or credential type? <span style="font-weight:400;color:var(--text-muted);">(optional)</span></div>
                         <div style="position:relative;">
                             <input type="text" id="required-vc-issuer-field" placeholder="Type an institution name or DID to search…" oninput="vcIssuerSearch(this.value,'vc-results','pt-vc-wrap')" autocomplete="off" style="width:100%;margin-bottom:.4rem;font-size:.8rem;">
-                            <div id="vc-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                            <div id="vc-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.12);"></div>
                         </div>
                         <div id="vc-status" style="font-size:.72rem;margin-bottom:.35rem;"></div>
                         <input type="text" id="required-vc-type-field" placeholder="Credential type (optional) e.g. BusinessRegistrationCredential" style="width:100%;font-size:.8rem;">
