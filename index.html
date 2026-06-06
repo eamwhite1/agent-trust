@@ -398,9 +398,23 @@
         <p>Eliminating counterparty risk in remote and agentic work.<span class="hero-sub-break">No disputes. No delays. No intermediaries.</span></p>
     </section>
 
-    <!-- TABS -->
-    <div class="tab-bar" id="main-tabs">
-        <button class="tab-btn active" id="tab-buyer" onclick="switchTab('buyer')">
+    <!-- LANDING PROMPT -->
+    <div id="panel-landing" class="card" style="text-align:center;padding:2.5rem 2rem;">
+        <div style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;letter-spacing:-.02em;">Ready to make or receive a payment?</div>
+        <p style="color:var(--text-muted);font-size:.92rem;margin-bottom:1.75rem;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.6;">Funds lock on-chain. The AI releases payment automatically when work is verified. No trust required.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="switchTab('buyer')" style="min-width:160px;font-size:.95rem;">
+                <i data-lucide="briefcase"></i> I'm the Buyer
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('worker')" style="min-width:160px;font-size:.95rem;">
+                <i data-lucide="user-check"></i> I'm the Seller
+            </button>
+        </div>
+    </div>
+
+    <!-- TABS (shown once a panel is selected) -->
+    <div class="tab-bar" id="main-tabs" style="display:none;">
+        <button class="tab-btn" id="tab-buyer" onclick="switchTab('buyer')">
             <i data-lucide="briefcase"></i> I'm the Buyer
         </button>
         <button class="tab-btn" id="tab-worker" onclick="switchTab('worker')">
@@ -411,7 +425,7 @@
     <!-- ════════════════════════════════════════════════════════════
          BUYER PANEL
     ════════════════════════════════════════════════════════════ -->
-    <div id="panel-buyer">
+    <div id="panel-buyer" style="display:none;">
         <div class="card">
             <span class="section-label">Buyer — Step 1 of 2</span>
             <h2 class="card-title">Lock Funds in Escrow</h2>
@@ -688,9 +702,10 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         <!-- Issuer restriction -->
                         <div style="font-size:.72rem;color:#a855f7;font-weight:600;margin-bottom:.4rem;">Restrict to a specific issuer? <span style="font-weight:400;color:var(--text-muted);">(optional — leave blank to accept any NFT)</span></div>
                         <div style="position:relative;">
-                            <input type="text" id="nft-issuer-search" placeholder="Search issuer by name, or paste their wallet address…" oninput="gleifSearch(this.value,'nft-issuer-results','nft-issuer-field')" autocomplete="off" style="width:100%;margin-bottom:.4rem;font-size:.8rem;">
+                            <input type="text" id="nft-issuer-search" placeholder="Type a company name to search…" oninput="issuerSearch(this.value,'nft-issuer-results','nft-issuer-field','pt-nft-wrap','168,85,247')" autocomplete="off" style="width:100%;margin-bottom:.4rem;font-size:.8rem;">
                             <div id="nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
                         </div>
+                        <div id="nft-issuer-status" style="font-size:.72rem;margin-bottom:.4rem;"></div>
                         <input type="hidden" id="nft-issuer-field">
                         <input type="text" id="nft-metadata-field" placeholder='Required metadata fields (optional) e.g. {"destination":"Liverpool"}' style="width:100%;font-size:.8rem;">
                     </div>
@@ -723,8 +738,12 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         <span id="pt-domain-pill" class="proof-pill">OFF</span>
                     </button>
                     <div id="pt-domain-detail" style="display:none;padding:.6rem .9rem .75rem;border-top:1px solid rgba(59,130,246,.15);background:rgba(59,130,246,.03);">
-                        <div style="font-size:.72rem;color:#3b82f6;font-weight:600;margin-bottom:.4rem;">Restrict to a specific domain? <span style="font-weight:400;color:var(--text-muted);">(optional)</span></div>
-                        <input type="text" id="required-domain-field" placeholder="e.g. maersk.com — or leave blank to accept any verified domain" style="width:100%;font-size:.8rem;">
+                        <div style="font-size:.72rem;color:#3b82f6;font-weight:600;margin-bottom:.4rem;">Restrict to a specific domain? <span style="font-weight:400;color:var(--text-muted);">(optional — leave blank to accept any verified domain)</span></div>
+                        <div style="position:relative;">
+                            <input type="text" id="required-domain-field" placeholder="Type a domain or company name to search…" oninput="domainSearch(this.value,'domain-results','pt-domain-wrap')" autocomplete="off" style="width:100%;font-size:.8rem;">
+                            <div id="domain-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                        </div>
+                        <div id="domain-status" style="font-size:.72rem;margin-top:.35rem;"></div>
                     </div>
                 </div>
 
@@ -752,7 +771,11 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                     </button>
                     <div id="pt-vc-detail" style="display:none;padding:.6rem .9rem .75rem;border-top:1px solid rgba(245,158,11,.15);background:rgba(245,158,11,.03);">
                         <div style="font-size:.72rem;color:#f59e0b;font-weight:600;margin-bottom:.4rem;">Restrict to a specific issuer or credential type? <span style="font-weight:400;color:var(--text-muted);">(optional)</span></div>
-                        <input type="text" id="required-vc-issuer-field" placeholder="Issuer DID (optional) e.g. did:web:companieshouse.gov.uk" style="width:100%;margin-bottom:.4rem;font-size:.8rem;">
+                        <div style="position:relative;">
+                            <input type="text" id="required-vc-issuer-field" placeholder="Type an institution name or DID to search…" oninput="vcIssuerSearch(this.value,'vc-results','pt-vc-wrap')" autocomplete="off" style="width:100%;margin-bottom:.4rem;font-size:.8rem;">
+                            <div id="vc-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                        </div>
+                        <div id="vc-status" style="font-size:.72rem;margin-bottom:.35rem;"></div>
                         <input type="text" id="required-vc-type-field" placeholder="Credential type (optional) e.g. BusinessRegistrationCredential" style="width:100%;font-size:.8rem;">
                     </div>
                 </div>
@@ -1457,8 +1480,10 @@ document.addEventListener("click", e => {
 lucide.createIcons();
 
 function switchTab(tab) {
-    document.getElementById("panel-buyer").style.display  = tab === "buyer"  ? "block" : "none";
-    document.getElementById("panel-worker").style.display = tab === "worker" ? "block" : "none";
+    document.getElementById("panel-landing").style.display = "none";
+    document.getElementById("main-tabs").style.display     = "";
+    document.getElementById("panel-buyer").style.display   = tab === "buyer"  ? "block" : "none";
+    document.getElementById("panel-worker").style.display  = tab === "worker" ? "block" : "none";
     document.getElementById("tab-buyer").classList.toggle("active",  tab === "buyer");
     document.getElementById("tab-worker").classList.toggle("active", tab === "worker");
     lucide.createIcons();
