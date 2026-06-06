@@ -1441,50 +1441,81 @@ async function gleifSearch(query, resultsId, targetId) {
     clearTimeout(_gleifTimer);
     _gleifTimer = setTimeout(async () => {
         try {
-            const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
-            const data = await res.json();
-            const results = data.results || [];
+            // Query AgentTrust registry and GLEIF in parallel
+            const [registryRes, gleifRes] = await Promise.allSettled([
+                safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
+                safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`),
+            ]);
 
+            // AgentTrust registered issuers — filter client-side by query
+            let registryItems = [];
+            if (registryRes.status === "fulfilled") {
+                const d = await registryRes.value.json();
+                const q = query.toLowerCase();
+                registryItems = (d.issuers || [])
+                    .filter(i => i.name?.toLowerCase().includes(q) || i.wallet_address?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
+                    .map(i => ({ source: "registry", lei: null, name: i.name, wallet: i.wallet_address, category: i.category }));
+            }
+
+            // GLEIF legal entities
+            let gleifItems = [];
+            if (gleifRes.status === "fulfilled") {
+                const d = await gleifRes.value.json();
+                gleifItems = (d.results || []).map(r => ({ source: "gleif", lei: r.lei, name: r.name, wallet: null, category: null }));
+            }
+
+            const combined = [...registryItems, ...gleifItems].slice(0, 10);
             if (!resultsEl) return;
-            if (!results.length) { resultsEl.style.display = "none"; return; }
+            if (!combined.length) { resultsEl.style.display = "none"; return; }
 
-            resultsEl.innerHTML = results.map(r => `
-                <div onclick="selectGleifResult('${r.lei}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
-                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+            resultsEl.innerHTML = combined.map(r => {
+                const nameEsc = r.name.replace(/'/g, "\\'");
+                const badge = r.source === "registry"
+                    ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">AgentTrust${r.category ? " · " + r.category : ""}</span>`
+                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">GLEIF · LEI ${r.lei}</span>`;
+                const clickVal = r.wallet || r.lei || "";
+                return `<div onclick="selectGleifResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
                      onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;">${r.name}</div>
-                    <div style="font-size:.72rem;opacity:.6;">LEI: ${r.lei} · GLEIF verified</div>
-                </div>
-            `).join("");
+                    <div>${badge}</div>
+                </div>`;
+            }).join("");
             resultsEl.style.display = "block";
         } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
     }, 350);
 }
 
-async function selectGleifResult(lei, name, targetId, resultsId) {
+async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
     const resultsEl = document.getElementById(resultsId);
     if (resultsEl) resultsEl.style.display = "none";
-    // Set visible search input to the company name
     const searchInput = resultsEl ? resultsEl.previousElementSibling : null;
     if (searchInput) searchInput.value = name;
-    // Look up XRPL wallet
+
+    const target = document.getElementById(targetId);
+    const statusId = resultsId + "-status";
+    let statusEl = document.getElementById(statusId);
+    if (!statusEl && resultsEl) {
+        statusEl = document.createElement("div");
+        statusEl.id = statusId;
+        statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
+        resultsEl.parentNode.appendChild(statusEl);
+    }
+
+    // Registry hit: wallet already known
+    if (knownWallet) {
+        if (target) target.value = knownWallet;
+        if (statusEl) statusEl.textContent = "✅ AgentTrust verified issuer · XRPL wallet set";
+        return;
+    }
+
+    // GLEIF hit: attempt XRPL wallet lookup via domain chain
+    if (target) target.value = lei || "";
     try {
         const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
         const data = await res.json();
         const match = data.results?.find(r => r.lei === lei);
-        const target = document.getElementById(targetId);
-        if (match?.xrpl_wallet && target) {
-            target.value = match.xrpl_wallet;
-        }
-        // Show status
-        const statusId = resultsId + "-status";
-        let statusEl = document.getElementById(statusId);
-        if (!statusEl && resultsEl) {
-            statusEl = document.createElement("div");
-            statusEl.id = statusId;
-            statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
-            resultsEl.parentNode.appendChild(statusEl);
-        }
+        if (match?.xrpl_wallet && target) target.value = match.xrpl_wallet;
         if (statusEl) {
             statusEl.textContent = match?.xrpl_wallet
                 ? "✅ GLEIF verified · XRPL wallet found"
