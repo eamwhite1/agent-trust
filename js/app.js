@@ -1523,11 +1523,24 @@ async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
             if (target) target.value = "";
             // Show manual wallet input
             if (statusEl) {
+                const subject = encodeURIComponent(`${name} — join the AgentTrust Trusted Issuer Registry`);
+                const body = encodeURIComponent(
+                    `Hi,\n\nI'm setting up a payment escrow on AgentTrust (https://www.cryptovault.co.uk) and would like to require proof of a ${name}-issued NFT.\n\n` +
+                    `To make this possible, ${name} would need to register its XRPL wallet address in the AgentTrust Trusted Issuer Registry — it only takes a few minutes:\n\n` +
+                    `https://www.cryptovault.co.uk/marketplace#issuers\n\n` +
+                    `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
+                );
                 statusEl.innerHTML = `
                     <span style="color:#f59e0b;">⚠️ GLEIF verified company — but no XRPL wallet on record.</span>
-                    <br>If you know their XRPL wallet address, paste it below:
+                    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                        <a href="mailto:?subject=${subject}&body=${body}" target="_blank"
+                            style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:6px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;white-space:nowrap;">
+                            ✉️ Invite ${name} to register
+                        </a>
+                    </div>
+                    <div style="margin-top:6px;font-size:.72rem;color:var(--text-muted);">Or paste their XRPL wallet address if you already know it:</div>
                     <input type="text" placeholder="rXXX… issuer wallet address"
-                        style="margin-top:5px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(245,158,11,.3);color:var(--text);"
+                        style="margin-top:4px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(245,158,11,.3);color:var(--text);"
                         oninput="document.getElementById('${targetId}').value=this.value.trim()">
                     <span style="font-size:.68rem;color:var(--text-muted);">Leave blank to skip NFT issuer verification.</span>`;
             }

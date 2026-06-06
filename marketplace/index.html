@@ -850,9 +850,19 @@ nav {
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                        <div class="field" style="margin:0;">
-                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">XRPL Wallet Address *</label>
-                            <input type="text" id="reg-wallet" placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="width:100%;font-family:var(--mono);font-size:.8rem;">
+                        <div class="field" style="margin:0;grid-column:1/-1;">
+                            <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">XRPL Wallet Address(es) *
+                                <span style="font-weight:400;opacity:.6;">— add all wallets your organisation uses to mint NFTs</span>
+                            </label>
+                            <div id="reg-wallets-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <input type="text" class="reg-wallet-input" placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (primary)" style="flex:1;font-family:var(--mono);font-size:.8rem;">
+                                </div>
+                            </div>
+                            <button type="button" onclick="addWalletField()"
+                                style="font-size:.73rem;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text-dim);cursor:pointer;">
+                                + Add another wallet
+                            </button>
                         </div>
                         <div class="field" style="margin:0;">
                             <label style="font-size:.78rem;font-weight:600;color:var(--text-dim);display:block;margin-bottom:.3rem;">Website / Domain *</label>
@@ -3126,7 +3136,12 @@ function renderIssuerCard(issuer) {
                     ${verifiedBadge}
                     ${issuer.category ? `<span style="font-size:.68rem;font-weight:600;color:${col};background:${bg};border:1px solid ${col}33;border-radius:4px;padding:1px 6px;text-transform:capitalize;">${escHtml(issuer.category)}</span>` : ""}
                 </div>
-                <div style="font-size:.75rem;color:var(--text-dim);margin-top:.2rem;font-family:var(--mono);">${escHtml(issuer.wallet_address)}</div>
+                <div style="font-size:.73rem;color:var(--text-dim);margin-top:.25rem;font-family:var(--mono);">
+                    ${(issuer.wallet_addresses && issuer.wallet_addresses.length > 1
+                        ? issuer.wallet_addresses
+                        : [issuer.wallet_address]
+                    ).map(w => `<span style="display:inline-block;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:1px 6px;margin:1px 3px 1px 0;">${escHtml(w)}</span>`).join("")}
+                </div>
                 ${issuer.description ? `<div style="font-size:.77rem;color:var(--text-dim);margin-top:.25rem;">${escHtml(issuer.description)}</div>` : ""}
             </div>
             ${issuer.website ? `<a href="${escHtml(issuer.website)}" target="_blank" rel="noopener" style="flex-shrink:0;font-size:.75rem;color:var(--blue);text-decoration:none;white-space:nowrap;">↗ Website</a>` : ""}
@@ -3134,23 +3149,37 @@ function renderIssuerCard(issuer) {
     `;
 }
 
+function addWalletField() {
+    const list = document.getElementById("reg-wallets-list");
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:6px;align-items:center;";
+    row.innerHTML = `
+        <input type="text" class="reg-wallet-input" placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" style="flex:1;font-family:var(--mono);font-size:.8rem;">
+        <button type="button" onclick="this.parentElement.remove()" style="flex-shrink:0;padding:4px 8px;border-radius:6px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;cursor:pointer;font-size:.8rem;">✕</button>
+    `;
+    list.appendChild(row);
+}
+
 async function submitIssuerRegistration() {
     const btn      = document.getElementById("reg-submit-btn");
     const name     = document.getElementById("reg-name")?.value.trim();
     const category = document.getElementById("reg-category")?.value;
-    const wallet   = document.getElementById("reg-wallet")?.value.trim();
     const website  = document.getElementById("reg-website")?.value.trim();
     const email    = document.getElementById("reg-email")?.value.trim();
     const desc     = document.getElementById("reg-description")?.value.trim();
     const lei      = document.getElementById("reg-lei")?.value.trim();
     const nftTypes = document.getElementById("reg-nft-types")?.value.trim();
 
-    if (!name || !category || !wallet || !website || !email) {
+    const wallets = [...document.querySelectorAll(".reg-wallet-input")]
+        .map(i => i.value.trim()).filter(w => w);
+
+    if (!name || !category || !wallets.length || !website || !email) {
         showIssuerRegStatus("Please fill in all required fields.", "error");
         return;
     }
-    if (!wallet.startsWith("r") || wallet.length < 25) {
-        showIssuerRegStatus("Please enter a valid XRPL wallet address (starts with r).", "error");
+    const badWallet = wallets.find(w => !w.startsWith("r") || w.length < 25);
+    if (badWallet) {
+        showIssuerRegStatus(`"${badWallet}" doesn't look like a valid XRPL address (should start with r).`, "error");
         return;
     }
 
@@ -3163,7 +3192,8 @@ async function submitIssuerRegistration() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                wallet_address: wallet,
+                wallet_address: wallets[0],
+                wallet_addresses: wallets.slice(1),
                 name, category,
                 description: desc || undefined,
                 website,
