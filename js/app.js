@@ -425,7 +425,7 @@ async function initVault() {
         const requiredDomain      = document.getElementById("required-domain-field")?.value.trim() || null;
         const requiredVcIssuer    = document.getElementById("required-vc-issuer-field")?.value.trim() || null;
         const requiredVcType      = document.getElementById("required-vc-type-field")?.value.trim() || null;
-        const proofPolicy         = document.querySelector('input[name="proof-policy"]:checked')?.value || "ALL";
+        const proofPolicy         = document.getElementById("proof-policy-value")?.value || "ALL";
         const nftDvp              = document.getElementById("nft-dvp-toggle")?.checked || false;
 
         const body = {
@@ -553,9 +553,44 @@ async function pollEscrowCreate(uuid, receiptCode) {
 // ---------------------------------------------------------------------------
 // NFT DvP MODE TOGGLE
 // ---------------------------------------------------------------------------
-function toggleNftDvpMode(enabled) {
-    const nftSection = document.getElementById("nft-proof-buyer-section");
-    if (nftSection) nftSection.style.display = enabled ? "block" : "none";
+function toggleNftDvpMode() {
+    const checkbox   = document.getElementById("nft-dvp-toggle");
+    const expanded   = document.getElementById("dvp-expanded");
+    const pill       = document.getElementById("dvp-pill");
+    const btn        = document.getElementById("nft-dvp-btn");
+    const wrap       = document.getElementById("dvp-toggle-wrap");
+    checkbox.checked = !checkbox.checked;
+    const on = checkbox.checked;
+    if (expanded) expanded.style.display = on ? "block" : "none";
+    if (pill) {
+        pill.textContent = on ? "ON" : "OFF";
+        pill.style.background = on ? "rgba(16,185,129,.2)" : "rgba(255,255,255,.07)";
+        pill.style.color       = on ? "#10b981" : "var(--text-muted)";
+        pill.style.borderColor = on ? "rgba(16,185,129,.4)" : "rgba(255,255,255,.12)";
+    }
+    if (btn) btn.style.background = on ? "rgba(16,185,129,.14)" : "rgba(16,185,129,.06)";
+    if (wrap) wrap.style.borderColor = on ? "rgba(16,185,129,.5)" : "rgba(16,185,129,.25)";
+}
+
+function setProofPolicy(value) {
+    document.getElementById("proof-policy-value").value = value;
+    const allBtn = document.getElementById("policy-all-btn");
+    const anyBtn = document.getElementById("policy-any-btn");
+    if (value === "ALL") {
+        allBtn.style.background   = "rgba(99,102,241,.18)";
+        allBtn.style.color        = "#818cf8";
+        allBtn.style.borderColor  = "rgba(99,102,241,.5)";
+        anyBtn.style.background   = "rgba(255,255,255,.04)";
+        anyBtn.style.color        = "var(--text-muted)";
+        anyBtn.style.borderColor  = "rgba(255,255,255,.12)";
+    } else {
+        anyBtn.style.background   = "rgba(99,102,241,.18)";
+        anyBtn.style.color        = "#818cf8";
+        anyBtn.style.borderColor  = "rgba(99,102,241,.5)";
+        allBtn.style.background   = "rgba(255,255,255,.04)";
+        allBtn.style.color        = "var(--text-muted)";
+        allBtn.style.borderColor  = "rgba(255,255,255,.12)";
+    }
 }
 
 // ---------------------------------------------------------------------------
