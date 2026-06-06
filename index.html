@@ -196,12 +196,11 @@
         .tooltip-icon { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(0,102,255,.12); color: var(--blue); cursor: help; margin-left: 5px; flex-shrink: 0; font-size: .65rem; font-weight: 800; border: 1px solid rgba(0,102,255,.2); transition: background .2s; }
         .tooltip-icon:hover { background: rgba(0,102,255,.22); }
         .tooltip-box { display: none; position: fixed; width: 280px; background: #0d0d12; color: rgba(255,255,255,.88); font-size: .78rem; font-weight: 400; line-height: 1.6; padding: .85rem 1rem; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.4); z-index: 9999; pointer-events: none; text-transform: none; letter-spacing: 0; }
+        .tooltip-box.visible { display: block; }
         .tooltip-box::after { content: ''; position: absolute; top: 100%; left: 20px; border: 6px solid transparent; border-top-color: #0d0d12; }
         .tooltip-box strong { color: #fff; display: block; margin-bottom: .3rem; font-size: .8rem; }
         .tooltip-box ol { padding-left: 1.1rem; margin: .4rem 0 0; }
         .tooltip-box ol li { margin-bottom: .25rem; }
-        .tooltip-wrap { position: relative; }
-        .tooltip-wrap:hover .tooltip-box, .tooltip-wrap.active .tooltip-box { display: block; }
         .usd-equiv { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; min-height: 1.2em; }
         .divider { border: none; border-top: 1px solid rgba(0,0,0,.06); margin: 1.5rem 0; }
 

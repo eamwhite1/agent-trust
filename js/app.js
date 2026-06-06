@@ -271,23 +271,39 @@ window.addEventListener("DOMContentLoaded", () => {
     setSellerMode("ui");
     onBuyerCurrencyChange(); // initialise label/placeholder for default RLUSD
 
-    // Tooltips — use event delegation on document so dynamically added ones work too.
-    // stopPropagation on click prevents bubbling into parent buttons/summaries.
-    document.addEventListener("mouseover", e => {
-        const wrap = e.target.closest(".tooltip-wrap");
-        if (!wrap) return;
-        const box  = wrap.querySelector(".tooltip-box");
-        const icon = wrap.querySelector(".tooltip-icon");
-        if (!box || !icon) return;
+    // Tooltips — JS-driven so position is set before box becomes visible.
+    // Using mouseenter/mouseleave on delegation avoids button-inside-button issues.
+    let _activeTooltip = null;
+    function _showTooltip(icon) {
+        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
+        if (!box) return;
+        if (_activeTooltip && _activeTooltip !== box) _activeTooltip.classList.remove("visible");
         const r = icon.getBoundingClientRect();
-        box.style.left      = Math.max(8, r.left - 12) + "px";
+        let left = Math.max(8, r.left - 12);
+        if (left + 280 > window.innerWidth - 8) left = window.innerWidth - 288;
+        box.style.left      = left + "px";
         box.style.top       = (r.top - 8) + "px";
         box.style.transform = "translateY(-100%)";
+        box.classList.add("visible");
+        _activeTooltip = box;
+    }
+    function _hideTooltip(icon) {
+        const box = icon.closest(".tooltip-wrap")?.querySelector(".tooltip-box");
+        if (box) box.classList.remove("visible");
+        if (_activeTooltip === box) _activeTooltip = null;
+    }
+    document.addEventListener("mouseover", e => {
+        const icon = e.target.closest(".tooltip-icon");
+        if (icon) _showTooltip(icon);
+    });
+    document.addEventListener("mouseout", e => {
+        const icon = e.target.closest(".tooltip-icon");
+        if (icon) _hideTooltip(icon);
     });
     document.addEventListener("click", e => {
         const icon = e.target.closest(".tooltip-icon");
-        if (icon) e.stopPropagation();
-    }, true); // capture phase so it fires before the button handler
+        if (icon) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
 });
 
 // ---------------------------------------------------------------------------
@@ -1538,10 +1554,11 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 return;
             }
             resultsEl.innerHTML = items.slice(0,8).map(r => {
-                const srcLabel = r.source === "sec-edgar" ? "SEC EDGAR · us" : `SEC EDGAR`;
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">${srcLabel}</span>`;
+                    : r.source === "wikipedia"
+                    ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">Wikipedia</span>`
+                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
@@ -1555,20 +1572,40 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
     }, 280);
 }
 
-// Company search proxied through referee → SEC EDGAR (avoids browser CORS restriction)
+// Company search: Wikipedia opensearch (CORS-friendly, no key, works from browser)
+// Falls back to referee proxy (SEC EDGAR) if Wikipedia returns nothing useful
 async function _ocSearch(query, limit = 8) {
+    const results = [];
     try {
-        const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return (data.results || []).map(r => ({
-            source: r.source || "sec-edgar",
-            name: r.name,
-            company_number: r.company_number || "",
-            jurisdiction_code: r.jurisdiction_code || "us",
-            wallet: null,
-        }));
-    } catch(e) { return []; }
+        // Wikipedia OpenSearch — returns company/org article titles matching query
+        const res = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=10&namespace=0&format=json&origin=*`
+        );
+        if (res.ok) {
+            const data = await res.json();
+            const titles = data[1] || [];
+            const descs  = data[2] || [];
+            // Filter to titles that look like organisations (contain query term)
+            for (let i = 0; i < titles.length && results.length < limit; i++) {
+                const t = titles[i];
+                if (t.toLowerCase().includes(query.toLowerCase())) {
+                    results.push({ source: "wikipedia", name: t, description: descs[i] || "", company_number: "", jurisdiction_code: "", wallet: null });
+                }
+            }
+        }
+    } catch(e) {}
+    // Also try referee proxy (SEC EDGAR) for any additional results
+    try {
+        const res2 = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+        if (res2.ok) {
+            const d = await res2.json();
+            for (const r of (d.results || [])) {
+                if (!results.find(x => x.name.toLowerCase() === r.name.toLowerCase()))
+                    results.push({ source: r.source || "sec-edgar", name: r.name, company_number: r.company_number || "", jurisdiction_code: r.jurisdiction_code || "", wallet: null });
+            }
+        }
+    } catch(e) {}
+    return results.slice(0, limit);
 }
 
 
@@ -1809,6 +1846,8 @@ async function gleifSearch(query, resultsId, targetId) {
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 const badge = r.source === "registry"
                     ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">AgentTrust${r.category ? " · " + r.category : ""}</span>`
+                    : r.source === "wikipedia"
+                    ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">Wikipedia</span>`
                     : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">SEC EDGAR</span>`;
                 const clickVal = r.wallet || r.company_number || "";
                 return `<div onclick="selectOcResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
