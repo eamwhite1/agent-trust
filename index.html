@@ -398,9 +398,23 @@
         <p>Eliminating counterparty risk in remote and agentic work.<span class="hero-sub-break">No disputes. No delays. No intermediaries.</span></p>
     </section>
 
-    <!-- TABS -->
-    <div class="tab-bar" id="main-tabs">
-        <button class="tab-btn active" id="tab-buyer" onclick="switchTab('buyer')">
+    <!-- LANDING PROMPT -->
+    <div id="panel-landing" class="card" style="text-align:center;padding:2.5rem 2rem;">
+        <div style="font-size:1.5rem;font-weight:700;margin-bottom:.5rem;letter-spacing:-.02em;">Ready to make or receive a payment?</div>
+        <p style="color:var(--text-muted);font-size:.92rem;margin-bottom:1.75rem;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.6;">Funds lock on-chain. The AI releases payment automatically when work is verified. No trust required.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="switchTab('buyer')" style="min-width:160px;font-size:.95rem;">
+                <i data-lucide="briefcase"></i> I'm the Buyer
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('worker')" style="min-width:160px;font-size:.95rem;">
+                <i data-lucide="user-check"></i> I'm the Seller
+            </button>
+        </div>
+    </div>
+
+    <!-- TABS (shown once a panel is selected) -->
+    <div class="tab-bar" id="main-tabs" style="display:none;">
+        <button class="tab-btn" id="tab-buyer" onclick="switchTab('buyer')">
             <i data-lucide="briefcase"></i> I'm the Buyer
         </button>
         <button class="tab-btn" id="tab-worker" onclick="switchTab('worker')">
@@ -411,7 +425,7 @@
     <!-- ════════════════════════════════════════════════════════════
          BUYER PANEL
     ════════════════════════════════════════════════════════════ -->
-    <div id="panel-buyer">
+    <div id="panel-buyer" style="display:none;">
         <div class="card">
             <span class="section-label">Buyer — Step 1 of 2</span>
             <h2 class="card-title">Lock Funds in Escrow</h2>
@@ -1466,8 +1480,10 @@ document.addEventListener("click", e => {
 lucide.createIcons();
 
 function switchTab(tab) {
-    document.getElementById("panel-buyer").style.display  = tab === "buyer"  ? "block" : "none";
-    document.getElementById("panel-worker").style.display = tab === "worker" ? "block" : "none";
+    document.getElementById("panel-landing").style.display = "none";
+    document.getElementById("main-tabs").style.display     = "";
+    document.getElementById("panel-buyer").style.display   = tab === "buyer"  ? "block" : "none";
+    document.getElementById("panel-worker").style.display  = tab === "worker" ? "block" : "none";
     document.getElementById("tab-buyer").classList.toggle("active",  tab === "buyer");
     document.getElementById("tab-worker").classList.toggle("active", tab === "worker");
     lucide.createIcons();
