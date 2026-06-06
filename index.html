@@ -280,7 +280,7 @@
         .roadmap-section { margin: 5rem 0; }
         .roadmap-title { font-family: 'DM Serif Display', serif; font-size: 2.2rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: .5rem; }
         .roadmap-sub { text-align: center; color: var(--text-muted); font-size: .92rem; margin-bottom: 2.5rem; }
-        .roadmap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+        .roadmap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; align-items: stretch; }
         .roadmap-card-wide { grid-column: 2 / 4; }
         .roadmap-card { padding: 1.5rem; border-radius: 18px; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); display: flex; flex-direction: column; }
         .roadmap-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
@@ -293,7 +293,7 @@
         .badge-waiting { background: rgba(245,158,11,.1); color: #f59e0b; border: 1px solid rgba(245,158,11,.2); }
         .badge-soon { background: rgba(16,185,129,.08); color: #10b981; border: 1px solid rgba(16,185,129,.2); }
         @media (max-width: 900px) { .roadmap-grid { grid-template-columns: repeat(2,1fr); } .roadmap-card-wide { grid-column: span 2; } }
-        @media (max-width: 600px) { .roadmap-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .roadmap-grid { grid-template-columns: 1fr; gap: .75rem; } .roadmap-card { padding: 1.1rem; } .roadmap-card-wide { grid-column: span 1; } }
 
         .use-case { cursor: pointer; }
         .use-case-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 1.5rem; }
@@ -393,9 +393,9 @@
 
     <!-- HERO -->
     <section class="hero" id="hero-section">
-        <div class="hero-eyebrow">Trustless payments — cryptographically verified.</div>
+        <div class="hero-eyebrow">Trustless payments —<br>cryptographically verified.</div>
         <h1>Work done.<br><em>Paid instantly.</em></h1>
-        <p>Eliminating counterparty risk in remote and agentic work.<span class="hero-sub-break">No disputes. No delays. No intermediaries.</span></p>
+        <p>Eliminating counterparty risk<br>in remote and agentic work.<span class="hero-sub-break">No disputes. No delays. No intermediaries.</span></p>
     </section>
 
     <!-- LANDING PROMPT -->
