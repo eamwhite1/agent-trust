@@ -1538,7 +1538,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${r.company_number||""}','${r.source}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
                     onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-                    <div style="font-weight:600;">${r.name}</div>
+                    <div style="font-weight:600;color:var(--text);">${r.name}</div>
                     <div>${badge}</div>
                 </div>`;
             }).join("");
@@ -1838,7 +1838,7 @@ async function gleifSearch(query, resultsId, targetId) {
                 return `<div onclick="selectOcResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
                      style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
                      onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-                    <div style="font-weight:600;">${r.name}</div>
+                    <div style="font-weight:600;color:var(--text);">${r.name}</div>
                     <div>${badge}</div>
                 </div>`;
             }).join("");
