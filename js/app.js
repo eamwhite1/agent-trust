@@ -1515,7 +1515,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 const d = await res.json();
                 items = (d.issuers || [])
                     .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category }));
+                    .map(i => ({ name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category, verified: i.verified }));
             }
             if (!resultsEl) return;
             if (!items.length) {
@@ -1534,7 +1534,9 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 return;
             }
             resultsEl.innerHTML = items.slice(0,8).map(r => {
-                const badge = `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`;
+                const badge = r.verified === "verified"
+                    ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust verified${r.category ? " · " + r.category : ""}</span>`
+                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">◎ Public record${r.category ? " · " + r.category : ""}</span>`;
                 const nameEsc = r.name.replace(/'/g, "\\'");
                 return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
@@ -1753,14 +1755,16 @@ async function gleifSearch(query, resultsId, targetId) {
                 const d = await res.json();
                 items = (d.issuers || [])
                     .filter(i => i.name?.toLowerCase().includes(q) || i.wallet_address?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ name: i.name, wallet: i.wallet_address, category: i.category }));
+                    .map(i => ({ name: i.name, wallet: i.wallet_address, category: i.category, verified: i.verified }));
             }
             if (!resultsEl) return;
             if (!items.length) { resultsEl.style.display = "none"; return; }
 
             resultsEl.innerHTML = items.slice(0,10).map(r => {
                 const nameEsc = r.name.replace(/'/g, "\\'");
-                const badge = `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust${r.category ? " · " + r.category : ""}</span>`;
+                const badge = r.verified === "verified"
+                    ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust verified${r.category ? " · " + r.category : ""}</span>`
+                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">◎ Public record${r.category ? " · " + r.category : ""}</span>`;
                 return `<div onclick="selectOcResult('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
                      style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
                      onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">

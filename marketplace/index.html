@@ -3030,18 +3030,21 @@ async function gleifSearch(query, resultsId, targetId) {
                 const d = await res.json();
                 items = (d.issuers || [])
                     .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ name: i.name, wallet: i.wallet_address, category: i.category }));
+                    .map(i => ({ name: i.name, wallet: i.wallet_address, category: i.category, verified: i.verified }));
             }
             if (!resultsEl) return;
             if (!items.length) { resultsEl.style.display = "none"; return; }
             resultsEl.innerHTML = items.slice(0,10).map(r => {
                 const nameEsc = r.name.replace(/'/g, "\\'");
+                const badgeText = r.verified === "verified"
+                    ? `<span style="font-size:.72rem;color:#10b981;">✓ AgentTrust verified${r.category ? " · " + r.category : ""}</span>`
+                    : `<span style="font-size:.72rem;color:#818cf8;">◎ Public record${r.category ? " · " + r.category : ""}</span>`;
                 return `
                 <div onclick="selectOcResult('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}')"
                      style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
                      onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;color:var(--text);">${r.name}</div>
-                    <div style="font-size:.72rem;color:#10b981;">✓ AgentTrust${r.category ? " · " + r.category : ""}</div>
+                    <div>${badgeText}</div>
                 </div>`;
             }).join("");
             resultsEl.style.display = "block";
