@@ -425,7 +425,7 @@ async function initVault() {
         const requiredDomain      = document.getElementById("required-domain-field")?.value.trim() || null;
         const requiredVcIssuer    = document.getElementById("required-vc-issuer-field")?.value.trim() || null;
         const requiredVcType      = document.getElementById("required-vc-type-field")?.value.trim() || null;
-        const proofPolicy         = document.querySelector('input[name="proof-policy"]:checked')?.value || "ALL";
+        const proofPolicy         = document.getElementById("proof-policy-value")?.value || "ALL";
         const nftDvp              = document.getElementById("nft-dvp-toggle")?.checked || false;
 
         const body = {
@@ -553,9 +553,44 @@ async function pollEscrowCreate(uuid, receiptCode) {
 // ---------------------------------------------------------------------------
 // NFT DvP MODE TOGGLE
 // ---------------------------------------------------------------------------
-function toggleNftDvpMode(enabled) {
-    const nftSection = document.getElementById("nft-proof-buyer-section");
-    if (nftSection) nftSection.style.display = enabled ? "block" : "none";
+function toggleNftDvpMode() {
+    const checkbox   = document.getElementById("nft-dvp-toggle");
+    const expanded   = document.getElementById("dvp-expanded");
+    const pill       = document.getElementById("dvp-pill");
+    const btn        = document.getElementById("nft-dvp-btn");
+    const wrap       = document.getElementById("dvp-toggle-wrap");
+    checkbox.checked = !checkbox.checked;
+    const on = checkbox.checked;
+    if (expanded) expanded.style.display = on ? "block" : "none";
+    if (pill) {
+        pill.textContent = on ? "ON" : "OFF";
+        pill.style.background = on ? "rgba(16,185,129,.2)" : "rgba(255,255,255,.07)";
+        pill.style.color       = on ? "#10b981" : "var(--text-muted)";
+        pill.style.borderColor = on ? "rgba(16,185,129,.4)" : "rgba(255,255,255,.12)";
+    }
+    if (btn) btn.style.background = on ? "rgba(16,185,129,.14)" : "rgba(16,185,129,.06)";
+    if (wrap) wrap.style.borderColor = on ? "rgba(16,185,129,.5)" : "rgba(16,185,129,.25)";
+}
+
+function setProofPolicy(value) {
+    document.getElementById("proof-policy-value").value = value;
+    const allBtn = document.getElementById("policy-all-btn");
+    const anyBtn = document.getElementById("policy-any-btn");
+    if (value === "ALL") {
+        allBtn.style.background   = "rgba(99,102,241,.18)";
+        allBtn.style.color        = "#818cf8";
+        allBtn.style.borderColor  = "rgba(99,102,241,.5)";
+        anyBtn.style.background   = "rgba(255,255,255,.04)";
+        anyBtn.style.color        = "var(--text-muted)";
+        anyBtn.style.borderColor  = "rgba(255,255,255,.12)";
+    } else {
+        anyBtn.style.background   = "rgba(99,102,241,.18)";
+        anyBtn.style.color        = "#818cf8";
+        anyBtn.style.borderColor  = "rgba(99,102,241,.5)";
+        allBtn.style.background   = "rgba(255,255,255,.04)";
+        allBtn.style.color        = "var(--text-muted)";
+        allBtn.style.borderColor  = "rgba(255,255,255,.12)";
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1406,54 +1441,112 @@ async function gleifSearch(query, resultsId, targetId) {
     clearTimeout(_gleifTimer);
     _gleifTimer = setTimeout(async () => {
         try {
-            const res = await safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`);
-            const data = await res.json();
-            const results = data.results || [];
+            // Query AgentTrust registry and GLEIF in parallel
+            const [registryRes, gleifRes] = await Promise.allSettled([
+                safeFetch(`${REFEREE_URL}/nft/issuers?limit=50`),
+                safeFetch(`${REFEREE_URL}/gleif/search?q=${encodeURIComponent(query)}&limit=8`),
+            ]);
 
+            // AgentTrust registered issuers — filter client-side by query
+            let registryItems = [];
+            if (registryRes.status === "fulfilled") {
+                const d = await registryRes.value.json();
+                const q = query.toLowerCase();
+                registryItems = (d.issuers || [])
+                    .filter(i => i.name?.toLowerCase().includes(q) || i.wallet_address?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
+                    .map(i => ({ source: "registry", lei: null, name: i.name, wallet: i.wallet_address, category: i.category }));
+            }
+
+            // GLEIF legal entities
+            let gleifItems = [];
+            if (gleifRes.status === "fulfilled") {
+                const d = await gleifRes.value.json();
+                gleifItems = (d.results || []).map(r => ({ source: "gleif", lei: r.lei, name: r.name, wallet: null, category: null }));
+            }
+
+            const combined = [...registryItems, ...gleifItems].slice(0, 10);
             if (!resultsEl) return;
-            if (!results.length) { resultsEl.style.display = "none"; return; }
+            if (!combined.length) { resultsEl.style.display = "none"; return; }
 
-            resultsEl.innerHTML = results.map(r => `
-                <div onclick="selectGleifResult('${r.lei}','${r.name.replace(/'/g,"\\'")}','${targetId}','${resultsId}')"
-                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);"
+            resultsEl.innerHTML = combined.map(r => {
+                const nameEsc = r.name.replace(/'/g, "\\'");
+                const badge = r.source === "registry"
+                    ? `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">AgentTrust${r.category ? " · " + r.category : ""}</span>`
+                    : `<span style="font-size:.65rem;padding:1px 6px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);">GLEIF · LEI ${r.lei}</span>`;
+                const clickVal = r.wallet || r.lei || "";
+                return `<div onclick="selectGleifResult('${clickVal}','${nameEsc}','${targetId}','${resultsId}',${r.wallet ? `'${r.wallet}'` : 'null'})"
+                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;"
                      onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;">${r.name}</div>
-                    <div style="font-size:.72rem;opacity:.6;">LEI: ${r.lei} · GLEIF verified</div>
-                </div>
-            `).join("");
+                    <div>${badge}</div>
+                </div>`;
+            }).join("");
             resultsEl.style.display = "block";
         } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
     }, 350);
 }
 
-async function selectGleifResult(lei, name, targetId, resultsId) {
+async function selectGleifResult(lei, name, targetId, resultsId, knownWallet) {
     const resultsEl = document.getElementById(resultsId);
     if (resultsEl) resultsEl.style.display = "none";
-    // Set visible search input to the company name
     const searchInput = resultsEl ? resultsEl.previousElementSibling : null;
     if (searchInput) searchInput.value = name;
-    // Look up XRPL wallet
+
+    const target = document.getElementById(targetId);
+    const statusId = resultsId + "-status";
+    let statusEl = document.getElementById(statusId);
+    if (!statusEl && resultsEl) {
+        statusEl = document.createElement("div");
+        statusEl.id = statusId;
+        statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
+        resultsEl.parentNode.appendChild(statusEl);
+    }
+
+    // Registry hit: wallet already known
+    if (knownWallet) {
+        if (target) target.value = knownWallet;
+        if (statusEl) statusEl.textContent = "✅ AgentTrust verified issuer · XRPL wallet set";
+        return;
+    }
+
+    // GLEIF hit: attempt XRPL wallet lookup via domain chain
+    if (target) target.value = lei || "";
     try {
         const res = await safeFetch(`${REFEREE_URL}/gleif/xrpl-lookup?q=${encodeURIComponent(name)}`);
         const data = await res.json();
         const match = data.results?.find(r => r.lei === lei);
-        const target = document.getElementById(targetId);
         if (match?.xrpl_wallet && target) {
             target.value = match.xrpl_wallet;
+            if (statusEl) statusEl.innerHTML = "✅ GLEIF verified · XRPL wallet found";
+        } else {
+            // Clear the hidden field — LEI is not a valid issuer wallet
+            if (target) target.value = "";
+            // Show manual wallet input
+            if (statusEl) {
+                const subject = encodeURIComponent(`${name} — join the AgentTrust Trusted Issuer Registry`);
+                const body = encodeURIComponent(
+                    `Hi,\n\nI'm setting up a payment escrow on AgentTrust (https://www.cryptovault.co.uk) and would like to require proof of a ${name}-issued NFT.\n\n` +
+                    `To make this possible, ${name} would need to register its XRPL wallet address in the AgentTrust Trusted Issuer Registry — it only takes a few minutes:\n\n` +
+                    `https://www.cryptovault.co.uk/marketplace#issuers\n\n` +
+                    `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
+                );
+                statusEl.innerHTML = `
+                    <span style="color:#f59e0b;">⚠️ GLEIF verified company — but no XRPL wallet on record.</span>
+                    <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                        <a href="mailto:?subject=${subject}&body=${body}" target="_blank"
+                            style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:6px;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;white-space:nowrap;">
+                            ✉️ Invite ${name} to register
+                        </a>
+                    </div>
+                    <div style="margin-top:6px;font-size:.72rem;color:var(--text-muted);">Or paste their XRPL wallet address if you already know it:</div>
+                    <input type="text" placeholder="rXXX… issuer wallet address"
+                        style="margin-top:4px;width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(245,158,11,.3);color:var(--text);"
+                        oninput="document.getElementById('${targetId}').value=this.value.trim()">
+                    <span style="font-size:.68rem;color:var(--text-muted);">Leave blank to skip NFT issuer verification.</span>`;
+            }
         }
-        // Show status
-        const statusId = resultsId + "-status";
-        let statusEl = document.getElementById(statusId);
-        if (!statusEl && resultsEl) {
-            statusEl = document.createElement("div");
-            statusEl.id = statusId;
-            statusEl.style.cssText = "font-size:.72rem;color:#10b981;margin-top:.3rem;";
-            resultsEl.parentNode.appendChild(statusEl);
-        }
-        if (statusEl) {
-            statusEl.textContent = match?.xrpl_wallet
-                ? "✅ GLEIF verified · XRPL wallet found"
-                : "✅ GLEIF verified · No XRPL wallet on record — ask the company for their wallet address";
-        }
-    } catch(e) {}
+    } catch(e) {
+        if (target) target.value = "";
+        if (statusEl) statusEl.textContent = "⚠️ Could not look up XRPL wallet — paste the issuer wallet address manually if known.";
+    }
 }
