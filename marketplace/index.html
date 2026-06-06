@@ -3117,6 +3117,8 @@ function filterIssuers(query) {
 function renderIssuerCard(issuer) {
     const verifiedBadge = issuer.verified === "verified"
         ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:4px;padding:2px 7px;">✓ Verified</span>`
+        : issuer.verified === "public"
+        ? `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#818cf8;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:4px;padding:2px 7px;">◎ Public record</span>`
         : `<span style="font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:4px;padding:2px 7px;">⏳ Pending</span>`;
     const categoryColours = {
         logistics:     ["#3b82f6","rgba(59,130,246,.1)"],
