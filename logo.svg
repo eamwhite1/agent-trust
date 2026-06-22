@@ -1,8 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
   <rect width="500" height="500" fill="#fafafa"/>
-  <g fill="#0d0d12" font-family="Liberation Serif, Georgia, 'Times New Roman', serif" font-weight="700">
-    <text x="195" y="340" font-size="260" text-anchor="middle" transform="scale(0.8,1.15) translate(48,-48)">A</text>
-    <text x="300" y="340" font-size="260" text-anchor="middle" transform="scale(0.8,1.15) translate(48,-48)">T</text>
+  <g fill="#0d0d12">
+    <!-- A: left leg -->
+    <polygon points="225,80 75,375 40,398 120,398 105,375 225,80" />
+    <!-- A: right leg (thin sliver, mostly covered by T stem) -->
+    <polygon points="225,80 250,310 270,310 225,80" />
+    <!-- A: crossbar -->
+    <polygon points="140,290 255,290 262,306 147,306" />
+    <!-- T: top bar -->
+    <polygon points="222,92 430,92 430,178 412,178 412,124 222,124" />
+    <!-- T: left serif flare under bar -->
+    <polygon points="222,124 250,124 250,150 222,150" />
+    <!-- T: stem -->
+    <polygon points="268,124 348,124 340,372 358,398 232,398 250,372 258,124" />
   </g>
-  <circle cx="375" cy="345" r="26" fill="#0066ff"/>
+  <circle cx="392" cy="358" r="34" fill="#0066ff"/>
 </svg>
