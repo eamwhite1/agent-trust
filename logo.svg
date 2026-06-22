@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
   <rect width="500" height="500" fill="#fafafa"/>
-  <g fill="#0d0d12" font-family="Georgia, 'Times New Roman', serif" font-weight="700">
-    <text x="195" y="330" font-size="230" text-anchor="middle">A</text>
-    <text x="290" y="330" font-size="230" text-anchor="middle">T</text>
+  <g fill="#0d0d12" font-family="Liberation Serif, Georgia, 'Times New Roman', serif" font-weight="700">
+    <text x="195" y="340" font-size="260" text-anchor="middle" transform="scale(0.8,1.15) translate(48,-48)">A</text>
+    <text x="300" y="340" font-size="260" text-anchor="middle" transform="scale(0.8,1.15) translate(48,-48)">T</text>
   </g>
   <circle cx="375" cy="345" r="26" fill="#0066ff"/>
 </svg>
