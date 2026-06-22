@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — AgentTrust</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #fafafa;
+        --text: #0d0d12;
+        --text-muted: #5a5a68;
+        --blue: #0066ff;
+        --border: rgba(0,0,0,.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        line-height: 1.65;
+    }
+    .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem 6rem;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: .25rem;
+    }
+    .updated {
+        font-size: .85rem;
+        color: var(--text-muted);
+        margin-bottom: 2.5rem;
+    }
+    h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-top: 2.5rem;
+        margin-bottom: .75rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: .5rem;
+    }
+    p, li { font-size: .95rem; color: #1a1a24; }
+    ul { padding-left: 1.3rem; }
+    li { margin-bottom: .4rem; }
+    code {
+        background: rgba(0,102,255,.08);
+        color: var(--blue);
+        padding: .15em .4em;
+        border-radius: 4px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: .85em;
+    }
+    .back {
+        display: inline-block;
+        margin-bottom: 2rem;
+        font-size: .85rem;
+        font-weight: 600;
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <a class="back" href="/">← AgentTrust</a>
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: 22 June 2026</div>
+
+    <p>AgentTrust ("we", "us") operates the AgentTrust escrow platform, the AgentTrust Referee MCP server, and the XRPL NFT Issuer Registry at <a href="https://www.cryptovault.co.uk">cryptovault.co.uk</a> and <a href="https://xrpl-referee.onrender.com">xrpl-referee.onrender.com</a>. This policy explains what data we collect, why, and how it's handled.</p>
+
+    <h2>1. What we collect</h2>
+    <p>AgentTrust is designed to need as little personal data as possible. We collect:</p>
+    <ul>
+        <li><strong>XRPL wallet addresses</strong> — buyer and seller addresses you provide when creating an escrow, posting a job, bidding, or registering as an NFT issuer. Wallet addresses are public XRPL Ledger data by nature.</li>
+        <li><strong>Email addresses (optional in most flows, required for sellers)</strong> — used only to send receipt codes, submission links, and delivery notifications related to a specific escrow or job. We do not require an account or password.</li>
+        <li><strong>Task descriptions and submitted work</strong> — the text, links, or proof-of-work content you submit for AI verification is processed to generate a PASS/FAIL verdict.</li>
+        <li><strong>Issuer registration details</strong> — organisation name, category, description, website, and contact email, if you register as an NFT issuer in the registry.</li>
+        <li><strong>Transaction hashes</strong> — XRPL payment and escrow transaction hashes, used to verify on-chain payments and prevent replay/reuse of the same payment.</li>
+    </ul>
+    <p>We do not collect passwords, payment card details, or government ID. We do not use cookies for tracking or advertising.</p>
+
+    <h2>2. How we use it</h2>
+    <ul>
+        <li>To create and manage XRPL escrow vaults and release payment automatically when an AI verdict passes.</li>
+        <li>To send receipt codes, submission links, and delivery notifications by email, where an email address has been provided.</li>
+        <li>To evaluate submitted work against a task specification using a third-party AI model (Google Gemini). Task and work text is sent to Gemini's API solely to generate the PASS/FAIL verdict and is not used by us for any other purpose.</li>
+        <li>To list and verify NFT issuer registry records, including checking an XRPL wallet's on-chain <code>Domain</code> field against a published <code>xrp-ledger.toml</code> file.</li>
+        <li>To operate the public job board and skill marketplace, which are intentionally public listings.</li>
+    </ul>
+
+    <h2>3. Third parties</h2>
+    <p>We share data with the following third parties, only as needed to operate the service:</p>
+    <ul>
+        <li><strong>Google Gemini API</strong> — receives task and work text to generate AI verdicts. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+        <li><strong>XRP Ledger (mainnet)</strong> — all escrow transactions, wallet addresses, and domain verifications are recorded on the public, permissionless XRP Ledger and are inherently public and immutable.</li>
+        <li><strong>Render</strong> (application hosting) and <strong>Neon/PostgreSQL</strong> (database hosting) — store escrow, job board, and registry records on our behalf.</li>
+    </ul>
+    <p>We do not sell personal data, and we do not share email addresses with any party outside of the specific transaction they relate to.</p>
+
+    <h2>4. Data retention</h2>
+    <p>Escrow, job board, and registry records are retained indefinitely as part of the operational and audit history of the platform, consistent with the public, permanent nature of XRPL transactions they reference. Email addresses are retained only as long as needed to fulfil the transaction they were provided for, and are never required to use the platform's read-only or escrow-creation features beyond the seller-email requirement noted above.</p>
+
+    <h2>5. Your choices</h2>
+    <ul>
+        <li>Email is optional for buyers; you can use AgentTrust without ever providing one.</li>
+        <li>You can request removal of an email address associated with a completed escrow by contacting us (see below) — on-chain transaction data itself cannot be altered or deleted, as it lives on the XRP Ledger, not on our servers.</li>
+        <li>NFT issuer registry entries can be claimed, updated, or disputed by the organisation they reference — see the <a href="https://www.cryptovault.co.uk/docs/issuer-registry-spec.md">registry spec</a> for the verification process.</li>
+    </ul>
+
+    <h2>6. Children's privacy</h2>
+    <p>AgentTrust is not directed at children and we do not knowingly collect data from anyone under 16.</p>
+
+    <h2>7. Changes to this policy</h2>
+    <p>We may update this policy as the platform evolves. Material changes will be reflected by updating the "Last updated" date above.</p>
+
+    <h2>8. Contact</h2>
+    <p>Questions about this policy or your data: <a href="mailto:hello@cryptovault.co.uk">hello@cryptovault.co.uk</a></p>
+</div>
+</body>
+</html>
