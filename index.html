@@ -278,6 +278,8 @@
         @keyframes dash-move { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -20; } }
 
         /* ── USE CASES ── */
+        .explore-section { margin: 5rem 0 2rem; }
+        .explore-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
         .use-cases-title { font-family: 'DM Serif Display', serif; font-size: 2.4rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: 2.5rem; }
         .use-cases { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin-bottom: 5rem; }
         .use-case { padding: 1.7rem; border-radius: 22px; transition: transform .3s, border-color .3s, background .3s; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); }
@@ -337,11 +339,14 @@
             .row-2 { grid-template-columns: 1fr; }
             .use-cases { grid-template-columns: repeat(2,1fr); }
             .agentic-grid { grid-template-columns: repeat(2,1fr) !important; }
+            .explore-grid { grid-template-columns: repeat(2,1fr); }
         }
         @media (max-width: 600px) {
             .container { padding: 2rem 1rem 4rem; }
             .card { padding: 1.4rem 1.2rem; border-radius: 20px; }
             .use-cases { grid-template-columns: 1fr; }
+            .explore-grid { grid-template-columns: 1fr; }
+            .explore-section { margin: 3rem 0 1.5rem; }
             .agentic-grid { grid-template-columns: 1fr !important; }
             /* Prevent iOS zoom on input focus */
             input, textarea, select { font-size: 16px !important; }
@@ -1198,8 +1203,8 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
     <!-- ════════════════════════════════════════════════════════════
          EXPLORE — links to the rest of the site
     ════════════════════════════════════════════════════════════ -->
-    <section style="margin:5rem 0 2rem;">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;">
+    <section class="explore-section">
+        <div class="explore-grid">
             <a href="/how-it-works/" class="use-case" style="text-decoration:none;color:inherit;display:block;">
                 <div class="use-case-icon"><i data-lucide="workflow"></i></div>
                 <h4>How it Works</h4>
