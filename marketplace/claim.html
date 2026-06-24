@@ -62,7 +62,7 @@ async function loadIssuer() {
     if (!res.ok) { box.textContent = data.detail || "Issuer not found."; return; }
     box.innerHTML = `
       <div><span class="label">Name:</span> <strong>${data.name}</strong></div>
-      <div><span class="label">Wallet:</span> <span class="mono">${data.wallet_address}</span></div>
+      <div><span class="label">Wallet:</span> <span class="mono">${data.wallet_address}</span> &middot; <a href="https://bithomp.com/account/${data.wallet_address}" target="_blank">View on Bithomp ↗</a></div>
       <div><span class="label">Expected domain:</span> ${data.website || '—'}</div>
       <div><span class="label">Status:</span> ${data.claimed ? 'Already claimed' : (data.verified || 'public')}</div>
     `;
