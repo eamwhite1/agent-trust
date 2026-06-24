@@ -80,6 +80,8 @@
 
         .hero { text-align: center; margin-bottom: 4.5rem; }
         .hero-eyebrow { display: inline-block; margin-bottom: 1.5rem; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+        .mobile-break { display: none; }
+        @media (max-width: 600px) { .mobile-break { display: block; } }
         .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(3rem, 7vw, 6rem); letter-spacing: -.03em; line-height: 1.04; margin-bottom: 1.4rem; color: var(--text); }
         .hero h1 em { font-style: italic; color: var(--blue); }
         .hero p { font-size: 1.12rem; color: var(--text-muted); max-width: 620px; margin: 0 auto; line-height: 1.7; }
@@ -411,9 +413,9 @@
 
     <!-- HERO -->
     <section class="hero" id="hero-section">
-        <div class="hero-eyebrow">Trustless payments —<br>cryptographically verified.</div>
+        <div class="hero-eyebrow">Trustless payments —<br class="mobile-break">cryptographically verified.</div>
         <h1>Work done.<br><em>Paid instantly.</em></h1>
-        <p>Eliminating counterparty risk<br>in remote and agentic work.</p>
+        <p>Eliminating counterparty risk<br class="mobile-break">in remote and agentic work.</p>
     </section>
 
     <!-- LANDING PROMPT -->
