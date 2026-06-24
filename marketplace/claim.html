@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claim Your Issuer Listing — AgentTrust</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{--bg:#0d1117;--card:#161b22;--border:#262d38;--text:#e2e8f0;--muted:#94a3b8;--accent:#10b981;--danger:#f87171;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;justify-content:center;padding:3rem 1rem;}
+  .card{max-width:520px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;}
+  h1{font-size:1.3rem;margin:0 0 .3rem;}
+  p.sub{color:var(--muted);font-size:.92rem;margin:0 0 1.5rem;}
+  .issuer-box{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem;font-size:.88rem;}
+  .issuer-box div{margin-bottom:.4rem;}
+  .issuer-box span.label{color:var(--muted);}
+  .mono{font-family:monospace;word-break:break-all;}
+  label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:.4rem;margin-top:1rem;}
+  input{width:100%;padding:.7rem .8rem;border-radius:8px;border:1px solid var(--border);background:#0d1117;color:var(--text);font-size:.95rem;}
+  .steps{font-size:.85rem;color:var(--muted);line-height:1.6;margin:1rem 0;padding-left:1.1rem;}
+  code{background:#0d1117;border:1px solid var(--border);padding:.1rem .35rem;border-radius:4px;font-size:.82rem;}
+  button{margin-top:1.3rem;width:100%;padding:.8rem;border:none;border-radius:8px;background:var(--accent);color:#06251a;font-weight:600;font-size:.95rem;cursor:pointer;}
+  button:disabled{opacity:.6;cursor:default;}
+  .msg{margin-top:1rem;font-size:.88rem;padding:.8rem;border-radius:8px;display:none;}
+  .msg.ok{display:block;background:rgba(16,185,129,.1);border:1px solid var(--accent);color:var(--accent);}
+  .msg.err{display:block;background:rgba(248,113,113,.1);border:1px solid var(--danger);color:var(--danger);}
+  a{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Claim your issuer listing</h1>
+  <p class="sub">Verify domain control to confirm this entry as your own — no manual review, takes effect immediately.</p>
+
+  <div id="issuerBox" class="issuer-box">Loading…</div>
+
+  <ol class="steps">
+    <li>Publish a <code>xrp-ledger.toml</code> file at <code>https://&lt;your-domain&gt;/.well-known/xrp-ledger.toml</code> listing this wallet address (the <a href="https://xrpl.org/docs/concepts/transactions/source-and-destination-tags#domain-verification" target="_blank">XRPL Foundation standard</a> already used for Domain-field verification).</li>
+    <li>Enter your contact email below and submit. We check the file automatically — if it lists this wallet, the entry is marked <strong>verified</strong> right away.</li>
+  </ol>
+
+  <label for="email">Contact email</label>
+  <input id="email" type="email" placeholder="you@yourcompany.com">
+
+  <button id="submitBtn" onclick="submitClaim()">Verify &amp; claim</button>
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const REFEREE_URL = "https://xrpl-referee.onrender.com";
+const params = new URLSearchParams(location.search);
+const issuerId = params.get("id");
+const box = document.getElementById("issuerBox");
+const msg = document.getElementById("msg");
+
+async function loadIssuer() {
+  if (!issuerId) { box.textContent = "Missing issuer id."; return; }
+  try {
+    const res = await fetch(`${REFEREE_URL}/nft/issuers/${issuerId}`);
+    const data = await res.json();
+    if (!res.ok) { box.textContent = data.detail || "Issuer not found."; return; }
+    box.innerHTML = `
+      <div><span class="label">Name:</span> <strong>${data.name}</strong></div>
+      <div><span class="label">Wallet:</span> <span class="mono">${data.wallet_address}</span></div>
+      <div><span class="label">Expected domain:</span> ${data.website || '—'}</div>
+      <div><span class="label">Status:</span> ${data.claimed ? 'Already claimed' : (data.verified || 'public')}</div>
+    `;
+    if (data.claimed) {
+      document.getElementById("submitBtn").disabled = true;
+      msg.className = "msg ok";
+      msg.textContent = "This listing has already been claimed.";
+    }
+  } catch (e) {
+    box.textContent = "Could not load issuer.";
+  }
+}
+
+async function submitClaim() {
+  const email = document.getElementById("email").value.trim();
+  if (!email) { msg.className = "msg err"; msg.textContent = "Enter a contact email."; return; }
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "Checking…";
+  msg.className = "msg"; msg.textContent = "";
+  try {
+    const res = await fetch(`${REFEREE_URL}/nft/issuers/${issuerId}/claim`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contact_email: email }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Verification failed.");
+    msg.className = "msg ok";
+    msg.textContent = data.message;
+    btn.textContent = "Verified";
+  } catch (e) {
+    msg.className = "msg err";
+    msg.textContent = e.message;
+    btn.disabled = false; btn.textContent = "Verify & claim";
+  }
+}
+
+loadIssuer();
+</script>
+</body>
+</html>
