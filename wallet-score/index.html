@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Trust Score — AgentTrust</title>
+<meta name="description" content="Look up any XRPL wallet's trust score — 7 independent signals including escrow completion history and peer ratings. Free, open, no sign-up.">
+<style>
+/* ── Tokens ── */
+:root {
+  --bg:        #080D18;
+  --surface:   #0F1624;
+  --surface2:  #151E2E;
+  --border:    #1C2A40;
+  --text:      #E4EBF5;
+  --muted:     #5A7090;
+  --faint:     #283548;
+  --accent:    #E8A020;
+  --accent-dim:rgba(232,160,32,.12);
+  --green:     #34D399;
+  --green-dim: rgba(52,211,153,.12);
+  --amber:     #FBBF24;
+  --amber-dim: rgba(251,191,36,.1);
+  --red:       #F87171;
+  --red-dim:   rgba(248,113,113,.1);
+  --mono:      'Space Mono', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:        #F0F4FA;
+    --surface:   #FFFFFF;
+    --surface2:  #F7F9FC;
+    --border:    #D8E2EF;
+    --text:      #0F1624;
+    --muted:     #6B849E;
+    --faint:     #E4EBF5;
+    --accent:    #C07010;
+    --accent-dim:rgba(192,112,16,.1);
+    --green:     #059669;
+    --green-dim: rgba(5,150,105,.1);
+    --amber:     #B45309;
+    --amber-dim: rgba(180,83,9,.08);
+    --red:       #DC2626;
+    --red-dim:   rgba(220,38,38,.08);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#080D18;--surface:#0F1624;--surface2:#151E2E;--border:#1C2A40;
+  --text:#E4EBF5;--muted:#5A7090;--faint:#283548;--accent:#E8A020;
+  --accent-dim:rgba(232,160,32,.12);--green:#34D399;--green-dim:rgba(52,211,153,.12);
+  --amber:#FBBF24;--amber-dim:rgba(251,191,36,.1);--red:#F87171;--red-dim:rgba(248,113,113,.1);
+}
+:root[data-theme="light"] {
+  --bg:#F0F4FA;--surface:#FFFFFF;--surface2:#F7F9FC;--border:#D8E2EF;
+  --text:#0F1624;--muted:#6B849E;--faint:#E4EBF5;--accent:#C07010;
+  --accent-dim:rgba(192,112,16,.1);--green:#059669;--green-dim:rgba(5,150,105,.1);
+  --amber:#B45309;--amber-dim:rgba(180,83,9,.08);--red:#DC2626;--red-dim:rgba(220,38,38,.08);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  padding: 0 1rem 4rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.wrap { max-width: 660px; margin: 0 auto; }
+
+/* ── Nav ── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3rem;
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: .85rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: .04em;
+}
+.nav-logo strong { color: var(--text); }
+.nav-badge {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid rgba(52,211,153,.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── Page header ── */
+.page-eyebrow {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: .75rem;
+}
+h1 {
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+  margin-bottom: .6rem;
+  text-wrap: balance;
+}
+.page-sub {
+  font-size: .93rem;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 520px;
+  margin-bottom: 2.5rem;
+}
+
+/* ── Search ── */
+.search-row {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: 2.5rem;
+}
+.search-input {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: .82rem;
+  padding: .85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+  min-width: 0;
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--accent); }
+.search-btn {
+  padding: .85rem 1.4rem;
+  background: var(--accent);
+  color: #0F0A00;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: .88rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.search-btn:hover { opacity: .9; }
+.search-btn:disabled { opacity: .5; cursor: default; }
+
+/* ── Error ── */
+.error-box {
+  background: var(--red-dim);
+  border: 1px solid rgba(248,113,113,.25);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  font-size: .88rem;
+  color: var(--red);
+  margin-bottom: 1.5rem;
+  display: none;
+}
+
+/* ── Results ── */
+#results { display: none; }
+
+/* ── Gauge card ── */
+.gauge-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+canvas#gauge {
+  display: block;
+  margin: 0 auto .5rem;
+}
+.gauge-score {
+  font-family: var(--mono);
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: .25rem;
+}
+.gauge-label {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+}
+.gauge-label.low    { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(248,113,113,.2); }
+.gauge-label.mid    { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(251,191,36,.2); }
+.gauge-label.high   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+
+.wallet-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Signals ── */
+.signals-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.signals-title {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+}
+.signal-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 36px;
+  align-items: center;
+  gap: .75rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.signal-row:last-child { border-bottom: none; }
+.signal-name {
+  font-size: .82rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+.signal-track {
+  height: 5px;
+  background: var(--faint);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.signal-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  width: 0;
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+.signal-pts {
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* ── Detail grid ── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+}
+.detail-cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .9rem 1rem;
+}
+.detail-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .3rem;
+}
+.detail-value {
+  font-family: var(--mono);
+  font-size: .9rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.detail-value.positive { color: var(--green); }
+.detail-value.negative { color: var(--red); }
+
+/* ── Info note ── */
+.info-note {
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.6;
+  text-align: center;
+  padding: 1rem 0 0;
+}
+.info-note a { color: var(--accent); text-decoration: none; }
+
+/* ── Empty / example ── */
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 2rem;
+}
+.example-btn {
+  font-family: var(--mono);
+  font-size: .72rem;
+  padding: 4px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.example-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .signal-row { grid-template-columns: 120px 1fr 30px; gap: .5rem; }
+  .search-row { flex-direction: column; }
+  .search-btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-fill { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <a href="/" class="nav-logo"><strong>AgentTrust</strong> / wallet-score</a>
+    <span class="nav-badge">Free &amp; Open</span>
+  </nav>
+
+  <div class="page-eyebrow">AgentTrust Protocol</div>
+  <h1>Wallet Trust Score</h1>
+  <p class="page-sub">Seven independent signals — account age, balance, on-chain activity, domain verification, NFTs held, escrow completion history, and peer ratings. Query any XRPL wallet, no sign-up.</p>
+
+  <div class="search-row">
+    <input id="addr-input" class="search-input" type="text" placeholder="r… (XRPL wallet address)" autocomplete="off" spellcheck="false">
+    <button class="search-btn" id="lookup-btn" onclick="lookup()">Look up</button>
+  </div>
+
+  <div style="font-size:.72rem;color:var(--muted);margin-bottom:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Try an example</div>
+  <div class="examples">
+    <button class="example-btn" onclick="prefill('rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De')">Ripple / RLUSD</button>
+    <button class="example-btn" onclick="prefill('rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B')">Bitstamp</button>
+    <button class="example-btn" onclick="prefill('rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq')">GateHub</button>
+    <button class="example-btn" onclick="prefill('rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz')">Sologenic</button>
+    <button class="example-btn" onclick="prefill('rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr')">CasinoCoin Foundation</button>
+  </div>
+
+  <div id="error-box" class="error-box"></div>
+
+  <div id="results">
+    <div class="gauge-card">
+      <canvas id="gauge" width="260" height="150"></canvas>
+      <div class="gauge-score" id="score-num">—</div>
+      <div><span class="gauge-label" id="score-label">—</span></div>
+      <div style="margin-top:1rem;"><span class="wallet-pill" id="wallet-display">—</span></div>
+    </div>
+
+    <div class="signals-card">
+      <div class="signals-title">Signal breakdown</div>
+      <div id="signal-rows"></div>
+    </div>
+
+    <div class="detail-grid" id="detail-grid"></div>
+
+    <p class="info-note">
+      Escrow completion and peer rating signals strengthen as more jobs are completed on AgentTrust.<br>
+      <a href="/marketplace/#api" target="_blank">API docs</a> · <a href="https://xrpl-referee.onrender.com/docs" target="_blank">Full OpenAPI spec ↗</a>
+    </p>
+  </div>
+
+</div>
+
+<script>
+const API = "https://xrpl-referee.onrender.com";
+
+const SIGNALS = [
+  { key: "account_age",       label: "Account age",        max: 20 },
+  { key: "balance",           label: "XRP balance",        max: 15 },
+  { key: "on_chain_activity", label: "On-chain activity",  max: 15 },
+  { key: "domain_verified",   label: "Domain verified",    max: 10 },
+  { key: "nfts_held",         label: "NFTs held",          max: 5  },
+  { key: "escrow_completion", label: "Escrow completion",  max: 20 },
+  { key: "peer_rating",       label: "Peer rating",        max: 15 },
+];
+
+// Pre-fill from URL param
+const urlAddr = new URLSearchParams(location.search).get("address");
+if (urlAddr) { document.getElementById("addr-input").value = urlAddr; lookup(); }
+
+function prefill(addr) {
+  document.getElementById("addr-input").value = addr;
+  lookup();
+}
+
+document.getElementById("addr-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") lookup();
+});
+
+async function lookup() {
+  const addr = document.getElementById("addr-input").value.trim();
+  const errBox = document.getElementById("error-box");
+  const results = document.getElementById("results");
+  const btn = document.getElementById("lookup-btn");
+
+  errBox.style.display = "none";
+  results.style.display = "none";
+
+  if (!addr || !addr.startsWith("r") || addr.length < 20) {
+    errBox.textContent = "Enter a valid XRPL wallet address (starts with 'r').";
+    errBox.style.display = "block";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+
+  try {
+    const res = await fetch(`${API}/wallet/score/${encodeURIComponent(addr)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Could not load score.");
+    render(addr, data);
+  } catch (e) {
+    errBox.textContent = e.message || "Could not reach AgentTrust API.";
+    errBox.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Look up";
+  }
+}
+
+function render(addr, data) {
+  const score = data.score ?? 0;
+  const breakdown = data.signals?.score_breakdown ?? {};
+  const signals = data.signals ?? {};
+
+  // Score number
+  document.getElementById("score-num").textContent = score;
+  document.getElementById("wallet-display").textContent = addr.slice(0,8) + "…" + addr.slice(-6);
+
+  // Label
+  const labelEl = document.getElementById("score-label");
+  if (score >= 60)      { labelEl.textContent = "Established";  labelEl.className = "gauge-label high"; }
+  else if (score >= 30) { labelEl.textContent = "Moderate";     labelEl.className = "gauge-label mid";  }
+  else                  { labelEl.textContent = "Low Trust";    labelEl.className = "gauge-label low";  }
+
+  // Gauge
+  drawGauge(score);
+
+  // Signal rows
+  const rows = document.getElementById("signal-rows");
+  rows.innerHTML = "";
+  SIGNALS.forEach(sig => {
+    const pts = breakdown[sig.key] ?? 0;
+    const pct = sig.max > 0 ? (pts / sig.max) * 100 : 0;
+    const row = document.createElement("div");
+    row.className = "signal-row";
+    row.innerHTML = `
+      <div class="signal-name">${sig.label}</div>
+      <div class="signal-track"><div class="signal-fill" data-pct="${pct}" style="background:${barColor(pts,sig.max)}"></div></div>
+      <div class="signal-pts">${pts}<span style="color:var(--faint);font-size:.65rem;">/${sig.max}</span></div>
+    `;
+    rows.appendChild(row);
+  });
+
+  // Animate bars after paint
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    rows.querySelectorAll(".signal-fill").forEach(el => {
+      el.style.width = el.dataset.pct + "%";
+    });
+  }));
+
+  // Detail cells
+  const grid = document.getElementById("detail-grid");
+  const items = [
+    { label: "Account age",    value: signals.age_days != null ? signals.age_days + " days" : "—" },
+    { label: "XRP balance",    value: signals.balance_xrp != null ? signals.balance_xrp.toLocaleString() + " XRP" : "—" },
+    { label: "Owner count",    value: signals.owner_count ?? "—" },
+    { label: "Domain set",     value: signals.has_domain ? "Yes" : "No", cls: signals.has_domain ? "positive" : "negative" },
+    { label: "NFTs held",      value: signals.nft_count ?? "—" },
+    { label: "Total escrows",  value: signals.total_escrows ?? "—" },
+    { label: "Passed escrows", value: signals.passed_escrows ?? "—", cls: signals.passed_escrows > 0 ? "positive" : "" },
+    { label: "Avg rating",     value: signals.avg_rating > 0 ? "★ " + signals.avg_rating.toFixed(1) : "No ratings", cls: signals.avg_rating >= 4 ? "positive" : "" },
+  ];
+  grid.innerHTML = items.map(i => `
+    <div class="detail-cell">
+      <div class="detail-label">${i.label}</div>
+      <div class="detail-value ${i.cls||""}">${i.value}</div>
+    </div>
+  `).join("");
+
+  document.getElementById("results").style.display = "block";
+}
+
+function barColor(pts, max) {
+  const ratio = max > 0 ? pts / max : 0;
+  if (ratio >= 0.7) return "var(--green)";
+  if (ratio >= 0.35) return "var(--amber)";
+  return "var(--red)";
+}
+
+function drawGauge(score) {
+  const canvas = document.getElementById("gauge");
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = 260 * dpr;
+  canvas.height = 150 * dpr;
+  canvas.style.width  = "260px";
+  canvas.style.height = "150px";
+  ctx.scale(dpr, dpr);
+
+  const cx = 130, cy = 135, r = 108, strokeW = 14;
+  const startAngle = Math.PI;
+  const endAngle   = 2 * Math.PI;
+  const totalArc   = Math.PI;
+
+  // Segment colours: red→amber→green in thirds
+  const segments = [
+    { from: 0,    to: 0.33, color: "#F87171" },
+    { from: 0.33, to: 0.66, color: "#FBBF24" },
+    { from: 0.66, to: 1.0,  color: "#34D399" },
+  ];
+
+  // Track (faint)
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = "rgba(255,255,255,.06)";
+  ctx.lineWidth = strokeW;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Segments
+  segments.forEach(seg => {
+    const sA = startAngle + seg.from * totalArc;
+    const eA = startAngle + seg.to   * totalArc;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, sA, eA);
+    ctx.strokeStyle = seg.color + "55";
+    ctx.lineWidth = strokeW;
+    ctx.lineCap = "butt";
+    ctx.stroke();
+  });
+
+  // Filled arc up to score
+  const fillRatio = score / 100;
+  const fillEnd   = startAngle + fillRatio * totalArc;
+  const fillColor = score >= 60 ? "#34D399" : score >= 30 ? "#FBBF24" : "#F87171";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, fillEnd);
+  ctx.strokeStyle = fillColor;
+  ctx.lineWidth = strokeW;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Tick marks at 30 and 60
+  [30, 60].forEach(val => {
+    const angle = startAngle + (val / 100) * totalArc;
+    const x1 = cx + (r - strokeW) * Math.cos(angle);
+    const y1 = cy + (r - strokeW) * Math.sin(angle);
+    const x2 = cx + (r + strokeW * .3) * Math.cos(angle);
+    const y2 = cy + (r + strokeW * .3) * Math.sin(angle);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = "rgba(255,255,255,.25)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // Needle
+  const needleAngle = startAngle + fillRatio * totalArc;
+  const nx = cx + (r - strokeW * 1.5) * Math.cos(needleAngle);
+  const ny = cy + (r - strokeW * 1.5) * Math.sin(needleAngle);
+  ctx.beginPath();
+  ctx.arc(nx, ny, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = fillColor;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(nx, ny, 3, 0, 2 * Math.PI);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+
+  // Labels: 0, 50, 100
+  ctx.font = "10px 'Space Mono', monospace";
+  ctx.fillStyle = "rgba(255,255,255,.35)";
+  ctx.textAlign = "right";
+  ctx.fillText("0",   cx - r - 8, cy + 4);
+  ctx.textAlign = "center";
+  ctx.fillText("50",  cx,         cy - r - 10);
+  ctx.textAlign = "left";
+  ctx.fillText("100", cx + r + 4, cy + 4);
+}
+</script>
+</body>
+</html>
