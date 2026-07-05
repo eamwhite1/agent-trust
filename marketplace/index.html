@@ -2180,7 +2180,7 @@ function applyFilters(sortMode) {
             if (usd < parseFloat(activeBounty)) return false;
         }
         if (q) {
-            const haystack = `${job.title} ${job.description} ${(job.tags||[]).join(" ")}`.toLowerCase();
+            const haystack = `${job.id} ${job.title} ${job.description} ${(job.tags||[]).join(" ")}`.toLowerCase();
             if (!haystack.includes(q)) return false;
         }
         return true;
