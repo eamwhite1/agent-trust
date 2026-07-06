@@ -1510,8 +1510,8 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
             if (res.ok) {
                 const d = await res.json();
                 items = (d.issuers || [])
-                    .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q))
-                    .map(i => ({ name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category, verified: i.verified }));
+                    .filter(i => i.name?.toLowerCase().includes(q) || i.category?.toLowerCase().includes(q) || i.website?.toLowerCase().includes(q))
+                    .map(i => ({ name: i.name, wallet: i.all_wallets?.[0] || i.wallet_address, category: i.category, verified: i.verified, website: i.website }));
             }
             if (!resultsEl) return;
             if (!items.length) {
@@ -1538,7 +1538,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                     style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
                     onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
                     <div style="font-weight:600;color:var(--text);">${r.name}</div>
-                    <div>${badge}</div>
+                    <div style="display:flex;align-items:center;gap:6px;">${badge}${r.website ? `<span style="font-size:.68rem;color:var(--text-muted);font-family:monospace;">${r.website.replace(/https?:\/\//, "")}</span>` : ""}</div>
                 </div>`;
             }).join("");
             resultsEl.style.display = "block";
