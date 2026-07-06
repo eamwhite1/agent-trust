@@ -1524,7 +1524,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                         <input type="text" placeholder="rXXX… wallet address"
                             style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(168,85,247,.4);color:var(--text);box-sizing:border-box;"
                             oninput="applyManualIssuerWallet(this.value)">
-                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;">Or ask them to register: <a href="https://www.cryptovault.co.uk/marketplace#issuers" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
+                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;">Or ask them to register: <a href="https://www.cryptovault.co.uk/marketplace/claim.html" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
                     </div>`;
                 resultsEl.style.display = "block";
                 return;
@@ -1547,12 +1547,40 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
 }
 
 
-function applyManualIssuerWallet(val) {
+async function applyManualIssuerWallet(val) {
+    const wallet = val.trim();
     const target = document.getElementById("nft-issuer-field");
-    if (target) target.value = val.trim();
-    if (val.trim().startsWith("r") && val.trim().length > 20) {
-        setProofVerified("pt-nft-wrap", "168,85,247", "Wallet address set — unverified (not in AgentTrust registry)");
-    }
+    if (target) target.value = wallet;
+    if (!wallet.startsWith("r") || wallet.length < 20) return;
+    setProofVerified("pt-nft-wrap", "168,85,247", "Checking wallet…");
+    try {
+        // Check by wallet address in our registry first
+        const res = await fetch(`${REFEREE_URL}/nft/issuers/by-wallet/${wallet}`);
+        if (res.ok) {
+            const d = await res.json();
+            const label = d.verified === "verified" ? "✅ Verified issuer in AgentTrust registry" : `Listed in registry: ${d.name}`;
+            setProofVerified("pt-nft-wrap", "168,85,247", label);
+            const input = document.getElementById("nft-issuer-search");
+            if (input && !input.value) input.value = d.name;
+            return;
+        }
+    } catch(e) {}
+    // Fall back to trust score endpoint which checks Bithomp
+    try {
+        const res = await fetch(`${REFEREE_URL}/wallet/score/${wallet}`);
+        if (res.ok) {
+            const d = await res.json();
+            if (d.verified_issuer) {
+                const src = d.verified_issuer.source === "bithomp" ? "Bithomp" : "AgentTrust";
+                const name = d.verified_issuer.name || d.verified_issuer.domain || wallet.slice(0,8) + "…";
+                setProofVerified("pt-nft-wrap", "16,185,129", `✅ ${name} — verified on ${src}`);
+                const input = document.getElementById("nft-issuer-search");
+                if (input && !input.value && d.verified_issuer.name) input.value = d.verified_issuer.name;
+                return;
+            }
+        }
+    } catch(e) {}
+    setProofVerified("pt-nft-wrap", "168,85,247", "Wallet address set — not found in AgentTrust registry or Bithomp");
 }
 
 function selectIssuer(wallet, name, targetId, resultsId, wrapId, rgb) {
