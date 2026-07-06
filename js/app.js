@@ -1550,7 +1550,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 resultsEl.innerHTML = `
                     <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
                         <div style="color:var(--text-muted);margin-bottom:8px;">
-                            <strong style="color:var(--text);">"${query}"</strong> isn't in the AgentTrust registry yet.
+                            <strong style="color:var(--text);">"${query}"</strong> isn't in the AgentTrust registry${looksLikeDomain ? ' or Bithomp' : ''} yet.
                         </div>
                         <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet address? Paste it here:</div>
                         <input type="text" placeholder="rXXX… wallet address"
