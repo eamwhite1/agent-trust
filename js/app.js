@@ -1547,12 +1547,16 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                         }
                     } catch(e) {}
                 }
+                const bithompHint = looksLikeDomain
+                    ? `<div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;">Look up their wallet on <a href="https://bithomp.com/explorer/${encodeURIComponent(query)}" target="_blank" style="color:#818cf8;text-decoration:none;">Bithomp ↗</a>, then paste it below.</div>`
+                    : "";
                 resultsEl.innerHTML = `
                     <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
                         <div style="color:var(--text-muted);margin-bottom:8px;">
-                            <strong style="color:var(--text);">"${query}"</strong> isn't in the AgentTrust registry${looksLikeDomain ? ' or Bithomp' : ''} yet.
+                            <strong style="color:var(--text);">"${query}"</strong> isn't in the AgentTrust registry yet.
                         </div>
-                        <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;">Know their XRPL wallet address? Paste it here:</div>
+                        ${bithompHint}
+                        <div style="font-size:.74rem;color:#a855f7;font-weight:600;margin-bottom:4px;margin-top:6px;">Know their XRPL wallet address? Paste it here:</div>
                         <input type="text" placeholder="rXXX… wallet address"
                             style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(168,85,247,.4);color:var(--text);box-sizing:border-box;"
                             oninput="applyManualIssuerWallet(this.value)">
