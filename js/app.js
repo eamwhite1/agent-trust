@@ -1515,6 +1515,38 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
             }
             if (!resultsEl) return;
             if (!items.length) {
+                // If query looks like a domain, check /domain/preview (fetches TOML + Bithomp)
+                const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(query.trim());
+                if (looksLikeDomain) {
+                    resultsEl.innerHTML = `<div style="padding:10px 12px;font-size:.78rem;color:var(--text-muted);">Checking ${query} on Bithomp…</div>`;
+                    resultsEl.style.display = "block";
+                    try {
+                        const pr = await fetch(`${REFEREE_URL}/domain/preview?domain=${encodeURIComponent(query)}`);
+                        const pd = await pr.json();
+                        if (pd.status === "bithomp_verified" && pd.wallet) {
+                            resultsEl.innerHTML = `<div onclick="selectIssuer('${pd.wallet}','${query}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+                                style="padding:10px 12px;cursor:pointer;font-size:.8rem;display:flex;flex-direction:column;gap:3px;"
+                                onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
+                                <div style="font-weight:600;color:var(--text);">${query}</div>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ Verified on Bithomp</span>
+                                    <span style="font-size:.68rem;color:var(--text-muted);font-family:monospace;">${pd.wallet.slice(0,8)}…</span>
+                                </div>
+                            </div>`;
+                            resultsEl.style.display = "block";
+                            return;
+                        } else if (pd.status === "toml_found" && pd.wallets?.length) {
+                            resultsEl.innerHTML = `<div onclick="selectIssuer('${pd.wallets[0]}','${query}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
+                                style="padding:10px 12px;cursor:pointer;font-size:.8rem;display:flex;flex-direction:column;gap:3px;"
+                                onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
+                                <div style="font-weight:600;color:var(--text);">${query}</div>
+                                <div><span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">xrp-ledger.toml found · not Bithomp verified</span></div>
+                            </div>`;
+                            resultsEl.style.display = "block";
+                            return;
+                        }
+                    } catch(e) {}
+                }
                 resultsEl.innerHTML = `
                     <div style="padding:10px 12px;font-size:.78rem;line-height:1.6;">
                         <div style="color:var(--text-muted);margin-bottom:8px;">
