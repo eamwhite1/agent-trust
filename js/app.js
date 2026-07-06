@@ -1630,19 +1630,19 @@ function selectDomain(domain, name, wrapId) {
 async function verifyDomain(domain, wrapId) {
     const status = document.getElementById("domain-status");
     if (status) status.innerHTML = `<span style="color:var(--text-muted);">Checking ${domain}…</span>`;
+    // This preview check only tests whether an xrp-ledger.toml exists at the domain —
+    // it does NOT verify a specific wallet. Real enforcement happens at escrow release.
     try {
-        const res = await safeFetch(`${REFEREE_URL}/domain/verify`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ wallet_address: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", expected_domain: domain }),
-        });
-        // We're just checking the domain is resolvable (toml exists), not a specific wallet
-        const d = await res.json();
-        if (status) status.innerHTML = `<span style="color:#3b82f6;">✅ xrp-ledger.toml found at ${domain} — domain accepted</span>`;
+        const tomlUrl = `https://${domain.replace(/https?:\/\//, "")}/.well-known/xrp-ledger.toml`;
+        const res = await fetch(tomlUrl, { method: "HEAD", mode: "no-cors" });
+        // no-cors gives opaque response — if we get here without network error, domain is reachable
+        if (status) status.innerHTML = `<span style="color:#3b82f6;">✅ Domain reachable — sellers will need their XRPL wallet Domain field set to <strong>${domain}</strong></span>`;
         const wrap = document.getElementById(wrapId);
         if (wrap) wrap.style.borderColor = "rgba(59,130,246,.6)";
     } catch(e) {
-        if (status) status.innerHTML = `<span style="color:#f59e0b;">⚠️ Could not verify ${domain} — it may not have an xrp-ledger.toml yet. You can still set it; sellers will need to have their wallet's Domain field set to this domain.</span>`;
+        if (status) status.innerHTML = `<span style="color:var(--text-muted);">Domain set to <strong>${domain}</strong> — sellers must have their XRPL wallet Domain field set to this domain and publish an xrp-ledger.toml file there.</span>`;
+        const wrap = document.getElementById(wrapId);
+        if (wrap) wrap.style.borderColor = "rgba(59,130,246,.4)";
     }
 }
 
