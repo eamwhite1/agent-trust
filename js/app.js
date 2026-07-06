@@ -1630,19 +1630,29 @@ function selectDomain(domain, name, wrapId) {
 async function verifyDomain(domain, wrapId) {
     const status = document.getElementById("domain-status");
     if (status) status.innerHTML = `<span style="color:var(--text-muted);">Checking ${domain}…</span>`;
-    // This preview check only tests whether an xrp-ledger.toml exists at the domain —
-    // it does NOT verify a specific wallet. Real enforcement happens at escrow release.
+    const cleanDomain = domain.replace(/https?:\/\//, "").replace(/\/$/, "").toLowerCase();
+    const wrap = document.getElementById(wrapId);
     try {
-        const tomlUrl = `https://${domain.replace(/https?:\/\//, "")}/.well-known/xrp-ledger.toml`;
-        const res = await fetch(tomlUrl, { method: "HEAD", mode: "no-cors" });
-        // no-cors gives opaque response — if we get here without network error, domain is reachable
-        if (status) status.innerHTML = `<span style="color:#3b82f6;">✅ Domain reachable — sellers will need their XRPL wallet Domain field set to <strong>${domain}</strong></span>`;
-        const wrap = document.getElementById(wrapId);
-        if (wrap) wrap.style.borderColor = "rgba(59,130,246,.6)";
+        // Check our issuer registry — if the domain matches a verified issuer we can confirm it now
+        const res = await fetch(`${REFEREE_URL}/nft/issuers?limit=200`);
+        const d = await res.json();
+        const match = (d.issuers || []).find(i => {
+            const w = (i.website || "").replace(/https?:\/\//, "").replace(/\/$/, "").toLowerCase();
+            return w === cleanDomain || w.endsWith("." + cleanDomain) || cleanDomain.endsWith("." + w);
+        });
+        if (match && match.verified === "verified") {
+            if (status) status.innerHTML = `<span style="color:#10b981;">✅ <strong>${match.name}</strong> is a verified issuer in our registry — their wallet is already domain-verified on XRPL</span>`;
+            if (wrap) wrap.style.borderColor = "rgba(16,185,129,.6)";
+        } else if (match) {
+            if (status) status.innerHTML = `<span style="color:#3b82f6;">ℹ️ <strong>${match.name}</strong> is listed in our registry but not yet fully verified — the seller's wallet must have Domain field set to <strong>${cleanDomain}</strong></span>`;
+            if (wrap) wrap.style.borderColor = "rgba(59,130,246,.5)";
+        } else {
+            // Not in our registry — can't verify without the seller's wallet address
+            if (status) status.innerHTML = `<span style="color:var(--text-muted);">Domain requirement set to <strong>${cleanDomain}</strong>. Verification happens at release: the seller's XRPL wallet must have its Domain field set to this domain and list their wallet in an xrp-ledger.toml file there.</span>`;
+            if (wrap) wrap.style.borderColor = "rgba(59,130,246,.4)";
+        }
     } catch(e) {
-        if (status) status.innerHTML = `<span style="color:var(--text-muted);">Domain set to <strong>${domain}</strong> — sellers must have their XRPL wallet Domain field set to this domain and publish an xrp-ledger.toml file there.</span>`;
-        const wrap = document.getElementById(wrapId);
-        if (wrap) wrap.style.borderColor = "rgba(59,130,246,.4)";
+        if (status) status.innerHTML = `<span style="color:var(--text-muted);">Domain requirement set to <strong>${cleanDomain}</strong> — verified at escrow release against the seller's wallet.</span>`;
     }
 }
 
