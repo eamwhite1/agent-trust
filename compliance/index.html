@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance — AgentTrust</title>
+<meta name="description" content="AgentTrust compliance programme: sanctions screening, AML controls, regulatory position, and disclosure obligations.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #fafafa;
+        --text: #0d0d12;
+        --text-muted: #5a5a68;
+        --blue: #0066ff;
+        --green: #00b97a;
+        --amber: #d97706;
+        --red: #dc2626;
+        --border: rgba(0,0,0,.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
+    .updated { font-size: .85rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+    h3 { font-size: 1rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: .5rem; }
+    p, li { font-size: .95rem; color: #1a1a24; }
+    ul { padding-left: 1.3rem; }
+    li { margin-bottom: .4rem; }
+    code { background: rgba(0,102,255,.08); color: var(--blue); padding: .15em .4em; border-radius: 4px; font-family: "IBM Plex Mono", monospace; font-size: .85em; }
+    .back { display: inline-block; margin-bottom: 2rem; font-size: .85rem; font-weight: 600; }
+
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+    @media (max-width: 600px) { .status-grid { grid-template-columns: 1fr; } }
+    .status-card { border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.2rem; background: #fff; }
+    .status-card .label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .4rem; }
+    .status-card .value { font-size: .92rem; font-weight: 600; }
+    .status-card.active .label { color: var(--green); }
+    .status-card.active .value { color: var(--green); }
+    .status-card.partial .label { color: var(--amber); }
+    .status-card.partial .value { color: var(--amber); }
+    .status-card.pending .label { color: var(--text-muted); }
+    .status-card.pending .value { color: var(--text-muted); }
+
+    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.2rem 0; font-size: .88rem; line-height: 1.6; }
+    .callout.info { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); }
+    .callout.warn { background: rgba(217,119,6,.07); border: 1px solid rgba(217,119,6,.3); color: #92400e; }
+    .callout.legal { background: rgba(0,0,0,.03); border: 1px solid var(--border); color: var(--text-muted); font-size: .82rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <a class="back" href="/">← AgentTrust</a>
+    <h1>Compliance Programme</h1>
+    <div class="updated">Last updated: 28 July 2026</div>
+
+    <p>This page documents AgentTrust's compliance controls, regulatory position, and the limitations of those controls. We publish this transparently so that participants, regulators, and integration partners can assess our programme accurately.</p>
+
+    <div class="callout warn">
+        <strong>This is not legal advice.</strong> The disclosures on this page reflect our current understanding and good-faith compliance efforts. AgentTrust is an early-stage protocol. If you require a formal legal or compliance opinion, you should seek independent counsel.
+    </div>
+
+    <h2>Current control status</h2>
+    <div class="status-grid">
+        <div class="status-card active">
+            <div class="label">Sanctions screening</div>
+            <div class="value">Active — OFAC SDN</div>
+        </div>
+        <div class="status-card active">
+            <div class="label">Wallet ownership proofs</div>
+            <div class="value">Active — on-chain</div>
+        </div>
+        <div class="status-card partial">
+            <div class="label">AML programme</div>
+            <div class="value">Partial — no formal policy</div>
+        </div>
+        <div class="status-card pending">
+            <div class="label">KYC / identity verification</div>
+            <div class="value">Not implemented</div>
+        </div>
+        <div class="status-card pending">
+            <div class="label">FATF Travel Rule</div>
+            <div class="value">Not implemented</div>
+        </div>
+        <div class="status-card partial">
+            <div class="label">EU MiCA</div>
+            <div class="value">Position under review</div>
+        </div>
+    </div>
+
+    <h2>1. Regulatory classification</h2>
+
+    <h3>Are we a custodian or money transmitter?</h3>
+    <p>AgentTrust does not take custody of funds at any point. Escrowed XRP and RLUSD are held in native XRPL crypto-condition escrow objects — on-chain constructs enforced by the XRP Ledger's consensus protocol, not by us. We hold no private keys to escrow funds, have no ability to reverse transactions, and cannot access held funds outside of the cryptographic release condition.</p>
+    <p>On this basis, we believe AgentTrust operates as a <strong>protocol layer</strong>, not as a money transmitter or custodial virtual asset service provider (VASP). This is an unsettled area of law in most jurisdictions and we continue to monitor regulatory developments.</p>
+
+    <h3>US — FinCEN / Money Services Business</h3>
+    <p>Under current US FinCEN guidance, entities that transmit or hold convertible virtual currency as a business may be classified as Money Services Businesses (MSBs) subject to registration and AML programme requirements. Our no-custody, on-chain-escrow model is intended to fall outside that definition, but the classification has not been confirmed by a legal opinion. We do not currently hold an MSB registration.</p>
+
+    <h3>US — Clarity Act / FIT21</h3>
+    <p>Pending legislation (the Digital Asset Market Structure Act / FIT21 framework) would clarify whether digital assets like XRP and RLUSD are treated as commodities (CFTC) or securities (SEC). XRP's status was largely resolved by the Ripple Labs ruling. We will review our obligations once any such legislation is enacted.</p>
+
+    <h3>EU — MiCA (Markets in Crypto-Assets Regulation)</h3>
+    <p>MiCA came into full force in December 2024. Crypto-asset service providers (CASPs) operating in the EU require authorisation from a national competent authority. Whether an on-chain, non-custodial escrow protocol that does not hold assets constitutes a CASP under MiCA is not definitively settled. We are reviewing this question and will update this page as our position becomes clearer.</p>
+
+    <h3>UK — FCA</h3>
+    <p>The UK Financial Conduct Authority regulates cryptoasset businesses under the Money Laundering Regulations 2017 (MLRs). Businesses must register with the FCA if they carry out cryptoasset activities in the UK. Our non-custodial model is intended to fall outside the scope of FCA registration requirements, but this has not been confirmed by legal opinion.</p>
+
+    <h2>2. Sanctions screening</h2>
+    <p>All XRPL wallet addresses submitted to AgentTrust are automatically screened against the <strong>US OFAC Specially Designated Nationals (SDN) list</strong>, specifically the Digital Currency Address — XRP entries. Screening occurs:</p>
+    <ul>
+        <li>At escrow creation — both buyer and seller addresses are screened before funds can be locked.</li>
+        <li>At trust score computation — sanctioned wallets receive a score of 0 and the reason is disclosed.</li>
+        <li>At wallet ownership verification — the wallet being verified is screened.</li>
+    </ul>
+    <p>The SDN list is fetched directly from the US Treasury (<code>treasury.gov/ofac/downloads/sdn.xml</code>) and cached for up to 24 hours. Sanctioned wallets are blocked from all escrow activity and receive a trust score of 0.</p>
+
+    <h3>Current limitations</h3>
+    <ul>
+        <li><strong>OFAC only.</strong> We currently screen against the US SDN list only. EU, UN, and UK sanctions lists are not yet checked. We intend to add Chainalysis Sanctions API coverage (which includes EU and UN lists) once a free API key is obtained.</li>
+        <li><strong>24-hour cache.</strong> There is a potential lag of up to 24 hours between a new OFAC designation and it being reflected in our screening. We accept this as a reasonable operational trade-off for a non-custodial protocol at current scale.</li>
+        <li><strong>Address-level only.</strong> We do not screen counterparty names, entities, or beneficial ownership. This is a known gap.</li>
+        <li><strong>No audit trail.</strong> Screening results are not currently logged with timestamps for compliance audit purposes.</li>
+    </ul>
+
+    <h2>3. AML controls</h2>
+    <p>AgentTrust does not currently have a formal, written Anti-Money Laundering (AML) programme. We recognise this as a gap. In lieu of a formal programme, the following controls exist:</p>
+    <ul>
+        <li>OFAC sanctions screening at all transaction entry points (see above).</li>
+        <li>All transactions reference on-chain XRPL transaction hashes, creating an inherent audit trail on the public ledger.</li>
+        <li>Acceptable use provisions in our <a href="/terms/">Terms of Service</a> explicitly prohibit use of the platform for money laundering or illegal transactions.</li>
+        <li>The minimum escrow fee (0.1 XRP) limits the utility of the platform for high-volume structuring.</li>
+    </ul>
+    <p>We intend to develop a written AML policy as the platform scales and as regulatory requirements become clearer.</p>
+
+    <h2>4. KYC / identity verification</h2>
+    <p>AgentTrust does not currently perform Know Your Customer (KYC) identity verification on participants. This is consistent with our non-custodial, pseudonymous protocol design.</p>
+    <p>In place of KYC, we offer a voluntary <strong>on-chain wallet ownership proof</strong> — participants can cryptographically prove control of their XRPL wallet by submitting a signed on-chain AccountSet transaction containing a one-time challenge. This is not equivalent to KYC but does establish a cryptographic link between a participant and a specific on-chain identity.</p>
+    <p>Separately, organisations can verify their domain ownership via the XRPL Foundation <code>xrp-ledger.toml</code> standard, creating a public, verifiable link between a legal entity's domain and their wallet address.</p>
+
+    <h2>5. FATF Travel Rule</h2>
+    <p>The Financial Action Task Force (FATF) Recommendation 16 requires VASPs to collect and transmit originator and beneficiary information for virtual asset transfers above USD/EUR 1,000. We do not currently implement Travel Rule data exchange.</p>
+    <p>As noted above, we believe our non-custodial model may place us outside VASP classification in most jurisdictions, but this is unconfirmed. If we are ultimately classified as a VASP, Travel Rule compliance would be required and we would need to integrate a compliant counterparty data exchange protocol.</p>
+
+    <h2>6. Data protection</h2>
+    <p>Our data handling practices, including GDPR compliance, are documented in our <a href="/privacy/">Privacy Policy</a>. In summary: we collect minimal personal data, do not sell it, and comply with UK GDPR as our primary data protection framework.</p>
+
+    <h2>7. Reporting concerns</h2>
+    <p>If you believe a wallet or transaction on AgentTrust involves sanctioned parties, money laundering, fraud, or other illegal activity, please contact us immediately at <a href="mailto:hello@cryptovault.co.uk">hello@cryptovault.co.uk</a>. We will review all reports and cooperate fully with law enforcement and regulatory authorities.</p>
+
+    <h2>8. API consumers and integrators</h2>
+    <p>If you are integrating AgentTrust's API or MCP tools into your own product, you are responsible for ensuring your use complies with applicable regulations in your jurisdiction. Our <a href="https://xrpl-referee.onrender.com/wallet/sanctions/{address}" target="_blank">sanctions screening endpoint</a> (<code>GET /wallet/sanctions/{address}</code>) is available free of charge for use in your own compliance workflows. It is not a substitute for a professional compliance programme.</p>
+
+    <div class="callout legal">
+        The sanctions screening data provided by AgentTrust is sourced from publicly available US government data and is provided in good faith. It is not a substitute for professional legal or compliance advice, is subject to the 24-hour cache limitation described above, and covers only the OFAC SDN list at this time. AgentTrust accepts no liability for compliance decisions made in reliance on this data.
+    </div>
+
+    <h2>9. Updates to this programme</h2>
+    <p>This compliance page is a living document. We update it when controls change, when our regulatory position evolves, or when new legislation comes into force. The "Last updated" date at the top reflects the most recent substantive change.</p>
+
+    <p style="margin-top:2.5rem;">Questions about our compliance programme: <a href="mailto:hello@cryptovault.co.uk">hello@cryptovault.co.uk</a></p>
+</div>
+</body>
+</html>
