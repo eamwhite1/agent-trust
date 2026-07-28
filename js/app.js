@@ -488,11 +488,28 @@ async function initVault() {
         });
         const setupData = await setupRes.json();
 
-        if (!setupRes.ok) throw new Error(setupData.detail || "Backend rejected the request.");
+        if (!setupRes.ok) {
+            // 451 = Unavailable For Legal Reasons (threshold exceeded, no KYC)
+            if (setupRes.status === 451) {
+                showStatus("init-status",
+                    "⚠️ Transaction limit reached — " + (setupData.detail || "value exceeds our current limit without KYC. See cryptovault.co.uk/compliance for details."),
+                    "error");
+                return;
+            }
+            throw new Error(setupData.detail || "Backend rejected the request.");
+        }
 
         const condition         = setupData.condition;
         const escrowAmount      = setupData.escrow_amount;   // ready for EscrowCreate
         const cancelAfterRipple = setupData.cancel_after_ripple;
+
+        // Travel Rule warning ($1,000–$3,000 USD band)
+        if (setupData.compliance_warning) {
+            showStatus("init-status",
+                "⚠️ Compliance notice: " + setupData.compliance_warning,
+                "warning");
+            await new Promise(r => setTimeout(r, 4000));  // give user time to read
+        }
 
         let statusMsg = "✅ Vault created! Opening Xaman for EscrowCreate...";
         if (workerEmail && setupData.worker_email_sent) statusMsg += `\n📧 Receipt code sent to ${workerEmail}`;

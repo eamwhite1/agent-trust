@@ -118,10 +118,12 @@
     </ul>
     <p>The SDN list is fetched directly from the US Treasury (<code>treasury.gov/ofac/downloads/sdn.xml</code>) and cached for up to 24 hours. Sanctioned wallets are blocked from all escrow activity and receive a trust score of 0.</p>
 
+    <p>When an <code>ANCHAIN_API_KEY</code> is configured, screening is performed by <strong>AnChain.ai BEI (Blockchain Entity Intelligence)</strong> — an AI-powered risk engine covering OFAC, UN, UK, EU, Canada, and Australia sanctions lists, plus graph-based risk scoring that detects indirect exposure to sanctioned mixers, darknet markets, and ransomware wallets. AnChain.ai received two XRPL Foundation grants to provide this API free to XRPL developers. Without the key, screening falls back to the OFAC SDN XML only.</p>
+
     <h3>Current limitations</h3>
     <ul>
-        <li><strong>OFAC only.</strong> We currently screen against the US SDN list only. EU, UN, and UK sanctions lists are not yet checked. We intend to add Chainalysis Sanctions API coverage (which includes EU and UN lists) once a free API key is obtained.</li>
-        <li><strong>24-hour cache.</strong> There is a potential lag of up to 24 hours between a new OFAC designation and it being reflected in our screening. We accept this as a reasonable operational trade-off for a non-custodial protocol at current scale.</li>
+        <li><strong>Key-dependent multi-jurisdiction coverage.</strong> Full coverage (UN, UK, EU, Canada, Australia) requires the <code>ANCHAIN_API_KEY</code> environment variable to be set. Without it, only the US OFAC SDN list is checked.</li>
+        <li><strong>24-hour OFAC cache.</strong> The OFAC XML fallback is cached for up to 24 hours. The AnChain.ai API is real-time when the key is present.</li>
         <li><strong>Address-level only.</strong> We do not screen counterparty names, entities, or beneficial ownership. This is a known gap.</li>
         <li><strong>No audit trail.</strong> Screening results are not currently logged with timestamps for compliance audit purposes.</li>
     </ul>
