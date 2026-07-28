@@ -55,7 +55,7 @@
 <div class="wrap">
     <a class="back" href="/">← AgentTrust</a>
     <h1>Compliance Programme</h1>
-    <div class="updated">Last updated: 28 July 2026</div>
+    <div class="updated">Last updated: 29 July 2026</div>
 
     <p>This page documents AgentTrust's compliance controls, regulatory position, and the limitations of those controls. We publish this transparently so that participants, regulators, and integration partners can assess our programme accurately.</p>
 
@@ -73,9 +73,9 @@
             <div class="label">Wallet ownership proofs</div>
             <div class="value">Active — on-chain</div>
         </div>
-        <div class="status-card partial">
+        <div class="status-card active">
             <div class="label">AML programme</div>
-            <div class="value">Partial — no formal policy</div>
+            <div class="value">Active — written policy</div>
         </div>
         <div class="status-card pending">
             <div class="label">KYC / identity verification</div>
@@ -94,7 +94,7 @@
     <h2>1. Regulatory classification</h2>
 
     <h3>Are we a custodian or money transmitter?</h3>
-    <p>AgentTrust does not take custody of funds at any point. Escrowed XRP and RLUSD are held in native XRPL crypto-condition escrow objects — on-chain constructs enforced by the XRP Ledger's consensus protocol, not by us. We hold no private keys to escrow funds, have no ability to reverse transactions, and cannot access held funds outside of the cryptographic release condition.</p>
+    <p>AgentTrust does not take custody of funds at any point. Escrowed XRP and RLUSD are locked in native XRPL crypto-condition escrow objects — on-chain constructs enforced by the XRP Ledger's consensus protocol, not by us. Escrow funds are released only when the XRP Ledger's consensus protocol receives a valid EscrowFinish transaction presenting the correct cryptographic fulfillment. No private key controls access to escrow funds; the cryptographic condition is enforced entirely on-chain. We have no ability to redirect, reverse, or seize escrow funds, and cannot access them outside of the release condition being satisfied.</p>
     <p>On this basis, we believe AgentTrust operates as a <strong>protocol layer</strong>, not as a money transmitter or custodial virtual asset service provider (VASP). This is an unsettled area of law in most jurisdictions and we continue to monitor regulatory developments.</p>
 
     <h3>US — FinCEN / Money Services Business</h3>
@@ -110,33 +110,40 @@
     <p>The UK Financial Conduct Authority regulates cryptoasset businesses under the Money Laundering Regulations 2017 (MLRs). Businesses must register with the FCA if they carry out cryptoasset activities in the UK. Our non-custodial model is intended to fall outside the scope of FCA registration requirements, but this has not been confirmed by legal opinion.</p>
 
     <h2>2. Sanctions screening</h2>
-    <p>All XRPL wallet addresses submitted to AgentTrust are automatically screened against the <strong>US OFAC Specially Designated Nationals (SDN) list</strong>, specifically the Digital Currency Address — XRP entries. Screening occurs:</p>
+    <p>All XRPL wallet addresses submitted to AgentTrust are screened in real-time by <strong>AnChain.ai BEI (Blockchain Entity Intelligence)</strong> — an AI-powered risk engine covering sanctions lists from six jurisdictions: OFAC (US), UN, UK, EU, Canada, and Australia. BEI also performs graph-based risk scoring that detects indirect exposure to sanctioned mixers, darknet markets, and ransomware wallets. AnChain.ai received XRPL Foundation grants to provide this API free to XRPL ecosystem developers. Screening occurs:</p>
     <ul>
-        <li>At escrow creation — both buyer and seller addresses are screened before funds can be locked.</li>
+        <li>At escrow creation — both buyer and seller addresses are screened before any funds can be locked.</li>
         <li>At trust score computation — sanctioned wallets receive a score of 0 and the reason is disclosed.</li>
         <li>At wallet ownership verification — the wallet being verified is screened.</li>
     </ul>
-    <p>The SDN list is fetched directly from the US Treasury (<code>treasury.gov/ofac/downloads/sdn.xml</code>) and cached for up to 24 hours. Sanctioned wallets are blocked from all escrow activity and receive a trust score of 0.</p>
-
-    <p>When an <code>ANCHAIN_API_KEY</code> is configured, screening is performed by <strong>AnChain.ai BEI (Blockchain Entity Intelligence)</strong> — an AI-powered risk engine covering OFAC, UN, UK, EU, Canada, and Australia sanctions lists, plus graph-based risk scoring that detects indirect exposure to sanctioned mixers, darknet markets, and ransomware wallets. AnChain.ai received two XRPL Foundation grants to provide this API free to XRPL developers. Without the key, screening falls back to the OFAC SDN XML only.</p>
+    <p>Sanctioned wallets are blocked from all escrow activity and receive a trust score of 0 regardless of any other positive signals. Every screening decision is written to a timestamped <strong>audit log</strong> (wallet address, timestamp, result, risk score, risk level, identified entity, screening source, and linked escrow ID) stored in our database for compliance review purposes.</p>
+    <p>If BEI is unavailable, screening falls back to the US OFAC SDN list, fetched directly from the US Treasury (<code>treasury.gov/ofac/downloads/sdn.xml</code>) and cached for up to 24 hours.</p>
 
     <h3>Current limitations</h3>
     <ul>
-        <li><strong>Key-dependent multi-jurisdiction coverage.</strong> Full coverage (UN, UK, EU, Canada, Australia) requires the <code>ANCHAIN_API_KEY</code> environment variable to be set. Without it, only the US OFAC SDN list is checked.</li>
-        <li><strong>24-hour OFAC cache.</strong> The OFAC XML fallback is cached for up to 24 hours. The AnChain.ai API is real-time when the key is present.</li>
-        <li><strong>Address-level only.</strong> We do not screen counterparty names, entities, or beneficial ownership. This is a known gap.</li>
-        <li><strong>No audit trail.</strong> Screening results are not currently logged with timestamps for compliance audit purposes.</li>
+        <li><strong>Address-level screening.</strong> We screen wallet addresses against known sanctioned addresses and entity labels. We do not screen counterparty names, legal entities, or beneficial ownership — this remains a known gap that would require KYC integration to close fully. BEI entity labels (e.g. "Binance", "WannaCry ransomware") provide partial entity context for known addresses.</li>
+        <li><strong>Fallback cache window.</strong> If AnChain.ai BEI is temporarily unavailable, the OFAC SDN XML fallback is cached for up to 24 hours. In normal operation, BEI screening is real-time.</li>
     </ul>
 
-    <h2>3. AML controls</h2>
-    <p>AgentTrust does not currently have a formal, written Anti-Money Laundering (AML) programme. We recognise this as a gap. In lieu of a formal programme, the following controls exist:</p>
+    <h2>3. AML controls and written policy</h2>
+    <p>AgentTrust maintains the following Anti-Money Laundering controls:</p>
     <ul>
-        <li>OFAC sanctions screening at all transaction entry points (see above).</li>
+        <li>Real-time, multi-jurisdiction sanctions screening at all transaction entry points (see Section 2).</li>
+        <li>Timestamped audit log of all screening decisions, stored in our database.</li>
+        <li>Transaction value thresholds: a compliance notice is issued for transactions above USD 1,000 (FATF Travel Rule threshold); transactions above USD 3,000 are blocked pending KYC capability.</li>
         <li>All transactions reference on-chain XRPL transaction hashes, creating an inherent audit trail on the public ledger.</li>
-        <li>Acceptable use provisions in our <a href="/terms/">Terms of Service</a> explicitly prohibit use of the platform for money laundering or illegal transactions.</li>
+        <li>Acceptable use provisions in our <a href="/terms/">Terms of Service</a> explicitly prohibit use of the platform for money laundering, fraud, or illegal transactions.</li>
         <li>The minimum escrow fee (0.1 XRP) limits the utility of the platform for high-volume structuring.</li>
     </ul>
-    <p>We intend to develop a written AML policy as the platform scales and as regulatory requirements become clearer.</p>
+
+    <h3>AML Policy</h3>
+    <p><strong>Scope.</strong> This policy applies to all participants using the AgentTrust escrow platform, job marketplace, and MCP tooling.</p>
+    <p><strong>Risk assessment.</strong> AgentTrust is a non-custodial protocol. We assess the primary money laundering risks as: (a) use of the platform to layer illicit XRP through the escrow and release mechanism; (b) use of the job marketplace to create fictitious work deliverables as a pretext for fund movement. Both risks are mitigated by the real-name escrow structure (both parties' wallet addresses are logged), public on-chain transaction visibility, and sanctions screening at every entry point.</p>
+    <p><strong>Controls.</strong> Our primary controls are real-time multi-jurisdiction sanctions screening (AnChain.ai BEI), transaction value thresholds (FATF $1k / FinCEN $3k), an on-chain audit trail, and acceptable use prohibitions. Sanctioned wallets are permanently blocked. Thresholds are enforced in code at the API layer and cannot be bypassed by participants.</p>
+    <p><strong>Reporting.</strong> If we identify a transaction that we reasonably believe involves money laundering, fraud, or sanctions evasion, we will: suspend the escrow, preserve all relevant records, and report to the relevant law enforcement or regulatory authority (including submitting a Suspicious Activity Report to the UK National Crime Agency if applicable). We will cooperate fully with lawful requests from authorities.</p>
+    <p><strong>Record retention.</strong> Sanctions screening logs and escrow records are retained for a minimum of five years, consistent with UK Money Laundering Regulations 2017 requirements (whether or not we are ultimately required to comply).</p>
+    <p><strong>Review.</strong> This policy will be reviewed annually, or when material changes occur to the platform, regulatory guidance, or our legal classification. <em>Next scheduled review: July 2027.</em></p>
+    <p><strong>Responsibility.</strong> The platform operator (AgentTrust / cryptovault.co.uk) is responsible for the implementation and oversight of this policy. Questions: <a href="mailto:hello@cryptovault.co.uk">hello@cryptovault.co.uk</a>.</p>
 
     <h2>4. KYC / identity verification</h2>
     <p>AgentTrust does not currently perform Know Your Customer (KYC) identity verification on participants. This is consistent with our non-custodial, pseudonymous protocol design.</p>
@@ -157,7 +164,7 @@
     <p>If you are integrating AgentTrust's API or MCP tools into your own product, you are responsible for ensuring your use complies with applicable regulations in your jurisdiction. Our <a href="https://xrpl-referee.onrender.com/wallet/sanctions/{address}" target="_blank">sanctions screening endpoint</a> (<code>GET /wallet/sanctions/{address}</code>) is available free of charge for use in your own compliance workflows. It is not a substitute for a professional compliance programme.</p>
 
     <div class="callout legal">
-        The sanctions screening data provided by AgentTrust is sourced from publicly available US government data and is provided in good faith. It is not a substitute for professional legal or compliance advice, is subject to the 24-hour cache limitation described above, and covers only the OFAC SDN list at this time. AgentTrust accepts no liability for compliance decisions made in reliance on this data.
+        The sanctions screening data provided by AgentTrust is sourced from AnChain.ai BEI (covering OFAC, UN, UK, EU, Canada, and Australia sanctions lists) and is provided in good faith. It is not a substitute for professional legal or compliance advice. In the event of BEI unavailability, screening falls back to the US OFAC SDN XML with up to a 24-hour cache window, as described above. AgentTrust accepts no liability for compliance decisions made in reliance on this data.
     </div>
 
     <h2>9. Updates to this programme</h2>
