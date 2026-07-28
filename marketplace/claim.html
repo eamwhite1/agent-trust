@@ -50,16 +50,55 @@
   <!-- Step 2a: claim existing listing -->
   <div id="step-claim" class="section">
     <h1>Claim your listing</h1>
-    <p class="sub">Your organisation is already in our registry. Verify domain control to mark it as yours — takes effect immediately.</p>
+    <p class="sub">Your organisation is already in our registry. Choose how to prove control of the wallet.</p>
     <div id="issuerBox" class="issuer-box"></div>
-    <ol class="steps">
-      <li>Publish a <code>xrp-ledger.toml</code> file at <code>https://&lt;your-domain&gt;/.well-known/xrp-ledger.toml</code> listing this wallet address (<a href="https://xrpl.org/docs/concepts/transactions/source-and-destination-tags#domain-verification" target="_blank">XRPL Foundation standard ↗</a>).</li>
-      <li>Enter your contact email and submit. We check the file automatically — if it lists this wallet, the entry is marked <strong>verified</strong> instantly.</li>
-    </ol>
-    <label for="claimEmail">Contact email</label>
-    <input id="claimEmail" type="email" placeholder="you@yourcompany.com">
-    <button id="claimBtn" onclick="submitClaim()">Verify &amp; claim</button>
-    <div id="claimMsg" class="msg"></div>
+
+    <!-- Method tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:1.25rem;">
+      <button type="button" id="tab-toml" onclick="setClaimTab('toml')"
+        style="flex:1;padding:.5rem .7rem;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid var(--accent);background:rgba(16,185,129,.15);color:var(--accent);">
+        Domain / TOML
+      </button>
+      <button type="button" id="tab-sig" onclick="setClaimTab('sig')"
+        style="flex:1;padding:.5rem .7rem;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);">
+        Sign on-chain
+      </button>
+    </div>
+
+    <!-- TOML path -->
+    <div id="claim-toml">
+      <ol class="steps">
+        <li>Publish a <code>xrp-ledger.toml</code> file at <code>https://&lt;your-domain&gt;/.well-known/xrp-ledger.toml</code> listing this wallet address (<a href="https://xrpl.org/docs/concepts/transactions/source-and-destination-tags#domain-verification" target="_blank">XRPL Foundation standard ↗</a>).</li>
+        <li>Enter your contact email and submit. We check the file automatically — if it lists this wallet, the entry is marked <strong>verified</strong> instantly.</li>
+      </ol>
+      <label for="claimEmail">Contact email</label>
+      <input id="claimEmail" type="email" placeholder="you@yourcompany.com">
+      <button id="claimBtn" onclick="submitClaim()">Verify &amp; claim</button>
+      <div id="claimMsg" class="msg"></div>
+    </div>
+
+    <!-- On-chain signing path -->
+    <div id="claim-sig" style="display:none;">
+      <ol class="steps">
+        <li>Click <strong>Get challenge</strong> to receive a unique one-time string.</li>
+        <li>Using Xaman or any XRPL wallet app, submit an <strong>AccountSet</strong> transaction from this wallet with the challenge string as a Memo (MemoData field, hex-encoded).</li>
+        <li>Paste the transaction hash below and click <strong>Confirm</strong>. We verify on-chain instantly — no private key sent to us, ever.</li>
+      </ol>
+      <div id="challenge-box" style="display:none;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:.9rem;margin-bottom:1rem;font-size:.82rem;">
+        <div style="color:var(--muted);margin-bottom:.3rem;">Challenge string (expires in 30 min):</div>
+        <div id="challenge-text" style="font-family:monospace;word-break:break-all;color:var(--accent);margin-bottom:.5rem;"></div>
+        <div style="color:var(--muted);margin-bottom:.3rem;">MemoData (hex) to paste into your wallet:</div>
+        <div id="challenge-hex" style="font-family:monospace;word-break:break-all;font-size:.78rem;"></div>
+      </div>
+      <button id="getChallengeBtn" onclick="getChallenge()">Get challenge</button>
+      <div id="tx-hash-wrap" style="display:none;margin-top:1rem;">
+        <label for="sigTxHash">Transaction hash</label>
+        <input id="sigTxHash" type="text" placeholder="paste your AccountSet tx hash here" spellcheck="false" autocomplete="off">
+        <button id="confirmSigBtn" onclick="confirmSig()" style="margin-top:.7rem;">Confirm ownership</button>
+      </div>
+      <div id="sigMsg" class="msg"></div>
+    </div>
+
     <button class="back" onclick="reset()">← Use a different wallet</button>
   </div>
 
@@ -95,6 +134,70 @@ const REFEREE_URL = "https://xrpl-referee.onrender.com";
 const params = new URLSearchParams(location.search);
 let currentWallet = "";
 let currentIssuerId = null;
+let currentChallenge = null;
+
+function setClaimTab(tab) {
+  const isToml = tab === "toml";
+  document.getElementById("claim-toml").style.display = isToml ? "" : "none";
+  document.getElementById("claim-sig").style.display  = isToml ? "none" : "";
+  const tomlBtn = document.getElementById("tab-toml");
+  const sigBtn  = document.getElementById("tab-sig");
+  const accent = "1.5px solid var(--accent)";
+  const muted  = "1.5px solid var(--border)";
+  tomlBtn.style.border     = isToml ? accent : muted;
+  tomlBtn.style.background = isToml ? "rgba(16,185,129,.15)" : "transparent";
+  tomlBtn.style.color      = isToml ? "var(--accent)" : "var(--text-muted)";
+  sigBtn.style.border      = isToml ? muted : accent;
+  sigBtn.style.background  = isToml ? "transparent" : "rgba(16,185,129,.15)";
+  sigBtn.style.color       = isToml ? "var(--text-muted)" : "var(--accent)";
+}
+
+async function getChallenge() {
+  if (!currentWallet) return;
+  const btn = document.getElementById("getChallengeBtn");
+  btn.disabled = true; btn.textContent = "Requesting…";
+  try {
+    const res = await fetch(`${REFEREE_URL}/verify/challenge?wallet=${encodeURIComponent(currentWallet)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Could not get challenge.");
+    currentChallenge = data.challenge;
+    document.getElementById("challenge-text").textContent = data.challenge;
+    document.getElementById("challenge-hex").textContent = data.memo_hex;
+    document.getElementById("challenge-box").style.display = "";
+    document.getElementById("tx-hash-wrap").style.display = "";
+    btn.textContent = "Refresh challenge";
+    btn.disabled = false;
+  } catch(e) {
+    setMsg("sigMsg", "err", e.message);
+    btn.disabled = false; btn.textContent = "Get challenge";
+  }
+}
+
+async function confirmSig() {
+  const txHash = document.getElementById("sigTxHash").value.trim();
+  if (!txHash) { setMsg("sigMsg", "err", "Paste your AccountSet transaction hash first."); return; }
+  const btn = document.getElementById("confirmSigBtn");
+  btn.disabled = true; btn.textContent = "Verifying on-chain…";
+  document.getElementById("sigMsg").className = "msg";
+  try {
+    const res = await fetch(`${REFEREE_URL}/verify/confirm`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        wallet_address: currentWallet,
+        tx_hash: txHash,
+        issuer_id: currentIssuerId,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Verification failed.");
+    setMsg("sigMsg", "ok", data.message || "Wallet ownership confirmed! Your listing is now verified.");
+    btn.textContent = "Verified ✓";
+  } catch(e) {
+    setMsg("sigMsg", "err", e.message);
+    btn.disabled = false; btn.textContent = "Confirm ownership";
+  }
+}
 
 function show(id) {
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));

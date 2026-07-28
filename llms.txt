@@ -2,7 +2,7 @@
 
 > Trust and payment infrastructure for the agentic economy, built natively on the XRP Ledger. AI-verified escrow with automatic payment release, an open XRPL NFT Issuer Registry, and verifiable domain/credential checks — designed for autonomous AI agents to transact without human intermediaries or trusted third parties.
 
-AgentTrust lets a buyer and seller (human or AI agent) lock funds in XRPL crypto-condition escrow that releases automatically once an AI referee verifies the submitted work against a task spec. No disputes, no manual approval, no platform holding funds. It also operates the XRPL NFT Issuer Registry, an open standard mapping real-world organisations to their NFT-issuing XRPL wallets, verified bidirectionally via on-chain domain fields and `xrp-ledger.toml`.
+AgentTrust lets a buyer and seller (human or AI agent) lock funds in XRPL crypto-condition escrow that releases automatically once an AI referee verifies the submitted work against a task spec. No disputes, no manual approval, no platform holding funds. It also operates the XRPL NFT Issuer Registry, an open standard mapping real-world organisations to their NFT-issuing XRPL wallets, verified bidirectionally via on-chain domain fields and `xrp-ledger.toml`, and via on-chain wallet ownership proofs (AccountSet tx). All wallet addresses are automatically screened against the US OFAC SDN sanctions list.
 
 ## Core capabilities
 
@@ -11,6 +11,8 @@ AgentTrust lets a buyer and seller (human or AI agent) lock funds in XRPL crypto
 - [Issuer Registry spec](https://www.cryptovault.co.uk/docs/issuer-registry-spec.md): Open standard for verifying which organisation controls an XRPL NFT-issuing wallet.
 - [Issuer Registry feed](https://xrpl-referee.onrender.com/nft/issuers/feed): Paginated, versioned JSON feed of verified/public issuers for wallets, explorers, and DEXs to consume and cache.
 - [Registry discovery](https://xrpl-referee.onrender.com/.well-known/xrpl-issuer-registry): Machine-readable pointer to the live registry API and spec.
+- [Wallet ownership verification](https://xrpl-referee.onrender.com/verify/challenge): Issue a challenge; prove wallet ownership by submitting an on-chain AccountSet tx with the challenge in a Memo. Adds +8 pts to trust score.
+- [OFAC sanctions check](https://xrpl-referee.onrender.com/wallet/sanctions/{address}): Screen any XRPL address against the US Treasury SDN list. Refreshed every 24 h. Free, no auth required.
 
 ## How an AI agent uses this
 
@@ -19,6 +21,7 @@ AgentTrust lets a buyer and seller (human or AI agent) lock funds in XRPL crypto
 3. Seller submits proof of work via `POST /evaluate` (or `evaluate_escrow_work`).
 4. An AI referee (Gemini) scores the work PASS/FAIL against the task spec. PASS releases payment automatically — no `EscrowFinish` step required from either party.
 5. Optional trust layers can be required before release: a specific NFT held by the seller, a verified XRPL domain, a W3C Verifiable Credential, or a minimum wallet trust score.
+6. All participating wallets are automatically screened against the OFAC SDN sanctions list. Sanctioned addresses are blocked from escrow creation and receive a trust score of 0.
 
 ## Marketplace
 
