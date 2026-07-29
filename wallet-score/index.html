@@ -338,16 +338,14 @@ canvas#gauge {
 .detail-value.negative { color: var(--red); }
 
 /* ── Signal tooltip ── */
-.signal-name {
-  position: relative;
-  cursor: default;
-}
+.signal-row { position: relative; }
+.signal-name { cursor: default; }
 .signal-tip {
   display: none;
   position: absolute;
   left: 0;
-  top: calc(100% + 6px);
-  width: 220px;
+  bottom: calc(100% + 6px);
+  width: 260px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -355,11 +353,12 @@ canvas#gauge {
   font-size: .74rem;
   color: var(--muted);
   line-height: 1.5;
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  white-space: normal;
 }
-.signal-name:hover .signal-tip { display: block; }
+.signal-row:hover .signal-tip { display: block; }
 
 /* ── Info note ── */
 .info-note {
@@ -555,9 +554,10 @@ function render(addr, data) {
     const row = document.createElement("div");
     row.className = "signal-row";
     row.innerHTML = `
-      <div class="signal-name">${sig.label}${sig.tip ? `<span class="signal-tip">${sig.tip}</span>` : ''}</div>
+      <div class="signal-name">${sig.label}</div>
       <div class="signal-track"><div class="signal-fill" data-pct="${pct}" style="background:${barColor(pts,sig.max)}"></div></div>
       <div class="signal-pts">${pts}<span style="color:var(--faint);font-size:.65rem;">/${sig.max}</span></div>
+      ${sig.tip ? `<span class="signal-tip">${sig.tip}</span>` : ''}
     `;
     rows.appendChild(row);
   });
