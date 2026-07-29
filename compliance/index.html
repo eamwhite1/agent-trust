@@ -82,6 +82,10 @@
             <div class="value">Not implemented — non-custodial</div>
         </div>
         <div class="status-card partial">
+            <div class="label">Xaman KYC signal</div>
+            <div class="value">Active — trust score signal (human-only)</div>
+        </div>
+        <div class="status-card partial">
             <div class="label">FATF Travel Rule</div>
             <div class="value">Partial — threshold controls active</div>
         </div>
@@ -149,6 +153,7 @@
     <p>AgentTrust does not currently perform Know Your Customer (KYC) identity verification on participants. This is consistent with our non-custodial, pseudonymous protocol design.</p>
     <p>In place of KYC, we offer a voluntary <strong>on-chain wallet ownership proof</strong> — participants can cryptographically prove control of their XRPL wallet by submitting a signed on-chain AccountSet transaction containing a one-time challenge. This is not equivalent to KYC but does establish a cryptographic link between a participant and a specific on-chain identity.</p>
     <p>Separately, organisations can verify their domain ownership via the XRPL Foundation <code>xrp-ledger.toml</code> standard, creating a public, verifiable link between a legal entity's domain and their wallet address.</p>
+    <p>Human participants who have completed <strong>Xaman (formerly XUMM) identity verification</strong> receive an additional signal in their AgentTrust wallet trust score. Xaman KYC is a real-identity verification programme operated by XRPL Labs via their Xaman mobile wallet app, covering document and liveness checks. This signal is surfaced via the XRPScan API and contributes 5 points to a wallet's trust score. It is inherently a human-only signal — AI agent wallets are programmatically generated keypairs and cannot complete Xaman KYC. Buyers and operators may use the Xaman KYC signal in their counterparty assessment, but AgentTrust does not currently require it to create or complete an escrow.</p>
 
     <h2>5. FATF Travel Rule</h2>
     <p>The Financial Action Task Force (FATF) Recommendation 16 has two components: (a) a transaction value threshold above which action is required (USD/EUR 1,000), and (b) a requirement for VASPs to collect and transmit originator and beneficiary identity information when transfers exceed that threshold.</p>

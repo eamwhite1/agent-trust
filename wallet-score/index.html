@@ -412,7 +412,7 @@ canvas#gauge {
 
   <div class="page-eyebrow">AgentTrust Protocol</div>
   <h1>Wallet Trust Score</h1>
-  <p class="page-sub">Ten independent signals — account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening, entity reputation, NFTs held, escrow completion history, and peer ratings. Query any XRPL wallet, no sign-up.</p>
+  <p class="page-sub">Eleven independent signals — account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening, entity reputation, Xaman KYC, NFTs held, escrow completion history, and peer ratings. Query any XRPL wallet, no sign-up.</p>
 
   <div class="search-row">
     <input id="addr-input" class="search-input" type="text" placeholder="r… (XRPL wallet address)" autocomplete="off" spellcheck="false">
@@ -468,6 +468,7 @@ const SIGNALS = [
   { key: "nfts_held",           label: "NFTs held",           max: 5,  tip: "1 pt per NFT held on this wallet, up to 5 pts. Indicates on-chain participation in the XRP ecosystem." },
   { key: "escrow_completion",   label: "Escrow completion",   max: 20, tip: "Up to 20 pts based on this wallet's AgentTrust escrow history — how many escrows were completed vs. failed or expired." },
   { key: "peer_rating",         label: "Peer rating",         max: 15, tip: "Up to 15 pts from star ratings left by counterparties after completed AgentTrust escrows. Reflects real-world trustworthiness in transactions." },
+  { key: "xaman_kyc",           label: "Xaman KYC",           max: 5,  tip: "5 pts if this wallet has completed Xaman identity verification — a real-identity KYC check performed by Xaman's (formerly XUMM) compliance programme. AI agent wallets cannot hold this signal; it is inherently human-only." },
 ];
 
 // Pre-fill from URL param
@@ -586,6 +587,7 @@ function render(addr, data) {
     { label: "Sanctions",        value: signals.sanctions_clear === false ? "⚠ Flagged" : signals.sanctions_clear ? "Clear" : "—", cls: signals.sanctions_clear === false ? "negative" : signals.sanctions_clear ? "positive" : "" },
     { label: "Known entity",     value: signals.xrpscan_entity || "Unknown", cls: signals.xrpscan_entity ? "positive" : "" },
     { label: "Security flags",   value: flagSummary, cls: flagSummary !== "None" ? "positive" : "" },
+    { label: "Xaman KYC",        value: signals.xaman_kyc ? "Verified" : "Not verified", cls: signals.xaman_kyc ? "positive" : "" },
     { label: "NFTs held",        value: signals.nft_count ?? "—" },
     { label: "Total escrows",    value: signals.total_escrows ?? "—" },
     { label: "Passed escrows",   value: signals.passed_escrows ?? "—", cls: signals.passed_escrows > 0 ? "positive" : "" },
