@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wallet Trust Score — AgentTrust</title>
-<meta name="description" content="Look up any XRPL wallet's trust score — 9 independent signals including sanctions screening, on-chain ownership proof, escrow completion history, and peer ratings. Free, open, no sign-up.">
+<meta name="description" content="Look up any XRPL wallet's trust score — 10 independent signals including sanctions screening, entity reputation, on-chain ownership proof, escrow completion history, and peer ratings. Free, open, no sign-up.">
 <style>
 /* ── Tokens ── */
 :root {
@@ -389,7 +389,7 @@ canvas#gauge {
 
   <div class="page-eyebrow">AgentTrust Protocol</div>
   <h1>Wallet Trust Score</h1>
-  <p class="page-sub">Nine independent signals — account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening, NFTs held, escrow completion history, and peer ratings. Query any XRPL wallet, no sign-up.</p>
+  <p class="page-sub">Ten independent signals — account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening, entity reputation, NFTs held, escrow completion history, and peer ratings. Query any XRPL wallet, no sign-up.</p>
 
   <div class="search-row">
     <input id="addr-input" class="search-input" type="text" placeholder="r… (XRPL wallet address)" autocomplete="off" spellcheck="false">
@@ -435,15 +435,16 @@ canvas#gauge {
 const API = "https://xrpl-referee.onrender.com";
 
 const SIGNALS = [
-  { key: "account_age",       label: "Account age",           max: 20 },
-  { key: "balance",           label: "XRP balance",           max: 15 },
-  { key: "on_chain_activity", label: "On-chain activity",     max: 15 },
-  { key: "domain_verified",   label: "Domain verified",       max: 10 },
+  { key: "account_age",        label: "Account age",          max: 20 },
+  { key: "balance",            label: "XRP balance",          max: 15 },
+  { key: "on_chain_activity",  label: "On-chain activity",    max: 15 },
+  { key: "domain_verified",    label: "Domain verified",      max: 10 },
   { key: "wallet_sig_verified", label: "Ownership proof",     max: 8  },
-  { key: "sanctions_clear",   label: "Sanctions clear",       max: 7  },
-  { key: "nfts_held",         label: "NFTs held",             max: 5  },
-  { key: "escrow_completion", label: "Escrow completion",     max: 20 },
-  { key: "peer_rating",       label: "Peer rating",           max: 15 },
+  { key: "sanctions_clear",    label: "Sanctions clear",      max: 7  },
+  { key: "entity_reputation",  label: "Entity reputation",    max: 8  },
+  { key: "nfts_held",          label: "NFTs held",            max: 5  },
+  { key: "escrow_completion",  label: "Escrow completion",    max: 20 },
+  { key: "peer_rating",        label: "Peer rating",          max: 15 },
 ];
 
 // Pre-fill from URL param

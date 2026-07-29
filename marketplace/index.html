@@ -1942,7 +1942,7 @@ function setView(view) {
             ["POST","/nft/verify","One-shot NFT ownership verification"],
             ["POST","/domain/verify","Verify XRPL wallet domain ownership via xrp-ledger.toml"],
             ["POST","/vc/verify","Verify a W3C Verifiable Credential JWT"],
-            ["GET","/wallet/score/{address}","AgentTrust Wallet Trust Score (0–100) — the first open trust-scoring system built natively for XRPL. Returns a full breakdown across 9 signals: account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening (AnChain.ai BEI), NFTs held, escrow completion history, and peer ratings. Free to query for any address."],
+            ["GET","/wallet/score/{address}","AgentTrust Wallet Trust Score (0–100) — the first open trust-scoring system built natively for XRPL. Returns a full breakdown across 10 signals: account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening (AnChain.ai BEI), entity reputation (XRPScan), NFTs held, escrow completion history, and peer ratings. Free to query for any address."],
             ["POST","/wallet/{address}/rate","Submit a peer rating (1–5 stars + comment) for a counterparty after a completed escrow. Authenticated by escrow ID — only buyers rating workers or workers rating buyers on a RELEASED escrow. Ratings feed directly into the trust score."],
             ["GET","/nft/issuers","Search the AgentTrust Trusted Issuer Registry by name or category"],
             ["GET","/gleif/xrpl-lookup","Find a company's XRPL wallet via the AgentTrust registry"],
