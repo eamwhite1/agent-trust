@@ -1875,7 +1875,7 @@ function setView(view) {
       <span style="color:#10b981;">◈</span> AgentTrust Wallet Trust Score
       <span style="font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);padding:2px 7px;border-radius:20px;">Free &amp; Open</span>
     </h2>
-    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">The first open trust-scoring system built natively for XRPL wallets — combining on-chain signals, escrow history, sanctions screening, and peer reputation in a single score. Query any address — no authentication, no fee. Returns a <strong style="color:var(--text);">score from 0–100</strong> with a full breakdown across nine independent signals so agents and buyers can reason about <em>why</em> a wallet scores the way it does, not just a number.</p>
+    <p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">The first open trust-scoring system built natively for XRPL wallets — combining on-chain signals, escrow history, sanctions screening, and peer reputation in a single score. Query any address — no authentication, no fee. Returns a <strong style="color:var(--text);">score from 0–100</strong> with a full breakdown across eleven independent signals so agents and buyers can reason about <em>why</em> a wallet scores the way it does, not just a number.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem;margin-bottom:1rem;">
       <div style="background:var(--surface-2);border-radius:var(--r);padding:.7rem .9rem;font-size:.8rem;">
         <div style="font-weight:700;color:var(--text);margin-bottom:.2rem;">Account age</div>
@@ -1942,7 +1942,7 @@ function setView(view) {
             ["POST","/nft/verify","One-shot NFT ownership verification"],
             ["POST","/domain/verify","Verify XRPL wallet domain ownership via xrp-ledger.toml"],
             ["POST","/vc/verify","Verify a W3C Verifiable Credential JWT"],
-            ["GET","/wallet/score/{address}","AgentTrust Wallet Trust Score (0–100) — the first open trust-scoring system built natively for XRPL. Returns a full breakdown across 10 signals: account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening (AnChain.ai BEI), entity reputation (XRPScan), NFTs held, escrow completion history, and peer ratings. Free to query for any address."],
+            ["GET","/wallet/score/{address}","AgentTrust Wallet Trust Score (0–100) — the first open trust-scoring system built natively for XRPL. Returns a full breakdown across 11 signals: account age, balance, on-chain activity, domain verification, on-chain ownership proof, sanctions screening (AnChain.ai BEI), entity reputation (XRPScan), Xaman KYC, NFTs held, escrow completion history, and peer ratings. Free to query for any address."],
             ["POST","/wallet/{address}/rate","Submit a peer rating (1–5 stars + comment) for a counterparty after a completed escrow. Authenticated by escrow ID — only buyers rating workers or workers rating buyers on a RELEASED escrow. Ratings feed directly into the trust score."],
             ["GET","/nft/issuers","Search the AgentTrust Trusted Issuer Registry by name or category"],
             ["GET","/gleif/xrpl-lookup","Find a company's XRPL wallet via the AgentTrust registry"],
