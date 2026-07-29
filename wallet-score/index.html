@@ -337,6 +337,30 @@ canvas#gauge {
 .detail-value.positive { color: var(--green); }
 .detail-value.negative { color: var(--red); }
 
+/* ── Signal tooltip ── */
+.signal-name {
+  position: relative;
+  cursor: default;
+}
+.signal-tip {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  width: 220px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .55rem .75rem;
+  font-size: .74rem;
+  color: var(--muted);
+  line-height: 1.5;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+.signal-name:hover .signal-tip { display: block; }
+
 /* ── Info note ── */
 .info-note {
   font-size: .78rem;
@@ -435,16 +459,16 @@ canvas#gauge {
 const API = "https://xrpl-referee.onrender.com";
 
 const SIGNALS = [
-  { key: "account_age",        label: "Account age",          max: 20 },
-  { key: "balance",            label: "XRP balance",          max: 15 },
-  { key: "on_chain_activity",  label: "On-chain activity",    max: 15 },
-  { key: "domain_verified",    label: "Domain verified",      max: 10 },
-  { key: "wallet_sig_verified", label: "Ownership proof",     max: 8  },
-  { key: "sanctions_clear",    label: "Sanctions clear",      max: 7  },
-  { key: "entity_reputation",  label: "Entity reputation",    max: 8  },
-  { key: "nfts_held",          label: "NFTs held",            max: 5  },
-  { key: "escrow_completion",  label: "Escrow completion",    max: 20 },
-  { key: "peer_rating",        label: "Peer rating",          max: 15 },
+  { key: "account_age",         label: "Account age",         max: 20, tip: "Older wallets score higher — up to 20 pts earned at 2 pts per month of age." },
+  { key: "balance",             label: "XRP balance",         max: 15, tip: "Higher XRP reserves indicate a more established wallet. Up to 15 pts at 3 pts per 10 XRP held." },
+  { key: "on_chain_activity",   label: "On-chain activity",   max: 15, tip: "Measured by owner count — the number of objects this wallet owns on the ledger (trust lines, offers, escrows). Up to 15 pts." },
+  { key: "domain_verified",     label: "Domain verified",     max: 10, tip: "10 pts if the wallet has a Domain field set on-chain, linking it to a verifiable web domain via xrp-ledger.toml." },
+  { key: "wallet_sig_verified", label: "Ownership proof",     max: 8,  tip: "8 pts if the wallet holder has submitted an on-chain AccountSet transaction proving cryptographic control of this address via AgentTrust." },
+  { key: "sanctions_clear",     label: "Sanctions clear",     max: 7,  tip: "7 pts if the wallet is clear on all six sanctions lists checked by AnChain.ai BEI (OFAC, UN, UK, EU, Canada, Australia). A sanctioned wallet scores 0 overall." },
+  { key: "entity_reputation",   label: "Entity reputation",   max: 8,  tip: "Up to 8 pts from XRPScan's verified entity registry. 5 pts for a known verified entity (exchange, market maker etc.). 1 pt each for advanced account security: master key disabled, require destination tag, deposit auth." },
+  { key: "nfts_held",           label: "NFTs held",           max: 5,  tip: "1 pt per NFT held on this wallet, up to 5 pts. Indicates on-chain participation in the XRP ecosystem." },
+  { key: "escrow_completion",   label: "Escrow completion",   max: 20, tip: "Up to 20 pts based on this wallet's AgentTrust escrow history — how many escrows were completed vs. failed or expired." },
+  { key: "peer_rating",         label: "Peer rating",         max: 15, tip: "Up to 15 pts from star ratings left by counterparties after completed AgentTrust escrows. Reflects real-world trustworthiness in transactions." },
 ];
 
 // Pre-fill from URL param
@@ -531,7 +555,7 @@ function render(addr, data) {
     const row = document.createElement("div");
     row.className = "signal-row";
     row.innerHTML = `
-      <div class="signal-name">${sig.label}</div>
+      <div class="signal-name">${sig.label}${sig.tip ? `<span class="signal-tip">${sig.tip}</span>` : ''}</div>
       <div class="signal-track"><div class="signal-fill" data-pct="${pct}" style="background:${barColor(pts,sig.max)}"></div></div>
       <div class="signal-pts">${pts}<span style="color:var(--faint);font-size:.65rem;">/${sig.max}</span></div>
     `;
@@ -547,15 +571,25 @@ function render(addr, data) {
 
   // Detail cells
   const grid = document.getElementById("detail-grid");
+  const flags = signals.xrpscan_flags || {};
+  const flagSummary = [
+    flags.master_key_disabled  ? "Key disabled" : null,
+    flags.require_dest_tag     ? "Dest tag req." : null,
+    flags.deposit_auth         ? "Deposit auth" : null,
+  ].filter(Boolean).join(", ") || "None";
   const items = [
-    { label: "Account age",    value: signals.age_days != null ? signals.age_days + " days" : "—" },
-    { label: "XRP balance",    value: signals.balance_xrp != null ? signals.balance_xrp.toLocaleString() + " XRP" : "—" },
-    { label: "Owner count",    value: signals.owner_count ?? "—" },
-    { label: "Domain set",     value: signals.has_domain ? "Yes" : "No", cls: signals.has_domain ? "positive" : "negative" },
-    { label: "NFTs held",      value: signals.nft_count ?? "—" },
-    { label: "Total escrows",  value: signals.total_escrows ?? "—" },
-    { label: "Passed escrows", value: signals.passed_escrows ?? "—", cls: signals.passed_escrows > 0 ? "positive" : "" },
-    { label: "Avg rating",     value: signals.avg_rating > 0 ? "★ " + signals.avg_rating.toFixed(1) : "No ratings", cls: signals.avg_rating >= 4 ? "positive" : "" },
+    { label: "Account age",      value: signals.age_days != null ? signals.age_days + " days" : "—" },
+    { label: "XRP balance",      value: signals.balance_xrp != null ? signals.balance_xrp.toLocaleString() + " XRP" : "—" },
+    { label: "Owner count",      value: signals.owner_count ?? "—" },
+    { label: "Domain set",       value: signals.has_domain ? "Yes" : "No", cls: signals.has_domain ? "positive" : "negative" },
+    { label: "Ownership proof",  value: signals.wallet_sig_verified ? "Verified" : "Not verified", cls: signals.wallet_sig_verified ? "positive" : "" },
+    { label: "Sanctions",        value: signals.sanctions_clear === false ? "⚠ Flagged" : signals.sanctions_clear ? "Clear" : "—", cls: signals.sanctions_clear === false ? "negative" : signals.sanctions_clear ? "positive" : "" },
+    { label: "Known entity",     value: signals.xrpscan_entity || "Unknown", cls: signals.xrpscan_entity ? "positive" : "" },
+    { label: "Security flags",   value: flagSummary, cls: flagSummary !== "None" ? "positive" : "" },
+    { label: "NFTs held",        value: signals.nft_count ?? "—" },
+    { label: "Total escrows",    value: signals.total_escrows ?? "—" },
+    { label: "Passed escrows",   value: signals.passed_escrows ?? "—", cls: signals.passed_escrows > 0 ? "positive" : "" },
+    { label: "Avg rating",       value: signals.avg_rating > 0 ? "★ " + signals.avg_rating.toFixed(1) : "No ratings", cls: signals.avg_rating >= 4 ? "positive" : "" },
   ];
   grid.innerHTML = items.map(i => `
     <div class="detail-cell">
