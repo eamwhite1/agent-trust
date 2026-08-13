@@ -66,4 +66,13 @@ Blockchain: XRP Ledger Mainnet
 Signing: Xaman wallet
 
 
+## Guides
+
+| Guide | Description |
+|---|---|
+| [Using AgentTrust with the XRPL AI Starter Kit](docs/xrpl-ai-starter-kit.md) | Compose AgentTrust trust scores + escrow with Ripple's XRPL AI Starter Kit |
+| [NFT Issuer Registry spec](docs/issuer-registry-spec.md) | Open registry format for verified XRPL organisation wallets |
+
+---
+
 Built by @eamwhite1
