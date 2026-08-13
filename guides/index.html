@@ -39,8 +39,10 @@
     .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
     .nav-link:hover { color: var(--blue); }
     .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-    .nav-cta { display: none; }
     .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
+    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(0,185,122,.4)} 50%{box-shadow:0 0 0 6px rgba(0,185,122,0)} }
 
     @media (max-width: 680px) {
         nav { position: relative; flex-wrap: wrap; }
@@ -104,7 +106,7 @@
     </div>
     <div class="nav-right">
         <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" onclick="document.getElementById('nav-menu').classList.toggle('open')"><i data-lucide="menu"></i></button>
-        <a class="nav-cta" href="/">Try It Free <i data-lucide="arrow-right"></i></a>
+        <div class="badge-live"><div class="live-dot"></div>Live on XRPL Mainnet</div>
     </div>
 </nav>
 
