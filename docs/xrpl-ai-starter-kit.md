@@ -172,6 +172,7 @@ Call `/audit` with no fee header to receive a machine-readable `402 Payment Requ
 
 - **API docs / playground:** https://xrpl-referee.onrender.com/docs
 - **OpenAPI spec:** https://xrpl-referee.onrender.com/openapi.json
+- **Guide (HTML):** https://www.agenttrust.co.uk/xrpl-ai-starter-kit/
 - **Marketplace:** https://www.agenttrust.co.uk/marketplace
 - **Compliance:** https://www.agenttrust.co.uk/compliance
 - **Smithery listing:** https://smithery.ai/server/agenttrust
