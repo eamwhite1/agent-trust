@@ -402,6 +402,7 @@
         <div class="use-case" onclick="openUcModal('Legal Settlements')"><div class="use-case-icon"><i data-lucide="landmark"></i></div><h4>Legal Settlements</h4><p>Unbiased AI arbiter for high-stakes corporate settlements where both parties require a neutral payout trigger.</p></div>
         <div class="use-case" onclick="openUcModal('Real Estate')"><div class="use-case-icon"><i data-lucide="home"></i></div><h4>Real Estate</h4><p>AI verifies land registry and structural reports to release deposits instantly, bypassing slow solicitors.</p></div>
         <div class="use-case" onclick="openUcModal('Corporate M&A')"><div class="use-case-icon"><i data-lucide="trending-up"></i></div><h4>Corporate M&amp;A</h4><p>Hold funds during mergers. AI verifies financial audit benchmarks to trigger tranches of payout automatically.</p></div>
+        <div class="use-case" onclick="openUcModal('CI/CD Quality Gates')"><div class="use-case-icon"><i data-lucide="git-pull-request"></i></div><h4>CI/CD Quality Gates</h4><p>Gate every pull request with an independent AI audit. Fails the pipeline automatically if the diff scores below your threshold.</p></div>
     </div>
 
 
@@ -474,6 +475,11 @@ const USE_CASE_DATA = {
         icon: "trending-up",
         desc: "Hold acquisition funds in escrow during due diligence. AI verifies financial audit benchmarks, regulatory sign-offs, and contractual conditions to trigger each tranche of payment automatically as milestones are met.",
         example: "A £50M acquisition is split into three tranches. Each releases automatically when the AI confirms the corresponding financial KPI has been met — no manual sign-off bottlenecks."
+    },
+    "CI/CD Quality Gates": {
+        icon: "git-pull-request",
+        desc: "Add the AgentTrust GitHub Action to any repo and every pull request is automatically audited by an independent AI against your own quality rubric. The pipeline fails if the diff scores below your threshold — catching bugs, hardcoded secrets, and missing tests before they reach production.",
+        example: "A fintech team adds the action to their payments repo. Every PR is scored against a security rubric. A developer accidentally commits an API key — the audit scores 12/100 and blocks the merge before it reaches main."
     }
 };
 
