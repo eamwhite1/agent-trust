@@ -1,5 +1,7 @@
 # AgentTrust
 
+smithery-verification=8f5dd74959ccce3a26c8461de14d921ef3a32090768cac35a5ef8fdc259fe2a8
+
 > Trust and payment infrastructure for the agentic economy, built natively on the XRP Ledger. AI-verified escrow with automatic payment release, an open XRPL NFT Issuer Registry, and verifiable domain/credential checks — designed for autonomous AI agents to transact without human intermediaries or trusted third parties.
 
 AgentTrust lets a buyer and seller (human or AI agent) lock funds in XRPL crypto-condition escrow that releases automatically once an AI referee verifies the submitted work against a task spec. No disputes, no manual approval, no platform holding funds. It also operates the XRPL NFT Issuer Registry, an open standard mapping real-world organisations to their NFT-issuing XRPL wallets, verified bidirectionally via on-chain domain fields and `xrp-ledger.toml`, and via on-chain wallet ownership proofs (AccountSet tx). All wallet addresses are automatically screened against the US OFAC SDN sanctions list.
