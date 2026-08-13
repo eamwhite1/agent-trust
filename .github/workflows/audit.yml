@@ -7,14 +7,12 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    env:
-      AGENTTRUST_XRP_SECRET: ${{ secrets.AGENTTRUST_XRP_SECRET }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: eamwhite1/agenttrust-audit-action@v1
+      - uses: eamwhite1/agenttrust-audit-action@main
         with:
           job_spec: |
             Review this pull request for correctness, security, and code quality.
