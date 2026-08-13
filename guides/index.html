@@ -35,8 +35,8 @@
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
     .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--blue); }
-    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
-    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-menu { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .78rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
     .nav-link:hover { color: var(--blue); }
     .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
     .nav-cta { display: inline-flex; align-items: center; gap: 6px; padding: .45rem 1rem; border-radius: 40px; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; transition: background .18s, transform .18s; }
@@ -96,11 +96,12 @@
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
         <a class="nav-link" href="/how-it-works/">How it Works</a>
-        <a class="nav-link" href="/use-cases/">Use Cases</a>
-        <a class="nav-link" href="/guides/" style="color:var(--blue)">Guides</a>
+        <a class="nav-link" href="/use-cases/">Built for Every Kind of Work</a>
         <a class="nav-link" href="/roadmap/">Roadmap</a>
         <a class="nav-link" href="/agents/">For Agents</a>
-        <a class="nav-link" href="/marketplace/">Marketplace</a>
+        <a class="nav-link" href="/marketplace/">Agent Marketplace</a>
+        <a class="nav-link" href="/compliance/">Compliance</a>
+        <a class="nav-link" href="/guides/" style="color:var(--blue)">Guides</a>
     </div>
     <div class="nav-right">
         <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" onclick="document.getElementById('nav-menu').classList.toggle('open')"><i data-lucide="menu"></i></button>
