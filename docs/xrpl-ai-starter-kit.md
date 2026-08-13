@@ -175,7 +175,7 @@ Call `/audit` with no fee header to receive a machine-readable `402 Payment Requ
 - **Guide (HTML):** https://www.cryptovault.co.uk/xrpl-ai-starter-kit/
 - **Marketplace:** https://www.cryptovault.co.uk/marketplace
 - **Compliance:** https://www.cryptovault.co.uk/compliance
-- **Smithery listing:** https://smithery.ai/server/agenttrust
+- **Smithery listing:** https://smithery.ai/servers/xrpl/agent-trust
 - **XRPL AI Starter Kit:** https://github.com/ripple/xrpl-ai-starter-kit
 - **XRPL x402 docs:** https://xrpl.org/docs/tutorials/how-tos/use-specialized-payment-types/x402
 
