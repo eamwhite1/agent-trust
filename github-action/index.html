@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentTrust GitHub Action</title>
+<meta name="description" content="Gate every pull request with an independent AI audit. The AgentTrust GitHub Action scores your PR diff and fails the pipeline below your threshold.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+        --code-bg:      rgba(13,13,18,.05);
+        --code-border:  rgba(13,13,18,.09);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-cta { display: inline-flex; align-items: center; gap: 6px; padding: .45rem 1rem; border-radius: 40px; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; transition: background .18s, transform .18s; }
+    .nav-cta:hover { background: #004ecc; transform: translateY(-1px); }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
+
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
+
+    .doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    h1 em { font-style: italic; color: var(--blue); }
+    .doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2rem; line-height: 1.7; }
+
+    /* Fee chips */
+    .fee-chips { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+    .fee-chip { display: inline-flex; align-items: center; gap: 6px; padding: .4rem .9rem; border-radius: 40px; font-size: .78rem; font-weight: 700; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text); }
+    .fee-chip svg { width: 13px; height: 13px; color: var(--blue); }
+
+    .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
+    .card-pad { padding: 2rem; }
+    .section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; text-wrap: balance; }
+
+    /* How it works steps */
+    .how-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .how-step { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.25rem 1.1rem; }
+    .how-num { width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: .75rem; }
+    .how-step h4 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .3rem; }
+    .how-step p { font-size: .8rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* Steps (numbered setup) */
+    .steps { display: flex; flex-direction: column; gap: 1.5rem; }
+    .step { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+    .step-header { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem 1.75rem 1rem; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.35; }
+    .step-desc { font-size: .875rem; color: var(--text-muted); margin-top: .25rem; line-height: 1.55; }
+    .step-body { padding: 0 1.75rem 1.5rem; }
+
+    .code-label { display: flex; align-items: center; justify-content: space-between; background: rgba(13,13,18,.06); border: 1px solid var(--code-border); border-bottom: none; border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: .45rem .9rem; font-size: .7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+    .copy-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: .7rem; font-weight: 600; font-family: inherit; letter-spacing: .05em; display: flex; align-items: center; gap: 4px; transition: color .18s; }
+    .copy-btn:hover { color: var(--blue); }
+    pre { background: rgba(13,13,18,.04); border: 1px solid var(--code-border); border-radius: 0 0 var(--radius-sm) var(--radius-sm); padding: 1.1rem 1.2rem; overflow-x: auto; font-size: .8rem; line-height: 1.65; margin-bottom: 1rem; font-family: 'Courier New', Courier, monospace; color: var(--text); }
+    code { font-family: 'Courier New', Courier, monospace; font-size: .83em; }
+    .inline-code { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: .1em .4em; font-size: .83em; font-family: 'Courier New', Courier, monospace; }
+
+    .callout { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1.1rem; border-radius: var(--radius-sm); font-size: .845rem; line-height: 1.6; margin: .75rem 0 1rem; }
+    .callout-blue { background: rgba(0,102,255,.07); border: 1px solid rgba(0,102,255,.18); color: #003399; }
+    .callout-green { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.18); color: #005c3d; }
+    .callout svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Inputs table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th { background: rgba(0,102,255,.06); color: var(--text); font-weight: 700; text-align: left; padding: .7rem 1rem; border-bottom: 1px solid rgba(0,102,255,.12); white-space: nowrap; }
+    td { padding: .6rem 1rem; border-bottom: 1px solid rgba(0,0,0,.05); color: var(--text-muted); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { font-family: 'Courier New', Courier, monospace; font-size: .8rem; color: var(--text); font-weight: 600; }
+
+    /* Payment options */
+    .pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .pay-card { background: rgba(255,255,255,.4); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.25rem; }
+    .pay-card h4 { font-size: .9rem; font-weight: 700; margin-bottom: .5rem; color: var(--text); }
+    .pay-card ol { padding-left: 1.2rem; font-size: .83rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* Resources */
+    .resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+    .resource-link { display: flex; align-items: center; gap: .6rem; padding: .85rem 1.1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); text-decoration: none; color: var(--text); font-size: .85rem; font-weight: 600; transition: background .18s, border-color .18s, transform .18s; }
+    .resource-link:hover { background: rgba(255,255,255,.75); border-color: rgba(0,102,255,.25); transform: translateY(-2px); color: var(--blue); }
+    .resource-link svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--blue); }
+
+    footer { text-align: center; padding: 2.5rem 5%; font-size: .8rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,.07); margin-top: 2rem; }
+    footer a { color: var(--blue); text-decoration: none; }
+
+    @media (max-width: 680px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+        .pay-grid { grid-template-columns: 1fr; }
+        .step-header { padding: 1.25rem 1.25rem .75rem; }
+        .step-body { padding: 0 1.25rem 1.25rem; }
+        .card-pad { padding: 1.5rem 1.25rem; }
+    }
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/marketplace/">Marketplace</a>
+        <a class="nav-link" href="/compliance/">Compliance</a>
+    </div>
+    <div class="nav-right">
+        <a class="nav-cta" href="https://github.com/marketplace/actions/agenttrust-ai-audit" target="_blank" rel="noopener">
+            <i data-lucide="github" style="width:12px;height:12px;"></i> GitHub Marketplace
+        </a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <div class="doc-eyebrow"><i data-lucide="book-open"></i> Setup Guide</div>
+    <h1>AgentTrust <em>GitHub Action</em></h1>
+    <p class="doc-lead">Gate every pull request with an independent AI audit. The action fetches your PR diff, scores it against your quality rubric, and fails the pipeline automatically if the score falls below your threshold.</p>
+
+    <div class="fee-chips">
+        <div class="fee-chip"><i data-lucide="zap"></i> 0.1 XRP per audit</div>
+        <div class="fee-chip"><i data-lucide="dollar-sign"></i> $0.10 USDC on Base</div>
+        <div class="fee-chip"><i data-lucide="github"></i> Available on GitHub Marketplace</div>
+    </div>
+
+    <!-- How it works -->
+    <div class="how-steps">
+        <div class="how-step">
+            <div class="how-num">1</div>
+            <h4>PR opened</h4>
+            <p>A developer opens a pull request into your main branch.</p>
+        </div>
+        <div class="how-step">
+            <div class="how-num">2</div>
+            <h4>Diff fetched</h4>
+            <p>The action automatically retrieves the changed lines.</p>
+        </div>
+        <div class="how-step">
+            <div class="how-num">3</div>
+            <h4>Fee paid</h4>
+            <p>0.1 XRP or $0.10 USDC sent from your dedicated wallet.</p>
+        </div>
+        <div class="how-step">
+            <div class="how-num">4</div>
+            <h4>AI scores it</h4>
+            <p>The Referee scores the diff against your rubric (0–100).</p>
+        </div>
+        <div class="how-step">
+            <div class="how-num">5</div>
+            <h4>Pass or fail</h4>
+            <p>Pipeline passes or fails. Summary posted to the PR.</p>
+        </div>
+    </div>
+
+    <!-- Setup -->
+    <span class="section-label" style="display:block;margin-bottom:.8rem;">Setup — three steps</span>
+    <div class="steps">
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">1</div>
+                <div>
+                    <div class="step-title">Create a dedicated payment wallet</div>
+                    <div class="step-desc">Don't use your personal wallet. Create a fresh one just for paying audit fees.</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="pay-grid">
+                    <div class="pay-card">
+                        <h4>XRP (recommended)</h4>
+                        <ol>
+                            <li>Open <a href="https://xaman.app" target="_blank" rel="noopener" style="color:var(--blue);">Xaman</a> and create a new account</li>
+                            <li>Send it 5 XRP from your main wallet (~50 audits)</li>
+                            <li>Find the secret: Settings → Accounts → tap account → Advanced → Show secret</li>
+                        </ol>
+                    </div>
+                    <div class="pay-card">
+                        <h4>USDC on Base</h4>
+                        <ol>
+                            <li>Create a new EVM wallet (MetaMask, Coinbase Wallet, etc.)</li>
+                            <li>Send it $5 USDC + a small amount of ETH for gas</li>
+                            <li>Export the private key from the wallet settings</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="callout callout-blue">
+                    <i data-lucide="shield"></i>
+                    <span>Use a dedicated wallet with a small float — never your main wallet. Each audit costs 0.1 XRP or $0.10 USDC. Keep at least 1 XRP as network reserve.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">2</div>
+                <div>
+                    <div class="step-title">Add the secret to your GitHub repo</div>
+                    <div class="step-desc">Go to your repo → Settings → Secrets and variables → Actions → New repository secret.</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Secret name</th><th>Value</th><th>When</th></tr></thead>
+                        <tbody>
+                            <tr><td>AGENTTRUST_XRP_SECRET</td><td>Your XRPL wallet secret (<code class="inline-code">sXXX…</code>)</td><td>Using XRP</td></tr>
+                            <tr><td>AGENTTRUST_USDC_KEY</td><td>Your EVM private key (<code class="inline-code">0x…</code>)</td><td>Using USDC</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">3</div>
+                <div>
+                    <div class="step-title">Add the workflow file</div>
+                    <div class="step-desc">Create <code class="inline-code">.github/workflows/audit.yml</code> in your repo.</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="code-label">
+                    .github/workflows/audit.yml
+                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                </div>
+                <pre>name: AI Code Audit
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: eamwhite1/agenttrust-audit-action@v1
+        with:
+          job_spec: |
+            Review this pull request for correctness, security, and code quality.
+            Pass if: no obvious bugs, no hardcoded secrets, no SQL injection risk,
+            functions are well-named, logic is clear.
+          threshold: 70
+          payment_method: xrp
+          xrp_secret: ${{ secrets.AGENTTRUST_XRP_SECRET }}</pre>
+
+                <div class="callout callout-green" style="margin-bottom:0">
+                    <i data-lucide="check-circle"></i>
+                    <span>That's it. Every PR into <code class="inline-code">main</code> will now be audited automatically. Change <code class="inline-code">payment_method: usdc</code> and <code class="inline-code">usdc_private_key</code> to pay with USDC instead.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Writing a good spec -->
+    <div class="card" style="margin-top:2rem;">
+        <div class="card-pad">
+            <span class="section-label">Tips</span>
+            <h2>Writing a good job_spec</h2>
+            <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.2rem;">The spec is your rubric. Be specific — vague specs produce vague verdicts. The AI only sees the changed lines, so write criteria that are checkable from a diff alone.</p>
+
+            <p style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:.4rem;">Good:</p>
+            <div class="code-label">job_spec</div>
+            <pre style="margin-bottom:1rem;">Review this pull request for:
+- Correctness: does the logic match the stated intent?
+- Security: no hardcoded secrets, no SQL injection, no XSS vectors
+- Tests: new functions should have corresponding tests
+- Naming: variables and functions should be clearly named
+Pass if all four criteria are met with no critical issues.</pre>
+
+            <p style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:.4rem;">Too vague:</p>
+            <div class="code-label">job_spec</div>
+            <pre style="margin-bottom:0;">Is this good code?</pre>
+        </div>
+    </div>
+
+    <!-- Post verdict as comment -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Optional</span>
+            <h2>Post the verdict as a PR comment</h2>
+            <div class="code-label">
+                .github/workflows/audit.yml (extended)
+                <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+            </div>
+            <pre style="margin-bottom:0;">- uses: eamwhite1/agenttrust-audit-action@v1
+  id: audit
+  with:
+    job_spec: 'Review for correctness and security.'
+    xrp_secret: ${{ secrets.AGENTTRUST_XRP_SECRET }}
+
+- name: Post audit result as PR comment
+  if: always()
+  uses: actions/github-script@v7
+  with:
+    script: |
+      github.rest.issues.createComment({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: `**AgentTrust Audit** — ${{ steps.audit.outputs.verdict }} (${{ steps.audit.outputs.score }}/100)\n\n${{ steps.audit.outputs.summary }}`
+      })</pre>
+        </div>
+    </div>
+
+    <!-- Resources -->
+    <span class="section-label" style="display:block;margin-bottom:.8rem;">Resources</span>
+    <div class="resources">
+        <a class="resource-link" href="https://github.com/marketplace/actions/agenttrust-ai-audit" target="_blank" rel="noopener">
+            <i data-lucide="github"></i> GitHub Marketplace
+        </a>
+        <a class="resource-link" href="https://github.com/eamwhite1/agenttrust-audit-action" target="_blank" rel="noopener">
+            <i data-lucide="code"></i> Source on GitHub
+        </a>
+        <a class="resource-link" href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">
+            <i data-lucide="file-text"></i> API Docs
+        </a>
+        <a class="resource-link" href="/use-cases/">
+            <i data-lucide="layers"></i> More Use Cases
+        </a>
+        <a class="resource-link" href="/compliance/">
+            <i data-lucide="shield"></i> Compliance
+        </a>
+        <a class="resource-link" href="/marketplace/">
+            <i data-lucide="store"></i> Marketplace
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="/compliance/">Compliance</a> &nbsp;·&nbsp; <a href="/privacy/">Privacy</a> &nbsp;·&nbsp; <a href="/terms/">Terms</a></p>
+</footer>
+
+<script>
+    lucide.createIcons();
+    function copyCode(btn) {
+        const pre = btn.closest('.code-label').nextElementSibling;
+        navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+            btn.innerHTML = '<i data-lucide="check" style="width:11px;height:11px;"></i> Copied';
+            lucide.createIcons();
+            setTimeout(() => {
+                btn.innerHTML = '<i data-lucide="copy" style="width:11px;height:11px;"></i> Copy';
+                lucide.createIcons();
+            }, 1800);
+        });
+    }
+</script>
+
+</body>
+</html>
