@@ -721,9 +721,17 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                             </select>
                         </div>
                     </div>
-                    <div style="padding:.65rem .8rem;background:rgba(0,102,255,.05);border:1px solid rgba(0,102,255,.12);border-radius:8px;font-size:.78rem;color:var(--text-muted);line-height:1.6;">
-                        <i data-lucide="info" style="width:11px;height:11px;color:var(--blue);vertical-align:middle;margin-right:4px;"></i>
-                        These requirements are sent to the AI referee alongside your task spec. The referee will check both that the work was delivered <em>and</em> that the invoice matches every field you specified here.
+                    <!-- Live preview of seller email -->
+                    <div style="border:1px solid rgba(0,102,255,.18);border-radius:8px;overflow:hidden;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .8rem;background:rgba(0,102,255,.07);border-bottom:1px solid rgba(0,102,255,.12);">
+                            <span style="font-size:.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;">Preview — what your seller will be emailed</span>
+                            <button type="button" onclick="copyInvoicePreview(this)" style="background:none;border:1px solid rgba(0,102,255,.25);border-radius:5px;padding:.15rem .55rem;font-size:.68rem;font-weight:700;color:var(--blue);cursor:pointer;">Copy</button>
+                        </div>
+                        <pre id="invoice-preview" style="margin:0;padding:.75rem .9rem;font-family:'JetBrains Mono','Fira Code',monospace;font-size:.74rem;line-height:1.7;color:var(--text-muted);background:rgba(255,255,255,.4);white-space:pre-wrap;word-break:break-word;"></pre>
+                    </div>
+                    <div style="padding:.6rem .8rem;background:rgba(217,119,6,.06);border:1px solid rgba(217,119,6,.18);border-radius:8px;font-size:.76rem;color:var(--text-muted);line-height:1.6;">
+                        <i data-lucide="alert-triangle" style="width:11px;height:11px;color:#D97706;vertical-align:middle;margin-right:4px;"></i>
+                        <strong style="color:#92400e;">Backend note:</strong> the invoice requirements above need to be included in the seller notification email sent by the referee service on escrow creation. See <code style="font-size:.72rem;">POST /escrow/generate</code> — pass <code style="font-size:.72rem;">invoice_requirements</code> as a structured object so the backend can format and email it to the seller automatically.
                     </div>
                 </div>
             </div>
@@ -1363,24 +1371,73 @@ function toggleInvoiceMode() {
     pill.style.color       = _invoiceModeOn ? 'var(--blue)' : 'var(--text-muted)';
     fields.style.display   = _invoiceModeOn ? 'flex' : 'none';
     if (_invoiceModeOn) {
-        // Mirror amount and currency from the main escrow fields
         const amt = document.getElementById('amt').value.trim();
         const cur = document.getElementById('buyer-currency').value || 'RLUSD';
         if (amt) document.getElementById('inv-amount').value = amt;
         document.getElementById('inv-currency').value = cur;
+        updateInvoicePreview();
         lucide.createIcons();
     }
 }
 
-// Keep invoice amount/currency in sync if user changes them after enabling
+function updateInvoicePreview() {
+    const po       = document.getElementById('inv-po-number').value.trim();
+    const supplier = document.getElementById('inv-supplier-name').value.trim();
+    const amount   = document.getElementById('inv-amount').value.trim();
+    const currency = document.getElementById('inv-currency').value.trim() || 'RLUSD';
+    const services = document.getElementById('inv-services').value.trim();
+    const dateReq  = document.getElementById('inv-date-req').value === 'yes';
+    const lineReq  = document.getElementById('inv-line-items').value === 'yes';
+
+    const buyerName = document.getElementById('buyer-name').value.trim() || 'the buyer';
+
+    const lines = [
+        `Your payment is ready to claim.`,
+        ``,
+        `To release your funds, submit your proof of work and include`,
+        `an invoice that contains ALL of the following:`,
+        ``,
+        po       ? `  PO / Reference:   ${po}`            : `  PO / Reference:   (none required)`,
+        supplier ? `  Supplier name:    ${supplier}`       : `  Supplier name:    (your registered name)`,
+        amount   ? `  Amount:           ${amount} ${currency}` : `  Amount:           (match the escrowed amount)`,
+        services ? `  Services desc.:   ${services}`      : `  Services desc.:   (describe what was delivered)`,
+        `  Invoice number:   required`,
+        dateReq  ? `  Invoice date:     required`          : `  Invoice date:     not required`,
+        lineReq  ? `  Line items:       itemised breakdown required` : `  Line items:       summary total is fine`,
+        ``,
+        `The AI referee will verify your invoice matches every field`,
+        `above before releasing payment. If anything doesn't match`,
+        `you'll be shown exactly what to correct and can resubmit.`,
+    ];
+
+    document.getElementById('invoice-preview').textContent = lines.join('\n');
+}
+
+function copyInvoicePreview(btn) {
+    const text = document.getElementById('invoice-preview').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+
+// Wire all invoice fields to live-update the preview
 document.addEventListener('DOMContentLoaded', () => {
+    ['inv-po-number','inv-supplier-name','inv-services'].forEach(id =>
+        document.getElementById(id).addEventListener('input', updateInvoicePreview));
+    ['inv-date-req','inv-line-items'].forEach(id =>
+        document.getElementById(id).addEventListener('change', updateInvoicePreview));
+
+    // Keep amount/currency mirrored from main fields
     document.getElementById('amt').addEventListener('input', () => {
-        if (_invoiceModeOn) document.getElementById('inv-amount').value =
-            document.getElementById('amt').value;
+        if (!_invoiceModeOn) return;
+        document.getElementById('inv-amount').value = document.getElementById('amt').value;
+        updateInvoicePreview();
     });
     document.getElementById('buyer-currency').addEventListener('change', () => {
-        if (_invoiceModeOn) document.getElementById('inv-currency').value =
-            document.getElementById('buyer-currency').value;
+        if (!_invoiceModeOn) return;
+        document.getElementById('inv-currency').value = document.getElementById('buyer-currency').value;
+        updateInvoicePreview();
     });
 });
 
