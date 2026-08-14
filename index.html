@@ -550,32 +550,6 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                 <input type="email" id="buyer-email" placeholder="you@example.com">
             </div>
 
-            <!-- INVOICE MODE TOGGLE — above task requirements so it influences them -->
-            <div style="margin-bottom:.85rem;">
-                <button type="button" onclick="toggleInvoiceMode()"
-                    style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.65rem .9rem;background:rgba(0,102,255,.04);border:1px solid rgba(0,102,255,.18);border-radius:10px;cursor:pointer;text-align:left;transition:background .15s;font-family:inherit;"
-                    onmouseover="this.style.background='rgba(0,102,255,.08)'" onmouseout="this.style.background='rgba(0,102,255,.04)'">
-                    <div style="display:flex;align-items:center;gap:9px;">
-                        <div style="width:26px;height:26px;border-radius:7px;background:rgba(0,102,255,.1);border:1px solid rgba(0,102,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;">📋</div>
-                        <div>
-                            <div style="font-size:.8rem;font-weight:700;color:var(--blue);">Require Invoice</div>
-                            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.1rem;">Seller must include a matching invoice alongside their proof of work</div>
-                        </div>
-                    </div>
-                    <span id="invoice-mode-pill" style="display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.05em;background:rgba(0,0,0,.06);color:var(--text-muted);transition:.15s;white-space:nowrap;">OFF</span>
-                </button>
-                <div id="invoice-fields" style="display:none;flex-direction:column;gap:.75rem;padding:.75rem .9rem 0;">
-                    <div class="field-group" style="margin-bottom:0;">
-                        <label class="field-label" for="po-number">Purchase Order Number <span class="opt">(optional — shown to seller)</span></label>
-                        <input type="text" id="po-number" placeholder="e.g. PO-2024-0042" oninput="updateInvoiceSpec()">
-                    </div>
-                    <div style="padding:.7rem .9rem;background:rgba(0,102,255,.05);border:1px solid rgba(0,102,255,.12);border-radius:8px;font-size:.8rem;color:var(--text-muted);line-height:1.6;">
-                        <i data-lucide="info" style="width:12px;height:12px;color:var(--blue);vertical-align:middle;margin-right:4px;"></i>
-                        An invoice requirement will be appended to your task spec below. The AI referee will check both that the work was delivered <em>and</em> that the seller's invoice matches the amount, supplier name, and PO reference.
-                    </div>
-                </div>
-            </div>
-
             <div class="field-group">
                 <label class="field-label" for="job-description">Task Requirements * <span class="opt">(the AI audits against exactly this)</span></label>
                 <textarea id="job-description" rows="4" placeholder="Describe the work in detail. Include deliverables, format requirements, word counts, or any specific criteria. The more precise this is, the fairer and more accurate the audit."></textarea>
@@ -684,6 +658,73 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                         <option value="336">14 days</option>
                         <option value="720">30 days</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- INVOICE REQUIRED TOGGLE -->
+            <div style="margin-bottom:.75rem;" class="proof-toggle-wrap" id="pt-invoice-wrap" style="border:1px solid rgba(0,102,255,.2);border-radius:10px;overflow:visible;">
+                <button type="button" onclick="toggleInvoiceMode()"
+                    style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.65rem .9rem;background:rgba(0,102,255,.04);border:1px solid rgba(0,102,255,.18);border-radius:10px;cursor:pointer;text-align:left;transition:background .15s;font-family:inherit;"
+                    onmouseover="this.style.background='rgba(0,102,255,.08)'" onmouseout="this.style.background='rgba(0,102,255,.04)'">
+                    <div style="display:flex;align-items:center;gap:9px;">
+                        <div style="width:26px;height:26px;border-radius:7px;background:rgba(0,102,255,.1);border:1px solid rgba(0,102,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;">📋</div>
+                        <div>
+                            <div style="font-size:.8rem;font-weight:700;color:var(--blue);">Require Invoice</div>
+                            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.1rem;">Seller must include a matching invoice alongside their proof of work</div>
+                        </div>
+                    </div>
+                    <span id="invoice-mode-pill" class="proof-pill">OFF</span>
+                </button>
+                <div id="invoice-fields" style="display:none;flex-direction:column;gap:.85rem;padding:.85rem .9rem .9rem;border-top:1px solid rgba(0,102,255,.12);background:rgba(0,102,255,.02);border-radius:0 0 10px 10px;">
+                    <div style="font-size:.75rem;color:var(--text-muted);line-height:1.5;">
+                        Specify which fields the seller's invoice must contain. The AI referee will verify each one before releasing payment.
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="field-label" for="inv-po-number">PO / Reference Number <span class="opt">(optional)</span></label>
+                            <input type="text" id="inv-po-number" placeholder="e.g. PO-2024-0042">
+                        </div>
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="field-label" for="inv-supplier-name">Supplier Name <span class="opt">(must match)</span></label>
+                            <input type="text" id="inv-supplier-name" placeholder="e.g. Acme Logistics Ltd">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="field-label" for="inv-amount">Invoice Amount <span class="opt">(must match escrow)</span></label>
+                            <input type="number" id="inv-amount" placeholder="Auto-filled from amount above" readonly
+                                style="background:rgba(0,0,0,.03);color:var(--text-muted);cursor:default;">
+                        </div>
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="field-label" for="inv-currency">Currency</label>
+                            <input type="text" id="inv-currency" placeholder="Auto-filled" readonly
+                                style="background:rgba(0,0,0,.03);color:var(--text-muted);cursor:default;">
+                        </div>
+                    </div>
+                    <div class="field-group" style="margin-bottom:0;">
+                        <label class="field-label" for="inv-services">Services / Goods Description <span class="opt">(invoice must reference this)</span></label>
+                        <input type="text" id="inv-services" placeholder="e.g. Coffee delivery — 200kg, Warehouse B, week of 14 Aug">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="field-label" for="inv-date-req">Invoice Date Required</label>
+                            <select id="inv-date-req">
+                                <option value="yes">Yes — must include a date</option>
+                                <option value="no">No — date not required</option>
+                            </select>
+                        </div>
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="field-label" for="inv-line-items">Line Items Required</label>
+                            <select id="inv-line-items">
+                                <option value="no">No — summary total is fine</option>
+                                <option value="yes">Yes — itemised breakdown required</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="padding:.65rem .8rem;background:rgba(0,102,255,.05);border:1px solid rgba(0,102,255,.12);border-radius:8px;font-size:.78rem;color:var(--text-muted);line-height:1.6;">
+                        <i data-lucide="info" style="width:11px;height:11px;color:var(--blue);vertical-align:middle;margin-right:4px;"></i>
+                        These requirements are sent to the AI referee alongside your task spec. The referee will check both that the work was delivered <em>and</em> that the invoice matches every field you specified here.
+                    </div>
                 </div>
             </div>
 
@@ -1315,45 +1356,33 @@ lucide.createIcons();
 let _invoiceModeOn = false;
 function toggleInvoiceMode() {
     _invoiceModeOn = !_invoiceModeOn;
-    const pill = document.getElementById('invoice-mode-pill');
+    const pill   = document.getElementById('invoice-mode-pill');
     const fields = document.getElementById('invoice-fields');
-    pill.textContent = _invoiceModeOn ? 'ON' : 'OFF';
-    pill.style.background = _invoiceModeOn ? 'rgba(0,102,255,.15)' : 'rgba(0,0,0,.06)';
-    pill.style.color = _invoiceModeOn ? 'var(--blue)' : 'var(--text-muted)';
-    fields.style.display = _invoiceModeOn ? 'flex' : 'none';
-    if (_invoiceModeOn) updateInvoiceSpec(); else removeInvoiceSpec();
+    pill.textContent       = _invoiceModeOn ? 'ON' : 'OFF';
+    pill.style.background  = _invoiceModeOn ? 'rgba(0,102,255,.15)' : 'rgba(0,0,0,.06)';
+    pill.style.color       = _invoiceModeOn ? 'var(--blue)' : 'var(--text-muted)';
+    fields.style.display   = _invoiceModeOn ? 'flex' : 'none';
+    if (_invoiceModeOn) {
+        // Mirror amount and currency from the main escrow fields
+        const amt = document.getElementById('amt').value.trim();
+        const cur = document.getElementById('buyer-currency').value || 'RLUSD';
+        if (amt) document.getElementById('inv-amount').value = amt;
+        document.getElementById('inv-currency').value = cur;
+        lucide.createIcons();
+    }
 }
 
-// Marker we append/replace so toggling on/off doesn't permanently mutate user text
-const INVOICE_MARKER = '\n\n--- INVOICE REQUIREMENT ---';
-
-function updateInvoiceSpec() {
-    const ta = document.getElementById('job-description');
-    // Strip any previously appended invoice block
-    let base = ta.value.split(INVOICE_MARKER)[0].trimEnd();
-
-    const po       = document.getElementById('po-number').value.trim();
-    const amount   = document.getElementById('amt').value.trim() || '[AMOUNT]';
-    const currency = document.getElementById('buyer-currency').value || 'RLUSD';
-    const poRef    = po ? `PO Reference: ${po}` : '';
-
-    const block = [
-        INVOICE_MARKER,
-        'The seller must include a matching invoice with their submission.',
-        'The AI referee will verify the work AND confirm the invoice matches:',
-        `- Amount: ${amount} ${currency}`,
-        poRef,
-        '- Invoice number and date',
-        '- Supplier name matching their registered details',
-    ].filter(Boolean).join('\n');
-
-    ta.value = base ? base + block : block.trimStart();
-}
-
-function removeInvoiceSpec() {
-    const ta = document.getElementById('job-description');
-    ta.value = ta.value.split(INVOICE_MARKER)[0].trimEnd();
-}
+// Keep invoice amount/currency in sync if user changes them after enabling
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('amt').addEventListener('input', () => {
+        if (_invoiceModeOn) document.getElementById('inv-amount').value =
+            document.getElementById('amt').value;
+    });
+    document.getElementById('buyer-currency').addEventListener('change', () => {
+        if (_invoiceModeOn) document.getElementById('inv-currency').value =
+            document.getElementById('buyer-currency').value;
+    });
+});
 
 function switchTab(tab) {
     document.getElementById("panel-landing").style.display = "none";
