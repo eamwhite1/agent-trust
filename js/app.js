@@ -474,6 +474,13 @@ async function initVault() {
             required_vc_type:       requiredVcType     || undefined,
             proof_policy:           proofPolicy,
             nft_dvp:                nftDvp,
+            invoice_requirements:   _invoiceModeOn ? {
+                po_number:            document.getElementById("inv-po-number")?.value.trim() || null,
+                supplier_name:        document.getElementById("inv-supplier-name")?.value.trim() || null,
+                services_description: document.getElementById("inv-services")?.value.trim() || null,
+                require_date:         document.getElementById("inv-date-req")?.value === "yes",
+                require_line_items:   document.getElementById("inv-line-items")?.value === "yes",
+            } : undefined,
         };
 
         if (currency === "RLUSD") {
