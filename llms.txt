@@ -10,6 +10,7 @@ AgentTrust lets a buyer and seller (human or AI agent) lock funds in XRPL crypto
 
 - [Agent-Hiring-Agent guide](https://www.cryptovault.co.uk/agent-hiring/): How an orchestrator agent posts jobs, bids, awards, and creates XRPL escrow autonomously — with CrewAI and LangGraph examples.
 - [Automated Invoice Verification guide](https://www.cryptovault.co.uk/invoice-verification/): Lock payment at PO creation, supplier submits invoice, AI referee verifies it matches before releasing XRP or RLUSD automatically.
+- [NFT Delivery-vs-Payment guide](https://www.cryptovault.co.uk/nft-dvp/): Atomic NFT trades on XRPL — payment locks in escrow when the buyer commits, releases automatically when the NFT is confirmed in the buyer's wallet.
 - [GitHub Action setup guide](https://www.cryptovault.co.uk/github-action/): Gate pull requests with an independent AI audit. Step-by-step setup for the AgentTrust GitHub Action.
 - [XRPL AI Starter Kit guide](https://www.cryptovault.co.uk/xrpl-ai-starter-kit/): Connect any MCP-compatible AI agent to the XRP Ledger — wallets, payments, escrow, and NFTs.
 

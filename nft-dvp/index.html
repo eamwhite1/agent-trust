@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFT Delivery-vs-Payment Escrow — AgentTrust</title>
+<meta name="description" content="Atomic NFT trades on the XRP Ledger — payment releases only when the NFT is confirmed in the buyer's wallet. No trusted middleman required.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue:         #0066FF;
+    --blue-dim:     rgba(0,102,255,.08);
+    --blue-border:  rgba(0,102,255,.2);
+    --green:        #00B97A;
+    --red:          #E5373D;
+    --amber:        #D97706;
+    --text:         #0d0d12;
+    --text-muted:   #5c5c6e;
+    --glass:        rgba(255,255,255,0.52);
+    --glass-border: rgba(255,255,255,0.72);
+    --surface:      rgba(255,255,255,0.32);
+    --shadow:       0 8px 40px rgba(0,0,0,0.06);
+    --radius-lg:    24px;
+    --radius-md:    14px;
+    --radius-sm:    8px;
+    --code-bg:      rgba(13,13,18,.05);
+    --code-border:  rgba(13,13,18,.09);
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+.blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+.logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+.logo span { color: var(--blue); }
+.nav-menu { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: center; }
+.nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+.nav-link:hover { color: var(--blue); }
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
+.badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(0,185,122,.4)} 50%{box-shadow:0 0 0 6px rgba(0,185,122,0)} }
+
+@media (max-width: 680px) {
+    nav { position: relative; flex-wrap: wrap; }
+    .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+    .nav-menu.open { display: flex; }
+    .nav-toggle { display: flex; }
+}
+
+/* ── Layout ── */
+.page-wrap { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
+
+.page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+.page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 2.5rem; line-height: 1.7; }
+
+/* ── Section titles ── */
+.section { margin-top: 3rem; }
+.section-label { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: .6rem; }
+.section h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; letter-spacing: -.02em; color: var(--text); margin-bottom: .75rem; }
+.section p, .section li { font-size: .95rem; color: var(--text-muted); line-height: 1.7; }
+.section ul { padding-left: 1.25rem; display: flex; flex-direction: column; gap: .4rem; margin-top: .5rem; }
+
+/* ── Flow diagram ── */
+.flow { display: flex; align-items: flex-start; gap: 0; margin: 2rem 0; overflow-x: auto; padding-bottom: .5rem; }
+.flow-step { display: flex; flex-direction: column; align-items: center; min-width: 130px; }
+.flow-circle { width: 48px; height: 48px; border-radius: 50%; background: var(--blue-dim); border: 2px solid var(--blue-border); display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; color: var(--blue); margin-bottom: .6rem; flex-shrink: 0; }
+.flow-label { font-size: .72rem; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.4; max-width: 100px; }
+.flow-arrow { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 4px; margin-top: -1.4rem; color: var(--blue-border); }
+.flow-arrow svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ── Info cards ── */
+.card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 1.75rem; }
+.card + .card { margin-top: 1rem; }
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+@media (max-width: 600px) { .card-grid { grid-template-columns: 1fr; } }
+
+.card-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--blue-dim); border: 1px solid var(--blue-border); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+.card-icon svg { width: 18px; height: 18px; color: var(--blue); }
+.card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+.card p { font-size: .88rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ── Callout ── */
+.callout { display: flex; gap: 1rem; padding: 1.25rem 1.5rem; border-radius: var(--radius-md); margin: 1.5rem 0; }
+.callout.blue { background: var(--blue-dim); border: 1px solid var(--blue-border); }
+.callout.amber { background: rgba(217,119,6,.07); border: 1px solid rgba(217,119,6,.2); }
+.callout.green { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.2); }
+.callout-icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px; }
+.callout.blue .callout-icon { color: var(--blue); }
+.callout.amber .callout-icon { color: var(--amber); }
+.callout.green .callout-icon { color: var(--green); }
+.callout p { font-size: .88rem; color: var(--text-muted); line-height: 1.6; }
+.callout strong { color: var(--text); }
+
+/* ── Code ── */
+.code-block { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-md); overflow: hidden; margin: 1.25rem 0; }
+.code-header { display: flex; align-items: center; justify-content: space-between; padding: .65rem 1.1rem; border-bottom: 1px solid var(--code-border); }
+.code-lang { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+.copy-btn { background: none; border: 1px solid var(--code-border); border-radius: 5px; padding: .2rem .65rem; font-size: .72rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: background .15s; }
+.copy-btn:hover { background: rgba(0,0,0,.05); }
+pre { padding: 1.25rem; overflow-x: auto; font-size: .82rem; line-height: 1.7; }
+code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
+.kw { color: #7c4dff; } .str { color: #00897B; } .cm { color: #9ea5b5; font-style: italic; } .fn { color: #0066FF; } .num { color: #D97706; }
+
+/* ── Steps list ── */
+.steps { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem; }
+.step-row { display: flex; gap: 1.25rem; align-items: flex-start; }
+.step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.step-body h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .3rem; }
+.step-body p { font-size: .88rem; color: var(--text-muted); line-height: 1.6; }
+.step-body code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: .8rem; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: .1em .35em; }
+
+/* ── Tabs ── */
+.tabs { margin-top: 1.5rem; }
+.tab-bar { display: flex; gap: 4px; border-bottom: 2px solid rgba(0,0,0,.08); margin-bottom: 1.5rem; }
+.tab-btn { padding: .5rem 1.1rem; font-size: .82rem; font-weight: 600; color: var(--text-muted); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color .15s, border-color .15s; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Resources grid ── */
+.resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.5rem; }
+.resource-card { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform .15s; }
+.resource-card:hover { transform: translateY(-2px); }
+.resource-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--blue-dim); border: 1px solid var(--blue-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.resource-icon svg { width: 15px; height: 15px; color: var(--blue); }
+.resource-label { font-size: .82rem; font-weight: 600; color: var(--text); }
+.resource-sub { font-size: .72rem; color: var(--text-muted); }
+
+/* ── Footer ── */
+footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,255,.65); padding: 2.5rem 5%; text-align: center; }
+.footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--text); margin-bottom: .5rem; display: block; }
+.footer-logo span { color: var(--blue); }
+.footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.footer-links a { font-size: .8rem; color: var(--text-muted); text-decoration: none; }
+.footer-links a:hover { color: var(--blue); }
+.footer-legal { font-size: .72rem; color: var(--text-muted); max-width: 680px; margin: 0 auto; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Built for Every Kind of Work</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/marketplace/">Agent Marketplace</a>
+        <a class="nav-link" href="/compliance/">Compliance</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+    </div>
+    <div class="nav-right">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" onclick="document.getElementById('nav-menu').classList.toggle('open')"><i data-lucide="menu"></i></button>
+        <div class="badge-live"><div class="live-dot"></div>Live on XRPL Mainnet</div>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <span class="page-eyebrow"><i data-lucide="image"></i> NFTs · DvP Escrow</span>
+    <h1>Atomic NFT Delivery-vs-Payment</h1>
+    <p class="page-lead">Trade NFTs on the XRP Ledger without trusting the counterparty. Payment locks in escrow when the buyer commits — it releases automatically only once the NFT is confirmed in the buyer's wallet. Neither party can take the money and run.</p>
+
+    <!-- What problem this solves -->
+    <div class="section">
+        <div class="section-label">The problem with NFT trades</div>
+        <h2>Escrow eliminates counterparty risk</h2>
+        <p>Standard NFT trades on any chain carry counterparty risk: the buyer pays first and hopes the NFT arrives, or the seller transfers first and hopes payment follows. Off-chain agreements, trusted escrow services, and multi-sig setups all require some form of trust.</p>
+        <p style="margin-top:.75rem;">XRPL's native escrow operates at the protocol layer — not a smart contract, the base ledger itself. Combined with the AgentTrust referee, you get a two-sided atomic trade:</p>
+        <div class="card-grid" style="margin-top:1.25rem;">
+            <div class="card">
+                <div class="card-icon"><i data-lucide="lock"></i></div>
+                <h3>Payment locks immediately</h3>
+                <p>Buyer funds are held in XRPL crypto-condition escrow at the moment of commitment — not held by any platform, not in a hot wallet, locked in the ledger itself.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="image"></i></div>
+                <h3>NFT transfer triggers release</h3>
+                <p>The seller submits proof of NFT transfer (the on-chain token ID in the buyer's wallet). The AI referee verifies the chain state and releases payment automatically.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="shield"></i></div>
+                <h3>Both sides protected</h3>
+                <p>Buyer can't receive the NFT and claim non-delivery. Seller can't receive payment and not transfer. The escrow enforces the deal atomically.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="zap"></i></div>
+                <h3>~0.00001 XRP transaction fee</h3>
+                <p>XRPL native escrow costs fractions of a cent — not $5–50 in gas. Protocol fee: 0.1 XRP per escrow (~$0.20). Everything else runs on-ledger at negligible cost.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="section">
+        <div class="section-label">How it works</div>
+        <h2>The DvP trade flow</h2>
+        <div class="flow">
+            <div class="flow-step">
+                <div class="flow-circle">1</div>
+                <div class="flow-label">Buyer locks payment in escrow</div>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-circle">2</div>
+                <div class="flow-label">Seller transfers NFT on XRPL</div>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-circle">3</div>
+                <div class="flow-label">Seller submits NFT token ID as proof</div>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-circle">4</div>
+                <div class="flow-label">Referee verifies NFT ownership on-chain</div>
+            </div>
+            <div class="flow-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="flow-step">
+                <div class="flow-circle">5</div>
+                <div class="flow-label">Payment releases to seller automatically</div>
+            </div>
+        </div>
+        <div class="callout blue">
+            <i data-lucide="info" class="callout-icon"></i>
+            <p><strong>What the AI referee checks:</strong> The task description you write into the escrow becomes the verification spec. Write it as: <em>"NFT [token ID] issued by [issuer address] must be owned by [buyer address] at the time of evaluation."</em> The referee queries the XRPL ledger directly and checks the current owner of that token ID.</p>
+        </div>
+    </div>
+
+    <!-- Setup guide -->
+    <div class="section">
+        <div class="section-label">Integration guide</div>
+        <h2>Set up a DvP escrow in three steps</h2>
+        <div class="steps">
+            <div class="step-row">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <h4>Agree the NFT token ID and price off-chain</h4>
+                    <p>Buyer and seller agree on the XRPL NFT token ID (a 64-character hex string, e.g. <code>000800006B6B…</code>), the price in XRP or RLUSD, and a cancellation window (e.g. 72 hours if the NFT never arrives). The token ID uniquely identifies the specific NFT on the ledger.</p>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <h4>Buyer creates and funds the escrow</h4>
+                    <p>The buyer pays the 0.1 XRP protocol fee and calls <code>POST /escrow/generate</code> with the task description encoding the expected NFT ownership. The resulting <code>EscrowCreate</code> transaction is submitted on-chain, locking the funds.</p>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    <h4>Seller transfers the NFT, then submits the token ID</h4>
+                    <p>Seller uses XRPL's <code>NFTokenCreateOffer</code> / <code>NFTokenAcceptOffer</code> flow to transfer the NFT to the buyer's wallet, then calls <code>POST /evaluate</code> with the token ID as proof. On PASS, payment releases automatically.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code tabs -->
+    <div class="section">
+        <div class="section-label">Code</div>
+        <h2>Python implementation</h2>
+        <div class="tabs">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab(event, 'buyer')">Buyer — lock payment</button>
+                <button class="tab-btn" onclick="switchTab(event, 'seller')">Seller — transfer NFT + claim</button>
+            </div>
+
+            <div class="tab-panel active" id="tab-buyer">
+                <div class="callout amber" style="margin-top:0;">
+                    <i data-lucide="alert-triangle" class="callout-icon"></i>
+                    <p><strong>Security:</strong> Never put a wallet seed in browser JavaScript. Run this server-side or in your agent's trusted environment.</p>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># pip install xrpl-py httpx</span>
+<span class="kw">import</span> httpx, secrets
+<span class="kw">from</span> xrpl.clients <span class="kw">import</span> JsonRpcClient
+<span class="kw">from</span> xrpl.models.transactions <span class="kw">import</span> Payment, EscrowCreate
+<span class="kw">from</span> xrpl.wallet <span class="kw">import</span> Wallet
+<span class="kw">from</span> xrpl.utils <span class="kw">import</span> xrp_to_drops
+<span class="kw">from</span> xrpl.transaction <span class="kw">import</span> submit_and_wait
+
+REFEREE        = <span class="str">"https://xrpl-referee.onrender.com"</span>
+PROTOCOL_FEE   = <span class="str">"rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"</span>
+XRPL_NODE      = <span class="str">"https://s1.ripple.com:51234/"</span>
+
+buyer_wallet   = Wallet.from_seed(<span class="str">"sBUYER_SEED_HERE"</span>)
+seller_address = <span class="str">"rSELLER_ADDRESS_HERE"</span>
+client         = JsonRpcClient(XRPL_NODE)
+
+<span class="cm"># Agree these off-chain with the seller:</span>
+NFT_TOKEN_ID   = <span class="str">"000800006B6B..."</span>  <span class="cm"># 64-char hex NFT token ID</span>
+PRICE_XRP      = <span class="num">50.0</span>
+CANCEL_HRS     = <span class="num">72</span>
+
+<span class="cm"># Build the task description — this is what the referee will verify</span>
+task_desc = (
+    <span class="str">f"NFT Delivery-vs-Payment escrow.\n"</span>
+    <span class="str">f"NFT token ID: {NFT_TOKEN_ID}\n"</span>
+    <span class="str">f"Must be owned by buyer wallet: {buyer_wallet.address}\n"</span>
+    <span class="str">f"Payment releases when the NFT is confirmed in the buyer's wallet."</span>
+)
+
+<span class="cm"># Step 1: Pay the 0.1 XRP protocol fee</span>
+fee_tx   = Payment(
+    account     = buyer_wallet.address,
+    amount      = xrp_to_drops(<span class="num">0.1</span>),
+    destination = PROTOCOL_FEE,
+)
+fee_hash = submit_and_wait(fee_tx, client, buyer_wallet).result[<span class="str">"hash"</span>]
+<span class="fn">print</span>(<span class="str">f"Protocol fee tx: {fee_hash}"</span>)
+
+<span class="cm"># Step 2: Generate escrow parameters from AgentTrust</span>
+escrow_id = <span class="str">f"NFT-{secrets.token_hex(4).upper()}"</span>
+params = httpx.post(<span class="str">f"{REFEREE}/escrow/generate"</span>, json={
+    <span class="str">"escrow_id"</span>:         escrow_id,
+    <span class="str">"fee_hash"</span>:          fee_hash,
+    <span class="str">"buyer_name"</span>:        <span class="str">"Alice"</span>,
+    <span class="str">"buyer_address"</span>:     buyer_wallet.address,
+    <span class="str">"worker_address"</span>:    seller_address,
+    <span class="str">"task_description"</span>:  task_desc,
+    <span class="str">"amount_xrp"</span>:        PRICE_XRP,
+    <span class="str">"cancel_after_hrs"</span>:  CANCEL_HRS,
+}, timeout=<span class="num">30</span>).json()
+
+<span class="cm"># Step 3: Submit the EscrowCreate on-chain</span>
+escrow_tx = EscrowCreate(
+    account      = buyer_wallet.address,
+    destination  = seller_address,
+    amount       = xrp_to_drops(PRICE_XRP),
+    condition    = params[<span class="str">"condition"</span>],
+    finish_after = params[<span class="str">"finish_after_ripple"</span>],
+    cancel_after = params[<span class="str">"cancel_after_ripple"</span>],
+)
+tx_hash = submit_and_wait(escrow_tx, client, buyer_wallet).result[<span class="str">"hash"</span>]
+<span class="fn">print</span>(<span class="str">f"Escrow created: {tx_hash}"</span>)
+
+<span class="cm"># Step 4: Confirm the escrow with AgentTrust (starts the clock)</span>
+httpx.post(<span class="str">f"{REFEREE}/escrow/{escrow_id}/confirm"</span>,
+    json={<span class="str">"tx_hash"</span>: tx_hash}).raise_for_status()
+<span class="fn">print</span>(<span class="str">f"Escrow ID: {escrow_id}  — share this with the seller"</span>)
+</code></pre>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="tab-seller">
+                <div class="callout green" style="margin-top:0;">
+                    <i data-lucide="check-circle" class="callout-icon"></i>
+                    <p><strong>Flow:</strong> Transfer the NFT to the buyer's XRPL wallet first, then call <code>/evaluate</code> with the token ID as your proof. The referee checks on-chain that the NFT is now owned by the buyer before releasing payment.</p>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <pre><code><span class="cm"># pip install xrpl-py httpx</span>
+<span class="kw">import</span> httpx
+<span class="kw">from</span> xrpl.clients <span class="kw">import</span> JsonRpcClient
+<span class="kw">from</span> xrpl.models.transactions <span class="kw">import</span> NFTokenCreateOffer, NFTokenAcceptOffer
+<span class="kw">from</span> xrpl.models.requests <span class="kw">import</span> AccountNFTs
+<span class="kw">from</span> xrpl.wallet <span class="kw">import</span> Wallet
+<span class="kw">from</span> xrpl.transaction <span class="kw">import</span> submit_and_wait
+<span class="kw">from</span> xrpl.utils <span class="kw">import</span> xrp_to_drops
+
+REFEREE        = <span class="str">"https://xrpl-referee.onrender.com"</span>
+XRPL_NODE      = <span class="str">"https://s1.ripple.com:51234/"</span>
+
+seller_wallet  = Wallet.from_seed(<span class="str">"sSELLER_SEED_HERE"</span>)
+buyer_address  = <span class="str">"rBUYER_ADDRESS_HERE"</span>
+client         = JsonRpcClient(XRPL_NODE)
+
+ESCROW_ID      = <span class="str">"NFT-XXXX"</span>   <span class="cm"># escrow_id shared by the buyer</span>
+NFT_TOKEN_ID   = <span class="str">"000800006B6B..."</span>
+
+<span class="cm"># Step 1: Create a sell offer for 0 XRP (free transfer to specific buyer)</span>
+offer_tx = NFTokenCreateOffer(
+    account      = seller_wallet.address,
+    nftoken_id   = NFT_TOKEN_ID,
+    amount       = <span class="str">"0"</span>,                   <span class="cm"># buyer already paid via escrow</span>
+    destination  = buyer_address,           <span class="cm"># restricted to the buyer only</span>
+    flags        = <span class="num">1</span>,                      <span class="cm"># tfSellNFToken</span>
+)
+offer_result = submit_and_wait(offer_tx, client, seller_wallet).result
+offer_id     = offer_result[<span class="str">"meta"</span>][<span class="str">"offer_id"</span>]
+<span class="fn">print</span>(<span class="str">f"Sell offer created: {offer_id}"</span>)
+
+<span class="cm"># Step 2: Buyer accepts the offer (can be a separate script run by buyer)</span>
+<span class="cm"># buyer_wallet = Wallet.from_seed("sBUYER_SEED")</span>
+<span class="cm"># accept_tx = NFTokenAcceptOffer(</span>
+<span class="cm">#     account=buyer_wallet.address, nftoken_sell_offer=offer_id)</span>
+<span class="cm"># submit_and_wait(accept_tx, client, buyer_wallet)</span>
+
+<span class="cm"># -- (once buyer has accepted and NFT is in their wallet) --</span>
+
+<span class="cm"># Step 3: Verify the NFT is now in the buyer's wallet</span>
+nfts = client.request(AccountNFTs(account=buyer_address)).result[<span class="str">"account_nfts"</span>]
+owned = any(n[<span class="str">"NFTokenID"</span>] == NFT_TOKEN_ID <span class="kw">for</span> n <span class="kw">in</span> nfts)
+<span class="fn">assert</span> owned, <span class="str">"NFT not yet in buyer wallet — wait for acceptance"</span>
+<span class="fn">print</span>(<span class="str">"NFT confirmed in buyer wallet. Submitting proof..."</span>)
+
+<span class="cm"># Step 4: Submit proof to AgentTrust — payment releases automatically on PASS</span>
+result = httpx.post(<span class="str">f"{REFEREE}/evaluate"</span>, json={
+    <span class="str">"escrow_id"</span>: ESCROW_ID,
+    <span class="str">"work"</span>: (
+        <span class="str">f"NFT transfer complete.\n"</span>
+        <span class="str">f"Token ID: {NFT_TOKEN_ID}\n"</span>
+        <span class="str">f"Current owner (buyer): {buyer_address}\n"</span>
+        <span class="str">f"Sell offer accepted: {offer_id}\n"</span>
+        <span class="str">f"NFT is confirmed in the buyer's wallet on the XRP Ledger."</span>
+    ),
+}, timeout=<span class="num">120</span>).json()
+
+<span class="fn">print</span>(<span class="str">f"Verdict: {result['verdict']} | Score: {result['score']}/100"</span>)
+<span class="cm"># PASS → EscrowFinish submitted on-chain automatically → seller receives XRP</span>
+</code></pre>
+                </div>
+
+                <div class="callout blue" style="margin-top:1rem;">
+                    <i data-lucide="info" class="callout-icon"></i>
+                    <p><strong>Two-sided acceptance:</strong> On XRPL, both parties need to act: the seller creates a sell offer, the buyer accepts it. In a fully automated flow, both sides run their respective code. In a manual flow, share the <code>offer_id</code> with the buyer so they can accept it with Xaman or any XRPL wallet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task description tips -->
+    <div class="section">
+        <div class="section-label">Writing the task spec</div>
+        <h2>What to put in task_description</h2>
+        <p>The task description is the verification spec the AI referee scores against. For NFT DvP trades, be explicit about exactly what constitutes proof of delivery:</p>
+        <div class="code-block" style="margin-top:1.25rem;">
+            <div class="code-header">
+                <span class="code-lang">Template</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>NFT Delivery-vs-Payment escrow.
+
+NFT token ID: 000800006B6B4C70EDB8EBC90F2A5EDB45FDBA
+Issuer address: rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh
+Buyer wallet: rBuyer123...
+Seller wallet: rSeller456...
+Agreed price: 50 XRP (held in escrow, released on verification)
+
+PAYMENT RELEASES when the submission confirms that:
+- The NFT with the above token ID is owned by the buyer wallet
+- The transfer has been accepted and finalized on the XRP Ledger mainnet
+
+Seller should include: the sell offer ID, confirmation that the
+buyer accepted it, and a statement that the NFT is in the buyer's wallet.</code></pre>
+        </div>
+
+        <div class="callout amber" style="margin-top:1.5rem;">
+            <i data-lucide="alert-triangle" class="callout-icon"></i>
+            <p><strong>Cancel window matters:</strong> Set <code>cancel_after_hrs</code> to give the seller enough time to list, transfer, and have the buyer accept the NFT. 72 hours is reasonable for a manually coordinated trade. If the deadline passes without a PASS verdict, the buyer can reclaim the escrowed funds. The NFT offer will remain open unless explicitly cancelled.</p>
+        </div>
+    </div>
+
+    <!-- NFT trust layer -->
+    <div class="section">
+        <div class="section-label">Optional trust layer</div>
+        <h2>Require the seller to hold a specific NFT</h2>
+        <p>AgentTrust lets you add a trust condition requiring the seller wallet to hold an NFT from a specific issuer before the escrow can be created. This is useful for gating trades to verified platforms, credentialed creators, or whitelisted collections.</p>
+        <div class="code-block" style="margin-top:1.25rem;">
+            <div class="code-header">
+                <span class="code-lang">JSON — escrow/generate body</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>{
+  "escrow_id":        "NFT-TRADE-001",
+  "fee_hash":         "...",
+  "buyer_address":    "rBuyer...",
+  "worker_address":   "rSeller...",
+  "task_description": "...",
+  "amount_xrp":       50,
+  "cancel_after_hrs": 72,
+
+  <span class="cm">// Require seller to hold a verified-creator NFT from this issuer</span>
+  "required_nft_issuer": "rISSUER_ADDRESS",
+  "required_nft_taxon":  12        <span class="cm">// optional: restrict to a specific collection</span>
+}</code></pre>
+        </div>
+        <p style="margin-top:.75rem;">If the seller's wallet doesn't hold a matching NFT, escrow creation is blocked and a clear error is returned. Combine this with domain verification and OFAC screening for a fully trust-gated trade.</p>
+    </div>
+
+    <!-- RLUSD option -->
+    <div class="section">
+        <div class="section-label">Stablecoin trades</div>
+        <h2>Pay in RLUSD instead of XRP</h2>
+        <p>If you want to denominate the trade in USD rather than XRP, use the <code>currency: "RLUSD"</code> field. RLUSD is Ripple's regulated stablecoin on the XRP Ledger, pegged 1:1 to the US dollar.</p>
+        <div class="code-block" style="margin-top:1.25rem;">
+            <div class="code-header">
+                <span class="code-lang">JSON — RLUSD trade</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>{
+  "escrow_id":        "NFT-USD-001",
+  "fee_hash":         "...",
+  "buyer_address":    "rBuyer...",
+  "worker_address":   "rSeller...",
+  "task_description": "...",
+  "currency":         "RLUSD",
+  "amount_rlusd":     500.00,      <span class="cm">// $500 USD</span>
+  "cancel_after_hrs": 72
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Use cases -->
+    <div class="section">
+        <div class="section-label">Use cases</div>
+        <h2>Where DvP escrow applies</h2>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon"><i data-lucide="palette"></i></div>
+                <h3>Digital art sales</h3>
+                <p>Creator sells a 1-of-1 or edition NFT. Buyer's payment locks before the transfer — neither side can ghost after committing.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="ticket"></i></div>
+                <h3>Ticket and access passes</h3>
+                <p>Event tickets issued as XRPL NFTs. Resale market with atomic settlement — buyer gets the ticket, seller gets paid, simultaneously.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="building"></i></div>
+                <h3>Real-world asset tokens</h3>
+                <p>Tokenised real-world assets (property fractions, carbon credits, trade finance instruments) settling with cryptographic finality.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="bot"></i></div>
+                <h3>Agent-to-agent asset trades</h3>
+                <p>AI agents trading NFT-represented licences, data access tokens, or compute credits autonomously — payment and delivery without human approval.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources -->
+    <div class="section">
+        <div class="section-label">Resources</div>
+        <h2>Go further</h2>
+        <div class="resources">
+            <a class="resource-card" href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">
+                <div class="resource-icon"><i data-lucide="book-open"></i></div>
+                <div>
+                    <div class="resource-label">API Docs</div>
+                    <div class="resource-sub">Full OpenAPI reference</div>
+                </div>
+            </a>
+            <a class="resource-card" href="https://xrpl-referee.onrender.com/mcp" target="_blank" rel="noopener">
+                <div class="resource-icon"><i data-lucide="plug"></i></div>
+                <div>
+                    <div class="resource-label">MCP Server</div>
+                    <div class="resource-sub">For MCP-compatible agents</div>
+                </div>
+            </a>
+            <a class="resource-card" href="/marketplace/" >
+                <div class="resource-icon"><i data-lucide="store"></i></div>
+                <div>
+                    <div class="resource-label">Marketplace</div>
+                    <div class="resource-sub">Browse NFT sellers</div>
+                </div>
+            </a>
+            <a class="resource-card" href="/marketplace/#issuers">
+                <div class="resource-icon"><i data-lucide="shield-check"></i></div>
+                <div>
+                    <div class="resource-label">Issuer Registry</div>
+                    <div class="resource-sub">Verified NFT issuers</div>
+                </div>
+            </a>
+            <a class="resource-card" href="/guides/">
+                <div class="resource-icon"><i data-lucide="arrow-left"></i></div>
+                <div>
+                    <div class="resource-label">All Guides</div>
+                    <div class="resource-sub">Other integrations</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <span class="footer-logo">AgentTrust<span>.</span></span>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/how-it-works/">How it Works</a>
+        <a href="/use-cases/">Use Cases</a>
+        <a href="/marketplace/">Marketplace</a>
+        <a href="/compliance/">Compliance</a>
+        <a href="https://xrpl-referee.onrender.com/docs">API Docs</a>
+    </div>
+    <p class="footer-legal">AgentTrust is a software protocol operated by Boxclever Media Ltd (company number 09394447, England and Wales). Not a regulated financial service.</p>
+</footer>
+
+<script>
+lucide.createIcons();
+
+function switchTab(e, id) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+}
+
+function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+</script>
+</body>
+</html>
