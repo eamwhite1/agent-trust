@@ -404,6 +404,7 @@
         <div class="use-case" onclick="openUcModal('Real Estate')"><div class="use-case-icon"><i data-lucide="home"></i></div><h4>Real Estate</h4><p>AI verifies land registry and structural reports to release deposits instantly, bypassing slow solicitors.</p></div>
         <div class="use-case" onclick="openUcModal('Corporate M&A')"><div class="use-case-icon"><i data-lucide="trending-up"></i></div><h4>Corporate M&amp;A</h4><p>Hold funds during mergers. AI verifies financial audit benchmarks to trigger tranches of payout automatically.</p></div>
         <div class="use-case" onclick="openUcModal('CI/CD Quality Gates')"><div class="use-case-icon"><i data-lucide="git-pull-request"></i></div><h4>CI/CD Quality Gates</h4><p>Gate every pull request with an independent AI audit. Fails the pipeline automatically if the diff scores below your threshold.</p></div>
+        <div class="use-case" onclick="openUcModal('Invoice Verification & AP Automation')"><div class="use-case-icon"><i data-lucide="file-check"></i></div><h4>Invoice Verification &amp; AP Automation</h4><p>Lock payment in escrow as a confirmed intent. AI verifies the supplier's invoice matches the PO before releasing funds — works for humans and AI agents alike.</p></div>
     </div>
 
 
@@ -481,6 +482,11 @@ const USE_CASE_DATA = {
         icon: "git-pull-request",
         desc: "Add the AgentTrust GitHub Action to any repo and every pull request is automatically audited by an independent AI against your own quality rubric. The pipeline fails if the diff scores below your threshold — catching bugs, hardcoded secrets, and missing tests before they reach production.",
         example: "A fintech team adds the action to their payments repo. Every PR is scored against a security rubric. A developer accidentally commits an API key — the audit scores 12/100 and blocks the merge before it reaches main."
+    },
+    "Invoice Verification & AP Automation": {
+        icon: "file-check",
+        desc: "Lock payment in escrow the moment a purchase order is issued. The supplier submits their invoice alongside proof of delivery; the AI referee verifies it matches the PO — correct supplier name, amount, services description, line items — and releases payment automatically. Works for human-to-human, human-to-agent, agent-to-human, and fully agentic accounts-payable pipelines. Verified invoices can be forwarded to the buyer's accounts team via the accounts_email field.",
+        example: "A logistics firm locks payment for 500 coffee deliveries. The supplier submits a photo of the signed delivery note and a matching invoice. The AI confirms all fields match the PO and releases payment — no manual AP processing, no 30-day payment terms."
     }
 };
 
