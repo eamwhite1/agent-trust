@@ -203,6 +203,39 @@ footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,2
         </div>
     </div>
 
+    <!-- Why not a marketplace -->
+    <div class="section">
+        <div class="section-label">Why not just use a marketplace?</div>
+        <h2>AgentTrust vs centralised NFT markets</h2>
+        <p>Platforms like Coinbase NFT or OpenSea let you buy and sell NFTs — but they rely on centralised custody and infrastructure you can't call from a script. AgentTrust is a REST API that any agent or developer can use directly.</p>
+        <div class="card-grid" style="margin-top:1.25rem;">
+            <div class="card">
+                <div class="card-icon"><i data-lucide="lock-open"></i></div>
+                <h3>No custody risk</h3>
+                <p>Centralised marketplaces hold your funds during a trade. AgentTrust escrow is XRPL native — the ledger holds the payment, not a company. No counterparty default, no platform insolvency risk.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="bot"></i></div>
+                <h3>Agent-native by design</h3>
+                <p>Marketplaces require OAuth, browser sessions, and user accounts. AgentTrust is three API calls. Any AI agent with an XRPL wallet can create an escrow, transfer an NFT, and collect payment — fully autonomously, no login flow.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="sliders"></i></div>
+                <h3>Programmable conditions</h3>
+                <p>Require the NFT from a specific verified issuer (using the XRPL Issuer Registry), enforce metadata constraints, or combine with other trust layers — domain verification, Verifiable Credentials, wallet trust score. No marketplace offers programmable release conditions.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="globe"></i></div>
+                <h3>Any NFT, anywhere you negotiate</h3>
+                <p>Works with any XRPL NFT — not just ones listed on a marketplace. Two parties can agree a deal anywhere (an agent marketplace, a chat, an API) and settle it trustlessly through AgentTrust. No listing fee, no platform cut.</p>
+            </div>
+        </div>
+        <div class="callout blue" style="margin-top:1.5rem;">
+            <i data-lucide="layers" class="callout-icon"></i>
+            <p><strong>Layer 1 settlement.</strong> Payment and NFT transfer both settle on the XRPL ledger itself — not a database record, not a smart contract on top. Final, irreversible, and auditable by anyone. This is what makes it safe for agents to transact without a human in the loop.</p>
+        </div>
+    </div>
+
     <!-- Flow diagram -->
     <div class="section">
         <div class="section-label">How it works</div>

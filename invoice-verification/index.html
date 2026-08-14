@@ -201,17 +201,17 @@ footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,2
                 <div class="who-card">
                     <span class="who-tag tag-ha"><i data-lucide="user" style="width:10px;height:10px;"></i> Human buyer · Agent supplier</span>
                     <h4>Supplier automates their billing</h4>
-                    <p>Finance team locks escrow as normal. The supplier is a software company or freelancer whose billing system detects the escrow via webhook and automatically generates a conforming invoice and calls <code>/evaluate</code>. The supplier gets paid without any human action on their side.</p>
+                    <p>Finance team locks escrow as normal. The supplier's billing system needs to know the <code>escrow_id</code> to submit against. There are three practical paths today: (1) the buyer's system calls the supplier's API endpoint directly after <code>POST /escrow/generate</code> returns the ID; (2) the supplier's system watches the XRPL ledger for <code>EscrowCreate</code> transactions pointing to their wallet address — the escrow ID and task spec are in the on-chain memo, no off-chain notification needed; or (3) the supplier parses the notification email sent to <code>worker_email</code>. The supplier agent then generates a conforming invoice and calls <code>POST /evaluate</code> automatically.</p>
                 </div>
                 <div class="who-card">
                     <span class="who-tag tag-ah"><i data-lucide="bot" style="width:10px;height:10px;"></i> Agent buyer · Human supplier</span>
                     <h4>Buyer automates their AP trigger</h4>
-                    <p>A warehouse management system or ERP confirms delivery and automatically creates the escrow — no finance team involvement. The supplier (a small courier, an individual contractor) receives an email, visits the portal, and uploads their invoice manually. They need no technical knowledge.</p>
+                    <p>A warehouse management system or ERP confirms delivery and automatically creates the escrow via <code>POST /escrow/generate</code> — no finance team involvement. The supplier (a small courier, an individual contractor) receives an email to the <code>worker_email</code> address containing the escrow ID, invoice requirements, and a direct submission link. They visit the portal and upload their invoice manually. They need no technical knowledge.</p>
                 </div>
                 <div class="who-card">
                     <span class="who-tag tag-aa"><i data-lucide="cpu" style="width:10px;height:10px;"></i> Agent buyer · Agent supplier</span>
                     <h4>Fully automated AP</h4>
-                    <p>Delivery confirmed → escrow auto-created → supplier agent detects it → invoice auto-generated and submitted → payment released. Zero human involvement in the payment cycle. Humans only see edge cases: mismatches, disputes, unusual amounts.</p>
+                    <p>Delivery confirmed → buyer agent calls <code>POST /escrow/generate</code> → buyer agent calls supplier agent's API with the returned <code>escrow_id</code> → supplier agent generates invoice and calls <code>POST /evaluate</code> → payment released. Alternatively, the supplier agent watches the XRPL ledger for escrows landing at its wallet address — no off-chain notification channel needed at all. Zero human involvement in the payment cycle.</p>
                 </div>
             </div>
         </div>
@@ -531,6 +531,16 @@ async function atSubmitInvoice(e) {
             <span class="section-label">Backend stub</span>
             <h2>Server-side escrow creation</h2>
             <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;">The <code>accounts_email</code> is stored in the escrow spec. When the referee returns a PASS verdict it emails the verified invoice to that address. You can also handle this yourself via a webhook callback.</p>
+            <div class="callout callout-info" style="margin-bottom:1.5rem;">
+                <i data-lucide="book-open"></i>
+                <p><strong>Works directly with your accounting software.</strong> Most accounting platforms accept invoices by email and create draft bills automatically — no manual data entry. Set <code>accounts_email</code> to your platform's bills inbox address:<br><br>
+                <strong>Xero:</strong> <code>yourorg@bills.xero.com</code> (Settings → Invoice Settings → Email to Bills inbox)<br>
+                <strong>QuickBooks Online:</strong> vendor receipts inbox (Settings → Receive invoices by email)<br>
+                <strong>FreshBooks:</strong> your auto-billing import email (Accounting → Expenses → Import)<br>
+                <strong>Sage:</strong> Sage Capture email address or Sage Accounting bills import<br>
+                <strong>Zoho Books:</strong> vendor email import address (Settings → Email Preferences)<br><br>
+                The verified invoice arrives pre-labelled with the PO reference, supplier name, and amount — your accounting system picks it up as a draft bill, already matched. No native API integration required.</p>
+            </div>
             <div class="tabs" id="be-tabs">
                 <button class="tab-btn active" onclick="switchTab('be','python')">Python (FastAPI)</button>
                 <button class="tab-btn" onclick="switchTab('be','node')">Node.js (Express)</button>

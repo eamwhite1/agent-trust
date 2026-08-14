@@ -379,18 +379,27 @@
     <div class="doc-eyebrow">
         <i data-lucide="book-open"></i> Developer Guide
     </div>
-    <h1>AgentTrust + <em>XRPL AI Starter Kit</em></h1>
+    <h1>From zero to your first <em>trustless agent payment</em> on XRPL</h1>
     <p class="doc-lead">
-        Ripple's XRPL AI Starter Kit gets an agent onto the ledger in minutes. AgentTrust adds what comes next:
-        trust scores, crypto-condition escrow, and AI-verified payment release — so agents can hire each other
+        Ripple's XRPL AI Starter Kit gets an agent onto the ledger in minutes. This guide walks you through
+        wallets, your first XRP payment, and then layering AgentTrust on top — trust scoring,
+        crypto-condition escrow, and AI-verified payment release — so agents can hire each other
         without a human in the loop.
     </p>
 
-    <!-- Comparison -->
+    <!-- Section 0 — What the starter kit gives you -->
     <div class="card">
         <div class="card-pad">
-            <span class="section-label">What each project does</span>
+            <span class="section-label">Section 0 — What the XRPL AI Starter Kit gives you</span>
             <h2>Two tools, one complete stack</h2>
+            <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.2rem;max-width:640px;">
+                <a href="https://github.com/ripple/xrpl-ai-starter-kit" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600;">Ripple's XRPL AI Starter Kit</a>
+                gives agents a running start on the ledger: MCP tools for ledger queries,
+                a Claude skill for XRPL operations, and wallet management helpers.
+                AgentTrust builds on top of that foundation — adding trust scoring,
+                crypto-condition escrow, and AI-verified payment release.
+                Both MCP servers can run side-by-side in any MCP host.
+            </p>
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -415,17 +424,116 @@
             </div>
             <div class="callout callout-blue" style="margin-top:1.2rem;margin-bottom:0">
                 <i data-lucide="info"></i>
-                <span>They compose: the starter kit gets your agent onto XRPL; AgentTrust adds the trust and payment-release logic on top. Both MCP servers can run side-by-side in any MCP host.</span>
+                <span>They compose: the starter kit gets your agent onto XRPL; AgentTrust adds the trust and payment-release logic on top. Both MCP servers run side-by-side in any MCP host — Claude Desktop, Claude Code, AutoGen, or any compatible framework.</span>
             </div>
         </div>
     </div>
 
-    <!-- Steps -->
-    <span class="section-label" style="margin-bottom:.8rem;display:block;">Quickstart — four steps</span>
+    <!-- Part 1 — Wallets -->
+    <span class="section-label" style="margin-bottom:.8rem;display:block;">Part 1 — Set up XRPL wallets</span>
 
     <div class="steps">
 
-        <!-- Step 1 -->
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">1</div>
+                <div>
+                    <div class="step-title">Install xrpl-py and create a testnet wallet</div>
+                    <div class="step-desc">The official Python library for XRPL. One call funds a fresh wallet from the testnet faucet.</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="code-label">
+                    shell
+                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                </div>
+                <pre>pip install xrpl-py httpx</pre>
+
+                <div class="code-label" style="margin-top:.75rem;">
+                    python — create a testnet wallet
+                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                </div>
+                <pre>from xrpl.clients import JsonRpcClient
+from xrpl.wallet import generate_faucet_wallet
+
+client = JsonRpcClient("https://s.altnet.rippletest.net:51234")
+wallet = generate_faucet_wallet(client, debug=True)
+
+print(wallet.classic_address)  # rXXX... — share this with counterparties
+print(wallet.seed)             # sXXX... — store securely, never share</pre>
+
+                <div class="callout callout-blue" style="margin-bottom:0">
+                    <i data-lucide="info"></i>
+                    <span><strong>Testnet only.</strong> For mainnet, buy XRP on a regulated exchange and use <code class="inline-code">Wallet.create()</code> to generate a fresh address, then fund it from the exchange. Never reuse an address generated for testing.</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /steps part 1 -->
+
+    <!-- Part 2 — First payment -->
+    <span class="section-label" style="margin: 2rem 0 .8rem; display:block;">Part 2 — Your first XRP payment</span>
+
+    <div class="steps">
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">2</div>
+                <div>
+                    <div class="step-title">Send 1 XRP using xrpl-py</div>
+                    <div class="step-desc">Confirm the wallet is working before adding escrow logic. This is the foundation everything else builds on.</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="code-label">
+                    python
+                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                </div>
+                <pre>from xrpl.clients import JsonRpcClient
+from xrpl.wallet import Wallet
+from xrpl.models.transactions import Payment
+from xrpl.utils import xrp_to_drops
+from xrpl.transaction import submit_and_wait
+
+client = JsonRpcClient("https://s.altnet.rippletest.net:51234")
+sender = Wallet.from_seed("sSenderSeed")
+
+tx = Payment(
+    account=sender.classic_address,
+    destination="rRecipientAddress",
+    amount=xrp_to_drops(1),   # 1 XRP = 1_000_000 drops
+)
+
+response = submit_and_wait(tx, client, sender)
+print(response.result["meta"]["TransactionResult"])  # "tesSUCCESS"</pre>
+
+                <div class="callout callout-green" style="margin-bottom:0">
+                    <i data-lucide="check-circle"></i>
+                    <span>Once you see <code class="inline-code">tesSUCCESS</code> you have a working XRPL wallet and a live connection to the network. The next sections add AgentTrust on top.</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /steps part 2 -->
+
+    <!-- Part 3 — AgentTrust -->
+    <span class="section-label" style="margin: 2rem 0 .8rem; display:block;">Part 3 — Layer in AgentTrust</span>
+
+    <!-- Marketplace-agnostic callout -->
+    <div class="callout callout-blue" style="margin-bottom:1.5rem;padding:1.1rem 1.3rem;border-radius:var(--radius-md);">
+        <i data-lucide="globe"></i>
+        <span>
+            <strong>AgentTrust works from any agent marketplace.</strong>
+            AgentTrust is a settlement protocol, not a marketplace. Agents can discover each other on
+            OpenAI's agent platform, LangChain Hub, Fetch.ai, our own marketplace, or a private API —
+            then use AgentTrust for the trustless payment leg. The escrow and AI audit don't care how
+            the parties found each other. Any agent with an XRPL wallet and internet access can participate.
+        </span>
+    </div>
+
+    <div class="steps">
+
+        <!-- Step 1 — Trust score -->
         <div class="step">
             <div class="step-header">
                 <div class="step-num">1</div>
@@ -442,10 +550,11 @@
                 <pre>import httpx
 
 score = httpx.get(
-    "https://xrpl-referee.onrender.com/wallet/score/rWorkerWalletAddress"
+    "https://xrpl-referee.onrender.com/wallet/score/rWorkerAddress"
 ).json()
 
-print(score["score"])                          # 0–100
+# score["score"] is 0–100
+print(score["score"])
 print(score["score_breakdown"])                # per-signal breakdown
 print(score["signals"]["sanctions_clean"])     # False = stop immediately</pre>
 
@@ -461,47 +570,61 @@ print(score["signals"]["sanctions_clean"])     # False = stop immediately</pre>
             </div>
         </div>
 
-        <!-- Step 2 -->
+        <!-- Step 2 — Escrow -->
         <div class="step">
             <div class="step-header">
                 <div class="step-num">2</div>
                 <div>
-                    <div class="step-title">Lock payment in escrow</div>
+                    <div class="step-title">Lock payment in an escrow vault</div>
                     <div class="step-desc">Funds are held by XRPL crypto-condition escrow — neither party can touch them until work is verified or the deadline expires.</div>
                 </div>
             </div>
             <div class="step-body">
+                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">
+                    First send <strong>0.1 XRP</strong> to <code class="inline-code">rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code>
+                    as the protocol fee (using the <code class="inline-code">submit_and_wait</code> pattern above),
+                    then pass that transaction hash as <code class="inline-code">fee_hash</code>.
+                </p>
                 <div class="code-label">
                     python
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
-                <pre>escrow = httpx.post(
-    "https://xrpl-referee.onrender.com/escrow/create",
+                <pre>import uuid, httpx
+
+escrow = httpx.post(
+    "https://xrpl-referee.onrender.com/escrow/generate",
     json={
-        "payer_address":   "rPayerAddress",
-        "payer_secret":    "sPayerSecret",
-        "worker_address":  "rWorkerAddress",
-        "amount_xrp":      5.0,
-        "deadline_hours":  48,
-        "job_spec":        "Write a 200-word product description for...",
+        "escrow_id":        str(uuid.uuid4()),
+        "fee_hash":         "your_fee_tx_hash",
+        "buyer_name":       "Orchestrator Agent",
+        "buyer_address":    "rBuyerAddress",
+        "buyer_email":      "buyer@example.com",
+        "worker_address":   "rWorkerAddress",
+        "worker_email":     "worker@example.com",
+        "task_description": "Write a 200-word product description for...",
+        "amount_xrp":       5.0,
+        "cancel_after_hrs": 48,
     }
 ).json()
 
-escrow_id = escrow["escrow_id"]   # keep this — needed to release or reclaim</pre>
-                <div class="callout callout-green" style="margin-bottom:0">
-                    <i data-lucide="lock"></i>
-                    <span>The referee holds the crypto-condition fulfillment. No private keys leave your agent's environment; no human can intervene.</span>
+escrow_id = escrow["escrow_id"]   # keep this — needed in later steps
+# Submit the returned EscrowCreate tx blob to XRPL:
+# submit_and_wait(escrow["tx_blob"], client, buyer_wallet)</pre>
+
+                <div class="callout callout-blue" style="margin-bottom:0">
+                    <i data-lucide="send"></i>
+                    <span>The API returns a signed <code class="inline-code">EscrowCreate</code> transaction blob. Submit it to XRPL using xrpl-py's <code class="inline-code">submit_and_wait()</code>. The worker is automatically emailed the escrow details and task specification.</span>
                 </div>
             </div>
         </div>
 
-        <!-- Step 3 -->
+        <!-- Step 3 — Evaluate -->
         <div class="step">
             <div class="step-header">
                 <div class="step-num">3</div>
                 <div>
-                    <div class="step-title">Audit the deliverable</div>
-                    <div class="step-desc">Submit the completed work to the AI referee. Pay the 0.1 XRP fee first, then pass the tx hash.</div>
+                    <div class="step-title">Worker submits proof — AI referee evaluates</div>
+                    <div class="step-desc">The worker does the work, then posts the deliverable. The AI referee checks it against the original task spec.</div>
                 </div>
             </div>
             <div class="step-body">
@@ -509,71 +632,69 @@ escrow_id = escrow["escrow_id"]   # keep this — needed to release or reclaim</
                     python
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
-                <pre>audit = httpx.post(
-    "https://xrpl-referee.onrender.com/audit",
-    headers={"x-payment-hash": "your_64char_tx_hash"},
+                <pre>result = httpx.post(
+    "https://xrpl-referee.onrender.com/evaluate",
     json={
-        "escrow_id":   escrow_id,
-        "jobSpec":     "Write a 200-word product description for...",
-        "deliverable": "Here is the completed description...",
+        "escrow_id": escrow_id,
+        "work":      "Here is the completed product description...",
     }
 ).json()
 
-print(audit["verdict"])   # "PASS" or "FAIL"
-print(audit["score"])     # 0–100
-print(audit["summary"])   # plain-English explanation</pre>
+print(result["verdict"])   # "PASS" or "FAIL"</pre>
 
-                <div class="callout callout-blue" style="margin-bottom:.75rem">
-                    <i data-lucide="credit-card"></i>
-                    <span><strong>USDC on Base alternative:</strong> call <code class="inline-code">/audit</code> with no fee header to receive a machine-readable <code class="inline-code">402 Payment Required</code> response. The <code class="inline-code">accepts</code> array lists both XRP and USDC on Base (chain 8453) options.</span>
+                <div class="callout callout-green" style="margin-bottom:0">
+                    <i data-lucide="check-circle"></i>
+                    <span>On <strong>PASS</strong>, payment releases automatically — the referee submits the <code class="inline-code">EscrowFinish</code> transaction. No extra step is needed from either party.</span>
                 </div>
             </div>
         </div>
 
-        <!-- Step 4 -->
+        <!-- Step 4 — Failure path -->
         <div class="step">
             <div class="step-header">
                 <div class="step-num">4</div>
                 <div>
-                    <div class="step-title">Release or reclaim</div>
-                    <div class="step-desc">On PASS the buyer releases funds to the worker. On FAIL after the deadline, the buyer reclaims.</div>
+                    <div class="step-title">Handling FAIL and deadline expiry</div>
+                    <div class="step-desc">On FAIL the worker can resubmit. After the deadline with no PASS, the buyer reclaims via EscrowCancel.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">
-                    python
-                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                <div class="callout callout-blue" style="margin-bottom:.9rem">
+                    <i data-lucide="refresh-cw"></i>
+                    <span>On <strong>FAIL</strong>, the worker can resubmit up to the configured <code class="inline-code">max_submissions</code> limit by calling <code class="inline-code">POST /evaluate</code> again with revised work. Each submission is independently evaluated.</span>
                 </div>
-                <pre># PASS — release to worker
-httpx.post("https://xrpl-referee.onrender.com/escrow/release",
-    json={"escrow_id": escrow_id, "payer_secret": "sPayerSecret"})
-
-# FAIL and deadline passed — reclaim
-httpx.post("https://xrpl-referee.onrender.com/escrow/cancel",
-    json={"escrow_id": escrow_id, "payer_secret": "sPayerSecret"})</pre>
+                <div class="callout callout-blue" style="margin-bottom:0">
+                    <i data-lucide="clock"></i>
+                    <span>After the <code class="inline-code">cancel_after_hrs</code> deadline expires with no PASS, the buyer submits an <code class="inline-code">EscrowCancel</code> transaction using xrpl-py to reclaim the locked funds in full.</span>
+                </div>
             </div>
         </div>
 
-    </div><!-- /steps -->
+    </div><!-- /steps part 3 -->
 
-    <!-- MCP server -->
+    <!-- MCP side-by-side -->
     <div class="install-card" style="margin-top:2.5rem;">
-        <span class="section-label">MCP server</span>
-        <h2 style="margin-bottom:.8rem;">Add to your MCP host</h2>
+        <span class="section-label">MCP alternative</span>
+        <h2 style="margin-bottom:.8rem;">Run both servers side-by-side</h2>
         <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.25rem;max-width:600px;">
-            Run AgentTrust's 19 tools and 2 prompts alongside the XRPL AI Starter Kit's server in any MCP host — Claude Desktop, Claude Code, AutoGen, or any compatible framework.
+            AgentTrust's 19 tools and the XRPL AI Starter Kit's server can run together in any MCP host —
+            Claude Desktop, Claude Code, AutoGen, or any compatible framework. The agent can query the
+            ledger via the starter kit and trigger trust scoring or escrow via AgentTrust in the same session.
         </p>
 
         <div class="code-label">claude_desktop_config.json / .claude/settings.json</div>
         <pre>{
   "mcpServers": {
+    "xrpl-starter-kit": {
+      "url": "https://...ripple-starter-kit-mcp-url..."
+    },
     "agenttrust": {
       "url": "https://xrpl-referee.onrender.com/mcp/"
     }
   }
 }</pre>
 
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem;">Or install via Smithery:</p>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem;">Or install AgentTrust via Smithery:</p>
         <div class="code-label">
             shell
             <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
@@ -581,37 +702,74 @@ httpx.post("https://xrpl-referee.onrender.com/escrow/cancel",
         <pre style="margin-bottom:0">npx @smithery/cli install agenttrust</pre>
     </div>
 
-    <!-- Full example -->
+    <!-- Full end-to-end example -->
     <div class="card" style="margin-bottom:2rem;">
         <div class="card-pad">
             <span class="section-label">End-to-end example</span>
-            <h2>Agent hiring agent</h2>
+            <h2>Agent hiring agent — complete flow</h2>
             <div class="code-label">
-                python
+                python — full example using httpx + xrpl-py
                 <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
             </div>
-            <pre style="margin-bottom:0">from agenttrust_sdk import AgentTrust
+            <pre style="margin-bottom:0">import uuid, httpx
+from xrpl.clients import JsonRpcClient
+from xrpl.wallet import Wallet
+from xrpl.models.transactions import Payment
+from xrpl.utils import xrp_to_drops
+from xrpl.transaction import submit_and_wait
 
-at = AgentTrust()
+# ── Setup ──────────────────────────────────────────────────────────────────
+client      = JsonRpcClient("https://s.altnet.rippletest.net:51234")
+buyer_wallet = Wallet.from_seed("sBuyerSeed")
+WORKER_ADDRESS = "rWorkerAddress"
 
-# 1. Check trust before hiring
-score = at.get_trust_score("rWorkerAddress")
-if score["score"] < 40 or not score["signals"]["sanctions_clean"]:
+# ── Step 1: Check trust score ───────────────────────────────────────────────
+score = httpx.get(
+    f"https://xrpl-referee.onrender.com/wallet/score/{WORKER_ADDRESS}"
+).json()
+
+if score["score"] &lt; 40 or not score["signals"]["sanctions_clean"]:
     raise ValueError("Counterparty does not meet minimum trust threshold")
 
-# 2. Lock payment, run the task, audit the result
-result = at.create_job(
-    payer_address  = "rBuyerAddress",
-    payer_secret   = "sBuyerSecret",
-    worker_address = "rWorkerAddress",
-    amount_xrp     = 2.0,
-    job_spec       = "Translate the following paragraph into French...",
-    deliverable    = worker_agent.run("Translate..."),
+# ── Step 2: Pay the 0.1 XRP protocol fee ──────────────────────────────────
+fee_tx = Payment(
+    account=buyer_wallet.classic_address,
+    destination="rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR",
+    amount=xrp_to_drops(0.1),
 )
+fee_response = submit_and_wait(fee_tx, client, buyer_wallet)
+fee_hash = fee_response.result["hash"]
 
-# PASS → payment released automatically
-print(result["evaluation"]["verdict"])
-print(result["evaluation"]["score"])</pre>
+# ── Step 3: Create escrow vault ────────────────────────────────────────────
+escrow = httpx.post(
+    "https://xrpl-referee.onrender.com/escrow/generate",
+    json={
+        "escrow_id":        str(uuid.uuid4()),
+        "fee_hash":         fee_hash,
+        "buyer_name":       "Orchestrator Agent",
+        "buyer_address":    buyer_wallet.classic_address,
+        "buyer_email":      "buyer@example.com",
+        "worker_address":   WORKER_ADDRESS,
+        "worker_email":     "worker@example.com",
+        "task_description": "Translate the following paragraph into French...",
+        "amount_xrp":       2.0,
+        "cancel_after_hrs": 48,
+    }
+).json()
+escrow_id = escrow["escrow_id"]
+# Submit the EscrowCreate tx blob returned by the API
+submit_and_wait(escrow["tx_blob"], client, buyer_wallet)
+
+# ── Step 4: Worker does the work and posts deliverable ──────────────────────
+# (worker_agent.run() here represents whatever agent or service does the work)
+work_output = "Voici le paragraphe traduit en français..."
+
+result = httpx.post(
+    "https://xrpl-referee.onrender.com/evaluate",
+    json={"escrow_id": escrow_id, "work": work_output}
+).json()
+
+print(result["verdict"])   # "PASS" → payment released automatically</pre>
         </div>
     </div>
 
@@ -619,7 +777,7 @@ print(result["evaluation"]["score"])</pre>
     <div class="card" style="margin-bottom:2rem;">
         <div class="card-pad">
             <span class="section-label">Fees</span>
-            <h2>Payment options for the AI audit</h2>
+            <h2>Protocol fee options</h2>
             <div class="pay-table-wrap">
                 <table class="pay-table">
                     <thead>
@@ -640,7 +798,7 @@ print(result["evaluation"]["score"])</pre>
                 </table>
             </div>
             <p style="font-size:.82rem;color:var(--text-muted);margin-top:.9rem;">
-                Call <code class="inline-code">POST /audit</code> with no fee header to receive a machine-readable
+                Call <code class="inline-code">POST /evaluate</code> with no fee context to receive a machine-readable
                 <code class="inline-code">402 Payment Required</code> listing both options. The agent picks whichever asset it holds.
             </p>
         </div>
