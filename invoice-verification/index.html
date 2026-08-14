@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automated Invoice Verification — AgentTrust</title>
+<meta name="description" content="Lock payment in XRPL escrow when you raise a purchase order. The supplier submits their invoice and an AI referee verifies it matches before releasing payment automatically.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --red:          #E5373D;
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+        --code-bg:      rgba(13,13,18,.05);
+        --code-border:  rgba(13,13,18,.09);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
+    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(0,185,122,.4)} 50%{box-shadow:0 0 0 6px rgba(0,185,122,0)} }
+
+    @media (max-width: 780px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+    }
+
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
+
+    .doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    h1 em { font-style: italic; color: var(--blue); }
+    .doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2.5rem; line-height: 1.7; }
+
+    .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
+    .card-pad { padding: 2rem; }
+    .section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; text-wrap: balance; }
+    h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .75rem; }
+
+    /* Problem/solution split */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 600px) { .split { grid-template-columns: 1fr; } }
+    .split-card { padding: 1.25rem; border-radius: var(--radius-md); }
+    .split-bad { background: rgba(229,55,61,.06); border: 1px solid rgba(229,55,61,.18); }
+    .split-good { background: rgba(0,185,122,.06); border: 1px solid rgba(0,185,122,.18); }
+    .split-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .75rem; display: flex; align-items: center; gap: 6px; }
+    .split-bad .split-label { color: var(--red); }
+    .split-good .split-label { color: var(--green); }
+    .split-card ul { padding-left: 1.1rem; }
+    .split-card li { font-size: .84rem; color: var(--text-muted); margin-bottom: .35rem; line-height: 1.55; }
+
+    /* Flow */
+    .flow { display: flex; flex-direction: column; }
+    .flow-row { display: flex; align-items: flex-start; gap: 1rem; }
+    .flow-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 36px; }
+    .flow-num { width: 36px; height: 36px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .flow-line { width: 2px; flex: 1; min-height: 24px; background: var(--blue-border); margin: 4px 0; }
+    .flow-content { padding: .1rem 0 1.5rem; flex: 1; }
+    .flow-content h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .25rem; }
+    .flow-content p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
+    .flow-tag { display: inline-flex; align-items: center; gap: 4px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: .15rem .5rem; border-radius: 20px; margin-bottom: .4rem; }
+    .tag-buyer  { background: rgba(0,102,255,.1); color: var(--blue); }
+    .tag-seller { background: rgba(0,185,122,.1); color: var(--green); }
+    .tag-auto   { background: rgba(120,80,255,.1); color: #7850ff; }
+
+    /* Code */
+    .code-wrap { position: relative; margin: 1rem 0; }
+    pre { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; font-size: .8rem; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .copy-btn { position: absolute; top: .6rem; right: .6rem; padding: .3rem .7rem; border-radius: 6px; background: rgba(255,255,255,.7); border: 1px solid var(--glass-border); font-size: .7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background .15s; }
+    .copy-btn:hover { background: #fff; color: var(--blue); }
+
+    /* Callout */
+    .callout { display: flex; gap: .85rem; padding: 1.1rem 1.25rem; border-radius: var(--radius-md); margin: 1.25rem 0; }
+    .callout-info { background: var(--blue-dim); border: 1px solid var(--blue-border); }
+    .callout-green { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.2); }
+    .callout svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+    .callout-info svg { color: var(--blue); }
+    .callout-green svg { color: var(--green); }
+    .callout p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
+    .callout strong { color: var(--text); }
+
+    /* Check list */
+    .check-list { list-style: none; padding: 0; margin: 1rem 0; }
+    .check-list li { display: flex; align-items: flex-start; gap: .65rem; font-size: .88rem; color: var(--text-muted); margin-bottom: .6rem; line-height: 1.5; }
+    .check-list li::before { content: ''; width: 16px; height: 16px; border-radius: 50%; background: rgba(0,185,122,.15); border: 1.5px solid var(--green); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%2300B97A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+
+    /* Resources */
+    .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
+    .res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
+    .res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
+    .res-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+
+    footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,255,.65); padding: 2.5rem 5%; text-align: center; margin-top: 4rem; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--text); margin-bottom: .5rem; display: block; }
+    .footer-logo span { color: var(--blue); }
+    .footer-legal { font-size: .72rem; color: var(--text-muted); max-width: 680px; margin: 0 auto; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Built for Every Kind of Work</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/marketplace/">Agent Marketplace</a>
+        <a class="nav-link" href="/compliance/">Compliance</a>
+        <a class="nav-link" href="/guides/" style="color:var(--blue)">Guides</a>
+    </div>
+    <div class="nav-right">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" onclick="document.getElementById('nav-menu').classList.toggle('open')"><i data-lucide="menu"></i></button>
+        <div class="badge-live"><div class="live-dot"></div>Live on XRPL Mainnet</div>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <span class="doc-eyebrow"><i data-lucide="file-check"></i> Guides</span>
+    <h1>Automated <em>invoice</em> verification</h1>
+    <p class="doc-lead">Lock payment in escrow when you raise a purchase order. The supplier submits their invoice and an AI referee checks it matches before releasing payment — no AP team required.</p>
+
+    <!-- Problem / Solution -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">The problem</span>
+            <h2>Accounts payable is slow, expensive, and fraud-prone</h2>
+            <div class="split">
+                <div class="split-card split-bad">
+                    <div class="split-label"><i data-lucide="x-circle" style="width:13px;height:13px;"></i> Without AgentTrust</div>
+                    <ul>
+                        <li>Invoice arrives, sits in an AP queue for days</li>
+                        <li>Human manually checks it against the PO</li>
+                        <li>Approval chain adds more delays</li>
+                        <li>Payment goes out — sometimes to the wrong account</li>
+                        <li>Duplicate invoice fraud costs businesses billions annually</li>
+                    </ul>
+                </div>
+                <div class="split-card split-good">
+                    <div class="split-label"><i data-lucide="check-circle" style="width:13px;height:13px;"></i> With AgentTrust</div>
+                    <ul>
+                        <li>Payment locked in escrow at PO creation</li>
+                        <li>Supplier submits invoice via API or webhook</li>
+                        <li>AI referee verifies it against the PO spec instantly</li>
+                        <li>PASS → payment releases on-chain automatically</li>
+                        <li>FAIL → supplier corrects and resubmits</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout callout-info">
+                <i data-lucide="info"></i>
+                <p>Works for any buyer–supplier relationship: agencies billing clients, freelancers submitting invoices, SaaS companies charging for usage, or supply chain payments between businesses.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flow -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">The flow</span>
+            <h2>How it works end to end</h2>
+            <div class="flow">
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">1</div><div class="flow-line"></div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag tag-buyer">Buyer</span>
+                        <h4>Raise a purchase order &amp; lock payment</h4>
+                        <p>Call <code>POST /escrow/generate</code> with the PO details as the <code>task_description</code> — supplier name, line items, agreed amount, delivery terms. Funds lock on XRPL. The supplier's wallet address is the escrow destination.</p>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">2</div><div class="flow-line"></div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag tag-seller">Supplier</span>
+                        <h4>Submit the invoice</h4>
+                        <p>When goods or services are delivered, the supplier calls <code>POST /evaluate</code> with the <code>escrow_id</code> and their invoice as the <code>work</code> field — plain text or structured JSON. Receipts and delivery confirmations can be attached.</p>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">3</div><div class="flow-line"></div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag tag-auto">Automatic</span>
+                        <h4>AI referee checks the invoice against the PO</h4>
+                        <p>The referee reads both the task spec (PO) and the submitted work (invoice). It checks: amounts match, supplier details are correct, line items correspond, no obvious duplication. Returns a PASS/FAIL verdict with a plain-English explanation.</p>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">4</div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag tag-auto">Automatic</span>
+                        <h4>Payment released or supplier corrects</h4>
+                        <p>PASS → the referee releases payment on-chain to the supplier's wallet automatically. FAIL → the supplier sees the reason and can resubmit a corrected invoice (up to the attempt limit you set).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code: Buyer -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Code — Buyer</span>
+            <h2>Creating the escrow at PO time</h2>
+            <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>import httpx, secrets
+from xrpl.clients import JsonRpcClient
+from xrpl.models.transactions import Payment, EscrowCreate
+from xrpl.wallet import Wallet
+from xrpl.utils import xrp_to_drops
+from xrpl.transaction import submit_and_wait
+
+REFEREE  = "https://xrpl-referee.onrender.com"
+PROTOCOL_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
+XRPL_NODE = "https://s1.ripple.com:51234/"
+
+buyer_wallet   = Wallet.from_seed("sYOUR_BUYER_SECRET")
+supplier_wallet = "rSUPPLIER_WALLET_ADDRESS"
+client = JsonRpcClient(XRPL_NODE)
+
+# ── Pay 0.1 XRP protocol fee ─────────────────────────────────────────────
+fee_tx = Payment(
+    account=buyer_wallet.address,
+    amount=xrp_to_drops(0.1),
+    destination=PROTOCOL_WALLET,
+)
+fee_hash = submit_and_wait(fee_tx, client, buyer_wallet).result["hash"]
+
+# ── Generate escrow parameters ───────────────────────────────────────────
+escrow_id = f"INV-{secrets.token_hex(4).upper()}"
+
+po_spec = """
+Purchase Order PO-2024-0042
+Supplier: Acme Design Ltd
+Services: Website redesign — 5 pages, mobile responsive, delivered by 30 Jan 2025
+Amount: 500 XRP
+Payment terms: on delivery and AI verification of invoice
+"""
+
+params = httpx.post(f"{REFEREE}/escrow/generate", json={
+    "escrow_id":        escrow_id,
+    "fee_hash":         fee_hash,
+    "buyer_name":       "Buyer Corp",
+    "buyer_address":    buyer_wallet.address,
+    "worker_address":   supplier_wallet,
+    "task_description": po_spec,   # PO details become the referee's rubric
+    "amount_xrp":       500,
+    "cancel_after_hrs": 720,       # 30-day payment window
+    "category":         "invoice",
+    "max_submissions":  5,         # supplier gets 5 attempts to submit correct invoice
+}).json()
+
+# ── Submit EscrowCreate on XRPL ──────────────────────────────────────────
+escrow_tx = EscrowCreate(
+    account=buyer_wallet.address,
+    destination=supplier_wallet,
+    amount=xrp_to_drops(500),
+    condition=params["condition"],
+    finish_after=params["finish_after_ripple"],
+    cancel_after=params["cancel_after_ripple"],
+)
+tx_hash = submit_and_wait(escrow_tx, client, buyer_wallet).result["hash"]
+
+# ── Confirm with referee ─────────────────────────────────────────────────
+httpx.post(f"{REFEREE}/escrow/{escrow_id}/confirm",
+    json={"tx_hash": tx_hash}).raise_for_status()
+
+print(f"Escrow created. Share escrow_id with supplier: {escrow_id}")
+# Send escrow_id to supplier via email, webhook, or your existing system</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code: Supplier -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Code — Supplier</span>
+            <h2>Submitting the invoice for verification</h2>
+            <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>import httpx
+
+REFEREE   = "https://xrpl-referee.onrender.com"
+ESCROW_ID = "INV-ABCD1234"   # received from buyer
+
+# Build the invoice as structured text — the more detail, the better the verification
+invoice = """
+INVOICE
+Invoice number: INV-2025-0099
+Date: 28 January 2025
+From: Acme Design Ltd | rSUPPLIER_WALLET_ADDRESS
+
+Bill to: Buyer Corp
+
+Services delivered:
+- Homepage redesign (mobile responsive): ✓ delivered 20 Jan 2025
+- About page redesign (mobile responsive): ✓ delivered 22 Jan 2025
+- Services page redesign (mobile responsive): ✓ delivered 24 Jan 2025
+- Contact page redesign (mobile responsive): ✓ delivered 26 Jan 2025
+- Blog index redesign (mobile responsive): ✓ delivered 28 Jan 2025
+
+Total: 500 XRP
+Reference PO: PO-2024-0042
+"""
+
+result = httpx.post(f"{REFEREE}/evaluate", json={
+    "escrow_id": ESCROW_ID,
+    "work":      invoice,
+    # Optionally attach evidence links — staging URL, delivery confirmation, etc.
+    "evidence_links": ["https://staging.buyercorp.com"],
+}, timeout=120).json()
+
+verdict = result.get("verdict")
+score   = result.get("score")
+summary = result.get("summary")
+
+print(f"Verdict: {verdict} ({score}/100)")
+print(f"Reason:  {summary}")
+
+if verdict == "PASS":
+    print("Payment released to your wallet automatically.")
+else:
+    print("Please correct and resubmit. Reason above.")</pre>
+            </div>
+
+            <div class="callout callout-green">
+                <i data-lucide="check-circle"></i>
+                <p><strong>Writing a good invoice spec:</strong> the more detail in the PO task description, the more precisely the referee can verify. Include supplier name, line items, amounts, and delivery terms. The referee will flag mismatches in any of these fields.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- What the AI checks -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Verification</span>
+            <h2>What the AI referee checks</h2>
+            <ul class="check-list">
+                <li>Invoice amount matches the agreed PO amount</li>
+                <li>Supplier name and wallet address match the PO</li>
+                <li>Line items correspond to the services or goods specified</li>
+                <li>Delivery terms have been met (dates, quantities, scope)</li>
+                <li>Invoice number is present and the invoice appears original (not a duplicate)</li>
+                <li>Any attached evidence links support the claimed delivery</li>
+            </ul>
+            <p style="font-size:.85rem;color:var(--text-muted);line-height:1.6;">A FAIL verdict includes a plain-English explanation — the supplier knows exactly what to correct before resubmitting. The number of allowed resubmissions is set by the buyer at escrow creation (<code>max_submissions</code>).</p>
+
+            <div class="callout callout-info">
+                <i data-lucide="info"></i>
+                <p><strong>OFAC screening is automatic.</strong> Both buyer and supplier wallets are checked against the US Treasury SDN sanctions list before the escrow is created. Sanctioned addresses are blocked from participating.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RLUSD note -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Currency</span>
+            <h2>Pay in XRP or RLUSD</h2>
+            <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.6;">For invoice payments where price certainty matters, use <strong>RLUSD</strong> — Ripple's USD-pegged stablecoin on XRPL. Set <code>currency: "RLUSD"</code> and <code>amount_rlusd</code> instead of <code>amount_xrp</code> in the escrow generate call.</p>
+            <div class="code-wrap">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre># Use RLUSD for stable invoice amounts
+params = httpx.post(f"{REFEREE}/escrow/generate", json={
+    "escrow_id":        escrow_id,
+    "fee_hash":         fee_hash,
+    "buyer_name":       "Buyer Corp",
+    "buyer_address":    buyer_wallet.address,
+    "worker_address":   supplier_wallet,
+    "task_description": po_spec,
+    "currency":         "RLUSD",
+    "amount_rlusd":     500.00,    # $500 USD — stable, no price volatility
+    "cancel_after_hrs": 720,
+    "category":         "invoice",
+}).json()</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Resources</span>
+            <h2>What to read next</h2>
+            <div class="res-grid">
+                <a href="https://xrpl-referee.onrender.com/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
+                <a href="/agent-hiring/" class="res-link"><i data-lucide="bot"></i> Agent-hiring-agent</a>
+                <a href="/how-it-works/" class="res-link"><i data-lucide="workflow"></i> How escrow works</a>
+                <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
+                <a href="/marketplace/" class="res-link"><i data-lucide="briefcase"></i> Marketplace</a>
+                <a href="/guides/" class="res-link"><i data-lucide="book-open"></i> All guides</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <span class="footer-logo">AgentTrust<span>.</span></span>
+    <p class="footer-legal">AgentTrust is a software protocol operated by Boxclever Media Ltd (company number 09394447, England and Wales). Not a regulated financial service.</p>
+</footer>
+
+<script>
+lucide.createIcons();
+function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+</script>
+</body>
+</html>
