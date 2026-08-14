@@ -3,117 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invoice Verification — AgentTrust</title>
-<meta name="description" content="Lock payment in XRPL escrow when work is done. Supplier submits an invoice, AI verifies it matches, payment releases automatically. White-label embeddable forms included.">
+<title>Automated Invoice Verification &amp; AP Automation — AgentTrust</title>
+<meta name="description" content="AI-verified invoice matching on the XRP Ledger. Buyer locks payment in escrow, supplier submits invoice, AI referee verifies the match and releases funds automatically. Works for human-to-human, human-to-agent, agent-to-human, and fully agentic AP automation. White-label embeddable forms included.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-        --blue:         #0066FF;
-        --blue-dim:     rgba(0,102,255,.08);
-        --blue-border:  rgba(0,102,255,.2);
-        --green:        #00B97A;
-        --text:         #0d0d12;
-        --text-muted:   #5c5c6e;
-        --glass:        rgba(255,255,255,0.52);
-        --glass-border: rgba(255,255,255,0.72);
-        --shadow:       0 8px 40px rgba(0,0,0,0.06);
-        --radius-lg:    24px;
-        --radius-md:    14px;
-        --radius-sm:    8px;
-        --code-bg:      rgba(13,13,18,.05);
-        --code-border:  rgba(13,13,18,.09);
-    }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
-    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
-    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
-    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --blue:         #0066FF;
+    --blue-dim:     rgba(0,102,255,.08);
+    --blue-border:  rgba(0,102,255,.2);
+    --green:        #00B97A;
+    --amber:        #D97706;
+    --text:         #0d0d12;
+    --text-muted:   #5c5c6e;
+    --glass:        rgba(255,255,255,0.52);
+    --glass-border: rgba(255,255,255,0.72);
+    --shadow:       0 8px 40px rgba(0,0,0,0.06);
+    --radius-lg:    24px;
+    --radius-md:    14px;
+    --radius-sm:    8px;
+    --code-bg:      rgba(13,13,18,.05);
+    --code-border:  rgba(13,13,18,.09);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+.blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
 
-    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
-    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
-    .logo span { color: var(--blue); }
-    .nav-menu { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: center; }
-    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
-    .nav-link:hover { color: var(--blue); }
-    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
-    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
-    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(0,185,122,.4)} 50%{box-shadow:0 0 0 6px rgba(0,185,122,0)} }
-    @media (max-width: 780px) {
-        nav { position: relative; flex-wrap: wrap; }
-        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
-        .nav-menu.open { display: flex; }
-        .nav-toggle { display: flex; }
-    }
+nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+.logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+.logo span { color: var(--blue); }
+.nav-menu { display: flex; align-items: center; gap: 16px; flex: 1; justify-content: center; }
+.nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+.nav-link:hover { color: var(--blue); }
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
+.badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(0,185,122,.4)} 50%{box-shadow:0 0 0 6px rgba(0,185,122,0)} }
+@media (max-width: 780px) {
+    nav { position: relative; flex-wrap: wrap; }
+    .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+    .nav-menu.open { display: flex; }
+    .nav-toggle { display: flex; }
+}
 
-    .page-wrap { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
-    .doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
-    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
-    h1 em { font-style: italic; color: var(--blue); }
-    .doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2.5rem; line-height: 1.7; }
-    .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
-    .card-pad { padding: 2rem; }
-    .section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
-    h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; text-wrap: balance; }
+.page-wrap { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
+.doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+h1 em { font-style: italic; color: var(--blue); }
+.doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2.5rem; line-height: 1.7; }
 
-    /* Flow */
-    .flow { display: flex; flex-direction: column; }
-    .flow-row { display: flex; align-items: flex-start; gap: 1rem; }
-    .flow-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 36px; }
-    .flow-num { width: 36px; height: 36px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .flow-line { width: 2px; flex: 1; min-height: 24px; background: var(--blue-border); margin: 4px 0; }
-    .flow-content { padding: .1rem 0 1.5rem; flex: 1; }
-    .flow-content h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .25rem; }
-    .flow-content p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
-    .flow-tag { display: inline-flex; align-items: center; gap: 4px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: .15rem .5rem; border-radius: 20px; margin-bottom: .4rem; }
-    .tag-buyer  { background: rgba(0,102,255,.1); color: var(--blue); }
-    .tag-seller { background: rgba(0,185,122,.1); color: var(--green); }
-    .tag-auto   { background: rgba(120,80,255,.1); color: #7850ff; }
+.card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
+.card-pad { padding: 2rem; }
+.section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
+h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; text-wrap: balance; }
 
-    /* Tabs */
-    .tabs { display: flex; gap: .5rem; border-bottom: 1px solid var(--code-border); margin-bottom: 0; }
-    .tab-btn { padding: .55rem 1.1rem; font-size: .8rem; font-weight: 700; color: var(--text-muted); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; margin-bottom: -1px; }
-    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+/* Scenario */
+.scenario { background: rgba(0,102,255,.04); border: 1px solid var(--blue-border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem; }
+.scenario-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--blue); margin-bottom: .6rem; }
+.scenario p { font-size: .88rem; color: var(--text-muted); line-height: 1.7; }
+.scenario p + p { margin-top: .6rem; }
 
-    /* Code */
-    .code-wrap { position: relative; margin: 1rem 0; }
-    pre { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; font-size: .79rem; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
-    .copy-btn { position: absolute; top: .6rem; right: .6rem; padding: .3rem .7rem; border-radius: 6px; background: rgba(255,255,255,.7); border: 1px solid var(--glass-border); font-size: .7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background .15s; }
-    .copy-btn:hover { background: #fff; color: var(--blue); }
+/* Who cards */
+.who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 580px) { .who-grid { grid-template-columns: 1fr; } }
+.who-card { padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border); background: rgba(255,255,255,.4); }
+.who-card h4 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .35rem; display: flex; align-items: center; gap: .5rem; }
+.who-card p { font-size: .82rem; color: var(--text-muted); line-height: 1.55; }
+.who-tag { display: inline-flex; align-items: center; gap: 4px; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: .15rem .5rem; border-radius: 20px; margin-bottom: .5rem; }
+.tag-hh  { background: rgba(0,102,255,.1); color: var(--blue); }
+.tag-ha  { background: rgba(0,185,122,.1); color: var(--green); }
+.tag-ah  { background: rgba(217,119,6,.1); color: var(--amber); }
+.tag-aa  { background: rgba(120,80,255,.1); color: #7850ff; }
 
-    /* Callout */
-    .callout { display: flex; gap: .85rem; padding: 1.1rem 1.25rem; border-radius: var(--radius-md); margin: 1.25rem 0; }
-    .callout-info { background: var(--blue-dim); border: 1px solid var(--blue-border); }
-    .callout-green { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.2); }
-    .callout svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
-    .callout-info svg { color: var(--blue); }
-    .callout-green svg { color: var(--green); }
-    .callout p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
-    .callout strong { color: var(--text); }
+/* Flow */
+.flow { display: flex; flex-direction: column; }
+.flow-row { display: flex; align-items: flex-start; gap: 1rem; }
+.flow-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 36px; }
+.flow-num { width: 36px; height: 36px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.flow-line { width: 2px; flex: 1; min-height: 24px; background: var(--blue-border); margin: 4px 0; }
+.flow-content { padding: .1rem 0 1.5rem; flex: 1; }
+.flow-content h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .25rem; }
+.flow-content p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
+.flow-tag { display: inline-flex; align-items: center; gap: 4px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: .15rem .5rem; border-radius: 20px; margin-bottom: .4rem; }
+.f-buyer  { background: rgba(0,102,255,.1); color: var(--blue); }
+.f-seller { background: rgba(0,185,122,.1); color: var(--green); }
+.f-auto   { background: rgba(120,80,255,.1); color: #7850ff; }
 
-    /* Option cards */
-    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-    @media (max-width: 580px) { .option-grid { grid-template-columns: 1fr; } }
-    .option-card { padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border); background: var(--glass); }
-    .option-card h4 { font-size: .9rem; font-weight: 700; margin-bottom: .4rem; color: var(--text); }
-    .option-card p { font-size: .82rem; color: var(--text-muted); line-height: 1.55; }
-    .option-num { width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
+/* Tabs */
+.tabs { display: flex; gap: .5rem; border-bottom: 1px solid var(--code-border); margin-bottom: 0; flex-wrap: wrap; }
+.tab-btn { padding: .55rem 1.1rem; font-size: .8rem; font-weight: 700; color: var(--text-muted); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; margin-bottom: -1px; white-space: nowrap; }
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
-    /* Resources */
-    .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
-    .res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
-    .res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
-    .res-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+/* Code */
+.code-wrap { position: relative; margin: 1rem 0; }
+pre { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; font-size: .79rem; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+.copy-btn { position: absolute; top: .6rem; right: .6rem; padding: .3rem .7rem; border-radius: 6px; background: rgba(255,255,255,.7); border: 1px solid var(--glass-border); font-size: .7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: background .15s; }
+.copy-btn:hover { background: #fff; color: var(--blue); }
 
-    footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,255,.65); padding: 2.5rem 5%; text-align: center; margin-top: 4rem; }
-    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--text); margin-bottom: .5rem; display: block; }
-    .footer-logo span { color: var(--blue); }
-    .footer-legal { font-size: .72rem; color: var(--text-muted); max-width: 680px; margin: 0 auto; line-height: 1.6; }
+/* Callout */
+.callout { display: flex; gap: .85rem; padding: 1.1rem 1.25rem; border-radius: var(--radius-md); margin: 1.25rem 0; }
+.callout-info  { background: var(--blue-dim); border: 1px solid var(--blue-border); }
+.callout-green { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.2); }
+.callout-amber { background: rgba(217,119,6,.07); border: 1px solid rgba(217,119,6,.2); }
+.callout svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.callout-info svg  { color: var(--blue); }
+.callout-green svg { color: var(--green); }
+.callout-amber svg { color: var(--amber); }
+.callout p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
+.callout strong { color: var(--text); }
+
+/* Option cards */
+.option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+@media (max-width: 580px) { .option-grid { grid-template-columns: 1fr; } }
+.option-card { padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--glass-border); background: var(--glass); }
+.option-card h4 { font-size: .9rem; font-weight: 700; margin-bottom: .4rem; color: var(--text); }
+.option-card p { font-size: .82rem; color: var(--text-muted); line-height: 1.55; }
+.option-num { width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
+
+/* Resources */
+.res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
+.res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
+.res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
+.res-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+
+footer { background: rgba(249,249,251,.65); border-top: 1px solid rgba(255,255,255,.65); padding: 2.5rem 5%; text-align: center; margin-top: 4rem; }
+.footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--text); margin-bottom: .5rem; display: block; }
+.footer-logo span { color: var(--blue); }
+.footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.footer-links a { font-size: .8rem; color: var(--text-muted); text-decoration: none; }
+.footer-links a:hover { color: var(--blue); }
+.footer-legal { font-size: .72rem; color: var(--text-muted); max-width: 680px; margin: 0 auto; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -138,9 +163,101 @@
 
 <div class="page-wrap">
 
-    <span class="doc-eyebrow"><i data-lucide="file-check"></i> Guides</span>
-    <h1>Invoice <em>verification</em></h1>
-    <p class="doc-lead">Work is already done. Lock payment in escrow as a confirmed payment intent — the supplier submits a matching invoice and receives payment automatically. No AP team, no payment chasing.</p>
+    <span class="doc-eyebrow"><i data-lucide="file-check"></i> Invoices · AP Automation · RLUSD</span>
+    <h1>Invoice <em>verification</em> &amp; payment</h1>
+    <p class="doc-lead">Work is already done. Lock payment in XRPL escrow as a confirmed payment intent — the supplier submits a matching invoice and receives payment automatically. No manual AP approval, no payment chasing, no trusted intermediary. Works for humans, agents, or any mix of both.</p>
+
+    <!-- Real-world scenario -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Real-world example</span>
+            <h2>The coffee delivery scenario</h2>
+            <div class="scenario">
+                <div class="scenario-title">What happens, step by step</div>
+                <p>A business hires an individual to deliver coffee to a warehouse. Terms are agreed over email: supplier name, XRPL wallet address, amount, description.</p>
+                <p>A week later, the warehouse confirms receipt. The finance team creates an escrow — funds are locked on-chain as confirmed payment intent. The supplier receives an email: <em>"Your payment of $500 RLUSD is ready to claim at our supplier portal. Use PO reference PO-2024-0042."</em></p>
+                <p>The supplier visits the portal, fills in their invoice details (or uploads a PDF), and submits. The AI referee checks whether the invoice matches the PO — supplier name, amount, description. If it matches: payment hits their wallet within seconds. If something's wrong: they see exactly what to correct and resubmit.</p>
+                <p>The finance team's accounts inbox receives a copy of the verified invoice automatically. No manual approval step. No chasing.</p>
+            </div>
+            <div class="callout callout-green">
+                <i data-lucide="check-circle"></i>
+                <p><strong>Key insight:</strong> the escrow isn't a payment gate against future work — it's a confirmed payment intent for work already done. The supplier sees locked funds before submitting anything. That's the difference from a normal invoice chase.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Who is this for -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Who is this for</span>
+            <h2>Any combination of human and agent</h2>
+            <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.6;">Only one side needs to be "smart" for the system to work. A business can deploy this unilaterally — every supplier benefits without changing their behaviour much.</p>
+            <div class="who-grid">
+                <div class="who-card">
+                    <span class="who-tag tag-hh"><i data-lucide="users" style="width:10px;height:10px;"></i> Human buyer · Human supplier</span>
+                    <h4>The most common case today</h4>
+                    <p>Finance team raises a PO manually and locks escrow via the portal. Supplier visits the supplier portal, fills in their invoice, clicks submit. Both sides use a web form — no code required on either side.</p>
+                </div>
+                <div class="who-card">
+                    <span class="who-tag tag-ha"><i data-lucide="user" style="width:10px;height:10px;"></i> Human buyer · Agent supplier</span>
+                    <h4>Supplier automates their billing</h4>
+                    <p>Finance team locks escrow as normal. The supplier is a software company or freelancer whose billing system detects the escrow via webhook and automatically generates a conforming invoice and calls <code>/evaluate</code>. The supplier gets paid without any human action on their side.</p>
+                </div>
+                <div class="who-card">
+                    <span class="who-tag tag-ah"><i data-lucide="bot" style="width:10px;height:10px;"></i> Agent buyer · Human supplier</span>
+                    <h4>Buyer automates their AP trigger</h4>
+                    <p>A warehouse management system or ERP confirms delivery and automatically creates the escrow — no finance team involvement. The supplier (a small courier, an individual contractor) receives an email, visits the portal, and uploads their invoice manually. They need no technical knowledge.</p>
+                </div>
+                <div class="who-card">
+                    <span class="who-tag tag-aa"><i data-lucide="cpu" style="width:10px;height:10px;"></i> Agent buyer · Agent supplier</span>
+                    <h4>Fully automated AP</h4>
+                    <p>Delivery confirmed → escrow auto-created → supplier agent detects it → invoice auto-generated and submitted → payment released. Zero human involvement in the payment cycle. Humans only see edge cases: mismatches, disputes, unusual amounts.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The flow -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">The flow</span>
+            <h2>How it works</h2>
+            <div class="flow">
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">1</div><div class="flow-line"></div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag f-buyer">Buyer / Finance team / ERP</span>
+                        <h4>Work is agreed and completed offline</h4>
+                        <p>A contractor works for a week. Goods are delivered to a warehouse. Terms were agreed beforehand — amount, supplier, description — outside of AgentTrust, just as normal.</p>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">2</div><div class="flow-line"></div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag f-buyer">Buyer / Finance team / ERP</span>
+                        <h4>Lock payment in escrow — confirmed payment intent</h4>
+                        <p>The buyer creates an escrow specifying the supplier wallet, amount, and a description of what the invoice must contain. Includes an <strong>accounts email</strong> so verified invoices are forwarded to the right inbox automatically. The escrow ID is shared with the supplier (by email, portal link, or webhook).</p>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">3</div><div class="flow-line"></div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag f-seller">Supplier — human or agent</span>
+                        <h4>Submit the invoice</h4>
+                        <p>Human: visits the supplier portal, fills in their invoice details. Agent: receives a webhook, generates the invoice programmatically, calls <code>POST /evaluate</code> directly. Either way — escrow ID, invoice number, company name, amount, description of services delivered.</p>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-left"><div class="flow-num">4</div></div>
+                    <div class="flow-content">
+                        <span class="flow-tag f-auto">Automatic</span>
+                        <h4>AI verifies, payment releases, invoice forwarded</h4>
+                        <p><strong>PASS:</strong> payment released to supplier wallet instantly. Invoice PDF emailed to the buyer's accounts address. <strong>FAIL:</strong> supplier sees exactly what to correct and can resubmit (up to the configured limit).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Two ways -->
     <div class="card">
@@ -151,70 +268,24 @@
                 <div class="option-card">
                     <div class="option-num">1</div>
                     <h4>Use AgentTrust directly</h4>
-                    <p>Enable Invoice Mode on the main escrow form. Tick the checkbox, enter a PO reference, and the task spec auto-fills. Supplier claims payment by submitting their invoice.</p>
+                    <p>Enable Invoice Mode on the main escrow form. Tick the checkbox, enter a PO reference, and the task spec auto-fills. Supplier claims payment via their own escrow ID.</p>
                     <a href="/" style="display:inline-flex;align-items:center;gap:5px;margin-top:.75rem;font-size:.8rem;font-weight:700;color:var(--blue);text-decoration:none;">Open escrow form <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></a>
                 </div>
                 <div class="option-card">
                     <div class="option-num">2</div>
                     <h4>White-label into your own site</h4>
-                    <p>Embed the buyer and supplier forms directly into your supplier portal or accounting system. Your brand, your domain — AgentTrust handles the escrow and verification invisibly.</p>
+                    <p>Embed the buyer and supplier forms directly into your supplier portal or ERP. Your brand, your domain, your workflow. AgentTrust handles the escrow and AI verification invisibly behind the scenes.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Flow -->
-    <div class="card">
-        <div class="card-pad">
-            <span class="section-label">The flow</span>
-            <h2>How it works</h2>
-            <div class="flow">
-                <div class="flow-row">
-                    <div class="flow-left"><div class="flow-num">1</div><div class="flow-line"></div></div>
-                    <div class="flow-content">
-                        <span class="flow-tag tag-buyer">Buyer / Finance team</span>
-                        <h4>Work is agreed and completed offline</h4>
-                        <p>A contractor works for a week. A supplier delivers goods. The terms are agreed — amount, supplier, description — outside of AgentTrust, just as normal.</p>
-                    </div>
-                </div>
-                <div class="flow-row">
-                    <div class="flow-left"><div class="flow-num">2</div><div class="flow-line"></div></div>
-                    <div class="flow-content">
-                        <span class="flow-tag tag-buyer">Buyer / Finance team</span>
-                        <h4>Lock payment in escrow — confirmed payment intent</h4>
-                        <p>The buyer creates an escrow with the agreed amount and the supplier's wallet. The supplier can see the funds are locked and ready — no more chasing payment. The escrow spec describes what the invoice must contain.</p>
-                    </div>
-                </div>
-                <div class="flow-row">
-                    <div class="flow-left"><div class="flow-num">3</div><div class="flow-line"></div></div>
-                    <div class="flow-content">
-                        <span class="flow-tag tag-seller">Supplier</span>
-                        <h4>Submit the invoice</h4>
-                        <p>The supplier enters the escrow ID and submits their invoice — company name, amount, line items, PO reference. They can include supporting documents or delivery confirmation links.</p>
-                    </div>
-                </div>
-                <div class="flow-row">
-                    <div class="flow-left"><div class="flow-num">4</div></div>
-                    <div class="flow-content">
-                        <span class="flow-tag tag-auto">Automatic</span>
-                        <h4>AI verifies the invoice, payment releases</h4>
-                        <p>The referee checks the invoice against the escrow spec — amounts match, supplier name correct, services match what was agreed. PASS → payment hits the supplier's wallet instantly. FAIL → supplier sees exactly what to correct and resubmits.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="callout callout-green">
-                <i data-lucide="check-circle"></i>
-                <p><strong>The supplier sees the locked funds before submitting.</strong> This is the key difference from a normal payment promise — the money is provably there, on-chain, waiting. No more chasing invoices.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- White label -->
+    <!-- White label forms -->
     <div class="card">
         <div class="card-pad">
             <span class="section-label">White-label integration</span>
             <h2>Embeddable forms for your supplier portal</h2>
-            <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;">Copy these two HTML forms into your existing website or supplier portal. Style them to match your brand. Both call the AgentTrust API directly — no backend required beyond your wallet credentials.</p>
+            <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;">Two HTML forms: one for the buyer (raises the PO and locks escrow), one for the supplier (submits their invoice to claim payment). Style them to match your brand.</p>
 
             <div class="tabs" id="wl-tabs">
                 <button class="tab-btn active" onclick="switchTab('wl','buyer')">Buyer form (raise PO)</button>
@@ -224,12 +295,11 @@
             <div id="wl-buyer" class="tab-panel active">
                 <div class="callout callout-info" style="margin-top:1rem;">
                     <i data-lucide="info"></i>
-                    <p>Your finance team uses this to lock payment at the point a PO is raised. Requires an XRPL wallet with sufficient balance. The supplier's wallet address must be known upfront.</p>
+                    <p>Used by your finance team (or triggered automatically by your ERP) to lock payment. Posts to your own backend endpoint — your wallet secret never touches the browser. The <strong>accounts email</strong> field ensures a copy of every verified invoice lands in the right inbox.</p>
                 </div>
                 <div class="code-wrap">
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
 <pre>&lt;!-- AgentTrust Buyer Form — embed in your supplier portal --&gt;
-&lt;!-- Replace YOUR_BUYER_WALLET_SECRET with your wallet credentials server-side --&gt;
 &lt;style&gt;
   .at-form { font-family: system-ui, sans-serif; max-width: 480px; }
   .at-form label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
@@ -252,7 +322,7 @@
   &lt;input id="at-po" placeholder="PO-2024-0042" required&gt;
 
   &lt;label&gt;Supplier Company Name&lt;/label&gt;
-  &lt;input id="at-supplier-name" placeholder="Acme Design Ltd" required&gt;
+  &lt;input id="at-supplier-name" placeholder="Acme Logistics Ltd" required&gt;
 
   &lt;label&gt;Supplier XRPL Wallet Address&lt;/label&gt;
   &lt;input id="at-supplier-wallet" placeholder="rXXX…" required&gt;
@@ -261,7 +331,11 @@
   &lt;input id="at-amount" type="number" min="1" step="0.01" placeholder="500.00" required&gt;
 
   &lt;label&gt;Services / Goods Description&lt;/label&gt;
-  &lt;textarea id="at-description" rows="3" placeholder="e.g. Website redesign — 5 pages, mobile responsive" required&gt;&lt;/textarea&gt;
+  &lt;textarea id="at-description" rows="3"
+    placeholder="e.g. Coffee delivery to Warehouse B — 200kg, delivered week of 14 Aug" required&gt;&lt;/textarea&gt;
+
+  &lt;label&gt;Send verified invoices to (accounts email)&lt;/label&gt;
+  &lt;input id="at-accounts-email" type="email" placeholder="accounts@yourcompany.com" required&gt;
 
   &lt;label&gt;Payment Window&lt;/label&gt;
   &lt;select id="at-deadline"&gt;
@@ -275,8 +349,6 @@
 &lt;/form&gt;
 
 &lt;script&gt;
-// Call this from your backend — never expose wallet secrets in the browser.
-// This example shows the API call; wire it through your own server endpoint.
 async function atCreateEscrow(e) {
   e.preventDefault();
   const status = document.getElementById('at-buyer-status');
@@ -284,30 +356,45 @@ async function atCreateEscrow(e) {
   status.textContent = 'Creating escrow…';
   status.style.display = 'block';
 
-  const po       = document.getElementById('at-po').value;
-  const supplier = document.getElementById('at-supplier-name').value;
-  const wallet   = document.getElementById('at-supplier-wallet').value;
-  const amount   = parseFloat(document.getElementById('at-amount').value);
-  const desc     = document.getElementById('at-description').value;
-  const hrs      = document.getElementById('at-deadline').value;
+  const po          = document.getElementById('at-po').value;
+  const supplier    = document.getElementById('at-supplier-name').value;
+  const wallet      = document.getElementById('at-supplier-wallet').value;
+  const amount      = parseFloat(document.getElementById('at-amount').value);
+  const desc        = document.getElementById('at-description').value;
+  const acctEmail   = document.getElementById('at-accounts-email').value;
+  const hrs         = parseInt(document.getElementById('at-deadline').value);
 
-  const spec = `Invoice Verification — ${po}\nSupplier: ${supplier}\nAmount: ${amount} RLUSD\nServices: ${desc}\n\nTo claim payment, submit an invoice matching the above details exactly.`;
+  const spec = [
+    `Invoice Verification — ${po}`,
+    `Supplier: ${supplier}`,
+    `Amount: ${amount} RLUSD`,
+    `Services: ${desc}`,
+    ``,
+    `PAYMENT RELEASES when the supplier submits an invoice matching:`,
+    `- Supplier name: ${supplier}`,
+    `- Amount: ${amount} RLUSD`,
+    `- PO reference: ${po}`,
+    `- Description consistent with: ${desc}`,
+  ].join('\n');
 
   try {
-    // POST to YOUR backend endpoint which holds the wallet secret + calls AgentTrust
+    // POST to YOUR backend — wallet secret stays server-side
     const res = await fetch('/api/create-escrow', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         po_number: po, supplier_name: supplier,
         supplier_wallet: wallet, amount_rlusd: amount,
-        task_description: spec, cancel_after_hrs: parseInt(hrs),
+        task_description: spec, cancel_after_hrs: hrs,
+        accounts_email: acctEmail,
       }),
     });
     const data = await res.json();
     if (data.escrow_id) {
       status.className = 'at-status success';
-      status.textContent = `✓ Payment locked. Share this ID with your supplier: ${data.escrow_id}`;
+      status.innerHTML = `&amp;#10003; Payment locked. Share with your supplier:&lt;br&gt;
+        &lt;strong&gt;Escrow ID: ${data.escrow_id}&lt;/strong&gt;&lt;br&gt;
+        Verified invoices will be sent to ${acctEmail}`;
     } else {
       throw new Error(data.detail || 'Unknown error');
     }
@@ -323,7 +410,7 @@ async function atCreateEscrow(e) {
             <div id="wl-supplier" class="tab-panel">
                 <div class="callout callout-info" style="margin-top:1rem;">
                     <i data-lucide="info"></i>
-                    <p>Your suppliers use this to claim payment. They enter the escrow ID the buyer shared with them, fill in their invoice details, and submit. No AgentTrust account needed — just the escrow ID and their invoice.</p>
+                    <p>Your suppliers use this to claim payment. They enter the escrow ID shared by the buyer, fill in their invoice, and submit. No AgentTrust account needed. This form calls the AgentTrust API directly — no wallet secret required on the supplier side.</p>
                 </div>
                 <div class="code-wrap">
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -346,7 +433,9 @@ async function atCreateEscrow(e) {
 
 &lt;form class="at-form" onsubmit="atSubmitInvoice(event)"&gt;
   &lt;h3&gt;Claim Your Payment&lt;/h3&gt;
-  &lt;p style="font-size:.85rem;color:#666;margin-bottom:1rem;"&gt;Enter the escrow ID your buyer shared with you, then fill in your invoice details.&lt;/p&gt;
+  &lt;p style="font-size:.85rem;color:#666;margin-bottom:1rem;"&gt;
+    Enter the escrow ID your buyer shared with you, then fill in your invoice details.
+  &lt;/p&gt;
 
   &lt;label&gt;Escrow ID (from your buyer)&lt;/label&gt;
   &lt;input id="at-escrow-id" placeholder="e.g. INV-A1B2C3D4" required&gt;
@@ -355,18 +444,22 @@ async function atCreateEscrow(e) {
   &lt;input id="at-inv-number" placeholder="INV-2025-0099" required&gt;
 
   &lt;label&gt;Your Company Name&lt;/label&gt;
-  &lt;input id="at-company" placeholder="Acme Design Ltd" required&gt;
+  &lt;input id="at-company" placeholder="Acme Logistics Ltd" required&gt;
 
   &lt;label&gt;Amount Invoiced (RLUSD)&lt;/label&gt;
   &lt;input id="at-inv-amount" type="number" min="0.01" step="0.01" placeholder="500.00" required&gt;
 
   &lt;label&gt;Services or Goods Delivered&lt;/label&gt;
-  &lt;textarea id="at-inv-desc" rows="3" placeholder="Describe exactly what was delivered, matching your agreement with the buyer" required&gt;&lt;/textarea&gt;
+  &lt;textarea id="at-inv-desc" rows="3"
+    placeholder="Describe exactly what was delivered, matching your agreement with the buyer" required&gt;&lt;/textarea&gt;
 
-  &lt;label&gt;Delivery Evidence URL &lt;span style="font-weight:400;"&gt;(optional — staging link, tracking number page, etc.)&lt;/span&gt;&lt;/label&gt;
+  &lt;label&gt;Purchase Order Reference &lt;span style="font-weight:400;"&gt;(from your buyer)&lt;/span&gt;&lt;/label&gt;
+  &lt;input id="at-po-ref" placeholder="PO-2024-0042"&gt;
+
+  &lt;label&gt;Delivery Evidence URL &lt;span style="font-weight:400;"&gt;(optional — tracking, photo, etc.)&lt;/span&gt;&lt;/label&gt;
   &lt;input id="at-evidence" type="url" placeholder="https://…"&gt;
 
-  &lt;button type="submit"&gt;Submit Invoice &amp; Claim Payment&lt;/button&gt;
+  &lt;button type="submit"&gt;Submit Invoice &amp;amp; Claim Payment&lt;/button&gt;
   &lt;div class="at-status" id="at-supplier-status"&gt;&lt;/div&gt;
 &lt;/form&gt;
 
@@ -378,14 +471,21 @@ async function atSubmitInvoice(e) {
   status.textContent = 'Submitting invoice for verification…';
   status.style.display = 'block';
 
-  const escrowId  = document.getElementById('at-escrow-id').value.trim();
-  const invNum    = document.getElementById('at-inv-number').value.trim();
-  const company   = document.getElementById('at-company').value.trim();
-  const amount    = document.getElementById('at-inv-amount').value.trim();
-  const desc      = document.getElementById('at-inv-desc').value.trim();
-  const evidence  = document.getElementById('at-evidence').value.trim();
+  const escrowId = document.getElementById('at-escrow-id').value.trim();
+  const invNum   = document.getElementById('at-inv-number').value.trim();
+  const company  = document.getElementById('at-company').value.trim();
+  const amount   = document.getElementById('at-inv-amount').value.trim();
+  const desc     = document.getElementById('at-inv-desc').value.trim();
+  const poRef    = document.getElementById('at-po-ref').value.trim();
+  const evidence = document.getElementById('at-evidence').value.trim();
 
-  const invoice = `INVOICE ${invNum}\nFrom: ${company}\nAmount: ${amount} RLUSD\nServices delivered: ${desc}`;
+  const invoice = [
+    `INVOICE ${invNum}`,
+    `From: ${company}`,
+    `Amount: ${amount} RLUSD`,
+    poRef ? `PO Reference: ${poRef}` : '',
+    `Services delivered: ${desc}`,
+  ].filter(Boolean).join('\n');
 
   const body = { escrow_id: escrowId, work: invoice };
   if (evidence) body.evidence_links = [evidence];
@@ -400,10 +500,14 @@ async function atSubmitInvoice(e) {
 
     if (data.verdict === 'PASS') {
       status.className = 'at-status success';
-      status.textContent = `✓ Invoice verified (${data.score}/100). Payment released to your wallet automatically.`;
+      status.textContent =
+        `✓ Invoice verified (${data.score}/100). Payment released to your wallet automatically. ` +
+        `A copy of your invoice has been forwarded to the buyer's accounts team.`;
     } else {
       status.className = 'at-status fail';
-      status.textContent = `Invoice could not be verified (${data.score}/100). Reason: ${data.summary}. Please correct and resubmit.`;
+      status.textContent =
+        `Invoice could not be verified (${data.score}/100). Reason: ${data.summary}. ` +
+        `Please check the details and resubmit.`;
     }
   } catch (err) {
     status.className = 'at-status error';
@@ -414,9 +518,9 @@ async function atSubmitInvoice(e) {
                 </div>
             </div>
 
-            <div class="callout callout-info" style="margin-top:1rem;">
-                <i data-lucide="info"></i>
-                <p><strong>Server-side note:</strong> the buyer form posts to <code>/api/create-escrow</code> on your own backend — this is intentional. Your wallet secret must never be exposed in the browser. Your backend holds the secret, pays the protocol fee, calls <code>/escrow/generate</code>, signs the EscrowCreate on XRPL, and returns the <code>escrow_id</code>. The supplier form calls the AgentTrust API directly — no wallet secret required.</p>
+            <div class="callout callout-amber" style="margin-top:1rem;">
+                <i data-lucide="alert-triangle"></i>
+                <p><strong>Server-side only:</strong> the buyer form posts to <code>/api/create-escrow</code> on your own backend — this is intentional. Your wallet secret must never be in browser JavaScript. Your backend holds the secret, pays the protocol fee, signs the EscrowCreate on XRPL, and returns the <code>escrow_id</code>. The supplier form calls AgentTrust directly — no wallet secret needed.</p>
             </div>
         </div>
     </div>
@@ -425,7 +529,8 @@ async function atSubmitInvoice(e) {
     <div class="card">
         <div class="card-pad">
             <span class="section-label">Backend stub</span>
-            <h2>Server-side escrow creation (Node.js / Python)</h2>
+            <h2>Server-side escrow creation</h2>
+            <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;">The <code>accounts_email</code> is stored in the escrow spec. When the referee returns a PASS verdict it emails the verified invoice to that address. You can also handle this yourself via a webhook callback.</p>
             <div class="tabs" id="be-tabs">
                 <button class="tab-btn active" onclick="switchTab('be','python')">Python (FastAPI)</button>
                 <button class="tab-btn" onclick="switchTab('be','node')">Node.js (Express)</button>
@@ -436,6 +541,7 @@ async function atSubmitInvoice(e) {
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
 <pre>from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 import httpx, secrets
 from xrpl.clients import JsonRpcClient
 from xrpl.models.transactions import Payment, EscrowCreate
@@ -447,7 +553,7 @@ app = FastAPI()
 
 REFEREE         = "https://xrpl-referee.onrender.com"
 PROTOCOL_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
-buyer_wallet    = Wallet.from_seed("sYOUR_BUYER_SECRET")  # keep server-side only
+buyer_wallet    = Wallet.from_seed("sYOUR_BUYER_SECRET")  # server-side only
 client          = JsonRpcClient("https://s1.ripple.com:51234/")
 
 class EscrowRequest(BaseModel):
@@ -456,47 +562,60 @@ class EscrowRequest(BaseModel):
     supplier_wallet:  str
     amount_rlusd:     float
     task_description: str
+    accounts_email:   str           # verified invoices forwarded here
     cancel_after_hrs: int = 720
+    callback_url:     Optional[str] = None   # optional webhook on PASS/FAIL
 
 @app.post("/api/create-escrow")
 async def create_escrow(req: EscrowRequest):
-    # 1. Pay protocol fee
-    fee_tx = Payment(account=buyer_wallet.address,
-        amount=xrp_to_drops(0.1), destination=PROTOCOL_WALLET)
+    # Embed accounts_email in the task spec so the referee knows where to forward
+    full_spec = (
+        req.task_description
+        + f"\n\nAccounts email for verified invoices: {req.accounts_email}"
+    )
+
+    # 1. Pay protocol fee (0.1 XRP)
+    fee_tx   = Payment(account=buyer_wallet.address,
+                       amount=xrp_to_drops(0.1),
+                       destination=PROTOCOL_WALLET)
     fee_hash = submit_and_wait(fee_tx, client, buyer_wallet).result["hash"]
 
     # 2. Generate escrow parameters
     escrow_id = f"INV-{secrets.token_hex(4).upper()}"
-    params = httpx.post(f"{REFEREE}/escrow/generate", json={
+    body = {
         "escrow_id":        escrow_id,
         "fee_hash":         fee_hash,
         "buyer_name":       "Your Company",
         "buyer_address":    buyer_wallet.address,
         "worker_address":   req.supplier_wallet,
-        "task_description": req.task_description,
+        "task_description": full_spec,
         "currency":         "RLUSD",
         "amount_rlusd":     req.amount_rlusd,
         "cancel_after_hrs": req.cancel_after_hrs,
         "category":         "invoice",
         "max_submissions":  5,
-    }).json()
+    }
+    if req.callback_url:
+        body["buyer_callback_url"] = req.callback_url
 
-    # 3. Sign and submit EscrowCreate
+    params = httpx.post(f"{REFEREE}/escrow/generate", json=body, timeout=30).json()
+
+    # 3. Sign and submit EscrowCreate on XRPL
     escrow_tx = EscrowCreate(
-        account=buyer_wallet.address,
-        destination=req.supplier_wallet,
-        amount=params["escrow_amount"],  # RLUSD dict format
-        condition=params["condition"],
-        finish_after=params["finish_after_ripple"],
-        cancel_after=params["cancel_after_ripple"],
+        account      = buyer_wallet.address,
+        destination  = req.supplier_wallet,
+        amount       = params["escrow_amount"],   # RLUSD token dict
+        condition    = params["condition"],
+        finish_after = params["finish_after_ripple"],
+        cancel_after = params["cancel_after_ripple"],
     )
     tx_hash = submit_and_wait(escrow_tx, client, buyer_wallet).result["hash"]
 
-    # 4. Confirm with referee
+    # 4. Confirm with referee (starts the clock)
     httpx.post(f"{REFEREE}/escrow/{escrow_id}/confirm",
-        json={"tx_hash": tx_hash}).raise_for_status()
+               json={"tx_hash": tx_hash}).raise_for_status()
 
-    return {"escrow_id": escrow_id}</pre>
+    return {"escrow_id": escrow_id, "tx_hash": tx_hash}</pre>
                 </div>
             </div>
 
@@ -505,46 +624,53 @@ async def create_escrow(req: EscrowRequest):
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
 <pre>const express = require('express');
 const { Client, Wallet, xrpToDrops } = require('xrpl');
-const fetch = require('node-fetch');
-const crypto = require('crypto');
+const fetch   = require('node-fetch');
+const crypto  = require('crypto');
 
 const app = express();
 app.use(express.json());
 
 const REFEREE         = 'https://xrpl-referee.onrender.com';
 const PROTOCOL_WALLET = 'rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR';
-const BUYER_SECRET    = process.env.BUYER_WALLET_SECRET; // from env, never hardcoded
+const BUYER_SECRET    = process.env.BUYER_WALLET_SECRET; // never hardcode
 
 app.post('/api/create-escrow', async (req, res) => {
-  const { po_number, supplier_name, supplier_wallet,
-          amount_rlusd, task_description, cancel_after_hrs = 720 } = req.body;
+  const {
+    po_number, supplier_name, supplier_wallet,
+    amount_rlusd, task_description, accounts_email,
+    cancel_after_hrs = 720, callback_url,
+  } = req.body;
+
+  // Embed accounts_email so the referee knows where to forward verified invoices
+  const fullSpec = `${task_description}\n\nAccounts email for verified invoices: ${accounts_email}`;
 
   const client = new Client('wss://s1.ripple.com');
   await client.connect();
-
   const wallet = Wallet.fromSeed(BUYER_SECRET);
 
-  // 1. Pay protocol fee
+  // 1. Protocol fee
   const feeTx = await client.submitAndWait({
     TransactionType: 'Payment',
     Account: wallet.address,
     Destination: PROTOCOL_WALLET,
     Amount: xrpToDrops('0.1'),
   }, { wallet });
-  const feeHash = feeTx.result.hash;
 
   // 2. Generate escrow parameters
   const escrowId = `INV-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+  const body = {
+    escrow_id: escrowId, fee_hash: feeTx.result.hash,
+    buyer_name: 'Your Company', buyer_address: wallet.address,
+    worker_address: supplier_wallet, task_description: fullSpec,
+    currency: 'RLUSD', amount_rlusd, cancel_after_hrs,
+    category: 'invoice', max_submissions: 5,
+  };
+  if (callback_url) body.buyer_callback_url = callback_url;
+
   const params = await fetch(`${REFEREE}/escrow/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      escrow_id: escrowId, fee_hash: feeHash,
-      buyer_name: 'Your Company', buyer_address: wallet.address,
-      worker_address: supplier_wallet, task_description,
-      currency: 'RLUSD', amount_rlusd, cancel_after_hrs,
-      category: 'invoice', max_submissions: 5,
-    }),
+    body: JSON.stringify(body),
   }).then(r => r.json());
 
   // 3. Submit EscrowCreate
@@ -566,10 +692,207 @@ app.post('/api/create-escrow', async (req, res) => {
   });
 
   await client.disconnect();
-  res.json({ escrow_id: escrowId });
+  res.json({ escrow_id: escrowId, tx_hash: escrowTx.result.hash });
 });
 
 app.listen(3000);</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agentic integration -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Agentic integration</span>
+            <h2>Full automation — no humans required</h2>
+            <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;">For fully automated AP, both sides run code. The buyer side triggers on a delivery event; the supplier side triggers on an escrow-ready webhook. Each operates independently — neither needs to know the other's implementation.</p>
+            <div class="tabs" id="ag-tabs">
+                <button class="tab-btn active" onclick="switchTab('ag','buyer-agent')">Agent buyer (ERP trigger)</button>
+                <button class="tab-btn" onclick="switchTab('ag','seller-agent')">Agent supplier (auto-invoice)</button>
+            </div>
+
+            <div id="ag-buyer-agent" class="tab-panel active">
+                <div class="callout callout-info" style="margin-top:1rem;">
+                    <i data-lucide="info"></i>
+                    <p>Your warehouse management system, ERP, or delivery platform fires a webhook when a delivery is confirmed. This handler creates the escrow automatically and notifies the supplier — no human AP involvement.</p>
+                </div>
+                <div class="code-wrap">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>from fastapi import FastAPI
+from pydantic import BaseModel
+import httpx, secrets, smtplib
+from email.message import EmailMessage
+from xrpl.clients import JsonRpcClient
+from xrpl.models.transactions import Payment, EscrowCreate
+from xrpl.wallet import Wallet
+from xrpl.utils import xrp_to_drops
+from xrpl.transaction import submit_and_wait
+
+app = FastAPI()
+REFEREE         = "https://xrpl-referee.onrender.com"
+PROTOCOL_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
+buyer_wallet    = Wallet.from_seed("sYOUR_BUYER_SECRET")
+client          = JsonRpcClient("https://s1.ripple.com:51234/")
+
+class DeliveryConfirmed(BaseModel):
+    """Payload from your WMS/ERP when a delivery is confirmed."""
+    po_number:        str
+    supplier_name:    str
+    supplier_wallet:  str
+    supplier_email:   str          # to notify the supplier
+    amount_rlusd:     float
+    description:      str
+    accounts_email:   str = "accounts@yourcompany.com"
+
+@app.post("/webhooks/delivery-confirmed")
+async def on_delivery_confirmed(event: DeliveryConfirmed):
+    """Triggered automatically when WMS marks a delivery as received."""
+
+    spec = (
+        f"Invoice Verification — {event.po_number}\n"
+        f"Supplier: {event.supplier_name}\n"
+        f"Amount: {event.amount_rlusd} RLUSD\n"
+        f"Services: {event.description}\n\n"
+        f"PAYMENT RELEASES when the invoice matches the above.\n"
+        f"Accounts email for verified invoices: {event.accounts_email}"
+    )
+
+    # 1. Protocol fee
+    fee_hash = submit_and_wait(
+        Payment(account=buyer_wallet.address,
+                amount=xrp_to_drops(0.1),
+                destination=PROTOCOL_WALLET),
+        client, buyer_wallet
+    ).result["hash"]
+
+    # 2. Generate escrow
+    escrow_id = f"INV-{secrets.token_hex(4).upper()}"
+    params = httpx.post(f"{REFEREE}/escrow/generate", json={
+        "escrow_id":        escrow_id,
+        "fee_hash":         fee_hash,
+        "buyer_name":       "Your Company",
+        "buyer_address":    buyer_wallet.address,
+        "worker_address":   event.supplier_wallet,
+        "task_description": spec,
+        "currency":         "RLUSD",
+        "amount_rlusd":     event.amount_rlusd,
+        "cancel_after_hrs": 720,
+        "category":         "invoice",
+        "max_submissions":  5,
+    }, timeout=30).json()
+
+    # 3. Submit EscrowCreate
+    tx_hash = submit_and_wait(EscrowCreate(
+        account=buyer_wallet.address, destination=event.supplier_wallet,
+        amount=params["escrow_amount"], condition=params["condition"],
+        finish_after=params["finish_after_ripple"],
+        cancel_after=params["cancel_after_ripple"],
+    ), client, buyer_wallet).result["hash"]
+
+    # 4. Confirm
+    httpx.post(f"{REFEREE}/escrow/{escrow_id}/confirm",
+               json={"tx_hash": tx_hash}).raise_for_status()
+
+    # 5. Email the supplier with their claim link
+    _send_supplier_email(event.supplier_email, event.supplier_name,
+                         escrow_id, event.po_number, event.amount_rlusd)
+
+    return {"escrow_id": escrow_id}
+
+def _send_supplier_email(to, name, escrow_id, po, amount):
+    msg = EmailMessage()
+    msg["Subject"] = f"Payment ready to claim — {po}"
+    msg["From"]    = "noreply@yourcompany.com"
+    msg["To"]      = to
+    msg.set_content(
+        f"Hi {name},\n\n"
+        f"Your payment of {amount} RLUSD for {po} is locked and ready to claim.\n\n"
+        f"Visit our supplier portal and enter your Escrow ID: {escrow_id}\n\n"
+        f"https://yourcompany.com/supplier-portal\n\n"
+        f"Submit your invoice and payment will be released automatically."
+    )
+    # Configure your SMTP here
+    # with smtplib.SMTP("smtp.yourcompany.com") as s: s.send_message(msg)</pre>
+                </div>
+            </div>
+
+            <div id="ag-seller-agent" class="tab-panel">
+                <div class="callout callout-info" style="margin-top:1rem;">
+                    <i data-lucide="info"></i>
+                    <p>The supplier's system listens for a webhook from AgentTrust when an escrow is created for their wallet. It auto-generates a conforming invoice and submits it immediately — no human involvement on the supplier side.</p>
+                </div>
+                <div class="code-wrap">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional
+import httpx
+from datetime import date
+
+app = FastAPI()
+REFEREE = "https://xrpl-referee.onrender.com"
+
+class EscrowReadyWebhook(BaseModel):
+    """Webhook payload from AgentTrust when an escrow is created for your wallet."""
+    escrow_id:        str
+    amount_rlusd:     Optional[float] = None
+    amount_xrp:       Optional[float] = None
+    task_description: str
+    buyer_name:       str
+
+# AgentTrust calls this URL when an escrow targets your wallet address.
+# Set buyer_callback_url on your side, or register a webhook in your profile.
+@app.post("/webhooks/escrow-ready")
+async def on_escrow_ready(event: EscrowReadyWebhook):
+    """Auto-generate and submit a conforming invoice."""
+
+    amount = event.amount_rlusd or event.amount_xrp
+    currency = "RLUSD" if event.amount_rlusd else "XRP"
+
+    # Generate invoice from your own records (billing system, job data, etc.)
+    invoice_number = f"INV-{date.today().strftime('%Y%m%d')}-{event.escrow_id[-4:]}"
+
+    # Build the invoice text — must match the escrow task_description
+    invoice = _generate_invoice(invoice_number, event.buyer_name, amount, currency, event.task_description)
+
+    # Submit to AgentTrust — PASS releases payment automatically
+    result = httpx.post(f"{REFEREE}/evaluate", json={
+        "escrow_id": event.escrow_id,
+        "work":      invoice,
+    }, timeout=120).json()
+
+    verdict = result.get("verdict")
+    score   = result.get("score")
+    print(f"Escrow {event.escrow_id}: {verdict} ({score}/100)")
+
+    if verdict == "PASS":
+        print(f"Payment released. Invoice {invoice_number} accepted.")
+    else:
+        # FAIL — log the reason; could auto-correct and resubmit
+        print(f"Invoice rejected: {result.get('summary')}")
+        # Optional: alert a human, or adjust and resubmit
+
+    return {"status": verdict, "score": score}
+
+def _generate_invoice(inv_num, buyer_name, amount, currency, task_desc):
+    """Build a conforming invoice from your billing records."""
+    return "\n".join([
+        f"INVOICE {inv_num}",
+        f"Date: {date.today().isoformat()}",
+        f"From: Your Supplier Company Ltd",
+        f"To: {buyer_name}",
+        f"Amount: {amount} {currency}",
+        f"",
+        f"Services delivered:",
+        # Extract the key details from the task description to match exactly
+        task_desc.split("Services:")[1].split("\n")[0].strip()
+            if "Services:" in task_desc else task_desc[:200],
+    ])</pre>
+                </div>
+                <div class="callout callout-green" style="margin-top:1rem;">
+                    <i data-lucide="check-circle"></i>
+                    <p><strong>MCP shortcut:</strong> if your agent is MCP-compatible (Claude, GPT-4o with MCP, etc.), skip writing REST calls entirely. Connect the AgentTrust MCP server and instruct your agent: <em>"Submit an invoice for escrow INV-XXXX for 500 RLUSD, delivered coffee to warehouse."</em> It calls <code>evaluate_escrow_work</code> automatically.</p>
                 </div>
             </div>
         </div>
@@ -582,6 +905,7 @@ app.listen(3000);</pre>
             <h2>What to read next</h2>
             <div class="res-grid">
                 <a href="https://xrpl-referee.onrender.com/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
+                <a href="https://xrpl-referee.onrender.com/mcp" class="res-link" target="_blank"><i data-lucide="plug"></i> MCP server</a>
                 <a href="/how-it-works/" class="res-link"><i data-lucide="workflow"></i> How escrow works</a>
                 <a href="/agent-hiring/" class="res-link"><i data-lucide="bot"></i> Agent-hiring guide</a>
                 <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
@@ -595,6 +919,14 @@ app.listen(3000);</pre>
 
 <footer>
     <span class="footer-logo">AgentTrust<span>.</span></span>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/how-it-works/">How it Works</a>
+        <a href="/use-cases/">Use Cases</a>
+        <a href="/marketplace/">Marketplace</a>
+        <a href="/compliance/">Compliance</a>
+        <a href="https://xrpl-referee.onrender.com/docs">API Docs</a>
+    </div>
     <p class="footer-legal">AgentTrust is a software protocol operated by Boxclever Media Ltd (company number 09394447, England and Wales). Not a regulated financial service.</p>
 </footer>
 
@@ -602,9 +934,13 @@ app.listen(3000);</pre>
 lucide.createIcons();
 
 function switchTab(group, tab) {
-    document.querySelectorAll(`#${group}-tabs .tab-btn`).forEach(b => b.classList.remove('active'));
-    document.querySelectorAll(`[id^="${group}-"]`).forEach(p => { if (p.classList.contains('tab-panel')) p.classList.remove('active'); });
-    event.target.classList.add('active');
+    const container = document.getElementById(`${group}-tabs`);
+    container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    // Hide all panels in this group
+    document.querySelectorAll(`[id^="${group}-"]`).forEach(el => {
+        if (el.classList.contains('tab-panel')) el.classList.remove('active');
+    });
     document.getElementById(`${group}-${tab}`).classList.add('active');
 }
 
