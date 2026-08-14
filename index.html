@@ -558,8 +558,8 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                     <div style="display:flex;align-items:center;gap:9px;">
                         <div style="width:26px;height:26px;border-radius:7px;background:rgba(0,102,255,.1);border:1px solid rgba(0,102,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem;">📋</div>
                         <div>
-                            <div style="font-size:.8rem;font-weight:700;color:var(--blue);">Invoice / PO Mode</div>
-                            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.1rem;">Work already done — require seller to submit a matching invoice to claim payment</div>
+                            <div style="font-size:.8rem;font-weight:700;color:var(--blue);">Require Invoice</div>
+                            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.1rem;">Seller must include a matching invoice alongside their proof of work</div>
                         </div>
                     </div>
                     <span id="invoice-mode-pill" style="display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.05em;background:rgba(0,0,0,.06);color:var(--text-muted);transition:.15s;white-space:nowrap;">OFF</span>
@@ -571,7 +571,7 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                     </div>
                     <div style="padding:.7rem .9rem;background:rgba(0,102,255,.05);border:1px solid rgba(0,102,255,.12);border-radius:8px;font-size:.8rem;color:var(--text-muted);line-height:1.6;">
                         <i data-lucide="info" style="width:12px;height:12px;color:var(--blue);vertical-align:middle;margin-right:4px;"></i>
-                        The task requirements field below will pre-fill with an invoice spec. The AI referee will verify the seller's invoice matches the amount, supplier name, and services you describe there.
+                        An invoice requirement will be appended to your task spec below. The AI referee will check both that the work was delivered <em>and</em> that the seller's invoice matches the amount, supplier name, and PO reference.
                     </div>
                 </div>
             </div>
@@ -1321,18 +1321,38 @@ function toggleInvoiceMode() {
     pill.style.background = _invoiceModeOn ? 'rgba(0,102,255,.15)' : 'rgba(0,0,0,.06)';
     pill.style.color = _invoiceModeOn ? 'var(--blue)' : 'var(--text-muted)';
     fields.style.display = _invoiceModeOn ? 'flex' : 'none';
-    if (_invoiceModeOn) updateInvoiceSpec();
+    if (_invoiceModeOn) updateInvoiceSpec(); else removeInvoiceSpec();
 }
 
+// Marker we append/replace so toggling on/off doesn't permanently mutate user text
+const INVOICE_MARKER = '\n\n--- INVOICE REQUIREMENT ---';
+
 function updateInvoiceSpec() {
-    const po = document.getElementById('po-number').value.trim();
-    const buyerName = document.getElementById('buyer-name').value.trim() || 'Buyer';
-    const amount = document.getElementById('amt').value.trim() || '[AMOUNT]';
+    const ta = document.getElementById('job-description');
+    // Strip any previously appended invoice block
+    let base = ta.value.split(INVOICE_MARKER)[0].trimEnd();
+
+    const po       = document.getElementById('po-number').value.trim();
+    const amount   = document.getElementById('amt').value.trim() || '[AMOUNT]';
     const currency = document.getElementById('buyer-currency').value || 'RLUSD';
-    const sellerName = document.getElementById('worker-email-field').value.trim() || '[Supplier name]';
-    const poRef = po ? `PO Reference: ${po}\n` : '';
-    document.getElementById('job-description').value =
-        `Invoice Verification Request\n${poRef}Buyer: ${buyerName}\nSupplier: ${sellerName}\nAmount: ${amount} ${currency}\n\nTo claim payment, submit an invoice that matches:\n- Supplier name and wallet address\n- Amount: ${amount} ${currency}\n- Services or goods delivered as agreed\n- Invoice number and date\n\nThe AI referee will verify the invoice matches these details before releasing payment.`;
+    const poRef    = po ? `PO Reference: ${po}` : '';
+
+    const block = [
+        INVOICE_MARKER,
+        'The seller must include a matching invoice with their submission.',
+        'The AI referee will verify the work AND confirm the invoice matches:',
+        `- Amount: ${amount} ${currency}`,
+        poRef,
+        '- Invoice number and date',
+        '- Supplier name matching their registered details',
+    ].filter(Boolean).join('\n');
+
+    ta.value = base ? base + block : block.trimStart();
+}
+
+function removeInvoiceSpec() {
+    const ta = document.getElementById('job-description');
+    ta.value = ta.value.split(INVOICE_MARKER)[0].trimEnd();
 }
 
 function switchTab(tab) {
