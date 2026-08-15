@@ -398,11 +398,11 @@
         <div class="use-case" onclick="openUcModal('AI Agent Marketplaces')"><div class="use-case-icon"><i data-lucide="bot"></i></div><h4>AI Agent Marketplaces</h4><p>Agents post, bid, and settle jobs trustlessly. Payment pushed to the agent's wallet the moment the audit passes.</p></div>
         <div class="use-case" onclick="openUcModal('Freelance & Creative')"><div class="use-case-icon"><i data-lucide="pen-tool"></i></div><h4>Freelance &amp; Creative</h4><p>Writers, designers, and developers get paid automatically the second the AI verifies their deliverable meets spec.</p></div>
         <div class="use-case" onclick="openUcModal('Supply Chain')"><div class="use-case-icon"><i data-lucide="truck"></i></div><h4>Supply Chain</h4><p>Release manufacturer payments the moment AI verifies port-entry data and bill of lading authenticity.</p></div>
-        <div class="use-case" onclick="openUcModal('IP & Royalties')"><div class="use-case-icon"><i data-lucide="copyright"></i></div><h4>IP &amp; Royalties</h4><p>Lock funds for digital assets. AI verifies licensing terms and copyright uniqueness before release.</p></div>
-        <div class="use-case" onclick="openUcModal('Bug Bounties')"><div class="use-case-icon"><i data-lucide="shield"></i></div><h4>Bug Bounties</h4><p>Secure $1M+ bounties. AI verifies the exploit proof-of-concept before releasing capital to the researcher.</p></div>
-        <div class="use-case" onclick="openUcModal('Legal Settlements')"><div class="use-case-icon"><i data-lucide="landmark"></i></div><h4>Legal Settlements</h4><p>Unbiased AI arbiter for high-stakes corporate settlements where both parties require a neutral payout trigger.</p></div>
-        <div class="use-case" onclick="openUcModal('Real Estate')"><div class="use-case-icon"><i data-lucide="home"></i></div><h4>Real Estate</h4><p>AI verifies land registry and structural reports to release deposits instantly, bypassing slow solicitors.</p></div>
-        <div class="use-case" onclick="openUcModal('Corporate M&A')"><div class="use-case-icon"><i data-lucide="trending-up"></i></div><h4>Corporate M&amp;A</h4><p>Hold funds during mergers. AI verifies financial audit benchmarks to trigger tranches of payout automatically.</p></div>
+        <div class="use-case" onclick="openUcModal('IP & Royalties')"><div class="use-case-icon"><i data-lucide="copyright"></i></div><h4>IP &amp; Royalties</h4><p>Lock funds for digital asset licensing. AI verifies the licensed asset was delivered and rights transferred before releasing payment.</p></div>
+        <div class="use-case" onclick="openUcModal('Bug Bounties')"><div class="use-case-icon"><i data-lucide="shield"></i></div><h4>Bug Bounties</h4><p>Cryptographically secured bounties. AI verifies the exploit proof-of-concept before releasing capital to the researcher.</p></div>
+        <div class="use-case" onclick="openUcModal('Legal Settlements')"><div class="use-case-icon"><i data-lucide="landmark"></i></div><h4>Legal Settlements</h4><p>Neutral AI verification for milestone-based agreements where both parties need an auditable, tamper-proof payout trigger.</p></div>
+        <div class="use-case" onclick="openUcModal('Real Estate')"><div class="use-case-icon"><i data-lucide="home"></i></div><h4>Real Estate</h4><p>AI verifies submitted contracts, survey reports, and completion documents to release deposits instantly, bypassing slow solicitors.</p></div>
+        <div class="use-case" onclick="openUcModal('Corporate M&A')"><div class="use-case-icon"><i data-lucide="trending-up"></i></div><h4>Corporate M&amp;A</h4><p>Hold funds during mergers. AI verifies submitted audit reports confirm milestone conditions, triggering tranches of payout automatically.</p></div>
         <div class="use-case" onclick="openUcModal('CI/CD Quality Gates')"><div class="use-case-icon"><i data-lucide="git-pull-request"></i></div><h4>CI/CD Quality Gates</h4><p>Gate every pull request with an independent AI audit. Fails the pipeline automatically if the diff scores below your threshold.</p></div>
         <div class="use-case" onclick="openUcModal('Invoice Verification & AP Automation')"><div class="use-case-icon"><i data-lucide="file-check"></i></div><h4>Invoice Verification &amp; AP Automation</h4><p>Lock payment in escrow as a confirmed intent. AI verifies the supplier's invoice matches the PO before releasing funds — works for humans and AI agents alike.</p></div>
     </div>
@@ -450,33 +450,33 @@ const USE_CASE_DATA = {
     },
     "Supply Chain": {
         icon: "truck",
-        desc: "Release manufacturer and logistics payments automatically when AI verifies shipping documents, port-entry data, or NFT-based bills of lading from trusted carriers. Eliminates manual invoice reconciliation and payment delays.",
+        desc: "Release manufacturer and logistics payments automatically when AI verifies submitted shipping documents or NFT-based bills of lading from trusted, registry-verified carriers. Eliminates manual invoice reconciliation and payment delays.",
         example: "A buyer requires an NFT bill of lading from Maersk's verified XRPL wallet. When the container is confirmed at port, the NFT is issued and payment releases automatically — no letters of credit needed."
     },
     "IP & Royalties": {
         icon: "copyright",
-        desc: "Lock funds for digital asset licensing deals. The AI verifies that copyright terms have been met, licensed usage is within scope, and uniqueness requirements are satisfied before releasing royalty payments.",
-        example: "A music licensing platform locks royalty payments in escrow. When the AI confirms a track has hit its contracted stream count, funds release to the artist's wallet automatically."
+        desc: "Lock funds for digital asset licensing deals. The AI verifies that the licensed asset was delivered, rights were transferred to the buyer's wallet, and the agreed terms were met — then releases payment automatically. Works for music, software licences, datasets, and any digital good with an on-chain ownership record.",
+        example: "A music publisher locks 2,000 XRP for a sync licence. The rights holder transfers the master audio file and a licence NFT to the buyer's wallet. The AI confirms both were received and releases payment — no intermediary, no invoice chasing."
     },
     "Bug Bounties": {
         icon: "shield",
-        desc: "Secure high-value security bounties with cryptographic guarantees. The AI evaluates proof-of-concept submissions against the vulnerability specification before releasing capital — no human gatekeeping that could delay or deny legitimate findings.",
-        example: "A protocol locks $500,000 for a critical vulnerability. A researcher submits a PoC exploit. The AI verifies reproducibility and scope, then releases the bounty instantly."
+        desc: "Secure bug bounties with cryptographic guarantees. The AI evaluates proof-of-concept submissions against the vulnerability specification before releasing capital — no human gatekeeping that could delay or deny legitimate findings. KYC verification is available for programmes requiring larger payout limits.",
+        example: "A protocol locks 50,000 XRP for a critical vulnerability. A researcher submits a PoC exploit. The AI verifies reproducibility and scope against the programme rules, then releases the bounty instantly to the researcher's wallet."
     },
     "Legal Settlements": {
         icon: "landmark",
-        desc: "Use an unbiased AI arbiter for corporate settlements, contract disputes, and milestone-based legal agreements where both parties require a neutral, auditable payout trigger that can't be influenced by either side.",
-        example: "Two companies dispute a software delivery milestone. Both agree to AI arbitration. The AI reviews the spec, the deliverable, and the contract — and issues a binding verdict within minutes."
+        desc: "Lock settlement funds with a neutral, tamper-proof release trigger. Both parties agree upfront on the verification criteria; the AI assesses submitted evidence against those criteria and releases funds when conditions are met — providing an auditable record neither party can influence.",
+        example: "Two companies disagree on whether a software milestone was delivered. Both lock their agreed settlement amount in escrow and submit the spec and deliverable. The AI assesses the submission against the agreed criteria and releases funds to the appropriate party."
     },
     "Real Estate": {
         icon: "home",
-        desc: "Automate deposit release in property transactions. The AI verifies land registry records, structural survey benchmarks, and completion conditions to trigger payments instantly — bypassing slow solicitors and manual paperwork.",
-        example: "A buyer locks a 10% deposit. On exchange of contracts, the AI verifies the signed documents and land registry entry, releasing the deposit to the seller's solicitor automatically."
+        desc: "Automate deposit release in property transactions. Parties submit signed contracts, survey reports, and completion documents; the AI verifies the submitted evidence confirms the agreed conditions before releasing funds — bypassing slow solicitors and manual paperwork.",
+        example: "A buyer locks a 10% deposit. On exchange, both parties submit the signed transfer documents and survey. The AI verifies the submitted paperwork confirms completion conditions, releasing the deposit to the seller's solicitor automatically."
     },
     "Corporate M&A": {
         icon: "trending-up",
-        desc: "Hold acquisition funds in escrow during due diligence. AI verifies financial audit benchmarks, regulatory sign-offs, and contractual conditions to trigger each tranche of payment automatically as milestones are met.",
-        example: "A £50M acquisition is split into three tranches. Each releases automatically when the AI confirms the corresponding financial KPI has been met — no manual sign-off bottlenecks."
+        desc: "Hold acquisition funds in escrow during due diligence. As each milestone is reached, the relevant party submits the signed audit report or regulatory sign-off; the AI verifies the submitted evidence confirms the milestone condition and triggers that tranche of payment automatically.",
+        example: "An acquisition is split into three tranches. As each financial condition is met, the auditor submits their signed report. The AI verifies the submitted report confirms the milestone and releases that tranche — no manual sign-off bottlenecks."
     },
     "CI/CD Quality Gates": {
         icon: "git-pull-request",
