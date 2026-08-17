@@ -822,8 +822,11 @@ def _send_supplier_email(to, name, escrow_id, po, amount):
         f"https://yourcompany.com/supplier-portal\n\n"
         f"Submit your invoice and payment will be released automatically."
     )
-    # Configure your SMTP here
-    # with smtplib.SMTP("smtp.yourcompany.com") as s: s.send_message(msg)</pre>
+    # Replace with your SMTP server details before deploying
+    with smtplib.SMTP("smtp.yourcompany.com", 587) as s:
+        s.starttls()
+        s.login("user@yourcompany.com", os.getenv("SMTP_PASSWORD"))
+        s.send_message(msg)</pre>
                 </div>
             </div>
 

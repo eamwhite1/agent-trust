@@ -664,10 +664,31 @@ print(result["verdict"])   # "PASS" or "FAIL"</pre>
                     <i data-lucide="refresh-cw"></i>
                     <span>On <strong>FAIL</strong>, the worker can resubmit up to the configured <code class="inline-code">max_submissions</code> limit by calling <code class="inline-code">POST /evaluate</code> again with revised work. Each submission is independently evaluated.</span>
                 </div>
-                <div class="callout callout-blue" style="margin-bottom:0">
+                <div class="callout callout-blue" style="margin-bottom:.9rem">
                     <i data-lucide="clock"></i>
                     <span>After the <code class="inline-code">cancel_after_hrs</code> deadline expires with no PASS, the buyer submits an <code class="inline-code">EscrowCancel</code> transaction using xrpl-py to reclaim the locked funds in full.</span>
                 </div>
+                <div class="code-label">python — reclaim funds after deadline
+                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                </div>
+<pre>from xrpl.models.transactions import EscrowCancel
+from xrpl.models.requests import AccountObjects
+
+# Retrieve the escrow sequence number from the ledger
+objects = client.request(AccountObjects(account=buyer_wallet.classic_address)).result
+escrow_obj = next(
+    o for o in objects["account_objects"]
+    if o["LedgerEntryType"] == "Escrow"
+    and o.get("Destination") == worker_address
+)
+
+cancel_tx = EscrowCancel(
+    account=buyer_wallet.classic_address,
+    owner=buyer_wallet.classic_address,
+    offer_sequence=escrow_obj["PreviousTxnLgrSeq"],  # sequence of the EscrowCreate tx
+)
+cancel_result = submit_and_wait(cancel_tx, client, buyer_wallet)
+print("Funds reclaimed:", cancel_result.result["meta"]["TransactionResult"])</pre>
             </div>
         </div>
 
