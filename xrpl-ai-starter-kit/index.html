@@ -59,292 +59,19 @@
     }
 
     /* ── Nav ── */
-    nav {
-        position: sticky; top: 0; z-index: 100;
-        display: flex; align-items: center;
-        padding: 1rem 5%;
-        background: rgba(255,255,255,.5);
-        backdrop-filter: blur(28px);
-        border-bottom: 1px solid rgba(255,255,255,.55);
-    }
-    .logo {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.5rem; letter-spacing: -.02em;
-        color: var(--text); text-decoration: none;
-    }
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--blue); }
-    .nav-menu {
-        display: flex; align-items: center;
-        gap: 24px; flex: 1; justify-content: center;
-    }
-    .nav-link {
-        font-size: .82rem; font-weight: 600;
-        color: var(--text-muted); text-decoration: none;
-        white-space: nowrap; transition: color .18s;
-    }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
     .nav-link:hover { color: var(--blue); }
-    .nav-right {
-        display: flex; align-items: center;
-        gap: 12px; margin-left: auto;
-    }
-    .nav-cta {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: .45rem 1rem; border-radius: 40px;
-        background: var(--blue); color: #fff;
-        font-size: .78rem; font-weight: 700;
-        text-decoration: none; transition: background .18s, transform .18s;
-    }
-    .nav-cta:hover { background: #004ecc; transform: translateY(-1px); }
-    .nav-toggle {
-        display: none; background: none; border: none;
-        cursor: pointer; color: var(--text); padding: 6px;
-        min-width: 44px; min-height: 44px; align-items: center; justify-content: center;
-    }
-
-    /* ── Layout ── */
-    .page-wrap {
-        max-width: 860px; margin: 0 auto;
-        padding: 3.5rem 5% 6rem;
-    }
-
-    /* ── Eyebrow / hero ── */
-    .doc-eyebrow {
-        display: inline-flex; align-items: center; gap: 7px;
-        font-size: .72rem; font-weight: 700;
-        letter-spacing: .1em; text-transform: uppercase;
-        color: var(--blue); margin-bottom: 1.1rem;
-    }
-    .doc-eyebrow svg { width: 13px; height: 13px; }
-    h1 {
-        font-family: 'DM Serif Display', serif;
-        font-size: clamp(2rem, 5vw, 2.9rem);
-        letter-spacing: -.025em; line-height: 1.1;
-        color: var(--text); margin-bottom: 1rem;
-        text-wrap: balance;
-    }
-    h1 em { font-style: italic; color: var(--blue); }
-    .doc-lead {
-        font-size: 1.05rem; color: var(--text-muted);
-        max-width: 650px; margin-bottom: 2.5rem;
-        line-height: 1.7;
-    }
-
-    /* ── Comparison table ── */
-    .card {
-        background: var(--glass);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-    .card-pad { padding: 2rem 2rem 2rem; }
-
-    .section-label {
-        font-size: .68rem; font-weight: 700;
-        color: var(--blue); text-transform: uppercase;
-        letter-spacing: .12em; display: block;
-        margin-bottom: .6rem;
-    }
-    h2 {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.55rem; font-weight: 400;
-        letter-spacing: -.02em;
-        color: var(--text); margin-bottom: 1.2rem;
-        text-wrap: balance;
-    }
-
-    .table-wrap { overflow-x: auto; }
-    table {
-        width: 100%; border-collapse: collapse;
-        font-size: .85rem;
-    }
-    th {
-        background: rgba(0,102,255,.06);
-        color: var(--text); font-weight: 700;
-        text-align: left; padding: .7rem 1rem;
-        border-bottom: 1px solid rgba(0,102,255,.12);
-        white-space: nowrap;
-    }
-    td {
-        padding: .6rem 1rem;
-        border-bottom: 1px solid rgba(0,0,0,.05);
-        color: var(--text-muted); vertical-align: middle;
-    }
-    tr:last-child td { border-bottom: none; }
-    td:first-child { color: var(--text); font-weight: 600; }
-    .check { color: var(--green); font-weight: 700; }
-    .dash  { color: #ccc; }
-
-    /* ── Step sections ── */
-    .steps { display: flex; flex-direction: column; gap: 1.5rem; }
-
-    .step {
-        background: var(--glass);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-    }
-    .step-header {
-        display: flex; align-items: flex-start; gap: 1rem;
-        padding: 1.5rem 1.75rem 1rem;
-    }
-    .step-num {
-        flex-shrink: 0;
-        width: 32px; height: 32px;
-        border-radius: 50%;
-        background: var(--blue);
-        color: #fff;
-        font-size: .78rem; font-weight: 700;
-        display: flex; align-items: center; justify-content: center;
-        margin-top: 2px;
-    }
-    .step-title { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.35; }
-    .step-desc  { font-size: .875rem; color: var(--text-muted); margin-top: .25rem; line-height: 1.55; }
-    .step-body  { padding: 0 1.75rem 1.5rem; }
-
-    /* ── Code blocks ── */
-    .code-label {
-        display: flex; align-items: center; justify-content: space-between;
-        background: rgba(13,13,18,.06);
-        border: 1px solid var(--code-border);
-        border-bottom: none;
-        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-        padding: .45rem .9rem;
-        font-size: .7rem; font-weight: 700;
-        color: var(--text-muted); text-transform: uppercase;
-        letter-spacing: .08em;
-    }
-    .copy-btn {
-        background: none; border: none; cursor: pointer;
-        color: var(--text-muted); font-size: .7rem; font-weight: 600;
-        font-family: inherit; letter-spacing: .05em;
-        display: flex; align-items: center; gap: 4px;
-        transition: color .18s;
-    }
-    .copy-btn:hover { color: var(--blue); }
-    pre {
-        background: rgba(13,13,18,.04);
-        border: 1px solid var(--code-border);
-        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-        padding: 1.1rem 1.2rem;
-        overflow-x: auto;
-        font-size: .8rem;
-        line-height: 1.65;
-        margin-bottom: 1rem;
-        font-family: 'Courier New', Courier, monospace;
-        color: var(--text);
-    }
-    pre.no-label {
-        border-radius: var(--radius-sm);
-    }
-    code { font-family: 'Courier New', Courier, monospace; font-size: .85em; }
-
-    .inline-code {
-        background: var(--code-bg);
-        border: 1px solid var(--code-border);
-        border-radius: 4px;
-        padding: .1em .4em;
-        font-size: .83em;
-        font-family: 'Courier New', Courier, monospace;
-    }
-
-    /* ── Callout ── */
-    .callout {
-        display: flex; gap: .75rem; align-items: flex-start;
-        padding: .9rem 1.1rem;
-        border-radius: var(--radius-sm);
-        font-size: .845rem; line-height: 1.6;
-        margin: .75rem 0 1rem;
-    }
-    .callout-blue  { background: rgba(0,102,255,.07); border: 1px solid rgba(0,102,255,.18); color: #003399; }
-    .callout-green { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.18); color: #005c3d; }
-    .callout svg   { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
-
-    /* ── MCP install block ── */
-    .install-card {
-        background: var(--glass);
-        backdrop-filter: blur(16px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        padding: 2rem 2rem;
-        margin-bottom: 2rem;
-    }
-
-    /* ── Payment table ── */
-    .pay-table-wrap { overflow-x: auto; }
-    .pay-table {
-        width: 100%; border-collapse: collapse;
-        font-size: .88rem;
-    }
-    .pay-table th {
-        background: rgba(0,102,255,.06);
-        font-weight: 700; color: var(--text);
-        text-align: left; padding: .7rem 1rem;
-        border-bottom: 1px solid rgba(0,102,255,.12);
-    }
-    .pay-table td {
-        padding: .7rem 1rem;
-        border-bottom: 1px solid rgba(0,0,0,.05);
-        color: var(--text);
-    }
-    .pay-table tr:last-child td { border-bottom: none; }
-    .pay-table td:first-child { font-weight: 700; }
-
-    /* ── Resources grid ── */
-    .resources {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1rem;
-        margin-top: 1.2rem;
-    }
-    .resource-link {
-        display: flex; align-items: center; gap: .6rem;
-        padding: .85rem 1.1rem;
-        background: var(--glass);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-md);
-        text-decoration: none; color: var(--text);
-        font-size: .85rem; font-weight: 600;
-        transition: background .18s, border-color .18s, transform .18s;
-    }
-    .resource-link:hover {
-        background: rgba(255,255,255,.75);
-        border-color: rgba(0,102,255,.25);
-        transform: translateY(-2px);
-        color: var(--blue);
-    }
-    .resource-link svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--blue); }
-
-    /* ── Footer ── */
-    footer {
-        text-align: center; padding: 2.5rem 5%;
-        font-size: .8rem; color: var(--text-muted);
-        border-top: 1px solid rgba(0,0,0,.07);
-        margin-top: 2rem;
-    }
-    footer a { color: var(--blue); text-decoration: none; }
-
-    /* ── Responsive ── */
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
     @media (max-width: 680px) {
         nav { position: relative; flex-wrap: wrap; }
-        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0;
-            flex-direction: column; align-items: flex-start; gap: 14px;
-            padding: 1.2rem 1.5rem;
-            background: rgba(255,255,255,.96); backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,.06);
-            box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
         .nav-menu.open { display: flex; }
         .nav-toggle { display: flex; }
-        .step-header { padding: 1.25rem 1.25rem .75rem; }
-        .step-body   { padding: 0 1.25rem 1.25rem; }
-        .card-pad    { padding: 1.5rem 1.25rem; }
     }
 </style>
 </head>
@@ -356,17 +83,12 @@
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
         <a class="nav-link" href="/how-it-works/">How it Works</a>
-        <a class="nav-link" href="/use-cases/">Use Cases</a>
-        <a class="nav-link" href="/roadmap/">Roadmap</a>
-        <a class="nav-link" href="/agents/">For Agents</a>
         <a class="nav-link" href="/marketplace/">Marketplace</a>
-        <a class="nav-link" href="/compliance/">Compliance</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
         <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
     </div>
     <div class="nav-right">
-        <a class="nav-cta" href="https://xrpl-referee.onrender.com/playground" target="_blank" rel="noopener">
-            <i data-lucide="zap" style="width:12px;height:12px;"></i> Playground
-        </a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
                 onclick="document.getElementById('nav-menu').classList.toggle('open')">
             <i data-lucide="menu"></i>
@@ -852,13 +574,41 @@ print(result["verdict"])   # "PASS" → payment released automatically</pre>
 </div><!-- /page-wrap -->
 
 <footer>
-    <p>
-        AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447.
-        &nbsp;·&nbsp; <a href="https://xrpl-referee.onrender.com">API</a>
-        &nbsp;·&nbsp; <a href="/compliance/">Compliance</a>
-        &nbsp;·&nbsp; <a href="/privacy/">Privacy</a>
-        &nbsp;·&nbsp; <a href="/terms/">Terms</a>
-    </p>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">AI-verified escrow for autonomous agents on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+                <a href="/compliance/">Compliance</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/github-action/">GitHub Action</a>
+                <a href="/guides/">Guides</a>
+                <a href="/xrpl-ai-starter-kit/">XRPL AI Starter Kit</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
 </footer>
 
 <script>

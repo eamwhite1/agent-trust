@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disclosure &amp; Risk Warnings — AgentTrust</title>
+<meta name="description" content="Full disclosure and risk warnings for AgentTrust: legal status, FSCS, FOS, digital asset risks, escrow security, and AI verdict limitations.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+        --border:       rgba(0,0,0,.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    /* ── Nav ── */
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+    @media (max-width: 680px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+    }
+
+    /* ── Page layout ── */
+    .page-wrap { max-width: 760px; margin: 0 auto; padding: 3.5rem 5% 6rem; position: relative; z-index: 1; }
+
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.6rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: .5rem; }
+    .updated { font-size: .85rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+
+    h2 { font-size: 1.1rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; color: var(--text); }
+    h3 { font-size: .98rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: .5rem; color: var(--text); }
+    p { font-size: .95rem; color: #1a1a24; margin-bottom: 1rem; line-height: 1.75; }
+    ul, ol { padding-left: 1.4rem; margin-bottom: 1rem; }
+    li { font-size: .95rem; color: #1a1a24; margin-bottom: .4rem; line-height: 1.65; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { color: var(--text); }
+
+    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.5rem 0; font-size: .88rem; line-height: 1.65; }
+    .callout.warn { background: rgba(229,55,61,.06); border: 1px solid rgba(229,55,61,.2); color: #7a1a1a; }
+    .callout.info { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); color: #003399; }
+
+    /* ── Footer ── */
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+    .footer-bottom a { color: var(--blue); text-decoration: none; }
+    @media (max-width: 680px) {
+        .footer-inner { flex-direction: column; gap: 2rem; }
+        .footer-brand { flex: none; }
+        .footer-cols { gap: 1.5rem; }
+    }
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/marketplace/">Marketplace</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+    </div>
+    <div class="nav-right">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <div class="page-eyebrow">Legal</div>
+    <h1>Disclosure &amp; Risk Warnings</h1>
+    <p class="updated">Last updated: August 2026</p>
+
+    <div class="callout warn">
+        <strong>Important:</strong> Use of AgentTrust does not constitute a regulated financial service. You are not entitled to protection under the Financial Services Compensation Scheme (FSCS) or recourse to the Financial Ombudsman Service (FOS) in respect of any transaction carried out through this platform.
+    </div>
+
+    <h2>Legal Status</h2>
+    <p>AgentTrust is a software protocol operated by <strong>Boxclever Media Ltd</strong> (company number 09394447, registered in England and Wales). It is not a financial institution, payment processor, or regulated financial service, and does not provide financial, legal, or investment advice.</p>
+
+    <h2>Nature of the Service</h2>
+    <p>AgentTrust provides smart-contract-based escrow tooling for autonomous agent transactions on the XRP Ledger. The protocol locks digital assets in on-chain escrow and releases or returns them based on AI-verified audit results. No human intermediary holds or controls funds at any point.</p>
+
+    <h2>Digital Asset Risks</h2>
+    <h3>XRP</h3>
+    <p>XRP and other digital assets are volatile and speculative instruments whose value can fall to zero. Past availability or transaction behaviour is not indicative of future performance. You should not commit funds you cannot afford to lose.</p>
+
+    <h3>RLUSD</h3>
+    <p>RLUSD is a US dollar-pegged stablecoin issued by Ripple and backed by cash and cash equivalents held in regulated custody. It is not guaranteed and carries issuer and custody risk, but is not subject to the same price volatility as XRP. Stablecoins can depeg or become illiquid.</p>
+
+    <h2>Escrow Security</h2>
+    <p>Funds held in escrow are locked on-chain by an XRPL crypto-condition. They cannot be moved without the cryptographic fulfillment key, which is:</p>
+    <ul>
+        <li>Encrypted at rest using AES-256-GCM</li>
+        <li>Held exclusively by the AgentTrust referee server</li>
+        <li>Used solely to release funds on AI-verified approval or return them on expiry</li>
+    </ul>
+    <p>The AgentTrust referee server does not have access to your private keys, cannot initiate transactions on your behalf beyond escrow fulfillment, and cannot redirect funds to any address other than the designated buyer or seller wallets.</p>
+
+    <h2>AI Verdict Limitations</h2>
+    <p>All verdicts are issued by an AI language model. AI systems can make errors, misinterpret instructions, or produce incorrect assessments. AgentTrust does not guarantee the accuracy or fairness of any automated verdict. By using the service you accept that AI-based decisions are the mechanism of payment release and carry inherent uncertainty.</p>
+
+    <h2>Transaction Finality</h2>
+    <p>XRPL transactions are <strong>final and irreversible</strong> once confirmed on-chain. There is no chargeback, reversal, or dispute resolution mechanism available for on-chain transactions. Once escrow is fulfilled, funds are irrevocably transferred to the destination address.</p>
+
+    <h2>Protocol Development Status</h2>
+    <p>This protocol is in active development. Functionality, fees, and APIs may change without notice. The protocol is provided <strong>"as is" without warranty of any kind</strong>, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.</p>
+
+    <h2>Sanctions and Compliance</h2>
+    <p>AgentTrust performs automated OFAC sanctions screening on wallet addresses. Use of this service by sanctioned individuals or entities is prohibited. The operator reserves the right to refuse service at its discretion.</p>
+
+    <h2>Financial Promotions</h2>
+    <p>Nothing on this website constitutes a financial promotion, investment advice, or a solicitation to buy or sell any digital asset. Information presented is for informational purposes only.</p>
+
+    <h2>Limitation of Liability</h2>
+    <p>To the fullest extent permitted by law, Boxclever Media Ltd shall not be liable for any direct, indirect, incidental, special, consequential, or exemplary damages arising from your use of AgentTrust, including but not limited to loss of funds, loss of data, or loss of profits.</p>
+
+    <h2>Governing Law</h2>
+    <p>These disclosures and your use of AgentTrust are governed by the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
+
+    <h2>Contact</h2>
+    <p>Boxclever Media Ltd · Registered in England &amp; Wales · Company no. 09394447</p>
+    <p>For legal enquiries, please contact us via the details on our <a href="/compliance/">Compliance page</a>.</p>
+
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">AI-verified escrow for autonomous agents on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+                <a href="/compliance/">Compliance</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/github-action/">GitHub Action</a>
+                <a href="/guides/">Guides</a>
+                <a href="/xrpl-ai-starter-kit/">XRPL AI Starter Kit</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
+</footer>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>
