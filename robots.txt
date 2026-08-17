@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+
+# AI/LLM crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+Sitemap: https://www.cryptovault.co.uk/sitemap.xml
+
+# Machine-readable index for AI agents and LLMs
+# https://www.cryptovault.co.uk/llms.txt
