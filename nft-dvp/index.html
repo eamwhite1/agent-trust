@@ -431,14 +431,19 @@ offer_tx = NFTokenCreateOffer(
     flags        = <span class="num">1</span>,                      <span class="cm"># tfSellNFToken</span>
 )
 offer_result = submit_and_wait(offer_tx, client, seller_wallet).result
-offer_id     = offer_result[<span class="str">"meta"</span>][<span class="str">"offer_id"</span>]
+offer_id = next(
+    n[<span class="str">"CreatedNode"</span>][<span class="str">"LedgerIndex"</span>]
+    <span class="kw">for</span> n <span class="kw">in</span> offer_result[<span class="str">"meta"</span>][<span class="str">"AffectedNodes"</span>]
+    <span class="kw">if</span> n.get(<span class="str">"CreatedNode"</span>, {}).get(<span class="str">"LedgerEntryType"</span>) == <span class="str">"NFTokenOffer"</span>
+)
 <span class="fn">print</span>(<span class="str">f"Sell offer created: {offer_id}"</span>)
 
-<span class="cm"># Step 2: Buyer accepts the offer (can be a separate script run by buyer)</span>
-<span class="cm"># buyer_wallet = Wallet.from_seed("sBUYER_SEED")</span>
-<span class="cm"># accept_tx = NFTokenAcceptOffer(</span>
-<span class="cm">#     account=buyer_wallet.address, nftoken_sell_offer=offer_id)</span>
-<span class="cm"># submit_and_wait(accept_tx, client, buyer_wallet)</span>
+<span class="cm"># Step 2: Buyer accepts the offer — run this as the buyer</span>
+buyer_wallet = Wallet.from_seed(<span class="str">"sBUYER_SEED"</span>)   <span class="cm"># buyer's XRPL wallet seed</span>
+accept_tx = NFTokenAcceptOffer(
+    account=buyer_wallet.address, nftoken_sell_offer=offer_id)
+submit_and_wait(accept_tx, client, buyer_wallet)
+<span class="fn">print</span>(<span class="str">"NFT transferred to buyer wallet"</span>)
 
 <span class="cm"># -- (once buyer has accepted and NFT is in their wallet) --</span>
 
