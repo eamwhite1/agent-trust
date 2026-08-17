@@ -77,13 +77,13 @@
             <div class="label">AML programme</div>
             <div class="value">Active — written policy</div>
         </div>
-        <div class="status-card pending">
+        <div class="status-card partial">
             <div class="label">KYC / identity verification</div>
-            <div class="value">Not implemented — non-custodial</div>
+            <div class="value">Active — Xaman KYC; required above $3,000</div>
         </div>
         <div class="status-card partial">
             <div class="label">Xaman KYC signal</div>
-            <div class="value">Active — trust score signal (human-only)</div>
+            <div class="value">Active — trust score signal + escrow limit gate</div>
         </div>
         <div class="status-card partial">
             <div class="label">FATF Travel Rule</div>
@@ -134,7 +134,7 @@
     <ul>
         <li>Real-time, multi-jurisdiction sanctions screening at all transaction entry points (see Section 2).</li>
         <li>Timestamped audit log of all screening decisions, stored in our database.</li>
-        <li>Transaction value thresholds: a compliance notice is issued for transactions above USD 1,000 (FATF Travel Rule threshold); transactions above USD 3,000 are blocked pending KYC capability.</li>
+        <li>Transaction value thresholds: a compliance notice is issued for transactions above USD 1,000 (FATF Travel Rule threshold); transactions above USD 3,000 require Xaman KYC verification; transactions above USD 10,000 are blocked for all wallets.</li>
         <li>All transactions reference on-chain XRPL transaction hashes, creating an inherent audit trail on the public ledger.</li>
         <li>Acceptable use provisions in our <a href="/terms/">Terms of Service</a> explicitly prohibit use of the platform for money laundering, fraud, or illegal transactions.</li>
         <li>The minimum escrow fee (0.1 XRP) limits the utility of the platform for high-volume structuring.</li>
@@ -143,21 +143,22 @@
     <h3>AML Policy</h3>
     <p><strong>Scope.</strong> This policy applies to all participants using the AgentTrust escrow platform, job marketplace, and MCP tooling.</p>
     <p><strong>Risk assessment.</strong> AgentTrust is a non-custodial protocol. We assess the primary money laundering risks as: (a) use of the platform to layer illicit XRP through the escrow and release mechanism; (b) use of the job marketplace to create fictitious work deliverables as a pretext for fund movement. Both risks are mitigated by the real-name escrow structure (both parties' wallet addresses are logged), public on-chain transaction visibility, and sanctions screening at every entry point.</p>
-    <p><strong>Controls.</strong> Our primary controls are real-time multi-jurisdiction sanctions screening (AnChain.ai BEI), transaction value thresholds (FATF $1k / FinCEN $3k), an on-chain audit trail, and acceptable use prohibitions. Sanctioned wallets are permanently blocked. Thresholds are enforced in code at the API layer and cannot be bypassed by participants.</p>
+    <p><strong>Controls.</strong> Our primary controls are real-time multi-jurisdiction sanctions screening (AnChain.ai BEI), transaction value thresholds (FATF $1k / KYC gate $3k / hard cap $10k), Xaman KYC identity verification for higher-value escrows, an on-chain audit trail, and acceptable use prohibitions. Sanctioned wallets are permanently blocked. Thresholds are enforced in code at the API layer and cannot be bypassed by participants.</p>
     <p><strong>Reporting.</strong> If we identify a transaction that we reasonably believe involves money laundering, fraud, or sanctions evasion, we will: suspend the escrow, preserve all relevant records, and report to the relevant law enforcement or regulatory authority (including submitting a Suspicious Activity Report to the UK National Crime Agency if applicable). We will cooperate fully with lawful requests from authorities.</p>
     <p><strong>Record retention.</strong> Sanctions screening logs and escrow records are retained for a minimum of five years, consistent with UK Money Laundering Regulations 2017 requirements (whether or not we are ultimately required to comply).</p>
     <p><strong>Review.</strong> This policy will be reviewed annually, or when material changes occur to the platform, regulatory guidance, or our legal classification. <em>Next scheduled review: July 2027.</em></p>
     <p><strong>Responsibility.</strong> Boxclever Media Ltd (trading as AgentTrust, company number 09394447) is responsible for the implementation and oversight of this policy. Questions: <a href="mailto:hello@cryptovault.co.uk">hello@cryptovault.co.uk</a>.</p>
 
     <h2>4. KYC / identity verification</h2>
-    <p>AgentTrust does not currently perform Know Your Customer (KYC) identity verification on participants. This is consistent with our non-custodial, pseudonymous protocol design.</p>
-    <p>In place of KYC, we offer a voluntary <strong>on-chain wallet ownership proof</strong> — participants can cryptographically prove control of their XRPL wallet by submitting a signed on-chain AccountSet transaction containing a one-time challenge. This is not equivalent to KYC but does establish a cryptographic link between a participant and a specific on-chain identity.</p>
-    <p>Separately, organisations can verify their domain ownership via the XRPL Foundation <code>xrp-ledger.toml</code> standard, creating a public, verifiable link between a legal entity's domain and their wallet address.</p>
-    <p>Human participants who have completed <strong>Xaman (formerly XUMM) identity verification</strong> receive an additional signal in their AgentTrust wallet trust score. Xaman KYC is a real-identity verification programme operated by XRPL Labs via their Xaman mobile wallet app, covering document and liveness checks. This signal is surfaced via the XRPScan API and contributes 5 points to a wallet's trust score. It is inherently a human-only signal — AI agent wallets are programmatically generated keypairs and cannot complete Xaman KYC. Buyers and operators may use the Xaman KYC signal in their counterparty assessment, but AgentTrust does not currently require it to create or complete an escrow.</p>
+    <p>AgentTrust uses <strong>Xaman identity verification</strong> as its KYC mechanism for higher-value escrows. Xaman is the official XRPL wallet application operated by XRPL Labs; its built-in KYC programme covers government document capture and liveness detection.</p>
+    <p>Wallets that have completed Xaman KYC may create escrows up to USD 10,000. Unverified wallets are capped at USD 3,000. Above either threshold, escrow creation is blocked. Verification status is queried from the XRPL ecosystem APIs and cached by AgentTrust; wallet operators register their verified status via <code>POST /kyc/verify</code>.</p>
+    <p>Xaman KYC is a human-only verification. AI agent wallets — which are programmatically generated keypairs — cannot complete it. Verification is performed by the human operator who controls the wallet; all agents operating from a verified wallet inherit the higher escrow limits and a +10 trust score bonus automatically.</p>
+    <p>AgentTrust never receives, sees, or stores identity documents. All document handling, liveness detection, and identity adjudication is performed by XRPL Labs via the Xaman platform. AgentTrust queries only the resulting verification status.</p>
+    <p>Separately, we offer a voluntary <strong>on-chain wallet ownership proof</strong> — participants can cryptographically prove control of their XRPL wallet by submitting a signed on-chain AccountSet transaction. This is not equivalent to KYC but establishes a cryptographic link between a participant and a specific on-chain identity, contributing 8 points to the trust score. Organisations can also verify domain ownership via the XRPL Foundation <code>xrp-ledger.toml</code> standard.</p>
 
     <h2>5. FATF Travel Rule</h2>
     <p>The Financial Action Task Force (FATF) Recommendation 16 has two components: (a) a transaction value threshold above which action is required (USD/EUR 1,000), and (b) a requirement for VASPs to collect and transmit originator and beneficiary identity information when transfers exceed that threshold.</p>
-    <p><strong>Threshold controls (implemented):</strong> AgentTrust enforces transaction value limits in code. A compliance notice is issued for escrows above USD 1,000 (the FATF trigger threshold), and escrows above USD 3,000 are blocked entirely pending KYC capability. These controls directly address the quantitative aspect of the Travel Rule.</p>
+    <p><strong>Threshold controls (implemented):</strong> AgentTrust enforces transaction value limits in code. A compliance notice is issued for escrows above USD 1,000 (the FATF trigger threshold). Escrows above USD 3,000 require Xaman KYC verification. Escrows above USD 10,000 are blocked for all wallets regardless of verification status. These controls directly address the quantitative aspect of the Travel Rule.</p>
     <p><strong>VASP-to-VASP data exchange (not implemented):</strong> The core Travel Rule obligation — transmitting originator and beneficiary identity data between VASPs — is not currently implemented. As noted in Section 1, we believe our non-custodial model may place us outside VASP classification in most jurisdictions, which would mean this obligation does not apply. If we are ultimately classified as a VASP, Travel Rule data exchange compliance would be required and we would integrate a compliant counterparty data exchange protocol.</p>
 
     <h2>6. Data protection</h2>
