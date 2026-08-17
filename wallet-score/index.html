@@ -469,6 +469,7 @@ const SIGNALS = [
   { key: "escrow_completion",   label: "Escrow completion",   max: 20, tip: "Up to 20 pts based on this wallet's AgentTrust escrow history — how many escrows were completed vs. failed or expired." },
   { key: "peer_rating",         label: "Peer rating",         max: 15, tip: "Up to 15 pts from star ratings left by counterparties after completed AgentTrust escrows. Reflects real-world trustworthiness in transactions." },
   { key: "xaman_kyc",           label: "Xaman KYC",           max: 5,  tip: "5 pts if this wallet has completed Xaman identity verification — a real-identity KYC check performed by Xaman's (formerly XUMM) compliance programme. AI agent wallets cannot hold this signal; it is inherently human-only." },
+  { key: "agentrust_kyc",       label: "AgentTrust KYC",      max: 10, tip: "10 pts if the wallet operator has completed KYC verification via Xaman and registered it with AgentTrust. Unlocks escrows up to $10,000 and is the strongest trust signal on the platform." },
 ];
 
 // Pre-fill from URL param
@@ -588,6 +589,7 @@ function render(addr, data) {
     { label: "Known entity",     value: signals.xrpscan_entity || "Unknown", cls: signals.xrpscan_entity ? "positive" : "" },
     { label: "Security flags",   value: flagSummary, cls: flagSummary !== "None" ? "positive" : "" },
     { label: "Xaman KYC",        value: signals.xaman_kyc ? "Verified" : "Not verified", cls: signals.xaman_kyc ? "positive" : "" },
+    { label: "AgentTrust KYC",  value: signals.kyc_verified ? "Verified" : "Not verified", cls: signals.kyc_verified ? "positive" : "" },
     { label: "NFTs held",        value: signals.nft_count ?? "—" },
     { label: "Total escrows",    value: signals.total_escrows ?? "—" },
     { label: "Passed escrows",   value: signals.passed_escrows ?? "—", cls: signals.passed_escrows > 0 ? "positive" : "" },
