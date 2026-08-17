@@ -42,7 +42,7 @@
     .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
     .nav-link:hover { color: var(--blue); }
     .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
 
     @media (max-width: 680px) {
         nav { position: relative; flex-wrap: wrap; }
@@ -105,8 +105,8 @@
     footer a { color: var(--blue); text-decoration: none; }
 
     @media (max-width: 680px) {
-        .step-header { padding: 1.25rem 1.25rem .75rem; }
-        .step-body { padding: 0 1.25rem 1.25rem; }
+        .step-header { padding: 1.25rem 1.1rem .75rem; }
+        .step-body { padding: 0 1.1rem 1.25rem; }
         .card-pad { padding: 1.5rem 1.25rem; }
         .unlock-grid { grid-template-columns: 1fr 1fr; }
     }
