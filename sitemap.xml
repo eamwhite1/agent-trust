@@ -2,109 +2,115 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
-    <loc>https://www.cryptovault.co.uk/</loc>
+    <loc>https://agenttrust.xyz/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/how-it-works/</loc>
+    <loc>https://agenttrust.xyz/how-it-works/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/guides/</loc>
+    <loc>https://agenttrust.xyz/guides/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/marketplace/</loc>
+    <loc>https://agenttrust.xyz/marketplace/</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/agents/</loc>
+    <loc>https://agenttrust.xyz/agents/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/use-cases/</loc>
+    <loc>https://agenttrust.xyz/use-cases/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/roadmap/</loc>
+    <loc>https://agenttrust.xyz/roadmap/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/autonomous-agent/</loc>
+    <loc>https://agenttrust.xyz/autonomous-agent/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/agent-hiring/</loc>
+    <loc>https://agenttrust.xyz/agent-hiring/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/invoice-verification/</loc>
+    <loc>https://agenttrust.xyz/invoice-verification/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/nft-dvp/</loc>
+    <loc>https://agenttrust.xyz/nft-dvp/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/github-action/</loc>
+    <loc>https://agenttrust.xyz/github-action/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/xrpl-ai-starter-kit/</loc>
+    <loc>https://agenttrust.xyz/xrpl-ai-starter-kit/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/kyc/</loc>
+    <loc>https://agenttrust.xyz/kyc/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/wallet-score/</loc>
+    <loc>https://agenttrust.xyz/wallet-score/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/compliance/</loc>
+    <loc>https://agenttrust.xyz/compliance/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/privacy/</loc>
+    <loc>https://agenttrust.xyz/privacy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/terms/</loc>
+    <loc>https://agenttrust.xyz/terms/</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://agenttrust.xyz/disclosure/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
