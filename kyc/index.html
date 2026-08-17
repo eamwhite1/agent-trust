@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KYC Verification — Higher Escrow Limits — AgentTrust</title>
-<meta name="description" content="How to complete KYC verification via Stripe Identity to unlock higher escrow limits on AgentTrust. Verified status attaches to your wallet and is inherited by your agents.">
+<meta name="description" content="How to complete KYC verification via Xaman to unlock higher escrow limits on AgentTrust. Verified status attaches to your wallet and is inherited by your agents.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
@@ -139,18 +139,13 @@
 <div class="page-wrap">
 
     <div class="doc-eyebrow"><i data-lucide="shield-check"></i> Guide · KYC Verification</div>
-    <h1>Unlock higher escrow limits with <em>identity verification</em></h1>
+    <h1>Unlock higher escrow limits with <em>Xaman KYC</em></h1>
     <p class="doc-lead">
         By default, AgentTrust enforces a per-escrow limit to keep the protocol open and frictionless.
         For larger transactions — high-value bug bounties, corporate settlements, M&amp;A tranches —
-        human operators complete a one-time identity check via Stripe. Verified status attaches to your
+        human operators complete a one-time identity check via Xaman. Verified status attaches to your
         XRPL wallet permanently and is inherited by any agents operating on your behalf.
     </p>
-
-    <div class="coming-soon-banner">
-        <i data-lucide="clock"></i>
-        <span><strong>Coming soon.</strong> KYC verification is in active development. This guide documents the integration so you can plan ahead — the endpoints and flow described here reflect the final design.</span>
-    </div>
 
     <div class="card">
         <div class="card-pad">
@@ -161,12 +156,12 @@
                 <div class="unlock-item">
                     <div class="unlock-icon"><i data-lucide="trending-up"></i></div>
                     <h4>Higher escrow limits</h4>
-                    <p>Unlock the ability to create escrows above the default per-transaction cap.</p>
+                    <p>Unlock the ability to create escrows above the default $3,000 per-transaction cap, up to $10,000.</p>
                 </div>
                 <div class="unlock-item">
                     <div class="unlock-icon"><i data-lucide="shield-check"></i></div>
                     <h4>Trust score boost</h4>
-                    <p>KYC verification adds a significant boost to your wallet's trust score — visible to any counterparty who checks it.</p>
+                    <p>KYC verification adds +10 points to your wallet's trust score — visible to any counterparty who checks it.</p>
                 </div>
                 <div class="unlock-item">
                     <div class="unlock-icon"><i data-lucide="bot"></i></div>
@@ -186,9 +181,8 @@
         <i data-lucide="info"></i>
         <span>
             <strong>Agents don't KYC — their operators do.</strong>
-            KYC is a human identity process (government ID, liveness detection). The developer or organisation
-            operating the agent completes verification once, and all agents running from that wallet automatically
-            operate at the higher limit.
+            KYC is a human identity process. The developer or organisation operating the agent completes
+            verification once via Xaman, and all agents running from that wallet automatically operate at the higher limit.
         </span>
     </div>
 
@@ -200,20 +194,19 @@
             <div class="step-header">
                 <div class="step-num">1</div>
                 <div>
-                    <div class="step-title">Hit the escrow limit — receive a redirect URL</div>
-                    <div class="step-desc">When <code class="inline-code">POST /escrow/generate</code> is called with an amount above the limit, the API responds with a <code class="inline-code">403</code> and a KYC session URL.</div>
+                    <div class="step-title">Complete KYC in the Xaman app</div>
+                    <div class="step-desc">Xaman (the official XRPL wallet app) includes a built-in identity verification flow. If you already use Xaman, your wallet may already be KYC-verified.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">API response — 403 KYC required
-                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                <div class="callout callout-blue" style="margin-bottom:.75rem">
+                    <i data-lucide="smartphone"></i>
+                    <span>Download Xaman from the App Store or Google Play, sign in with your XRPL wallet, then go to <strong>Settings → KYC</strong> to complete identity verification. Accepts passports, driving licences, and national ID cards.</span>
                 </div>
-                <pre>{
-  "error": "kyc_required",
-  "message": "Escrow amount exceeds the limit for unverified wallets.",
-  "kyc_url": "https://verify.stripe.com/session/vs_live_..."
-}</pre>
-                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:0;">Redirect the user (or surface the link in your agent's output) to the <code class="inline-code">kyc_url</code>. The URL is single-use and expires after 24 hours.</p>
+                <div class="callout callout-amber" style="margin-bottom:0">
+                    <i data-lucide="shield"></i>
+                    <span>AgentTrust never sees or stores identity documents. All document handling is done by Xaman. We query only your verification status via the public XRPL ecosystem APIs.</span>
+                </div>
             </div>
         </div>
 
@@ -221,31 +214,24 @@
             <div class="step-header">
                 <div class="step-num">2</div>
                 <div>
-                    <div class="step-title">Or initiate KYC proactively</div>
-                    <div class="step-desc">You can start verification before you need it — useful for onboarding flows or high-value use cases where you know KYC will be required.</div>
+                    <div class="step-title">Register your verified status with AgentTrust</div>
+                    <div class="step-desc">Once Xaman reports your wallet as KYC-approved, call <code class="inline-code">POST /kyc/verify</code> to cache the result. This is what unlocks higher limits immediately.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">POST /kyc/initiate
+                <div class="code-label">POST /kyc/verify — register Xaman KYC
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
                 <pre>import httpx
 
 response = httpx.post(
-    "https://xrpl-referee.onrender.com/kyc/initiate",
-    json={
-        "wallet_address": "rYourXRPLWalletAddress",
-        "return_url":     "https://yourapp.com/kyc-complete",
-    }
+    "https://xrpl-referee.onrender.com/kyc/verify",
+    params={"wallet_address": "rYourXRPLWalletAddress"}
 ).json()
 
-# Redirect the user here:
-print(response["kyc_url"])</pre>
-
-                <div class="callout callout-blue" style="margin-bottom:0">
-                    <i data-lucide="credit-card"></i>
-                    <span>The Stripe-hosted page collects payment and identity documents in one step. You build no UI — Stripe handles everything. The <code class="inline-code">return_url</code> is where Stripe sends the user after completion.</span>
-                </div>
+print(response["kyc_verified"])  # True if Xaman KYC is complete
+print(response["method"])        # "xaman"</pre>
+                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:0;">If <code class="inline-code">kyc_verified</code> is <code class="inline-code">False</code>, the response includes a link to <code class="inline-code">xumm.app/kyc</code> to complete the Xaman flow first.</p>
             </div>
         </div>
 
@@ -253,18 +239,25 @@ print(response["kyc_url"])</pre>
             <div class="step-header">
                 <div class="step-num">3</div>
                 <div>
-                    <div class="step-title">User completes Stripe Identity</div>
-                    <div class="step-desc">Stripe's hosted flow handles document capture, liveness detection, and payment. Typically takes under 2 minutes on mobile.</div>
+                    <div class="step-title">Check status at any time</div>
+                    <div class="step-desc">Query the trust score endpoint to confirm your KYC status and see the impact on your score.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="callout callout-blue" style="margin-bottom:.75rem">
-                    <i data-lucide="smartphone"></i>
-                    <span>Stripe Identity works on any device and accepts passports, driving licences, and national ID cards from most countries. No app install required.</span>
+                <div class="code-label">python — check KYC status
+                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
-                <div class="callout callout-amber" style="margin-bottom:0">
-                    <i data-lucide="shield"></i>
-                    <span>AgentTrust never sees or stores identity documents. All document handling is done by Stripe. We receive only a verification status and the wallet address to mark as verified.</span>
+                <pre>score = httpx.get(
+    "https://xrpl-referee.onrender.com/wallet/score/rYourWalletAddress"
+).json()
+
+print(score["signals"]["kyc_verified"])           # True once verified
+print(score["signals"]["score_breakdown"]["agentrust_kyc"])  # +10 pts
+print(score["score"])                             # noticeably higher after KYC</pre>
+
+                <div class="callout callout-green" style="margin-bottom:0">
+                    <i data-lucide="check-circle"></i>
+                    <span>Once <code class="inline-code">kyc_verified</code> is <code class="inline-code">True</code>, retry <code class="inline-code">POST /escrow/generate</code> with your original payload — the $10,000 limit now applies automatically.</span>
                 </div>
             </div>
         </div>
@@ -273,26 +266,20 @@ print(response["kyc_url"])</pre>
             <div class="step-header">
                 <div class="step-num">4</div>
                 <div>
-                    <div class="step-title">Webhook fires — wallet is marked verified</div>
-                    <div class="step-desc">On successful verification, Stripe sends a webhook to AgentTrust. The wallet is immediately marked KYC-verified and higher limits apply.</div>
+                    <div class="step-title">Hit the limit — get a clear error with next steps</div>
+                    <div class="step-desc">If an escrow is attempted above the limit for an unverified wallet, the API returns a <code class="inline-code">403</code> with instructions.</div>
                 </div>
             </div>
             <div class="step-body">
-                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">You can check verification status at any time via the trust score endpoint:</p>
-                <div class="code-label">python — check KYC status
+                <div class="code-label">API response — 403 KYC required
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
-                <pre>score = httpx.get(
-    "https://xrpl-referee.onrender.com/wallet/score/rYourWalletAddress"
-).json()
-
-print(score["signals"]["kyc_verified"])   # True once complete
-print(score["score"])                     # noticeably higher after KYC</pre>
-
-                <div class="callout callout-green" style="margin-bottom:0">
-                    <i data-lucide="check-circle"></i>
-                    <span>Once <code class="inline-code">kyc_verified</code> is <code class="inline-code">True</code>, retry <code class="inline-code">POST /escrow/generate</code> with your original payload — the higher limit now applies.</span>
-                </div>
+                <pre>{
+  "error": "kyc_required",
+  "kyc_url": "/kyc/verify",
+  "message": "Escrow amount exceeds the $3,000 limit for unverified wallets.
+Complete identity verification via Xaman to unlock escrows up to $10,000."
+}</pre>
             </div>
         </div>
 
@@ -304,7 +291,7 @@ print(score["score"])                     # noticeably higher after KYC</pre>
             <h2>Build KYC prompts into your agent flow</h2>
             <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.2rem;max-width:580px;">
                 If your agent handles large escrows autonomously, catch the <code class="inline-code">kyc_required</code>
-                error and surface the verification link to the human operator without breaking the agent loop.
+                error and surface the verification steps to the human operator without breaking the agent loop.
             </p>
             <div class="code-label">python — agent-friendly KYC handling
                 <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
@@ -317,8 +304,10 @@ print(score["score"])                     # noticeably higher after KYC</pre>
 if response.status_code == 403:
     data = response.json()
     if data.get("error") == "kyc_required":
-        print(f"KYC required. Please verify your identity: {data['kyc_url']}")
-        print("Once verified, re-run this task to continue.")
+        print("KYC required to create this escrow.")
+        print("1. Complete identity verification in the Xaman app (xumm.app/kyc)")
+        print("2. Run: POST /kyc/verify?wallet_address=YOUR_WALLET")
+        print("3. Re-run this task once verified.")
         raise SystemExit(0)
 
 escrow = response.json()</pre>
