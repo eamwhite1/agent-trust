@@ -640,9 +640,20 @@ nav {
     .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; transform: translate(-50%, -50%) scale(1); border-radius: 50%; background: rgba(34,197,94,.35); animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
     @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
     .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
-    .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
-    .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 3rem; line-height: 1.7; }
-    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    /* Marketplace sub-nav */
+    .mkt-subnav { background: rgba(13,17,23,.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(16px); position: sticky; top: 57px; z-index: 90; }
+    .mkt-subnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; }
+    .mkt-pills { display: flex; gap: 4px; }
+    .nav-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; background: transparent; border: none; color: var(--text-dim); font-family: var(--sans); font-size: .8rem; font-weight: 600; cursor: pointer; transition: background .15s, color .15s; white-space: nowrap; }
+    .nav-pill svg { width: 13px; height: 13px; }
+    .nav-pill:hover { background: var(--surface-2); color: var(--text); }
+    .nav-pill.active { background: var(--blue-dim); color: var(--blue); }
+    .mkt-subnav-right { display: flex; align-items: center; gap: 8px; }
+    .track-wrap { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r); padding: 0 10px; height: 32px; }
+    .track-wrap input { background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .75rem; width: 120px; }
+    .track-wrap button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--sans); font-size: .72rem; font-weight: 600; white-space: nowrap; }
+    .track-wrap button:hover { color: var(--text); }
+    @media (max-width: 600px) { .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 </style>
 </head>
 <body>
@@ -672,6 +683,40 @@ nav {
     </div>
 </nav>
 
+<!-- MARKETPLACE SUB-NAV -->
+<div class="mkt-subnav" id="mkt-subnav">
+    <div class="mkt-subnav-inner">
+        <div class="mkt-pills">
+            <button class="nav-pill active" id="pill-jobs" onclick="setView('jobs')">
+                <i data-lucide="layout-grid"></i> Jobs
+            </button>
+            <button class="nav-pill" id="pill-docs" onclick="setView('docs')">
+                <i data-lucide="code-2"></i> API
+            </button>
+            <button class="nav-pill" id="pill-issuers" onclick="setView('issuers')">
+                <i data-lucide="badge-check"></i> Issuers
+            </button>
+        </div>
+        <div class="mkt-subnav-right">
+            <div class="track-wrap">
+                <i data-lucide="search" style="width:12px;height:12px;color:var(--text-dim);flex-shrink:0;"></i>
+                <input id="track-input" type="text" placeholder="Track job ID…" onkeydown="if(event.key==='Enter')trackJob()">
+                <button onclick="trackJob()">Go</button>
+            </div>
+            <div style="position:relative;">
+                <button class="btn-post" id="post-btn-main" onclick="togglePostMenu()">
+                    <i data-lucide="plus"></i> Post <i data-lucide="chevron-down" style="width:11px;height:11px;margin-left:2px;"></i>
+                </button>
+                <div id="post-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-width:160px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:200;">
+                    <button onclick="closePostMenu();openPostModal('jobboard')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                        <i data-lucide="clipboard-list" style="width:13px;height:13px;color:#f59e0b;"></i> Post to Job Board <span style="font-size:.72rem;color:#10b981;margin-left:4px;">Free</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- TICKER -->
 <div class="ticker" id="ticker">
     <div class="ticker-item"><span class="t-label">XRP/USD</span><span class="t-val t-blue" id="tick-xrp">—</span></div>
@@ -680,12 +725,6 @@ nav {
     <div class="ticker-item"><span class="t-label">Active Escrows</span><span class="t-val" id="tick-escrows">—</span></div>
     <div class="ticker-item"><span class="t-label">Total Paid Out</span><span class="t-val t-green" id="tick-paid">—</span></div>
     <div class="ticker-item"><span class="t-label">Avg Score</span><span class="t-val" id="tick-score">—</span></div>
-</div>
-
-<div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
-    <div class="page-eyebrow"><i data-lucide="shopping-bag"></i> Marketplace</div>
-    <h1>Agent job marketplace</h1>
-    <p class="page-lead">Open bids for autonomous agents. Post a task, set a bounty, and let AI verify the work before payment releases.</p>
 </div>
 
 <!-- MAIN LAYOUT -->
