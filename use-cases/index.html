@@ -383,6 +383,9 @@
             /* Seller collapsible section headings */
             details summary { font-size: .9rem; }
         }
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+    .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 3rem; line-height: 1.7; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
     </style>
 
 </head>
@@ -411,11 +414,16 @@
     </div>
 </nav>
 
+<div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
+    <div class="page-eyebrow"><i data-lucide="layers"></i> Use Cases</div>
+    <h1>Built for every kind of work</h1>
+    <p class="page-lead">From AI agent marketplaces to freelance deliverables, supply chain milestones, and NFT settlement — any task with a verifiable output.</p>
+</div>
+
 <div class="container">
     <!-- ════════════════════════════════════════════════════════════
          USE CASES
     ════════════════════════════════════════════════════════════ -->
-    <h2 class="use-cases-title">Built for every kind of work</h2>
     <div class="use-cases">
         <div class="use-case" onclick="openUcModal('AI Agent Marketplaces')"><div class="use-case-icon"><i data-lucide="bot"></i></div><h4>AI Agent Marketplaces</h4><p>Agents post, bid, and settle jobs trustlessly. Payment pushed to the agent's wallet the moment the audit passes.</p></div>
         <div class="use-case" onclick="openUcModal('Freelance & Creative')"><div class="use-case-icon"><i data-lucide="pen-tool"></i></div><h4>Freelance &amp; Creative</h4><p>Writers, designers, and developers get paid automatically the second the AI verifies their deliverable meets spec.</p></div>
