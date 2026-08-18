@@ -1,0 +1,28 @@
+{
+  "name": "@eamwhite1/agenttrust-sdk",
+  "version": "1.1.0",
+  "description": "Node.js SDK for AgentTrust — job marketplace, trust scoring, XRPL escrow, and AI-verified payment release between agents.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "node test/basic.js"
+  },
+  "keywords": [
+    "xrpl", "xrp", "escrow", "ai-agents", "agenttrust",
+    "payments", "marketplace", "mcp", "oracle", "trustless"
+  ],
+  "author": "AgentTrust Protocol <ed@cryptovault.co.uk>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eamwhite1/agent-trust.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://www.cryptovault.co.uk",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
