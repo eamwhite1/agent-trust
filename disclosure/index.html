@@ -6,39 +6,75 @@
 <title>Disclosure &amp; Risk Warnings — AgentTrust</title>
 <meta name="description" content="Full disclosure and risk warnings for AgentTrust: legal status, FSCS, FOS, digital asset risks, escrow security, and AI verdict limitations.">
 <meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.cryptovault.co.uk/disclosure/">
 <meta property="og:title" content="Disclosure &amp; Risk Warnings — AgentTrust">
 <meta property="og:description" content="Full legal disclosure and risk warnings for AgentTrust escrow services — digital asset risks, AI verdict limitations, escrow security, and UK legal status.">
 <meta property="og:url" content="https://www.cryptovault.co.uk/disclosure/">
 <meta property="og:type" content="website">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap&family=DM+Serif+Display:ital@0;1" rel="stylesheet">
 <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-        --blue:         #0066FF;
-        --blue-dim:     rgba(0,102,255,.08);
-        --blue-border:  rgba(0,102,255,.2);
-        --green:        #00B97A;
-        --text:         #0d0d12;
-        --text-muted:   #5c5c6e;
-        --glass:        rgba(255,255,255,0.52);
-        --glass-border: rgba(255,255,255,0.72);
-        --shadow:       0 8px 40px rgba(0,0,0,0.06);
-        --radius-lg:    24px;
-        --radius-md:    14px;
-        --radius-sm:    8px;
-        --border:       rgba(0,0,0,.08);
+        --bg: #fafafa;
+        --text: #0d0d12;
+        --text-muted: #5a5a68;
+        --blue: #0066ff;
+        --green: #00B97A;
+        --border: rgba(0,0,0,.08);
     }
-
-    html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
-
-    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
-    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
-    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
-
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        line-height: 1.65;
+    }
+    .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem 6rem;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: .25rem;
+    }
+    .updated {
+        font-size: .85rem;
+        color: var(--text-muted);
+        margin-bottom: 2.5rem;
+    }
+    h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-top: 2.5rem;
+        margin-bottom: .75rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: .5rem;
+    }
+    h3 {
+        font-size: .98rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: .5rem;
+    }
+    p, li { font-size: .95rem; color: #1a1a24; }
+    p { margin-bottom: 1rem; line-height: 1.75; }
+    ul, ol { padding-left: 1.3rem; margin-bottom: 1rem; }
+    li { margin-bottom: .4rem; }
+    strong { color: var(--text); }
+    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.5rem 0; font-size: .88rem; line-height: 1.65; }
+    .callout.warn { background: rgba(229,55,61,.06); border: 1px solid rgba(229,55,61,.2); color: #7a1a1a; }
+    .callout.info { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); color: #003399; }
+    .back {
+        display: inline-block;
+        margin-bottom: 2rem;
+        font-size: .85rem;
+        font-weight: 600;
+    }
     /* ── Nav ── */
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
     .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
@@ -47,34 +83,18 @@
     .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
     .nav-link:hover { color: var(--blue); }
     .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+    .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; margin-top: -8px; margin-left: -8px; border-radius: 50%; border: 2px solid #22c55e; animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
+    @keyframes ping-ring { 0% { transform: scale(1); opacity: .7; } 80%, 100% { transform: scale(2); opacity: 0; } }
+    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
     .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
     @media (max-width: 680px) {
         nav { position: relative; flex-wrap: wrap; }
         .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
         .nav-menu.open { display: flex; }
         .nav-toggle { display: flex; }
+        .badge-live { font-size: .68rem; padding: 4px 10px; }
     }
-
-    /* ── Page layout ── */
-    .page-wrap { max-width: 760px; margin: 0 auto; padding: 3.5rem 5% 6rem; position: relative; z-index: 1; }
-
-    .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
-    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.6rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: .5rem; }
-    .updated { font-size: .85rem; color: var(--text-muted); margin-bottom: 2.5rem; }
-
-    h2 { font-size: 1.1rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; color: var(--text); }
-    h3 { font-size: .98rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: .5rem; color: var(--text); }
-    p { font-size: .95rem; color: #1a1a24; margin-bottom: 1rem; line-height: 1.75; }
-    ul, ol { padding-left: 1.4rem; margin-bottom: 1rem; }
-    li { font-size: .95rem; color: #1a1a24; margin-bottom: .4rem; line-height: 1.65; }
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    strong { color: var(--text); }
-
-    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.5rem 0; font-size: .88rem; line-height: 1.65; }
-    .callout.warn { background: rgba(229,55,61,.06); border: 1px solid rgba(229,55,61,.2); color: #7a1a1a; }
-    .callout.info { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); color: #003399; }
-
     /* ── Footer ── */
     footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
     .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
@@ -95,11 +115,9 @@
         .footer-cols { gap: 1.5rem; }
     }
 </style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
-
-<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
-
 <nav>
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
@@ -120,11 +138,10 @@
     </div>
 </nav>
 
-<div class="page-wrap">
-
-    <div class="page-eyebrow">Legal</div>
+<div class="wrap">
+    <a class="back" href="/">← AgentTrust</a>
     <h1>Disclosure &amp; Risk Warnings</h1>
-    <p class="updated">Last updated: August 2026</p>
+    <div class="updated">Last updated: August 2026</div>
 
     <div class="callout warn">
         <strong>Important:</strong> Use of AgentTrust does not constitute a regulated financial service. You are not entitled to protection under the Financial Services Compensation Scheme (FSCS) or recourse to the Financial Ombudsman Service (FOS) in respect of any transaction carried out through this platform.
@@ -134,7 +151,7 @@
     <p>AgentTrust is a software protocol operated by <strong>Boxclever Media Ltd</strong> (company number 09394447, registered in England and Wales). It is not a financial institution, payment processor, or regulated financial service, and does not provide financial, legal, or investment advice.</p>
 
     <h2>Nature of the Service</h2>
-    <p>AgentTrust provides smart-contract-based escrow tooling for autonomous agent transactions on the XRP Ledger. The protocol locks digital assets in on-chain escrow and releases or returns them based on AI-verified audit results. No human intermediary holds or controls funds at any point.</p>
+    <p>AgentTrust provides smart-contract-based escrow tooling for autonomous agent and human transactions on the XRP Ledger. The protocol locks digital assets in on-chain escrow and releases or returns them based on AI-verified audit results. No human intermediary holds or controls funds at any point.</p>
 
     <h2>Digital Asset Risks</h2>
     <h3>XRP</h3>
@@ -176,14 +193,13 @@
     <h2>Contact</h2>
     <p>Boxclever Media Ltd · Registered in England &amp; Wales · Company no. 09394447</p>
     <p>For legal enquiries, please contact us via the details on our <a href="/compliance/">Compliance page</a>.</p>
-
 </div>
 
 <footer>
     <div class="footer-inner">
         <div class="footer-brand">
             <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
-            <p class="footer-tagline">AI-verified escrow for autonomous agents on the XRP Ledger.</p>
+            <p class="footer-tagline">AI-verified escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
