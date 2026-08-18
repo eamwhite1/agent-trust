@@ -218,18 +218,18 @@ footer a { color: var(--blue); text-decoration: none; }
             <div class="step-header">
                 <div class="step-num">1</div>
                 <div>
-                    <div class="step-title">Complete KYC in the Xaman app</div>
-                    <div class="step-desc">Xaman (the official XRPL wallet app) includes a built-in identity verification flow. If you already use Xaman, your wallet may already be KYC-verified.</div>
+                    <div class="step-title">Complete identity verification via the Xaman Global ID xApp</div>
+                    <div class="step-desc">Xaman (the official XRPL wallet app) supports identity verification through the <strong>Global ID</strong> xApp — a third-party identity xApp available inside Xaman.</div>
                 </div>
             </div>
             <div class="step-body">
                 <div class="callout callout-blue" style="margin-bottom:.75rem">
                     <i data-lucide="smartphone"></i>
-                    <span>Download Xaman from the App Store or Google Play, sign in with your XRPL wallet, then go to <strong>Settings → KYC</strong> to complete identity verification. Accepts passports, driving licences, and national ID cards.</span>
+                    <span>Open Xaman → tap the <strong>xApps</strong> tab → search for <strong>Global ID</strong> (or <strong>KYC Onboarding</strong>) and follow the verification flow. Accepts passports, driving licences, and national ID cards. Once complete, your XRPL wallet address is marked as KYC-verified on-chain.</span>
                 </div>
                 <div class="callout callout-amber" style="margin-bottom:0">
                     <i data-lucide="shield"></i>
-                    <span>AgentTrust never sees or stores identity documents. All document handling is done by Xaman. We query only your verification status via the public XRPL ecosystem APIs.</span>
+                    <span>AgentTrust never sees or stores identity documents. All document handling is done by Xaman's Global ID. We query only your verification status via the authenticated Xaman platform API.</span>
                 </div>
             </div>
         </div>
@@ -255,7 +255,7 @@ response = httpx.post(
 
 print(response["kyc_verified"])  # True if Xaman KYC is complete
 print(response["method"])        # "xaman"</pre>
-                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:0;">If <code class="inline-code">kyc_verified</code> is <code class="inline-code">False</code>, the response includes a link to <code class="inline-code">xumm.app/kyc</code> to complete the Xaman flow first.</p>
+                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:0;">If <code class="inline-code">kyc_verified</code> is <code class="inline-code">False</code>, the response includes a link to the Xaman Global ID xApp to complete verification first.</p>
             </div>
         </div>
 
@@ -329,7 +329,7 @@ if response.status_code == 403:
     data = response.json()
     if data.get("error") == "kyc_required":
         print("KYC required to create this escrow.")
-        print("1. Complete identity verification in the Xaman app (xumm.app/kyc)")
+        print("1. Open Xaman → xApps → Global ID → complete identity verification")
         print("2. Run: POST /kyc/verify?wallet_address=YOUR_WALLET")
         print("3. Re-run this task once verified.")
         raise SystemExit(0)
