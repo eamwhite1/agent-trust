@@ -107,18 +107,18 @@
 
     /* Table */
     .table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: var(--radius-md); border: 1px solid var(--glass-border); }
-    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
-    th { background: var(--blue-dim); color: var(--blue); font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; padding: .7rem 1rem; text-align: left; border-bottom: 1px solid var(--blue-border); }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; min-width: 420px; }
+    th { background: var(--blue-dim); color: var(--blue); font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; padding: .7rem 1rem; text-align: left; border-bottom: 1px solid var(--blue-border); white-space: nowrap; }
     td { padding: .65rem 1rem; border-bottom: 1px solid var(--code-border); color: var(--text-muted); }
     tr:last-child td { border-bottom: none; }
     .check { color: var(--green); font-weight: 700; }
     .dash { color: var(--text-muted); opacity: .5; }
 
     /* Resources */
-    .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
-    .res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
-    .res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
-    .res-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+    .resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; margin-bottom: 2rem; }
+    .resource-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
+    .resource-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
+    .resource-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
 
     /* ── Footer ── */
     footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
@@ -597,8 +597,8 @@ print(result["verdict"])   # "PASS" → payment released automatically</pre>
         <div class="card-pad">
             <span class="section-label">Fees</span>
             <h2>Protocol fee options</h2>
-            <div class="pay-table-wrap">
-                <table class="pay-table">
+            <div class="table-wrap">
+                <table>
                     <thead>
                         <tr><th>Method</th><th>Amount</th><th>Where to send</th></tr>
                     </thead>
@@ -645,6 +645,7 @@ print(result["verdict"])   # "PASS" → payment released automatically</pre>
             <i data-lucide="book-open"></i> XRPL Agentic Transactions
         </a>
     </div>
+
 
 </div><!-- /page-wrap -->
 
