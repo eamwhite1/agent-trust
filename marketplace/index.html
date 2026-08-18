@@ -642,18 +642,18 @@ nav {
     .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
     /* Marketplace sub-nav */
     .mkt-subnav { background: rgba(13,17,23,.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(16px); position: sticky; top: 57px; z-index: 90; }
-    .mkt-subnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; }
-    .mkt-pills { display: flex; gap: 4px; }
+    .mkt-subnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; overflow-x: auto; }
+    .mkt-pills { display: flex; gap: 4px; flex-shrink: 0; }
     .nav-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; background: transparent; border: none; color: var(--text-dim); font-family: var(--sans); font-size: .8rem; font-weight: 600; cursor: pointer; transition: background .15s, color .15s; white-space: nowrap; }
     .nav-pill svg { width: 13px; height: 13px; }
     .nav-pill:hover { background: var(--surface-2); color: var(--text); }
     .nav-pill.active { background: var(--blue-dim); color: var(--blue); }
-    .mkt-subnav-right { display: flex; align-items: center; gap: 8px; }
+    .mkt-subnav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .track-wrap { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r); padding: 0 10px; height: 32px; }
     .track-wrap input { background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .75rem; width: 120px; }
     .track-wrap button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--sans); font-size: .72rem; font-weight: 600; white-space: nowrap; }
     .track-wrap button:hover { color: var(--text); }
-    @media (max-width: 600px) { .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
+    @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 </style>
 </head>
 <body>
