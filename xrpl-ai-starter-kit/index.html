@@ -10,7 +10,7 @@
 <meta property="og:description" content="Combine Ripple's XRPL AI Starter Kit with AgentTrust trust scoring, escrow, and AI audit for complete agent-to-agent payment infrastructure.">
 <meta property="og:url" content="https://www.cryptovault.co.uk/xrpl-ai-starter-kit/">
 <meta property="og:type" content="website">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,34 +38,18 @@
     html { scroll-behavior: smooth; }
 
     body {
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
         color: var(--text);
-        background: #f2f4fb;
+        background: #fafafa;
         min-height: 100vh;
         line-height: 1.65;
     }
 
-    .bg {
-        position: fixed; inset: 0; z-index: -1;
-        background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%);
-        overflow: hidden;
-    }
-    .blob {
-        position: absolute; border-radius: 50%;
-        width: 800px; height: 800px; top: -15%; left: -10%;
-        background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%);
-        filter: blur(90px);
-    }
-    .blob-2 {
-        position: absolute; border-radius: 50%;
-        width: 700px; height: 700px; bottom: -10%; right: -5%;
-        background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%);
-        filter: blur(110px);
-    }
+    .bg { display: none; }
 
     /* ── Nav ── */
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
-    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--blue); }
     .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
     .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
