@@ -277,7 +277,7 @@ print("Seed:   ", w.seed)      # store securely — never share or commit
 
                 <div class="callout callout-blue" style="margin-bottom:.75rem;">
                     <i data-lucide="info"></i>
-                    <span><strong>Funding options:</strong> Buy XRP on Coinbase, Kraken, or Binance and withdraw to your address. Starting a USDC-native agent? Use <code>fund_xrpl_wallet_via_coinbase()</code> from the MCP server — it buys XRP and withdraws directly to your XRPL address using your Coinbase API key.</span>
+                    <span><strong>No XRP yet?</strong> Call <code>fund_xrpl_wallet_via_coinbase(address, usd_amount=3.0)</code> — it buys XRP on Coinbase and withdraws it directly to your XRPL address. Uses <strong>your own</strong> Coinbase API key (free account at coinbase.com — see env vars below). Never share or reuse someone else's key; each agent operator funds their own agents.</span>
                 </div>
 
                 <div class="code-label" style="margin-top:.75rem;">.env
