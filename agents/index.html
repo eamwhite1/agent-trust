@@ -55,7 +55,10 @@
         .nav-menu.open { display: flex; }
         .nav-toggle { display: flex; }
     }
-        .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
+        .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+    .ping-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid #22c55e; animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
+    @keyframes ping-ring { 0% { transform: scale(1); opacity: .7; } 80%, 100% { transform: scale(2); opacity: 0; } }
+    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); }
         .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
         @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(0,185,122,.4); } 70% { box-shadow: 0 0 0 6px rgba(0,185,122,0); } 100% { box-shadow: 0 0 0 0 rgba(0,185,122,0); } }
 
@@ -400,7 +403,7 @@
     </div>
     <div class="nav-right">
         <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener" style="text-decoration:none;">
-            <i data-lucide="activity" style="width:13px;height:13px;color:var(--green);"></i> Live on XRPL
+            <span class="ping-dot"></span> Live on XRPL
         </a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
                 onclick="document.getElementById('nav-menu').classList.toggle('open')">
@@ -481,7 +484,6 @@
                 <a href="/agents/">For Agents</a>
                 <a href="/marketplace/">Marketplace</a>
                 <a href="/wallet-score/">Wallet Score</a>
-                <a href="/compliance/">Compliance</a>
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
@@ -492,6 +494,7 @@
             </div>
             <div class="footer-col">
                 <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
                 <a href="/terms/">Terms</a>
                 <a href="/privacy/">Privacy</a>
                 <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
