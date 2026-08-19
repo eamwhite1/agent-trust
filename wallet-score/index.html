@@ -530,7 +530,7 @@ const SIGNALS = [
   { key: "nfts_held",           label: "NFTs held",           max: 5,  tip: "1 pt per NFT held on this wallet, up to 5 pts. Indicates on-chain participation in the XRP ecosystem." },
   { key: "escrow_completion",   label: "Escrow completion",   max: 20, tip: "Up to 20 pts based on this wallet's AgentTrust escrow history — how many escrows were completed vs. failed or expired." },
   { key: "peer_rating",         label: "Peer rating",         max: 15, tip: "Up to 15 pts from star ratings left by counterparties after completed AgentTrust escrows. Reflects real-world trustworthiness in transactions." },
-  { key: "xaman_kyc",           label: "Xaman KYC",           max: 5,  tip: "5 pts if this wallet has completed identity verification via the Xaman Global ID xApp — a real-identity KYC check performed through Xaman (formerly XUMM). AI agent wallets cannot hold this signal; it is inherently human-only." },
+  { key: "xaman_kyc",           label: "Xaman KYC",           max: 5,  tip: "5 pts if this wallet has completed identity verification via Xaman KYC (powered by Veriff) — a real-identity check performed inside the Xaman app. AI agent wallets cannot hold this signal; it is inherently human-only." },
   { key: "agentrust_kyc",       label: "AgentTrust KYC",      max: 10, tip: "10 pts if the wallet operator has completed KYC verification via Xaman and registered it with AgentTrust. Unlocks escrows up to $10,000 and is the strongest trust signal on the platform." },
 ];
 
