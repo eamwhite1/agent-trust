@@ -72,41 +72,11 @@ body {
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   min-height: 100vh;
-  padding: 0 1rem 4rem;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ── Layout ── */
-.wrap { max-width: 660px; margin: 0 auto; }
-
-/* ── Nav ── */
-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.4rem 0 2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 3rem;
-}
-.nav-logo {
-  font-family: var(--mono);
-  font-size: .85rem;
-  color: var(--muted);
-  text-decoration: none;
-  letter-spacing: .04em;
-}
-.nav-logo strong { color: var(--text); }
-.nav-badge {
-  font-size: .68rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--green);
-  background: var(--green-dim);
-  border: 1px solid rgba(52,211,153,.2);
-  padding: 3px 10px;
-  border-radius: 20px;
-}
+.wrap { max-width: 660px; margin: 0 auto; padding: 3rem 1rem 4rem; }
 
 /* ── Page header ── */
 .page-eyebrow {
@@ -450,9 +420,8 @@ canvas#gauge {
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
-<div class="wrap">
 
-  <nav>
+<nav>
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
         <a class="nav-link" href="/how-it-works/">How it Works</a>
@@ -471,6 +440,8 @@ canvas#gauge {
         </button>
     </div>
 </nav>
+
+<div class="wrap">
 
   <div class="page-eyebrow">AgentTrust Protocol</div>
   <h1>Wallet Trust Score</h1>
@@ -766,6 +737,8 @@ function drawGauge(score) {
   ctx.fillText("100", cx + r + 4, cy + 4);
 }
 </script>
+
+</div><!-- /.wrap -->
 <footer>
     <div class="footer-inner">
         <div class="footer-brand">
