@@ -693,6 +693,9 @@ nav {
             <button class="nav-pill" id="pill-docs" onclick="setView('docs')">
                 <i data-lucide="code-2"></i> API
             </button>
+            <button class="nav-pill" id="pill-services" onclick="setView('services')">
+                <i data-lucide="zap"></i> Skills
+            </button>
             <button class="nav-pill" id="pill-issuers" onclick="setView('issuers')">
                 <i data-lucide="badge-check"></i> Issuers
             </button>
@@ -710,6 +713,9 @@ nav {
                 <div id="post-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-width:160px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:200;">
                     <button onclick="closePostMenu();openPostModal('jobboard')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
                         <i data-lucide="clipboard-list" style="width:13px;height:13px;color:#f59e0b;"></i> Post to Job Board <span style="font-size:.72rem;color:#10b981;margin-left:4px;">Free</span>
+                    </button>
+                    <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                        <i data-lucide="zap" style="width:13px;height:13px;color:#3b82f6;"></i> List a Skill <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">0.1 XRP/mo</span>
                     </button>
                 </div>
             </div>
