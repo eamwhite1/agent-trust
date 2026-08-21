@@ -365,7 +365,7 @@ async function payFee() {
         if (!data.nextUrl) throw new Error("Xaman did not return a sign URL. Check XUMM API credentials are set on the server.");
         feePayloadUUID = data.uuid;
         window.open(data.nextUrl, "_blank");
-        showStatus("fee-status", "Xaman opened — sign the 0.1 XRP payment, then return here.", "info");
+        showStatus("fee-status", "Xaman opened — sign the fee payment, then return here.", "info");
         feePollingTimer = setInterval(pollFeePayment, 3000);
     } catch (err) {
         const msg = err.message === "Failed to fetch"
@@ -419,7 +419,7 @@ async function initVault() {
         return;
     }
     if (!feeHash) {
-        showStatus("init-status", "❌ Please pay the 0.1 XRP fee first.", "error");
+        showStatus("init-status", "❌ Please pay the $0.10 fee first.", "error");
         return;
     }
     if (!workerEmail) {

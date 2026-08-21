@@ -379,7 +379,7 @@ print(score["signals"]["sanctions_clean"])     # False = stop immediately</pre>
             </div>
             <div class="step-body">
                 <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">
-                    First send <strong>0.1 XRP</strong> to <code class="inline-code">rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code>
+                    First send <strong>$0.10</strong> (XRP, RLUSD, or USDC) to <code class="inline-code">rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code>
                     as the protocol fee (using the <code class="inline-code">submit_and_wait</code> pattern above),
                     then pass that transaction hash as <code class="inline-code">fee_hash</code>.
                 </p>
@@ -550,7 +550,7 @@ score = httpx.get(
 if score["score"] &lt; 40 or not score["signals"]["sanctions_clean"]:
     raise ValueError("Counterparty does not meet minimum trust threshold")
 
-# ── Step 2: Pay the 0.1 XRP protocol fee ──────────────────────────────────
+# ── Step 2: Pay the $0.10 protocol fee ──────────────────────────────────
 fee_tx = Payment(
     account=buyer_wallet.classic_address,
     destination="rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR",
@@ -605,7 +605,7 @@ print(result["verdict"])   # "PASS" → payment released automatically</pre>
                     <tbody>
                         <tr>
                             <td>XRP on XRPL Mainnet</td>
-                            <td>0.1 XRP</td>
+                            <td>$0.10</td>
                             <td><code class="inline-code">rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code></td>
                         </tr>
                         <tr>

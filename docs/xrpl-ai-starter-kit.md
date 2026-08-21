@@ -69,7 +69,7 @@ Funds are now locked on XRPL Mainnet. Neither party can touch them until work is
 ### 3. Audit the deliverable
 
 ```python
-# Pay the 0.1 XRP audit fee first — send to rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR
+# Pay the $0.10 audit fee first — send to rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR
 # Then pass the tx hash:
 
 audit = httpx.post(
@@ -161,7 +161,7 @@ print(result["evaluation"]["verdict"])  # PASS → payment released automaticall
 
 | Method | Amount | Where to send |
 |---|---|---|
-| XRP (Mainnet) | 0.1 XRP | `rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR` |
+| XRP / RLUSD / USDC | $0.10 | `rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR` |
 | USDC on Base | $0.10 | Address in `402` response `accepts` array |
 
 Call `/audit` with no fee header to receive a machine-readable `402 Payment Required` response listing both options.

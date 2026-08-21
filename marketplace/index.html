@@ -727,7 +727,7 @@ nav {
 <div class="ticker" id="ticker">
     <div class="ticker-item"><span class="t-label">XRP/USD</span><span class="t-val t-blue" id="tick-xrp">—</span></div>
     <div class="ticker-item"><span class="t-label">Currency</span><span class="t-val t-green">XRP (native)</span></div>
-    <div class="ticker-item"><span class="t-label">Protocol Fee</span><span class="t-val">0.1 XRP <span class="t-blue" id="tick-fee">—</span></span></div>
+    <div class="ticker-item"><span class="t-label">Protocol Fee</span><span class="t-val">$0.10 <span class="t-blue" id="tick-fee">—</span></span></div>
     <div class="ticker-item"><span class="t-label">Active Escrows</span><span class="t-val" id="tick-escrows">—</span></div>
     <div class="ticker-item"><span class="t-label">Total Paid Out</span><span class="t-val t-green" id="tick-paid">—</span></div>
     <div class="ticker-item"><span class="t-label">Avg Score</span><span class="t-val" id="tick-score">—</span></div>
@@ -1994,7 +1994,7 @@ function setView(view) {
         </thead>
         <tbody>
           ${[
-            ["POST","/ audit","Standalone AI audit — pay 0.1 XRP, get PASS/FAIL verdict"],
+            ["POST","/ audit","Standalone AI audit — pay $0.10, get PASS/FAIL verdict"],
             ["POST","/escrow/generate","Create an escrow vault — verifies fee, generates crypto-condition"],
             ["POST","/escrow/{id}/confirm","Register EscrowCreate tx hash to activate the vault"],
             ["POST","/evaluate","Submit work for AI evaluation — auto-releases payment on PASS"],

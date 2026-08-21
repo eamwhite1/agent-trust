@@ -224,7 +224,7 @@ code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
             <div class="card">
                 <div class="card-icon"><i data-lucide="zap"></i></div>
                 <h3>~0.00001 XRP transaction fee</h3>
-                <p>XRPL native escrow costs fractions of a cent — not $5–50 in gas. Protocol fee: 0.1 XRP per escrow (~$0.20). Everything else runs on-ledger at negligible cost.</p>
+                <p>XRPL native escrow costs fractions of a cent — not $5–50 in gas. Protocol fee: $0.10 per escrow (~$0.20). Everything else runs on-ledger at negligible cost.</p>
             </div>
         </div>
     </div>
@@ -314,7 +314,7 @@ code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
                 <div class="step-num">2</div>
                 <div class="step-body">
                     <h4>Buyer creates and funds the escrow</h4>
-                    <p>The buyer pays the 0.1 XRP protocol fee and calls <code>POST /escrow/generate</code> with the task description encoding the expected NFT ownership. The resulting <code>EscrowCreate</code> transaction is submitted on-chain, locking the funds.</p>
+                    <p>The buyer pays the $0.10 protocol fee and calls <code>POST /escrow/generate</code> with the task description encoding the expected NFT ownership. The resulting <code>EscrowCreate</code> transaction is submitted on-chain, locking the funds.</p>
                 </div>
             </div>
             <div class="step-row">
@@ -376,7 +376,7 @@ task_desc = (
     <span class="str">f"Payment releases when the NFT is confirmed in the buyer's wallet."</span>
 )
 
-<span class="cm"># Step 1: Pay the 0.1 XRP protocol fee</span>
+<span class="cm"># Step 1: Pay the $0.10 protocol fee</span>
 fee_tx   = Payment(
     account     = buyer_wallet.address,
     amount      = xrp_to_drops(<span class="num">0.1</span>),
