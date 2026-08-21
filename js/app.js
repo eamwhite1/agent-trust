@@ -365,7 +365,8 @@ async function payFee() {
         if (!data.nextUrl) throw new Error("Xaman did not return a sign URL. Check XUMM API credentials are set on the server.");
         feePayloadUUID = data.uuid;
         window.open(data.nextUrl, "_blank");
-        showStatus("fee-status", "Xaman opened — sign the fee payment, then return here.", "info");
+        const xrpLabel = data.amount_xrp ? ` (${data.amount_xrp} XRP)` : "";
+        showStatus("fee-status", `Xaman opened — sign the $0.10${xrpLabel} fee payment, then return here.`, "info");
         feePollingTimer = setInterval(pollFeePayment, 3000);
     } catch (err) {
         const msg = err.message === "Failed to fetch"
@@ -1157,7 +1158,7 @@ function showPurchaseAttemptPanel(escrowId) {
             <strong>Need another attempt?</strong> Pay 0.05 XRP to unlock one more submission.
             <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-secondary btn-sm" id="buy-attempt-btn" onclick="purchaseExtraAttempt('${escrowId}')">
-                    <i data-lucide="plus-circle"></i> Buy extra attempt (0.05 XRP)
+                    <i data-lucide="plus-circle"></i> Buy extra attempt ($0.10)
                 </button>
             </div>
             <div class="status-msg" id="purchase-attempt-status" style="margin-top:.5rem;"></div>
@@ -1168,19 +1169,18 @@ function showPurchaseAttemptPanel(escrowId) {
 async function purchaseExtraAttempt(escrowId) {
     const btn = document.getElementById("buy-attempt-btn");
     if (btn) btn.disabled = true;
-    showStatus("purchase-attempt-status", "⏳ Opening Xaman to pay 0.05 XRP…", "info");
+    showStatus("purchase-attempt-status", "⏳ Opening Xaman to pay the fee…", "info");
 
     try {
-        // Request a fee payload for 0.05 XRP
         const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, {
             method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount_xrp: 0.05 }),
+            body: JSON.stringify({}),
         });
         const data = await res.json();
         if (!data.nextUrl) throw new Error("No Xaman URL returned.");
 
         window.open(data.nextUrl, "_blank");
-        showStatus("purchase-attempt-status", "Sign the 0.05 XRP payment in Xaman, then wait…", "info");
+        showStatus("purchase-attempt-status", "Sign the fee payment in Xaman, then wait…", "info");
 
         // Poll until signed
         let attempts = 0;
