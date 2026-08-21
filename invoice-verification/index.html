@@ -611,7 +611,7 @@ async def create_escrow(req: EscrowRequest):
         + f"\n\nAccounts email for verified invoices: {req.accounts_email}"
     )
 
-    # 1. Pay protocol fee (0.1 XRP)
+    # 1. Pay protocol fee ($0.10 — XRP, RLUSD, or USDC)
     fee_tx   = Payment(account=buyer_wallet.address,
                        amount=xrp_to_drops(0.1),
                        destination=PROTOCOL_WALLET)

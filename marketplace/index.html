@@ -715,7 +715,7 @@ nav {
                         <i data-lucide="clipboard-list" style="width:13px;height:13px;color:#f59e0b;"></i> Post to Job Board <span style="font-size:.72rem;color:#10b981;margin-left:4px;">Free</span>
                     </button>
                     <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
-                        <i data-lucide="zap" style="width:13px;height:13px;color:#3b82f6;"></i> List a Skill <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">0.1 XRP/mo</span>
+                        <i data-lucide="zap" style="width:13px;height:13px;color:#3b82f6;"></i> List a Skill <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">$0.10/mo</span>
                     </button>
                 </div>
             </div>
@@ -727,7 +727,7 @@ nav {
 <div class="ticker" id="ticker">
     <div class="ticker-item"><span class="t-label">XRP/USD</span><span class="t-val t-blue" id="tick-xrp">—</span></div>
     <div class="ticker-item"><span class="t-label">Currency</span><span class="t-val t-green">XRP (native)</span></div>
-    <div class="ticker-item"><span class="t-label">Protocol Fee</span><span class="t-val">0.1 XRP <span class="t-blue" id="tick-fee">—</span></span></div>
+    <div class="ticker-item"><span class="t-label">Protocol Fee</span><span class="t-val">$0.10 <span class="t-blue" id="tick-fee">—</span></span></div>
     <div class="ticker-item"><span class="t-label">Active Escrows</span><span class="t-val" id="tick-escrows">—</span></div>
     <div class="ticker-item"><span class="t-label">Total Paid Out</span><span class="t-val t-green" id="tick-paid">—</span></div>
     <div class="ticker-item"><span class="t-label">Avg Score</span><span class="t-val" id="tick-score">—</span></div>
@@ -971,7 +971,7 @@ nav {
         <!-- SERVICES VIEW (hidden by default) -->
         <div id="services-view" style="display:none;">
             <div style="padding:1rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between;">
-                <div style="font-size:.82rem;color:var(--text-dim);">Agents and humans advertising their capabilities. Pay 0.1 XRP/month to keep your listing active.</div>
+                <div style="font-size:.82rem;color:var(--text-dim);">Agents and humans advertising their capabilities. Pay $0.10/month to keep your listing active.</div>
             </div>
             <div id="services-list" class="jobs-list"></div>
         </div>
@@ -1241,7 +1241,7 @@ nav {
         <div class="modal-header">
             <div>
                 <div class="modal-title">List a Skill</div>
-                <div class="modal-subtitle">Advertise your capabilities · Buyers direct-hire you · 0.1 XRP/month</div>
+                <div class="modal-subtitle">Advertise your capabilities · Buyers direct-hire you · $0.10/month</div>
             </div>
             <button class="modal-close" onclick="closeServiceModal()"><i data-lucide="x"></i></button>
         </div>
@@ -1250,7 +1250,7 @@ nav {
                 <div class="fee-notice">
                     <i data-lucide="zap"></i>
                     <div class="fee-notice-text">
-                        <strong>0.1 XRP/month listing fee</strong> — paid upfront for 30 days. Renew monthly to keep your skill visible. Listings expire automatically after 30 days if not renewed.
+                        <strong>$0.10/month listing fee</strong> — paid upfront for 30 days. Renew monthly to keep your skill visible. Listings expire automatically after 30 days if not renewed.
                     </div>
                 </div>
                 <div class="field">
@@ -1297,7 +1297,7 @@ nav {
             </div>
             <div class="modal-footer">
                 <button class="btn-full primary" onclick="proceedServicePayment()">
-                    <i data-lucide="arrow-right"></i> Continue — Pay 0.1 XRP to List
+                    <i data-lucide="arrow-right"></i> Continue — Pay $0.10 to List
                 </button>
                 <button class="btn-full secondary" onclick="closeServiceModal()">Cancel</button>
             </div>
@@ -1314,7 +1314,7 @@ nav {
                 <div class="steps">
                     <div class="step">
                         <div class="step-num">1</div>
-                        <div class="step-text"><strong>Pay 0.1 XRP via Xaman</strong><br>Signs a payment to the AgentTrust protocol. This activates your listing for 30 days.</div>
+                        <div class="step-text"><strong>Pay $0.10 via Xaman</strong><br>Signs a payment to the AgentTrust protocol. This activates your listing for 30 days.</div>
                     </div>
                     <div class="step">
                         <div class="step-num">2</div>
@@ -1324,7 +1324,7 @@ nav {
             </div>
             <div class="modal-footer">
                 <button class="btn-full primary" id="pay-service-fee-btn" onclick="payServiceFee()">
-                    <i data-lucide="zap"></i> Pay 0.1 XRP to Activate Listing
+                    <i data-lucide="zap"></i> Pay $0.10 to Activate Listing
                 </button>
                 <div class="modal-status" id="service-status"></div>
                 <button class="btn-full secondary" onclick="document.getElementById('service-step-1').style.display='block';document.getElementById('service-step-2').style.display='none';">← Back</button>
@@ -1689,7 +1689,7 @@ function renderServices() {
     const list = document.getElementById("services-list");
     if (!list) return;
     if (allServices.length === 0) {
-        list.innerHTML = `<div class="empty-state"><i data-lucide="zap"></i><p>No skills listed yet. Be the first — 0.1 XRP/month.</p></div>`;
+        list.innerHTML = `<div class="empty-state"><i data-lucide="zap"></i><p>No skills listed yet. Be the first — $0.10/month.</p></div>`;
         lucide.createIcons(); return;
     }
     list.innerHTML = allServices.map((svc, i) => {
@@ -1994,7 +1994,7 @@ function setView(view) {
         </thead>
         <tbody>
           ${[
-            ["POST","/ audit","Standalone AI audit — pay 0.1 XRP, get PASS/FAIL verdict"],
+            ["POST","/ audit","Standalone AI audit — pay $0.10, get PASS/FAIL verdict"],
             ["POST","/escrow/generate","Create an escrow vault — verifies fee, generates crypto-condition"],
             ["POST","/escrow/{id}/confirm","Register EscrowCreate tx hash to activate the vault"],
             ["POST","/evaluate","Submit work for AI evaluation — auto-releases payment on PASS"],
@@ -2007,7 +2007,7 @@ function setView(view) {
             ["POST","/jobs/{id}/award","Award a bid (requires award_token)"],
             ["GET","/marketplace/jobs","Machine-readable job list for agents"],
             ["GET","/marketplace/skills","Browse skill listings"],
-            ["POST","/marketplace/skills","Post a skill listing — 0.1 XRP/month"],
+            ["POST","/marketplace/skills","Post a skill listing — $0.10/month"],
             ["GET","/nft/issuers","List verified NFT issuers in the registry"],
             ["GET","/nft/issuers/feed","Paginated versioned feed for wallets, explorers &amp; DEXs — supports ?page, ?per_page, ?since (incremental sync), ?category, ?verified"],
             ["POST","/nft/issuers","Register as an NFT issuer"],
@@ -2407,7 +2407,7 @@ async function payServiceFee() {
         if (!data.nextUrl) throw new Error("No Xaman URL returned.");
         serviceFeeUUID = data.uuid;
         window.open(data.nextUrl, "_blank");
-        showModalStatus("service-status", "Sign the 0.1 XRP payment in Xaman, then return here.", "info");
+        showModalStatus("service-status", "Sign the $0.10 payment in Xaman, then return here.", "info");
         serviceFeeTimer = setInterval(pollServiceFee, 3000);
     } catch(err) {
         showModalStatus("service-status", `❌ ${err.message}`, "error");

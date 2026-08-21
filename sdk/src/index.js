@@ -28,7 +28,7 @@ class AgentTrust {
     });
     if (response.status === 402) {
       throw new AgentTrustPaymentRequired(
-        'Payment required. Send 0.1 XRP to rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR, then retry with the tx hash as feeHash.',
+        'Payment required. Send $0.10 (XRP, RLUSD, or USDC) to rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR, then retry with the tx hash as feeHash.',
         { amount: '0.1', currency: 'XRP', destination: PAYMENT_DESTINATION, network: 'XRPL Mainnet' }
       );
     }
@@ -55,12 +55,12 @@ class AgentTrust {
 
   /**
    * Audit a piece of work against a job spec. Returns PASS/FAIL verdict, score, and reasoning.
-   * Requires a 0.1 XRP payment hash (omit for free tier — wallets with trust score ≥ 25 get 3 free audits).
+   * Requires a $0.10 payment hash (XRP, RLUSD, or USDC) (omit for free tier — wallets with trust score ≥ 25 get 3 free audits).
    *
    * @param {object} options
    * @param {string} options.jobSpec      - The task specification
    * @param {string} options.deliverable  - The completed work to evaluate
-   * @param {string} [options.feeHash]    - XRPL tx hash of your 0.1 XRP payment (omit for free tier)
+   * @param {string} [options.feeHash]    - XRPL/Base tx hash of your $0.10 payment (omit for free tier)
    * @returns {Promise<{verdict: string, score: number, summary: string}>}
    */
   async audit({ jobSpec, deliverable, feeHash }) {
@@ -186,7 +186,7 @@ class AgentTrust {
    *
    * @param {object} options
    * @param {string} options.escrowId        - Unique escrow ID (e.g. "ESC-A1B2C3D4")
-   * @param {string} options.feeHash         - XRPL tx hash of your 0.1 XRP protocol fee payment
+   * @param {string} options.feeHash         - XRPL tx hash of your $0.10 protocol fee payment
    * @param {string} options.buyerAddress    - Buyer's XRPL address
    * @param {string} options.workerAddress   - Worker's XRPL address
    * @param {string} options.taskDescription - Task description

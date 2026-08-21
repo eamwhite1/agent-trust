@@ -84,7 +84,7 @@ await at.claimJob({ jobId: 'JOB-XYZ', workerAddress: 'rWorkerAddress' });
 After awarding a bid, lock payment on-chain and release automatically on AI approval.
 
 ```js
-// Step 1 — pay 0.1 XRP protocol fee on-chain first (via xrpl-py or Xaman)
+// Step 1 — pay $0.10 protocol fee on-chain first (via xrpl-py or Xaman)
 // Then generate vault + ready-to-sign tx dict:
 const params = await at.generateEscrow({
   escrowId:        'ESC-A1B2C3D4',

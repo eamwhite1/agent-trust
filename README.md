@@ -206,7 +206,7 @@ Then ask Claude: *"Create an XRPL wallet for this project"* — it calls `create
 
 | Fee | Amount | Paid to |
 |-----|--------|---------|
-| AI audit | 0.1 XRP (flat) | Protocol wallet |
+| AI audit | $0.10 (flat) | Protocol wallet |
 | XRPL EscrowFinish | ~0.005 XRP | XRPL validators |
 
 No percentage cuts. No hidden fees. Wallets with trust score ≥ 25 get 3 free audits.

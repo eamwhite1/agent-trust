@@ -24,7 +24,7 @@
       "documentation": "https://xrpl-referee.onrender.com/docs",
       "offers": {
         "@type": "Offer",
-        "description": "0.1 XRP flat fee per escrow audit. Payment released automatically on AI approval.",
+        "description": "$0.10 flat fee per escrow audit. Payment released automatically on AI approval.",
         "price": "0.1",
         "priceCurrency": "XRP"
       },
@@ -498,9 +498,9 @@
 
             <!-- AUTO PAY -->
             <div id="auto-pay-section">
-                <div class="fee-box">Protocol fee: <strong>0.1 XRP</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer. Covers escrow setup and the AI audit.</div>
+                <div class="fee-box">Protocol fee: <strong>$0.10</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer. Covers escrow setup and the AI audit.</div>
                 <button class="btn btn-blue" id="pay-fee-btn" onclick="payFee()">
-                    <i data-lucide="zap"></i> Pay 0.1 XRP <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span> Fee via Xaman
+                    <i data-lucide="zap"></i> Pay $0.10 <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span> Fee via Xaman
                 </button>
                 <div class="status-msg" id="fee-status"></div>
             </div>
@@ -511,7 +511,7 @@
                     <p style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:.4rem;">No Xaman? No problem.</p>
                     <p style="font-size:.8rem;color:var(--text-muted);line-height:1.65;margin-bottom:1.2rem;">Agents and developers can run the full escrow protocol programmatically.</p>
 
-                    <span class="dev-step-label">Step 1 — Pay the 0.1 XRP protocol fee</span>
+                    <span class="dev-step-label">Step 1 — Pay the $0.10 protocol fee</span>
                     <pre><code>from xrpl.transaction import submit_and_wait
 from xrpl.models.transactions import Payment
 from xrpl.utils import xrp_to_drops

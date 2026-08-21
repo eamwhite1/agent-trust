@@ -259,7 +259,7 @@ print("Worker address:", worker_wallet.address, "| seed:", worker_wallet.seed)
 
             <div class="callout callout-info" style="margin-bottom:1rem;">
                 <i data-lucide="info"></i>
-                <p><strong>Funding on mainnet:</strong> Buy XRP on Coinbase, Kraken, or Binance and withdraw to each wallet address. You need at least <strong>1 XRP per wallet</strong> (the XRPL base reserve) plus the escrow amount and a 0.1 XRP protocol fee. A few dollars per wallet is enough to get started. On testnet, use <code>generate_faucet_wallet(client)</code> instead of <code>Wallet.create()</code>.</p>
+                <p><strong>Funding on mainnet:</strong> Buy XRP on Coinbase, Kraken, or Binance and withdraw to each wallet address. You need at least <strong>1 XRP per wallet</strong> (the XRPL base reserve) plus the escrow amount and a $0.10 protocol fee. A few dollars per wallet is enough to get started. On testnet, use <code>generate_faucet_wallet(client)</code> instead of <code>Wallet.create()</code>.</p>
             </div>
 
             <div class="callout callout-amber">
@@ -339,7 +339,7 @@ httpx.post(f"{REFEREE}/jobs/{job_id}/award", json={
 }).raise_for_status()
 print(f"Awarded to {worker_address} for {agreed_xrp} XRP")
 
-# ── Step 4: Pay protocol fee (0.1 XRP) ──────────────────────────────────
+# ── Step 4: Pay protocol fee ($0.10 — XRP, RLUSD, or USDC) ──────────────────────────────────
 fee_tx = Payment(
     account=buyer_wallet.address,
     amount=xrp_to_drops(0.1),

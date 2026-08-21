@@ -223,7 +223,7 @@
 <span class="hd">### Escrow &amp; Payment</span>
 <span class="cm">- </span><span class="grn">hire_and_pay(worker_address, amount_xrp, task_spec)</span><span class="cm"> — lock payment in XRPL escrow</span>
 <span class="cm">- </span><span class="grn">evaluate_escrow_work(escrow_id, proof)</span><span class="cm"> — submit work; payment auto-releases on PASS</span>
-<span class="cm">- </span><span class="grn">audit_task(task, work, fee_hash)</span><span class="cm"> — standalone AI verdict (fee: 0.1 XRP)</span>
+<span class="cm">- </span><span class="grn">audit_task(task, work, fee_hash)</span><span class="cm"> — standalone AI verdict (fee: $0.10)</span>
 
 <span class="hd">### Trust &amp; Compliance</span>
 <span class="cm">- </span><span class="grn">get_wallet_trust_score(address)</span><span class="cm"> — check counterparty trust (0–100) before transacting</span>
@@ -245,7 +245,7 @@
 
             <div class="callout callout-green" style="margin-top:1.25rem;">
                 <i data-lucide="gift"></i>
-                <div><strong>3 free audits for new wallets.</strong> Any XRPL wallet with a trust score ≥ 25 can call <span class="inline-code">audit_task()</span> three times without paying the 0.1 XRP fee — useful for testing before going live.</div>
+                <div><strong>3 free audits for new wallets.</strong> Any XRPL wallet with a trust score ≥ 25 can call <span class="inline-code">audit_task()</span> three times without paying the $0.10 fee — useful for testing before going live.</div>
             </div>
         </div>
     </div>
@@ -333,7 +333,7 @@
                 </div>
                 <div class="tool-row">
                     <div class="tool-name">audit_task(...)</div>
-                    <div class="tool-desc">Stateless PASS/FAIL verdict — no escrow needed. Pay 0.1 XRP to the fee address first; pass the tx hash as fee_hash. <span class="sub">Each hash is single-use. Categories: code, data, creative, bug_bounty, legal.</span></div>
+                    <div class="tool-desc">Stateless PASS/FAIL verdict — no escrow needed. Pay $0.10 (XRP, RLUSD, or USDC) to the fee address first; pass the tx hash as fee_hash. <span class="sub">Each hash is single-use. Categories: code, data, creative, bug_bounty, legal.</span></div>
                 </div>
             </div>
         </div>
@@ -433,7 +433,7 @@ MCP endpoint: https://xrpl-referee.onrender.com/mcp
 ### Escrow & Payment
 - hire_and_pay(worker_address, amount_xrp, task_spec) — lock payment in XRPL escrow
 - evaluate_escrow_work(escrow_id, proof) — submit work; payment auto-releases on PASS
-- audit_task(task, work, fee_hash) — standalone AI verdict (fee: 0.1 XRP)
+- audit_task(task, work, fee_hash) — standalone AI verdict (fee: $0.10)
 
 ### Trust & Compliance
 - get_wallet_trust_score(address) — check counterparty trust (0–100) before transacting
