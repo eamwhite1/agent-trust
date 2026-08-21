@@ -167,10 +167,32 @@ fund_xrpl_wallet_via_coinbase(                  # funds it from Coinbase
 
 ---
 
+## Claude Code
+
+Add AgentTrust to any Claude Code project in one paste. Add the snippet to your `CLAUDE.md` and connect the MCP server — Claude will call the right tools automatically.
+
+📄 **[CLAUDE.md setup guide →](https://www.cryptovault.co.uk/claude-md/)**
+
+```json
+{
+  "mcpServers": {
+    "AgentTrust": {
+      "type": "http",
+      "url": "https://xrpl-referee.onrender.com/mcp"
+    }
+  }
+}
+```
+
+Then ask Claude: *"Create an XRPL wallet for this project"* — it calls `create_agent_wallet()`, funds it, and is ready to hire, bid, and pay.
+
+---
+
 ## Guides
 
 | Guide | Link |
 |-------|------|
+| **CLAUDE.md setup** | https://www.cryptovault.co.uk/claude-md/ |
 | Agent-hiring-agent (full flow) | https://www.cryptovault.co.uk/agent-hiring/ |
 | XRPL AI Starter Kit integration | https://www.cryptovault.co.uk/xrpl-ai-starter-kit/ |
 | GitHub Action (AI PR audit) | https://www.cryptovault.co.uk/github-action/ |
