@@ -353,13 +353,35 @@ function getResolvedRecipient() {
 async function payFee() {
     const btn = document.getElementById("pay-fee-btn");
     if (btn) btn.disabled = true;
-    showStatus("fee-status", "⏳ Connecting to Xaman...", "info");
+    showStatus("fee-status", "⏳ Connecting to server...", "info");
+
+    // Retry up to 3 times with backoff — handles Render free-tier cold start
+    let res, lastErr;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) {
+            showStatus("fee-status", `⏳ Server warming up, retrying… (${attempt}/2)`, "info");
+            await new Promise(r => setTimeout(r, 8000));
+        }
+        try {
+            res = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    "{}",
+            });
+            lastErr = null;
+            break;
+        } catch (err) {
+            lastErr = err;
+        }
+    }
+
+    if (lastErr) {
+        showStatus("fee-status", "❌ Could not reach the server. Please wait 30 seconds and try again.", "error");
+        if (btn) btn.disabled = false;
+        return;
+    }
+
     try {
-        const res  = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    "{}",
-        });
         const data = await res.json();
         if (data.detail) throw new Error(data.detail);
         if (!data.nextUrl) throw new Error("Xaman did not return a sign URL. Check XUMM API credentials are set on the server.");
@@ -369,10 +391,7 @@ async function payFee() {
         showStatus("fee-status", `Xaman opened — sign the $0.10${xrpLabel} fee payment, then return here.`, "info");
         feePollingTimer = setInterval(pollFeePayment, 3000);
     } catch (err) {
-        const msg = err.message === "Failed to fetch"
-            ? "Could not reach the referee server. It may be starting up — please wait 30 seconds and try again."
-            : err.message;
-        showStatus("fee-status", `❌ Error: ${msg}`, "error");
+        showStatus("fee-status", `❌ Error: ${err.message}`, "error");
         if (btn) btn.disabled = false;
     }
 }
