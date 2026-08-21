@@ -496,14 +496,23 @@ async function initVault() {
         const setupData = await setupRes.json();
 
         if (!setupRes.ok) {
-            // 451 = Unavailable For Legal Reasons (threshold exceeded, no KYC)
-            if (setupRes.status === 451) {
+            const detail = setupData.detail || {};
+            // 403 kyc_required — escrow value exceeds $3,000 limit for unverified wallets
+            if (setupRes.status === 403 && (detail.error === "kyc_required" || setupData.error === "kyc_required")) {
+                const msg = detail.message || "This escrow value exceeds the $3,000 limit for unverified wallets.";
                 showStatus("init-status",
-                    "⚠️ Transaction limit reached — " + (setupData.detail || "value exceeds our current limit without KYC. See cryptovault.co.uk/compliance for details."),
+                    `⚠️ Identity verification required — ${msg} <a href="/kyc/" style="color:inherit;text-decoration:underline">Complete KYC →</a>`,
                     "error");
                 return;
             }
-            throw new Error(setupData.detail || "Backend rejected the request.");
+            // 451 = Unavailable For Legal Reasons — hard cap exceeded even for KYC-verified wallets
+            if (setupRes.status === 451) {
+                showStatus("init-status",
+                    "⚠️ Transaction limit reached — " + (typeof detail === "string" ? detail : "value exceeds the maximum permitted transaction size. Please contact hello@cryptovault.co.uk."),
+                    "error");
+                return;
+            }
+            throw new Error((typeof detail === "string" ? detail : detail.message) || "Backend rejected the request.");
         }
 
         const condition         = setupData.condition;
