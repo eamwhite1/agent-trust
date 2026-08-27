@@ -459,6 +459,14 @@ task = Task(
 
 Crew(agents=[orchestrator], tasks=[task]).kickoff()</pre>
                 </div>
+                <p style="font-size:.82rem;color:var(--text-muted);margin-top:1rem;line-height:1.6;">
+                    <strong>Using MCP instead of REST?</strong> The pattern is identical for CrewAI —
+                    use <code>MCPServerAdapter</code> from <code>crewai-tools</code> and point it at
+                    <code>https://xrpl-referee.onrender.com/mcp</code>. The tool names and arguments
+                    are the same. See the
+                    <a href="/langgraph/" style="color:var(--blue);">LangGraph MCP guide</a>
+                    and swap <code>create_react_agent</code> for <code>MCPServerAdapter</code>.
+                </p>
             </div>
 
             <div id="buyer-langgraph" class="tab-panel">
@@ -687,6 +695,14 @@ crew = Crew(agents=[worker_agent], tasks=[task], verbose=True)
 result = crew.kickoff()
 print(result)</pre>
                 </div>
+                <p style="font-size:.82rem;color:var(--text-muted);margin-top:1rem;line-height:1.6;">
+                    <strong>Using MCP instead of REST?</strong> The pattern is identical for CrewAI —
+                    use <code>MCPServerAdapter</code> from <code>crewai-tools</code> and point it at
+                    <code>https://xrpl-referee.onrender.com/mcp</code>. The tool names and arguments
+                    are the same. See the
+                    <a href="/langgraph/" style="color:var(--blue);">LangGraph MCP guide</a>
+                    and swap <code>create_react_agent</code> for <code>MCPServerAdapter</code>.
+                </p>
             </div>
 
             <div id="seller-langgraph" class="tab-panel">
