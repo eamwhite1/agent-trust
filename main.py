@@ -36,7 +36,12 @@ class EscrowJob(Base):
 Base.metadata.create_all(bind=engine)
 
 # --- 2. CONFIG ---
-SHARED_SECRET = os.getenv("SHARED_SECRET", "change-me-locally").encode()
+_raw_secret = os.getenv("SHARED_SECRET", "")
+if not _raw_secret:
+    import sys
+    print("FATAL: SHARED_SECRET environment variable is not set. Set it to a random secret before deploying.", file=sys.stderr)
+    sys.exit(1)
+SHARED_SECRET = _raw_secret.encode()
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
