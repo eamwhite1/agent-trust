@@ -3,6 +3,16 @@
 // ---------------------------------------------------------------------------
 const REFEREE_URL = "https://xrpl-referee.onrender.com";
 
+// Safe HTML escaping — use for any server-supplied value injected into innerHTML
+function esc(str) {
+    return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 // ---------------------------------------------------------------------------
 // FILE ATTACHMENT STATE
 // ---------------------------------------------------------------------------
@@ -1057,8 +1067,8 @@ function showVerdictPanel(verdict) {
 
     const metEl    = document.getElementById("verdict-met");
     const failedEl = document.getElementById("verdict-failed");
-    if (metEl    && verdict.criteria_met?.length)    metEl.innerHTML    = verdict.criteria_met.map(c    => `<li>✓ ${c}</li>`).join("");
-    if (failedEl && verdict.criteria_failed?.length) failedEl.innerHTML = verdict.criteria_failed.map(c => `<li>✕ ${c}</li>`).join("");
+    if (metEl    && verdict.criteria_met?.length)    metEl.innerHTML    = verdict.criteria_met.map(c    => `<li>✓ ${esc(c)}</li>`).join("");
+    if (failedEl && verdict.criteria_failed?.length) failedEl.innerHTML = verdict.criteria_failed.map(c => `<li>✕ ${esc(c)}</li>`).join("");
 
     const header = document.getElementById("verdict-header");
     const badge  = document.getElementById("verdict-result");
@@ -1440,7 +1450,7 @@ async function loadDelivery(escrowId) {
             const hashEl = document.getElementById("collect-tx-hash");
             if (hashEl) {
                 hashEl.style.display = "block";
-                hashEl.innerHTML = `Payment tx: <a href="https://livenet.xrpl.org/transactions/${data.auto_finish_hash}" target="_blank" style="color:var(--blue);font-family:monospace;">${data.auto_finish_hash.substring(0, 20)}…</a>`;
+                hashEl.innerHTML = `Payment tx: <a href="https://livenet.xrpl.org/transactions/${esc(data.auto_finish_hash)}" target="_blank" style="color:var(--blue);font-family:monospace;">${esc(data.auto_finish_hash.substring(0, 20))}…</a>`;
             }
         }
 
@@ -1576,24 +1586,30 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                         const pr = await fetch(`${REFEREE_URL}/domain/preview?domain=${encodeURIComponent(query)}`);
                         const pd = await pr.json();
                         if (pd.status === "bithomp_verified" && pd.wallet) {
-                            resultsEl.innerHTML = `<div onclick="selectIssuer('${pd.wallet}','${query}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
-                                style="padding:10px 12px;cursor:pointer;font-size:.8rem;display:flex;flex-direction:column;gap:3px;"
-                                onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
-                                <div style="font-weight:600;color:var(--text);">${query}</div>
+                            const div = document.createElement("div");
+                            div.style.cssText = "padding:10px 12px;cursor:pointer;font-size:.8rem;display:flex;flex-direction:column;gap:3px;";
+                            div.addEventListener("mouseover", () => div.style.background = "rgba(0,102,255,.04)");
+                            div.addEventListener("mouseout",  () => div.style.background = "");
+                            div.addEventListener("click", () => selectIssuer(pd.wallet, query, targetId, resultsId, wrapId, rgb));
+                            div.innerHTML = `<div style="font-weight:600;color:var(--text);">${esc(query)}</div>
                                 <div style="display:flex;align-items:center;gap:6px;">
                                     <span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ Verified on Bithomp</span>
-                                    <span style="font-size:.68rem;color:var(--text-muted);font-family:monospace;">${pd.wallet.slice(0,8)}…</span>
-                                </div>
-                            </div>`;
+                                    <span style="font-size:.68rem;color:var(--text-muted);font-family:monospace;">${esc(pd.wallet.slice(0,8))}…</span>
+                                </div>`;
+                            resultsEl.innerHTML = "";
+                            resultsEl.appendChild(div);
                             resultsEl.style.display = "block";
                             return;
                         } else if (pd.status === "toml_found" && pd.wallets?.length) {
-                            resultsEl.innerHTML = `<div onclick="selectIssuer('${pd.wallets[0]}','${query}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
-                                style="padding:10px 12px;cursor:pointer;font-size:.8rem;display:flex;flex-direction:column;gap:3px;"
-                                onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
-                                <div style="font-weight:600;color:var(--text);">${query}</div>
-                                <div><span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">xrp-ledger.toml found · not Bithomp verified</span></div>
-                            </div>`;
+                            const div = document.createElement("div");
+                            div.style.cssText = "padding:10px 12px;cursor:pointer;font-size:.8rem;display:flex;flex-direction:column;gap:3px;";
+                            div.addEventListener("mouseover", () => div.style.background = "rgba(0,102,255,.04)");
+                            div.addEventListener("mouseout",  () => div.style.background = "");
+                            div.addEventListener("click", () => selectIssuer(pd.wallets[0], query, targetId, resultsId, wrapId, rgb));
+                            div.innerHTML = `<div style="font-weight:600;color:var(--text);">${esc(query)}</div>
+                                <div><span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">xrp-ledger.toml found · not Bithomp verified</span></div>`;
+                            resultsEl.innerHTML = "";
+                            resultsEl.appendChild(div);
                             resultsEl.style.display = "block";
                             return;
                         }
@@ -1617,18 +1633,20 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                 resultsEl.style.display = "block";
                 return;
             }
-            resultsEl.innerHTML = items.slice(0,8).map(r => {
+            resultsEl.innerHTML = "";
+            items.slice(0,8).forEach(r => {
                 const badge = r.verified === "verified"
-                    ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust verified${r.category ? " · " + r.category : ""}</span>`
-                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">◎ Public record${r.category ? " · " + r.category : ""}</span>`;
-                const nameEsc = r.name.replace(/'/g, "\\'");
-                return `<div onclick="selectIssuer('${r.wallet||""}','${nameEsc}','${targetId}','${resultsId}','${wrapId}','${rgb}')"
-                    style="padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;"
-                    onmouseover="this.style.background='rgba(0,102,255,.04)'" onmouseout="this.style.background=''">
-                    <div style="font-weight:600;color:var(--text);">${r.name}</div>
-                    <div style="display:flex;align-items:center;gap:6px;">${badge}${r.website ? `<span style="font-size:.68rem;color:var(--text-muted);font-family:monospace;">${r.website.replace(/https?:\/\//, "")}</span>` : ""}</div>
-                </div>`;
-            }).join("");
+                    ? `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25);">✓ AgentTrust verified${r.category ? " · " + esc(r.category) : ""}</span>`
+                    : `<span style="font-size:.62rem;padding:1px 5px;border-radius:8px;background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);">◎ Public record${r.category ? " · " + esc(r.category) : ""}</span>`;
+                const div = document.createElement("div");
+                div.style.cssText = "padding:8px 12px;cursor:pointer;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:3px;";
+                div.addEventListener("mouseover", () => div.style.background = "rgba(0,102,255,.04)");
+                div.addEventListener("mouseout",  () => div.style.background = "");
+                div.addEventListener("click", () => selectIssuer(r.wallet || "", r.name, targetId, resultsId, wrapId, rgb));
+                div.innerHTML = `<div style="font-weight:600;color:var(--text);">${esc(r.name)}</div>
+                    <div style="display:flex;align-items:center;gap:6px;">${badge}${r.website ? `<span style="font-size:.68rem;color:var(--text-muted);font-family:monospace;">${esc(r.website.replace(/https?:\/\//, ""))}</span>` : ""}</div>`;
+                resultsEl.appendChild(div);
+            });
             resultsEl.style.display = "block";
         } catch(e) { if (resultsEl) resultsEl.style.display = "none"; }
     }, 280);
