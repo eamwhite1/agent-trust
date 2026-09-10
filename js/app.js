@@ -107,7 +107,7 @@ function renderFileList(files, listId) {
     el.innerHTML = files.map((f, i) => `
         <div class="file-chip">
             <i data-lucide="${f.mime_type?.startsWith("image/") ? "image" : f.mime_type === "application/pdf" ? "file-text" : "file"}"></i>
-            <span class="file-name">${f.filename}</span>
+            <span class="file-name">${esc(f.filename)}</span>
             <span class="file-size">${formatBytes(f.size)}</span>
             ${f.text_extracted ? '<span class="file-extracted">text extracted</span>' : ""}
             <button class="file-remove" onclick="removeFile('${listId}', ${i})"><i data-lucide="x"></i></button>
@@ -1183,7 +1183,7 @@ function showPurchaseAttemptPanel(escrowId) {
             <strong>Need another attempt?</strong> Pay 0.05 XRP to unlock one more submission.
             <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-secondary btn-sm" id="buy-attempt-btn" onclick="purchaseExtraAttempt('${escrowId}')">
-                    <i data-lucide="plus-circle"></i> Buy extra attempt ($0.10)
+                    <i data-lucide="plus-circle"></i> Buy extra attempt (0.05 XRP)
                 </button>
             </div>
             <div class="status-msg" id="purchase-attempt-status" style="margin-top:.5rem;"></div>
@@ -1457,11 +1457,11 @@ async function loadDelivery(escrowId) {
                 if (a.data) {
                     const blob = b64toBlob(a.data, a.mime_type);
                     const url  = URL.createObjectURL(blob);
-                    return `<a href="${url}" download="${a.filename}" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.85);border-radius:8px;padding:6px 12px;font-size:.78rem;font-weight:600;text-decoration:none;color:var(--text);">
+                    return `<a href="${url}" download="${esc(a.filename)}" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.85);border-radius:8px;padding:6px 12px;font-size:.78rem;font-weight:600;text-decoration:none;color:var(--text);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        ${a.filename}</a>`;
+                        ${esc(a.filename)}</a>`;
                 }
-                return `<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.7);border-radius:8px;padding:6px 12px;font-size:.78rem;color:var(--text-muted);">📎 ${a.filename}</div>`;
+                return `<div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.7);border-radius:8px;padding:6px 12px;font-size:.78rem;color:var(--text-muted);">📎 ${esc(a.filename)}</div>`;
             }).join("");
         }
 
