@@ -1166,7 +1166,7 @@ async function triggerDexSwap() {
 // ---------------------------------------------------------------------------
 // PURCHASE EXTRA SUBMISSION ATTEMPT
 // ---------------------------------------------------------------------------
-function showPurchaseAttemptPanel(escrowId) {
+async function showPurchaseAttemptPanel(escrowId) {
     // Insert a purchase panel into the submit area if not already present
     let panel = document.getElementById("purchase-attempt-panel");
     if (!panel) {
@@ -1177,13 +1177,24 @@ function showPurchaseAttemptPanel(escrowId) {
         const submitBtn = document.getElementById("submit-btn");
         submitBtn?.parentNode?.insertBefore(panel, submitBtn.nextSibling);
     }
+    // Fetch live XRP price to show the $0.05 equivalent
+    let xrpLabel = "";
+    try {
+        const pr = await safeFetch(`${REFEREE_URL}/xrp/price`);
+        const pd = await pr.json();
+        if (pd.usd && pd.usd > 0) {
+            const xrpAmt = (0.05 / pd.usd).toFixed(4);
+            xrpLabel = ` (≈ ${xrpAmt} XRP)`;
+        }
+    } catch (_) {}
+
     panel.innerHTML = `
         <i data-lucide="zap" style="color:var(--amber,#f59e0b);flex-shrink:0;"></i>
         <div>
-            <strong>Need another attempt?</strong> Pay 0.05 XRP to unlock one more submission.
+            <strong>Need another attempt?</strong> Pay $0.05${xrpLabel} to unlock one more submission.
             <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
-                <button class="btn btn-secondary btn-sm" id="buy-attempt-btn" onclick="purchaseExtraAttempt('${escrowId}')">
-                    <i data-lucide="plus-circle"></i> Buy extra attempt (0.05 XRP)
+                <button class="btn btn-secondary btn-sm" id="buy-attempt-btn" onclick="purchaseExtraAttempt('${esc(escrowId)}')">
+                    <i data-lucide="plus-circle"></i> Buy extra attempt ($0.05${xrpLabel})
                 </button>
             </div>
             <div class="status-msg" id="purchase-attempt-status" style="margin-top:.5rem;"></div>
