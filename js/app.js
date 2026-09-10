@@ -341,13 +341,13 @@ function updateUsdEquiv() {
 
     // Fee spans — update whenever this runs if price is available
     if (xrpPriceUsd) {
-        const feeUsd     = (0.1 * xrpPriceUsd).toFixed(2);
+        const feeXrp     = (0.10 / xrpPriceUsd).toFixed(4);
         const feeEquiv   = document.getElementById("fee-usd-equiv");
         const feeBtn     = document.getElementById("fee-btn-usd");
         const compareFee = document.getElementById("compare-fee-usd");
-        if (feeEquiv)   feeEquiv.textContent  = `(≈ $${feeUsd})`;
-        if (feeBtn)     feeBtn.textContent     = `≈ $${feeUsd}`;
-        if (compareFee) compareFee.textContent = `≈ $${feeUsd} USD at current XRP price`;
+        if (feeEquiv)   feeEquiv.textContent  = `(≈ ${feeXrp} XRP at current price)`;
+        if (feeBtn)     feeBtn.textContent     = `≈ ${feeXrp} XRP`;
+        if (compareFee) compareFee.textContent = `≈ ${feeXrp} XRP at current price`;
     }
 }
 
@@ -420,7 +420,7 @@ async function pollFeePayment() {
             const payBtn  = document.getElementById("pay-fee-btn");
             const initBtn = document.getElementById("init-btn");
             if (payBtn)  payBtn.disabled  = false;
-            if (initBtn) initBtn.disabled = false;
+            if (initBtn) { initBtn.disabled = false; initBtn.style.opacity = ""; initBtn.style.cursor = ""; initBtn.title = ""; }
         }
     } catch (err) {
         console.warn("Fee poll error:", err);
@@ -452,11 +452,7 @@ async function initVault() {
         showStatus("init-status", "❌ Please pay the $0.10 fee first.", "error");
         return;
     }
-    if (!workerEmail) {
-        showStatus("init-status", "❌ Seller's email is required — they need it to receive their receipt code and submission link.", "error");
-        document.getElementById("worker-email-field")?.focus();
-        return;
-    }
+    // workerEmail is optional — agents use the receipt code directly; humans get an email if provided
 
     const receiptCode = generateReceiptCode();
     if (btn) btn.disabled = true;
