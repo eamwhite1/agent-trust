@@ -17,13 +17,13 @@ XRPL wallets:
     Get a testnet wallet free at: https://xrpl.org/xrp-testnet-faucet.html
     For mainnet you need real XRP.
 
-API endpoint: https://xrpl-referee.onrender.com
+API endpoint: https://mcp.cryptovault.co.uk
 """
 
 import requests
 import json
 
-BASE_URL = "https://xrpl-referee.onrender.com"
+BASE_URL = "https://mcp.cryptovault.co.uk"
 
 # ── Configuration ────────────────────────────────────────────────────────────
 

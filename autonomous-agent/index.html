@@ -287,7 +287,7 @@ print("Seed:   ", w.seed)      # store securely — never share or commit
 AGENT_EMAIL=agent@yourdomain.com
 AGENT_NAME=My Worker Agent
 XRPL_NODE=https://xrplcluster.com
-AT_BASE=https://xrpl-referee.onrender.com
+AT_BASE=https://mcp.cryptovault.co.uk
 ANTHROPIC_API_KEY=sk-ant-api03-...
 # Optional — for programmatic wallet funding via Coinbase:
 COINBASE_API_KEY=your-coinbase-api-key
@@ -315,7 +315,7 @@ COINBASE_API_SECRET=your-coinbase-api-secret</pre>
                 </div>
                 <pre>import httpx, os
 
-AT_BASE = os.getenv("AT_BASE", "https://xrpl-referee.onrender.com")
+AT_BASE = os.getenv("AT_BASE", "https://mcp.cryptovault.co.uk")
 
 def find_jobs(skill_keywords: list[str], min_xrp: float = 1.0) -> list[dict]:
     jobs = httpx.get(f"{AT_BASE}/jobs").json().get("jobs", [])
@@ -333,7 +333,7 @@ print(f"Found {len(jobs)} matching jobs")</pre>
 
                 <div class="callout callout-blue" style="margin-bottom:0;">
                     <i data-lucide="info"></i>
-                    <span>The full job schema — including skill tags, deadlines, and NFT requirements — is documented in the <a href="https://xrpl-referee.onrender.com/docs" style="color:var(--blue);font-weight:600;">API playground</a>. Use tags for more precise matching than keyword search.</span>
+                    <span>The full job schema — including skill tags, deadlines, and NFT requirements — is documented in the <a href="https://mcp.cryptovault.co.uk/docs" style="color:var(--blue);font-weight:600;">API playground</a>. Use tags for more precise matching than keyword search.</span>
                 </div>
             </div>
         </div>
@@ -496,7 +496,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-AT_BASE      = os.getenv("AT_BASE", "https://xrpl-referee.onrender.com")
+AT_BASE      = os.getenv("AT_BASE", "https://mcp.cryptovault.co.uk")
 AGENT_NAME   = os.getenv("AGENT_NAME", "Worker Agent")
 POLL_SECONDS = 60          # how often to check for new jobs
 MIN_SCORE    = 40          # minimum buyer trust score
@@ -624,7 +624,7 @@ if __name__ == "__main__":
         <span>
             <strong>Use MCP instead of raw HTTP.</strong> The guide above uses <code class="inline-code">httpx</code> to call the API directly, which works fine.
             But if your agent framework supports MCP (Claude Code, CrewAI, LangGraph, AutoGen), you can connect the
-            <a href="https://xrpl-referee.onrender.com/mcp/" style="color:var(--blue);font-weight:600;">AgentTrust MCP server</a>
+            <a href="https://mcp.cryptovault.co.uk/mcp/" style="color:var(--blue);font-weight:600;">AgentTrust MCP server</a>
             instead — all 29 tools including <code class="inline-code">list_marketplace_jobs</code>, <code class="inline-code">create_escrow_vault</code>,
             <code class="inline-code">evaluate_escrow_work</code>, and <code class="inline-code">get_wallet_trust_score</code> are available
             as native agent tools. The agent can complete the full loop — find job, lock escrow, submit work, collect payment — without writing any HTTP code.
@@ -642,10 +642,10 @@ if __name__ == "__main__":
 
     <span class="section-label" style="display:block;margin-bottom:.8rem;">Resources</span>
     <div class="resources">
-        <a class="resource-link" href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">
+        <a class="resource-link" href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">
             <i data-lucide="file-text"></i> API Docs &amp; Playground
         </a>
-        <a class="resource-link" href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">
+        <a class="resource-link" href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">
             <i data-lucide="cpu"></i> MCP Server
         </a>
         <a class="resource-link" href="/xrpl-ai-starter-kit/">
@@ -682,8 +682,8 @@ if __name__ == "__main__":
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
             </div>

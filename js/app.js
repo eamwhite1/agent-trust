@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // CONFIGURATION
 // ---------------------------------------------------------------------------
-const REFEREE_URL = "https://xrpl-referee.onrender.com";
+const REFEREE_URL = "https://mcp.cryptovault.co.uk";
 
 // Safe HTML escaping — use for any server-supplied value injected into innerHTML
 function esc(str) {
@@ -1404,7 +1404,7 @@ function copyWorkerLink() {
 // ---------------------------------------------------------------------------
 // COLLECT DELIVERY PAGE
 // ---------------------------------------------------------------------------
-const REFEREE_URL_COLLECT = "https://xrpl-referee.onrender.com";
+const REFEREE_URL_COLLECT = "https://mcp.cryptovault.co.uk";
 
 async function loadDelivery(escrowId) {
     document.getElementById("hero-section").style.display = "none";

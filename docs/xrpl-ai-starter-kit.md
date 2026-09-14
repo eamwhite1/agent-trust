@@ -33,7 +33,7 @@ Before locking any funds, score the worker wallet:
 import httpx
 
 score = httpx.get(
-    "https://xrpl-referee.onrender.com/wallet/score/rWorkerWalletAddress"
+    "https://mcp.cryptovault.co.uk/wallet/score/rWorkerWalletAddress"
 ).json()
 
 print(score["score"])          # 0–100
@@ -49,7 +49,7 @@ print(score["signals"]["sanctions_clean"])  # False = stop immediately
 import httpx
 
 escrow = httpx.post(
-    "https://xrpl-referee.onrender.com/escrow/create",
+    "https://mcp.cryptovault.co.uk/escrow/create",
     json={
         "payer_address":   "rPayerAddress",
         "payer_secret":    "sPayerSecret",   # stays local; signs tx client-side
@@ -73,7 +73,7 @@ Funds are now locked on XRPL Mainnet. Neither party can touch them until work is
 # Then pass the tx hash:
 
 audit = httpx.post(
-    "https://xrpl-referee.onrender.com/audit",
+    "https://mcp.cryptovault.co.uk/audit",
     headers={"x-payment-hash": "your_64char_tx_hash"},
     json={
         "escrow_id":   escrow_id,
@@ -93,11 +93,11 @@ print(audit["summary"])   # plain-English explanation
 
 ```python
 # PASS — release to worker
-httpx.post("https://xrpl-referee.onrender.com/escrow/release",
+httpx.post("https://mcp.cryptovault.co.uk/escrow/release",
     json={"escrow_id": escrow_id, "payer_secret": "sPayerSecret"})
 
 # FAIL and deadline passed — reclaim
-httpx.post("https://xrpl-referee.onrender.com/escrow/cancel",
+httpx.post("https://mcp.cryptovault.co.uk/escrow/cancel",
     json={"escrow_id": escrow_id, "payer_secret": "sPayerSecret"})
 ```
 
@@ -111,7 +111,7 @@ Add AgentTrust to your Claude Desktop or any MCP host:
 {
   "mcpServers": {
     "agenttrust": {
-      "url": "https://xrpl-referee.onrender.com/mcp/"
+      "url": "https://mcp.cryptovault.co.uk/mcp/"
     }
   }
 }
@@ -170,8 +170,8 @@ Call `/audit` with no fee header to receive a machine-readable `402 Payment Requ
 
 ## Resources
 
-- **API docs / playground:** https://xrpl-referee.onrender.com/docs
-- **OpenAPI spec:** https://xrpl-referee.onrender.com/openapi.json
+- **API docs / playground:** https://mcp.cryptovault.co.uk/docs
+- **OpenAPI spec:** https://mcp.cryptovault.co.uk/openapi.json
 - **Guide (HTML):** https://www.cryptovault.co.uk/xrpl-ai-starter-kit/
 - **Marketplace:** https://www.cryptovault.co.uk/marketplace
 - **Compliance:** https://www.cryptovault.co.uk/compliance

@@ -6,7 +6,7 @@
 **Published:** 2026-06-06  
 **Canonical URL:** https://www.cryptovault.co.uk/docs/issuer-registry-spec.md  
 **Discovery:** https://www.cryptovault.co.uk/.well-known/xrpl-issuer-registry  
-**Live Registry:** https://xrpl-referee.onrender.com/nft/issuers  
+**Live Registry:** https://mcp.cryptovault.co.uk/nft/issuers  
 
 ---
 
@@ -136,7 +136,7 @@ Organisations already seeded as `verified = "public"` (sourced from public XRPL 
 
 ## 6. REST API
 
-**Base URL:** `https://xrpl-referee.onrender.com`
+**Base URL:** `https://mcp.cryptovault.co.uk`
 
 ### 6.1 List Issuers
 
@@ -157,7 +157,7 @@ GET /nft/issuers
 {
   "issuers": [ /* array of issuer records */ ],
   "register_url": "https://www.cryptovault.co.uk/marketplace#issuers",
-  "register_api": "https://xrpl-referee.onrender.com/nft/issuers"
+  "register_api": "https://mcp.cryptovault.co.uk/nft/issuers"
 }
 ```
 
@@ -251,7 +251,7 @@ Content-Type: application/json
 
 The registry is available as an MCP (Model Context Protocol) server for AI agents:
 
-**MCP endpoint:** `https://xrpl-referee.onrender.com/mcp`
+**MCP endpoint:** `https://mcp.cryptovault.co.uk/mcp`
 
 ### Available tools
 
@@ -278,17 +278,17 @@ This returns a JSON document pointing to the live API and this specification:
 
 ```json
 {
-  "registry_api": "https://xrpl-referee.onrender.com/nft/issuers",
+  "registry_api": "https://mcp.cryptovault.co.uk/nft/issuers",
   "spec": "https://www.cryptovault.co.uk/docs/issuer-registry-spec.md",
   "version": "1.0.0",
-  "mcp_endpoint": "https://xrpl-referee.onrender.com/mcp"
+  "mcp_endpoint": "https://mcp.cryptovault.co.uk/mcp"
 }
 ```
 
 The same discovery document is served from the API:
 
 ```
-GET https://xrpl-referee.onrender.com/.well-known/xrpl-issuer-registry
+GET https://mcp.cryptovault.co.uk/.well-known/xrpl-issuer-registry
 ```
 
 ---

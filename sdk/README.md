@@ -157,6 +157,6 @@ try {
 | `submitWork(options)` | Submit deliverable for AI audit + payment release |
 | `getTrustScore(address)` | Trust score for any XRPL wallet |
 
-Full REST API: https://xrpl-referee.onrender.com/docs  
+Full REST API: https://mcp.cryptovault.co.uk/docs  
 MCP server (35 tools): https://smithery.ai/server/xrpl/agent-trust  
 Marketplace: https://www.cryptovault.co.uk

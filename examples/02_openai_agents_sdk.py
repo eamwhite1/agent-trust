@@ -25,7 +25,7 @@ import json
 import requests
 from openai import OpenAI
 
-BASE_URL = "https://xrpl-referee.onrender.com"
+BASE_URL = "https://mcp.cryptovault.co.uk"
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 

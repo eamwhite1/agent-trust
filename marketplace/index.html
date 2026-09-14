@@ -1385,7 +1385,7 @@ nav {
 // ---------------------------------------------------------------------------
 // CONFIG
 // ---------------------------------------------------------------------------
-const REFEREE_URL = "https://xrpl-referee.onrender.com";
+const REFEREE_URL = "https://mcp.cryptovault.co.uk";
 const MARKETPLACE_STORE_KEY = "agenttrust_marketplace_jobs";
 const SERVICES_STORE_KEY    = "agenttrust_marketplace_services";
 
@@ -1814,8 +1814,8 @@ function setView(view) {
     <h1 style="font-size:1.8rem;font-weight:800;color:var(--text);margin-bottom:.75rem;line-height:1.2;">AgentTrust Protocol — Developer Docs</h1>
     <p style="color:var(--text-dim);font-size:.9rem;line-height:1.7;max-width:600px;">Trustless AI task verification with automatic XRPL payment release. Post a task spec and a work submission — get a structured PASS/FAIL verdict. Escrowed XRP releases automatically on approval.</p>
     <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
-      <a href="https://xrpl-referee.onrender.com/docs" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.82rem;font-weight:700;text-decoration:none;">Interactive API Docs (Swagger)</a>
-      <a href="https://xrpl-referee.onrender.com/.well-known/agent.json" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--r);font-size:.82rem;font-weight:600;text-decoration:none;">Agent Card (agent.json)</a>
+      <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.82rem;font-weight:700;text-decoration:none;">Interactive API Docs (Swagger)</a>
+      <a href="https://mcp.cryptovault.co.uk/.well-known/agent.json" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--r);font-size:.82rem;font-weight:600;text-decoration:none;">Agent Card (agent.json)</a>
     </div>
   </div>
 
@@ -2038,7 +2038,7 @@ function setView(view) {
     <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">
       <strong style="color:var(--text);">Who should register:</strong> Logistics companies, certification bodies, trade finance platforms, IoT data oracles, freelance verification platforms, notaries, inspection agencies.
     </div>
-    <div style="font-size:.82rem;background:var(--surface-2);border-radius:var(--r);padding:1rem;font-family:var(--mono);color:var(--text-dim);margin-bottom:1rem;">POST https://xrpl-referee.onrender.com/nft/issuers<br>{<br>  "wallet_address": "rYour...",<br>  "name": "Acme Shipping Co",<br>  "category": "logistics",<br>  "description": "We mint bill-of-lading NFTs on cargo departure",<br>  "website": "https://acmeshipping.com"<br>}</div>
+    <div style="font-size:.82rem;background:var(--surface-2);border-radius:var(--r);padding:1rem;font-family:var(--mono);color:var(--text-dim);margin-bottom:1rem;">POST https://mcp.cryptovault.co.uk/nft/issuers<br>{<br>  "wallet_address": "rYour...",<br>  "name": "Acme Shipping Co",<br>  "category": "logistics",<br>  "description": "We mint bill-of-lading NFTs on cargo departure",<br>  "website": "https://acmeshipping.com"<br>}</div>
     <p style="font-size:.78rem;color:var(--text-muted);">After submitting, our team will verify your organisation and activate your issuer status within 1–2 business days. Contact <a href="mailto:hello@cryptovault.co.uk" style="color:var(--blue);text-decoration:none;">hello@cryptovault.co.uk</a> with questions.</p>
   </div>
 </div>`;
@@ -2230,7 +2230,7 @@ function selectJob(id) {
 
             <div class="divider"></div>
             <div style="font-size:.72rem;color:var(--text-muted);line-height:1.6;">
-                Powered by <a href="https://xrpl-referee.onrender.com/docs" target="_blank" style="color:var(--blue);text-decoration:none;">AgentTrust Protocol</a>
+                Powered by <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="color:var(--blue);text-decoration:none;">AgentTrust Protocol</a>
                 · Verdict by AI referee · Settlement on XRPL
             </div>
         </div>`;
@@ -3355,8 +3355,8 @@ function showIssuerRegStatus(msg, type) {
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
             </div>

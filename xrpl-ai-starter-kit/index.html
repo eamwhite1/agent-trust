@@ -348,7 +348,7 @@ print(response.result["meta"]["TransactionResult"])  # "tesSUCCESS"</pre>
                 <pre>import httpx
 
 score = httpx.get(
-    "https://xrpl-referee.onrender.com/wallet/score/rWorkerAddress"
+    "https://mcp.cryptovault.co.uk/wallet/score/rWorkerAddress"
 ).json()
 
 # score["score"] is 0–100
@@ -390,7 +390,7 @@ print(score["signals"]["sanctions_clean"])     # False = stop immediately</pre>
                 <pre>import uuid, httpx
 
 escrow = httpx.post(
-    "https://xrpl-referee.onrender.com/escrow/generate",
+    "https://mcp.cryptovault.co.uk/escrow/generate",
     json={
         "escrow_id":        str(uuid.uuid4()),
         "fee_hash":         "your_fee_tx_hash",
@@ -431,7 +431,7 @@ escrow_id = escrow["escrow_id"]   # keep this — needed in later steps
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
                 <pre>result = httpx.post(
-    "https://xrpl-referee.onrender.com/evaluate",
+    "https://mcp.cryptovault.co.uk/evaluate",
     json={
         "escrow_id": escrow_id,
         "work":      "Here is the completed product description...",
@@ -508,7 +508,7 @@ print("Funds reclaimed:", cancel_result.result["meta"]["TransactionResult"])</pr
       "url": "https://xrpl.org/mcp"
     },
     "agenttrust": {
-      "url": "https://xrpl-referee.onrender.com/mcp/"
+      "url": "https://mcp.cryptovault.co.uk/mcp/"
     }
   }
 }</pre>
@@ -544,7 +544,7 @@ WORKER_ADDRESS = "rWorkerAddress"
 
 # ── Step 1: Check trust score ───────────────────────────────────────────────
 score = httpx.get(
-    f"https://xrpl-referee.onrender.com/wallet/score/{WORKER_ADDRESS}"
+    f"https://mcp.cryptovault.co.uk/wallet/score/{WORKER_ADDRESS}"
 ).json()
 
 if score["score"] &lt; 40 or not score["signals"]["sanctions_clean"]:
@@ -561,7 +561,7 @@ fee_hash = fee_response.result["hash"]
 
 # ── Step 3: Create escrow vault ────────────────────────────────────────────
 escrow = httpx.post(
-    "https://xrpl-referee.onrender.com/escrow/generate",
+    "https://mcp.cryptovault.co.uk/escrow/generate",
     json={
         "escrow_id":        str(uuid.uuid4()),
         "fee_hash":         fee_hash,
@@ -584,7 +584,7 @@ submit_and_wait(escrow["tx_blob"], client, buyer_wallet)
 work_output = "Voici le paragraphe traduit en français..."
 
 result = httpx.post(
-    "https://xrpl-referee.onrender.com/evaluate",
+    "https://mcp.cryptovault.co.uk/evaluate",
     json={"escrow_id": escrow_id, "work": work_output}
 ).json()
 
@@ -626,10 +626,10 @@ print(result["verdict"])   # "PASS" → payment released automatically</pre>
     <!-- Resources -->
     <span class="section-label" style="display:block;margin-bottom:.8rem;">Resources</span>
     <div class="resources">
-        <a class="resource-link" href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">
+        <a class="resource-link" href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">
             <i data-lucide="file-text"></i> API Docs &amp; Playground
         </a>
-        <a class="resource-link" href="https://xrpl-referee.onrender.com/openapi.json" target="_blank" rel="noopener">
+        <a class="resource-link" href="https://mcp.cryptovault.co.uk/openapi.json" target="_blank" rel="noopener">
             <i data-lucide="download"></i> OpenAPI Spec
         </a>
         <a class="resource-link" href="https://smithery.ai/servers/xrpl/agent-trust" target="_blank" rel="noopener">
@@ -667,8 +667,8 @@ print(result["verdict"])   # "PASS" → payment released automatically</pre>
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
             </div>

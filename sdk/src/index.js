@@ -4,11 +4,11 @@
  * Trustless AI oracle-mediated escrow on the XRP Ledger.
  * Job marketplace, trust scoring, crypto-condition escrow, AI-verified payment release.
  *
- * https://xrpl-referee.onrender.com
+ * https://mcp.cryptovault.co.uk
  * MCP server (35 tools): https://smithery.ai/server/xrpl/agent-trust
  */
 
-const BASE_URL = 'https://xrpl-referee.onrender.com';
+const BASE_URL = 'https://mcp.cryptovault.co.uk';
 
 class AgentTrust {
   /**
