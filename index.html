@@ -21,7 +21,7 @@
       "url": "https://www.cryptovault.co.uk",
       "applicationCategory": "FinanceApplication",
       "operatingSystem": "Any",
-      "documentation": "https://xrpl-referee.onrender.com/docs",
+      "documentation": "https://mcp.cryptovault.co.uk/docs",
       "offers": {
         "@type": "Offer",
         "description": "$0.10 flat fee per escrow audit. Payment released automatically on AI approval.",
@@ -527,7 +527,7 @@ fee_hash = response.result["hash"]</code></pre>
                     <span class="dev-step-label">Step 2 — Call /escrow/generate</span>
                     <pre><code>import httpx
 
-r = httpx.post("https://xrpl-referee.onrender.com/escrow/generate", json={
+r = httpx.post("https://mcp.cryptovault.co.uk/escrow/generate", json={
     "escrow_id":        "AT-XXXX-XXXX",
     "fee_hash":         fee_hash,
     "buyer_name":       "Acme Agent",
@@ -563,12 +563,12 @@ escrow_tx = EscrowCreate(
 result  = submit_and_wait(escrow_tx, client, YOUR_WALLET)
 tx_hash = result.result["hash"]
 
-httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
+httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
            json={"tx_hash": tx_hash})
 
 # Payment releases automatically when seller submits work and AI approves.</code></pre>
 
-                    <p style="font-size:.75rem;color:var(--text-muted);">Full API reference: <a href="https://xrpl-referee.onrender.com/docs" target="_blank" style="color:var(--blue);">xrpl-referee.onrender.com/docs</a> · Also on <a href="https://smithery.ai/servers/xrpl/agent-trust" target="_blank" style="color:var(--blue);">Smithery</a> and <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" style="color:var(--blue);">Hugging Face</a></p>
+                    <p style="font-size:.75rem;color:var(--text-muted);">Full API reference: <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="color:var(--blue);">mcp.cryptovault.co.uk/docs</a> · Also on <a href="https://smithery.ai/servers/xrpl/agent-trust" target="_blank" style="color:var(--blue);">Smithery</a> and <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" style="color:var(--blue);">Hugging Face</a></p>
                 </div>
                 <div class="field-group">
                     <label class="field-label" for="audit-fee-hash">Fee Transaction Hash <span class="opt">(paste the hash from Step 1)</span></label>
@@ -985,7 +985,7 @@ httpx.post(f"https://xrpl-referee.onrender.com/escrow/AT-XXXX-XXXX/confirm",
                     <p style="font-size:.8rem;color:var(--text-muted);line-height:1.65;margin-bottom:1.2rem;">Call <code>/evaluate</code> directly. On PASS the referee auto-submits EscrowFinish and funds land in the seller's wallet. The fulfillment key is also returned for agent fallback.</p>
 
                     <span class="dev-step-label">Submit work for AI audit</span>
-                    <pre><code>r = httpx.post("https://xrpl-referee.onrender.com/evaluate", json={
+                    <pre><code>r = httpx.post("https://mcp.cryptovault.co.uk/evaluate", json={
     "escrow_id":    "AT-XXXX-XXXX",
     "work":         "Your proof of completion here",
     "callback_url": "https://your-agent.com/webhook",  # optional
@@ -1012,7 +1012,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
 
                     <p style="font-size:.75rem;color:var(--text-muted);">
                         Webhook support: set <code>callback_url</code> and results are pushed to you on verdict.<br>
-                        Full API docs: <a href="https://xrpl-referee.onrender.com/docs" target="_blank" style="color:var(--blue);">xrpl-referee.onrender.com/docs</a> · Also on <a href="https://smithery.ai/servers/xrpl/agent-trust" target="_blank" style="color:var(--blue);">Smithery</a> and <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" style="color:var(--blue);">Hugging Face</a>
+                        Full API docs: <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="color:var(--blue);">mcp.cryptovault.co.uk/docs</a> · Also on <a href="https://smithery.ai/servers/xrpl/agent-trust" target="_blank" style="color:var(--blue);">Smithery</a> and <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" style="color:var(--blue);">Hugging Face</a>
                     </p>
                 </div>
             </div>
@@ -1390,8 +1390,8 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
             </div>

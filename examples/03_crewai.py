@@ -23,7 +23,7 @@ from crewai import Agent, Task, Crew, Process
 # Config — swap in real testnet or mainnet wallets
 # ─────────────────────────────────────────────────────────────────────────────
 
-AGENTTRUST_API = "https://xrpl-referee.onrender.com"
+AGENTTRUST_API = "https://mcp.cryptovault.co.uk"
 
 PAYER_ADDRESS = os.getenv("PAYER_ADDRESS", "rPayerTestnetAddressHere")
 PAYER_SECRET  = os.getenv("PAYER_SECRET",  "sPayerTestnetSecretHere")

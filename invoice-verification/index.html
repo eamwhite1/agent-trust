@@ -518,7 +518,7 @@ async function atSubmitInvoice(e) {
   if (evidence) body.evidence_links = [evidence];
 
   try {
-    const res = await fetch('https://xrpl-referee.onrender.com/evaluate', {
+    const res = await fetch('https://mcp.cryptovault.co.uk/evaluate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -588,7 +588,7 @@ from xrpl.transaction import submit_and_wait
 
 app = FastAPI()
 
-REFEREE         = "https://xrpl-referee.onrender.com"
+REFEREE         = "https://mcp.cryptovault.co.uk"
 PROTOCOL_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
 buyer_wallet    = Wallet.from_seed("sYOUR_BUYER_SECRET")  # server-side only
 client          = JsonRpcClient("https://s1.ripple.com:51234/")
@@ -667,7 +667,7 @@ const crypto  = require('crypto');
 const app = express();
 app.use(express.json());
 
-const REFEREE         = 'https://xrpl-referee.onrender.com';
+const REFEREE         = 'https://mcp.cryptovault.co.uk';
 const PROTOCOL_WALLET = 'rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR';
 const BUYER_SECRET    = process.env.BUYER_WALLET_SECRET; // never hardcode
 
@@ -767,7 +767,7 @@ from xrpl.utils import xrp_to_drops
 from xrpl.transaction import submit_and_wait
 
 app = FastAPI()
-REFEREE         = "https://xrpl-referee.onrender.com"
+REFEREE         = "https://mcp.cryptovault.co.uk"
 PROTOCOL_WALLET = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
 buyer_wallet    = Wallet.from_seed("sYOUR_BUYER_SECRET")
 client          = JsonRpcClient("https://s1.ripple.com:51234/")
@@ -871,7 +871,7 @@ import httpx
 from datetime import date
 
 app = FastAPI()
-REFEREE = "https://xrpl-referee.onrender.com"
+REFEREE = "https://mcp.cryptovault.co.uk"
 
 class EscrowReadyWebhook(BaseModel):
     """Webhook payload from AgentTrust when an escrow is created for your wallet."""
@@ -944,8 +944,8 @@ def _generate_invoice(inv_num, buyer_name, amount, currency, task_desc):
             <span class="section-label">Resources</span>
             <h2>What to read next</h2>
             <div class="res-grid">
-                <a href="https://xrpl-referee.onrender.com/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
-                <a href="https://xrpl-referee.onrender.com/mcp" class="res-link" target="_blank"><i data-lucide="plug"></i> MCP server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp" class="res-link" target="_blank"><i data-lucide="plug"></i> MCP server</a>
                 <a href="/how-it-works/" class="res-link"><i data-lucide="workflow"></i> How escrow works</a>
                 <a href="/agent-hiring/" class="res-link"><i data-lucide="bot"></i> Agent-hiring guide</a>
                 <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
@@ -975,8 +975,8 @@ def _generate_invoice(inv_num, buyer_name, amount, currency, task_desc):
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
             </div>

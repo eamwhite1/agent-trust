@@ -362,7 +362,7 @@
         <a class="nav-link" href="/compliance/">Compliance</a>
     </div>
     <div class="nav-right">
-        <a class="nav-cta" href="https://xrpl-referee.onrender.com/playground" target="_blank" rel="noopener">
+        <a class="nav-cta" href="https://mcp.cryptovault.co.uk/playground" target="_blank" rel="noopener">
             <i data-lucide="zap" style="width:12px;height:12px;"></i> Playground
         </a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
@@ -441,7 +441,7 @@
                 <pre>import httpx
 
 score = httpx.get(
-    "https://xrpl-referee.onrender.com/wallet/score/rWorkerWalletAddress"
+    "https://mcp.cryptovault.co.uk/wallet/score/rWorkerWalletAddress"
 ).json()
 
 print(score["score"])                          # 0–100
@@ -475,7 +475,7 @@ print(score["signals"]["sanctions_clean"])     # False = stop immediately</pre>
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
                 <pre>escrow = httpx.post(
-    "https://xrpl-referee.onrender.com/escrow/create",
+    "https://mcp.cryptovault.co.uk/escrow/create",
     json={
         "payer_address":   "rPayerAddress",
         "payer_secret":    "sPayerSecret",
@@ -509,7 +509,7 @@ escrow_id = escrow["escrow_id"]   # keep this — needed to release or reclaim</
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
                 <pre>audit = httpx.post(
-    "https://xrpl-referee.onrender.com/audit",
+    "https://mcp.cryptovault.co.uk/audit",
     headers={"x-payment-hash": "your_64char_tx_hash"},
     json={
         "escrow_id":   escrow_id,
@@ -544,11 +544,11 @@ print(audit["summary"])   # plain-English explanation</pre>
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
                 <pre># PASS — release to worker
-httpx.post("https://xrpl-referee.onrender.com/escrow/release",
+httpx.post("https://mcp.cryptovault.co.uk/escrow/release",
     json={"escrow_id": escrow_id, "payer_secret": "sPayerSecret"})
 
 # FAIL and deadline passed — reclaim
-httpx.post("https://xrpl-referee.onrender.com/escrow/cancel",
+httpx.post("https://mcp.cryptovault.co.uk/escrow/cancel",
     json={"escrow_id": escrow_id, "payer_secret": "sPayerSecret"})</pre>
             </div>
         </div>
@@ -567,7 +567,7 @@ httpx.post("https://xrpl-referee.onrender.com/escrow/cancel",
         <pre>{
   "mcpServers": {
     "agenttrust": {
-      "url": "https://xrpl-referee.onrender.com/mcp/"
+      "url": "https://mcp.cryptovault.co.uk/mcp/"
     }
   }
 }</pre>
@@ -648,10 +648,10 @@ print(result["evaluation"]["score"])</pre>
     <!-- Resources -->
     <span class="section-label" style="display:block;margin-bottom:.8rem;">Resources</span>
     <div class="resources">
-        <a class="resource-link" href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">
+        <a class="resource-link" href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">
             <i data-lucide="file-text"></i> API Docs &amp; Playground
         </a>
-        <a class="resource-link" href="https://xrpl-referee.onrender.com/openapi.json" target="_blank" rel="noopener">
+        <a class="resource-link" href="https://mcp.cryptovault.co.uk/openapi.json" target="_blank" rel="noopener">
             <i data-lucide="download"></i> OpenAPI Spec
         </a>
         <a class="resource-link" href="https://smithery.ai/server/agenttrust" target="_blank" rel="noopener">
@@ -688,8 +688,8 @@ print(result["evaluation"]["score"])</pre>
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="https://xrpl-referee.onrender.com/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://xrpl-referee.onrender.com/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/github-action/">GitHub Action</a>
                 <a href="/guides/">Guides</a>
                 <a href="/xrpl-ai-starter-kit/">XRPL AI Starter Kit</a>
