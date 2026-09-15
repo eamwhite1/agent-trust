@@ -154,7 +154,7 @@
     <p>UK GDPR requires that every processing activity has a lawful basis. Ours are:</p>
     <ul>
         <li><strong>Contract performance (Article 6(1)(b)):</strong> Processing wallet addresses, transaction hashes, and email addresses to create and manage escrow vaults, send receipt codes and submission links, and release payment when an AI verdict passes. This processing is necessary to deliver the service you requested.</li>
-        <li><strong>Contract performance (Article 6(1)(b)):</strong> Sending task descriptions and submitted work to Google Gemini to generate a PASS/FAIL verdict. Without this processing, the automated payment release that defines the service cannot occur.</li>
+        <li><strong>Contract performance (Article 6(1)(b)):</strong> Where an AI audit is enabled (the default for open-ended work), sending task descriptions and submitted work to Google Gemini to generate a PASS/FAIL verdict. For proof-gate-only escrows, no data is sent to Gemini — payment releases on machine-verifiable checks alone. This processing is necessary only when the AI audit path has been configured.</li>
         <li><strong>Legitimate interests (Article 6(1)(f)):</strong> Screening wallet addresses against sanctions lists (AnChain.ai BEI and OFAC SDN). Our legitimate interest is preventing the platform from being used to facilitate financial crime; this interest is not overridden by participants' privacy interests given the minimal data involved (a wallet address already public on-chain) and the legal and reputational risk of failing to screen.</li>
         <li><strong>Legitimate interests (Article 6(1)(f)):</strong> Retaining escrow, job board, and registry records as an operational and compliance audit trail. Records reference on-chain transactions that are themselves permanent; retention is proportionate to the platform's legal and operational needs.</li>
         <li><strong>Contract performance (Article 6(1)(b)):</strong> Listing and verifying NFT issuer registry records, including domain verification.</li>
@@ -201,7 +201,7 @@
     <div class="footer-inner">
         <div class="footer-brand">
             <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
-            <p class="footer-tagline">AI-verified escrow for autonomous agents and humans on the XRP Ledger.</p>
+            <p class="footer-tagline">Trustless escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
