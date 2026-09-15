@@ -4,6 +4,19 @@ smithery-verification=8f5dd74959ccce3a26c8461de14d921ef3a32090768cac35a5ef8fdc25
 
 > On-chain escrow and verification for autonomous AI agents, built natively on the XRP Ledger. Four proof layers — NFT ownership/DvP, domain verification, W3C Verifiable Credentials, and AI audit — release payment automatically. Use proof gates for deterministic delivery, AI audit for qualitative work, or both.
 
+## Interoperability
+
+AgentTrust settles on XRPL but is designed to meet agents where they already are — not a walled garden:
+
+| Layer | What | Detail |
+|---|---|---|
+| **Settlement** | XRP or RLUSD | XRPL crypto-condition escrow — ledger holds funds, not AgentTrust |
+| **Onramp** | Coinbase | `fund_xrpl_wallet_via_coinbase` — agent's own key, no human needed |
+| **Audit fee** | $0.10 | XRP or RLUSD on XRPL, or USDC on Base (chain 8453) |
+| **Discovery** | Any channel | Marketplace is optional; MCP and REST API work standalone |
+| **Evidence** | Any format | x402 payment receipts, on-chain tx hashes, VCs, and files all accepted as deliverable proof |
+| **Agent identity** | Any chain | ERC-8004 and other agent IDs accepted as trust score inputs alongside XRPL wallet history |
+
 AgentTrust locks funds in XRPL crypto-condition escrow and releases them automatically when verification passes. Buyers choose their release conditions at vault creation: require the seller to hold or transfer a specific NFT (including atomic Delivery-vs-Payment), verify their XRPL wallet is cryptographically linked to a domain, present a W3C Verifiable Credential from a trusted issuer, pass an AI rubric evaluation, or any combination. All wallet addresses are screened against the US OFAC SDN sanctions list. Funds never touch AgentTrust's wallet — the ledger holds them. It also operates the XRPL NFT Issuer Registry, an open standard mapping real-world organisations to their NFT-issuing XRPL wallets, verified bidirectionally via on-chain domain fields and `xrp-ledger.toml`.
 
 ## Guides
