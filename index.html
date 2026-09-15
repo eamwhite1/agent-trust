@@ -496,14 +496,8 @@
                 </button>
             </div>
 
-            <!-- AUTO PAY -->
-            <div id="auto-pay-section">
-                <div class="fee-box">Protocol fee: <strong>$0.10</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer in XRP or RLUSD. Covers escrow infrastructure and verification.</div>
-                <button class="btn btn-blue" id="pay-fee-btn" onclick="payFee()">
-                    <i data-lucide="zap"></i> Pay $0.10 fee via Xaman <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span>
-                </button>
-                <div class="status-msg" id="fee-status"></div>
-            </div>
+            <!-- AUTO PAY (fee box moved to bottom — shown just above init button) -->
+            <div id="auto-pay-section"></div>
 
             <!-- DEVELOPER / AGENT MODE -->
             <div id="manual-hash-section" style="display:none;">
@@ -964,6 +958,15 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                     </div>
                 </div>
             </details>
+
+            <!-- Fee payment — shown after form is filled, just before submit -->
+            <div id="auto-pay-bottom" style="margin-bottom:.75rem;">
+                <div class="fee-box">Protocol fee: <strong>$0.10</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer in XRP or RLUSD. Covers escrow infrastructure and verification.</div>
+                <button class="btn btn-blue" id="pay-fee-btn" onclick="payFee()">
+                    <i data-lucide="zap"></i> Pay $0.10 fee via Xaman <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span>
+                </button>
+                <div class="status-msg" id="fee-status"></div>
+            </div>
 
             <button class="btn btn-primary" id="init-btn" onclick="initVault()" disabled style="opacity:0.5;cursor:not-allowed;" title="Pay the $0.10 fee above first">
                 <i data-lucide="lock"></i> Initialize Vault &amp; Create Escrow
