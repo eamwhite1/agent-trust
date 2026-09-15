@@ -262,7 +262,7 @@ The registry is available as an MCP (Model Context Protocol) server for AI agent
 | `company_xrpl_lookup` | Find an organisation's XRPL wallet by name |
 | `verify_domain` | Verify wallet ↔ domain ownership via xrp-ledger.toml |
 
-Any MCP-compatible AI agent can install this server and use the registry to resolve organisation names to verified XRPL wallets — enabling trustless, human-readable issuer requirements in escrow contracts.
+Any MCP-compatible AI agent can install this server and use the registry to resolve organisation names to verified XRPL wallets — enabling trust-minimized, human-readable issuer requirements in escrow contracts.
 
 ---
 

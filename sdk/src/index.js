@@ -1,7 +1,7 @@
 /**
  * agenttrust-sdk
  *
- * Trustless automated escrow on the XRP Ledger.
+ * Trust-minimized automated escrow on the XRP Ledger.
  * Job marketplace, trust scoring, crypto-condition escrow, automatic payment release.
  *
  * https://mcp.cryptovault.co.uk
