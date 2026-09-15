@@ -1,8 +1,8 @@
 /**
  * agenttrust-sdk
  *
- * Trustless AI oracle-mediated escrow on the XRP Ledger.
- * Job marketplace, trust scoring, crypto-condition escrow, AI-verified payment release.
+ * Trustless automated escrow on the XRP Ledger.
+ * Job marketplace, trust scoring, crypto-condition escrow, automatic payment release.
  *
  * https://mcp.cryptovault.co.uk
  * MCP server (35 tools): https://smithery.ai/server/xrpl/agent-trust
@@ -225,7 +225,7 @@ class AgentTrust {
   }
 
   /**
-   * Submit completed work for AI evaluation and automatic payment release.
+   * Submit completed work for automated verification and payment release.
    *
    * @param {object} options
    * @param {string} options.escrowId    - The escrow ID

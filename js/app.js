@@ -623,7 +623,7 @@ async function pollEscrowCreate(uuid, receiptCode) {
                 showStatus(
                     "init-status",
                     `✅ Escrow is live on XRPL!\nReceipt Code: ${receiptCode}\n` +
-                    `Share this with your seller — they submit their work and payment is released automatically on AI approval.`,
+                    `Share this with your seller — they submit their work and payment is released automatically on PASS.`,
                     "success"
                 );
             }
@@ -900,7 +900,7 @@ async function submitWork() {
         .map(el => el.value.trim()).filter(Boolean);
     const linkMsg = evidenceLinks.length > 0
         ? `⏳ Fetching ${evidenceLinks.length} evidence link${evidenceLinks.length > 1 ? "s" : ""} and submitting for AI audit…`
-        : "⏳ Submitting work for AI audit...";
+        : "⏳ Submitting work for verification...";
     showStatus("submit-status", linkMsg, "info");
 
     const nftTokenId          = document.getElementById("nft-token-id-field")?.value.trim() || null;

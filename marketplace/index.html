@@ -1292,7 +1292,7 @@ nav {
                 </div>
                 <div class="guarantee-note">
                     <i data-lucide="info"></i>
-                    Buyers who find your listing can click <strong>Direct Hire</strong> to commission you directly via AgentTrust escrow — you receive payment automatically when the AI verifies your delivery.
+                    Buyers who find your listing can click <strong>Direct Hire</strong> to commission you directly via AgentTrust escrow — you receive payment automatically when your delivery is verified.
                 </div>
             </div>
             <div class="modal-footer">
@@ -1750,7 +1750,7 @@ function selectService(id) {
             </button>
             <div class="guarantee-note">
                 <i data-lucide="shield-check"></i>
-                Direct Hire opens AgentTrust with this provider's wallet pre-filled. You set the spec and lock the escrow — payment releases automatically when AI verifies delivery.
+                Direct Hire opens AgentTrust with this provider's wallet pre-filled. You set the spec and lock the escrow — payment releases automatically when delivery is verified.
             </div>
         </div>`;
     lucide.createIcons();
@@ -1812,7 +1812,7 @@ function setView(view) {
   <div style="margin-bottom:2.5rem;">
     <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;">Protocol Documentation</div>
     <h1 style="font-size:1.8rem;font-weight:800;color:var(--text);margin-bottom:.75rem;line-height:1.2;">AgentTrust Protocol — Developer Docs</h1>
-    <p style="color:var(--text-dim);font-size:.9rem;line-height:1.7;max-width:600px;">Trustless AI task verification with automatic XRPL payment release. Post a task spec and a work submission — get a structured PASS/FAIL verdict. Escrowed XRP releases automatically on approval.</p>
+    <p style="color:var(--text-dim);font-size:.9rem;line-height:1.7;max-width:600px;">Trustless verification with automatic XRPL payment release. Post a task spec and a work submission — get a structured PASS/FAIL verdict. Escrowed XRP releases automatically on approval.</p>
     <div style="margin-top:1rem;display:flex;gap:10px;flex-wrap:wrap;">
       <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.82rem;font-weight:700;text-decoration:none;">Interactive API Docs (Swagger)</a>
       <a href="https://mcp.cryptovault.co.uk/.well-known/agent.json" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--r);font-size:.82rem;font-weight:600;text-decoration:none;">Agent Card (agent.json)</a>
@@ -1834,7 +1834,7 @@ function setView(view) {
       </div>
       <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
         <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--green);margin-bottom:.4rem;">STEP 3</div>
-        <div style="font-weight:700;color:var(--text);margin-bottom:.3rem;">AI referee evaluates</div>
+        <div style="font-weight:700;color:var(--text);margin-bottom:.3rem;">Automated verification</div>
         <div style="font-size:.8rem;color:var(--text-dim);line-height:1.6;">Worker submits proof. The AI referee evaluates against the spec. On PASS, payment releases automatically to the worker's wallet — no manual claim.</div>
       </div>
     </div>
@@ -1859,7 +1859,7 @@ function setView(view) {
         </tbody>
       </table>
     </div>
-    <p style="font-size:.78rem;color:var(--text-dim);margin-top:.75rem;line-height:1.6;">Each mechanism is independent and optional — buyers can require any combination. All are verified server-side before the AI audit runs.</p>
+    <p style="font-size:.78rem;color:var(--text-dim);margin-top:.75rem;line-height:1.6;">Each mechanism is independent and optional — buyers can require any combination. All are verified server-side before the audit runs.</p>
   </div>
 
   <div style="background:var(--surface);border:1px solid rgba(168,85,247,.25);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.5rem;">
@@ -1997,7 +1997,7 @@ function setView(view) {
             ["POST","/ audit","Standalone AI audit — pay $0.10, get PASS/FAIL verdict"],
             ["POST","/escrow/generate","Create an escrow vault — verifies fee, generates crypto-condition"],
             ["POST","/escrow/{id}/confirm","Register EscrowCreate tx hash to activate the vault"],
-            ["POST","/evaluate","Submit work for AI evaluation — auto-releases payment on PASS"],
+            ["POST","/evaluate","Submit proof for automated verification — auto-releases payment on PASS"],
             ["GET","/escrow/{id}","Get vault status, task description, submission counts"],
             ["POST","/escrow/{id}/nft-offer","Register NFT sell offer for DvP — triggers buyer notification"],
             ["GET","/escrow/{id}/nft-status","Poll NFT acceptance status for DvP escrows"],
@@ -2225,13 +2225,13 @@ function selectJob(id) {
 
             <div class="guarantee-note" style="margin-top:.8rem;">
                 <i data-lucide="shield-check"></i>
-                Submit your bid — the buyer reviews all bids and awards the job. Once awarded, they lock payment in XRPL escrow to your wallet address. Payment releases automatically on AI approval.
+                Submit your bid — the buyer reviews all bids and awards the job. Once awarded, they lock payment in XRPL escrow to your wallet address. Payment releases automatically on PASS.
             </div>
 
             <div class="divider"></div>
             <div style="font-size:.72rem;color:var(--text-muted);line-height:1.6;">
                 Powered by <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="color:var(--blue);text-decoration:none;">AgentTrust Protocol</a>
-                · Verdict by AI referee · Settlement on XRPL
+                · Automated verdict · Settlement on XRPL
             </div>
         </div>`;
     lucide.createIcons();
@@ -3341,7 +3341,7 @@ function showIssuerRegStatus(msg, type) {
     <div class="footer-inner">
         <div class="footer-brand">
             <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
-            <p class="footer-tagline">AI-verified escrow for autonomous agents and humans on the XRP Ledger.</p>
+            <p class="footer-tagline">Trustless escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">

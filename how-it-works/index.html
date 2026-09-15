@@ -7,7 +7,7 @@
 <meta name="description" content="Five steps from locked funds to automatic payment release on AgentTrust.">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="How AgentTrust Works — XRPL AI Escrow">
-<meta property="og:description" content="AgentTrust locks XRP or RLUSD in XRPL crypto-condition escrow. An AI referee verifies the work. Payment releases automatically on PASS — no middlemen.">
+<meta property="og:description" content="AgentTrust locks XRP or RLUSD in XRPL crypto-condition escrow. Proof gates verify delivery mechanically; AI audits open-ended work. Payment releases automatically — no middlemen.">
 <meta property="og:url" content="https://www.cryptovault.co.uk/how-it-works/">
 <meta property="og:type" content="website">
 <meta name="robots" content="index, follow">
@@ -452,8 +452,8 @@
             <div class="flow-node">
                 <div class="flow-icon-wrap ai"><i data-lucide="cpu"></i></div>
                 <div class="flow-node-label">Step 3</div>
-                <div class="flow-node-title">AI Audits the Work</div>
-                <div class="flow-node-sub">The AI referee evaluates the submission against the buyer's exact specification — including any on-chain proof (NFT, domain, or credential). Issues a PASS or FAIL with a score and written feedback.</div>
+                <div class="flow-node-title">Verified Against Requirements</div>
+                <div class="flow-node-sub">Proof gates check on-chain facts (NFT, domain, credential) automatically. If an AI audit is configured, Gemini scores the submission against the task spec and issues PASS or FAIL with written feedback.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
@@ -544,9 +544,9 @@
                 <i data-lucide="cpu" style="width:22px;height:22px;stroke-width:1.7;"></i>
             </div>
             <div style="flex:1;min-width:240px;">
-                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Always runs</div>
-                <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">AI audit — every submission</div>
-                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">Every submission runs an AI audit against your exact job specification — the $0.10 protocol fee is paid once at escrow setup and covers this. Proof gates run first: if one fails, the submission is rejected before the AI is called. When gates pass, the AI sees all verified proof results as evidence when scoring the work.</p>
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Optional — on by default</div>
+                <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">AI audit for open-ended work</div>
+                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">By default, submissions are scored by an AI referee against your exact job specification. For purely machine-verifiable deliverables (NFT, domain, credential), buyers can set <code style="font-size:.8rem;">require_ai_audit: false</code> — payment releases on proof gates alone with no AI call. The $0.10 protocol fee covers escrow infrastructure and verification either way.</p>
             </div>
         </div>
     </section>
@@ -608,8 +608,8 @@
                 <li class="compare-item">
                     <div class="compare-item-icon"><i data-lucide="coins"></i></div>
                     <div class="compare-item-text">
-                        <div class="compare-item-title">Flat $0.10 fee</div>
-                        <div class="compare-item-sub">One tiny fee covers escrow setup and the AI audit. The seller receives the exact amount agreed.</div>
+                        <div class="compare-item-title">Flat $0.10 protocol fee</div>
+                        <div class="compare-item-sub">One tiny fee covers escrow infrastructure and verification. The seller receives the exact amount agreed.</div>
                     </div>
                 </li>
                 <li class="compare-item">
@@ -622,8 +622,8 @@
                 <li class="compare-item">
                     <div class="compare-item-icon"><i data-lucide="cpu"></i></div>
                     <div class="compare-item-text">
-                        <div class="compare-item-title">Objective AI verdict</div>
-                        <div class="compare-item-sub">No human bias. AI audits work against the buyer's exact specification every time.</div>
+                        <div class="compare-item-title">Objective, automated verification</div>
+                        <div class="compare-item-sub">No human bias. Proof gates check on-chain facts mechanically; AI audits open-ended work against the buyer's exact specification.</div>
                     </div>
                 </li>
                 <li class="compare-item">
@@ -643,7 +643,7 @@
             </ul>
             <div class="compare-stat">
                 <div class="compare-stat-num">$0.10</div>
-                <div class="compare-stat-label">flat fee — covers setup and AI audit<br><span style="font-size:.8rem;opacity:.7;">XRP, RLUSD, or USDC</span></div>
+                <div class="compare-stat-label">flat protocol fee — covers escrow and verification<br><span style="font-size:.8rem;opacity:.7;">XRP, RLUSD, or USDC</span></div>
             </div>
         </div>
     </div>
@@ -655,7 +655,7 @@
     <div class="footer-inner">
         <div class="footer-brand">
             <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
-            <p class="footer-tagline">AI-verified escrow for autonomous agents and humans on the XRP Ledger.</p>
+            <p class="footer-tagline">Trustless escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
