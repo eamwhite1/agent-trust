@@ -424,7 +424,7 @@
 <div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
     <div class="page-eyebrow"><i data-lucide="zap"></i> How it Works</div>
     <h1>Trustless escrow, settled in seconds</h1>
-    <p class="page-lead">Lock XRP or RLUSD on-chain. AI verifies the work. Payment releases automatically — no humans in the loop, no disputes, no delays.</p>
+    <p class="page-lead">Four independent release conditions — NFT proof, domain identity, verifiable credentials, or trust score — combinable in any mix. Add an AI referee for open-ended work. Payment releases on-chain automatically.</p>
 </div>
 
 <div class="container">
@@ -468,6 +468,103 @@
                 <div class="flow-node-label">Step 5</div>
                 <div class="flow-node-title">Seller Paid</div>
                 <div class="flow-node-sub">Funds arrive in the seller's wallet in seconds. On FAIL, feedback is provided. Unmet deadlines return funds to the buyer.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         PROOF STACK — four release conditions
+    ════════════════════════════════════════════════════════════ -->
+    <section style="margin: 1rem 0 4rem;">
+        <h2 class="flow-title" style="margin-bottom:.5rem;">Four ways to release payment</h2>
+        <p class="flow-subtitle" style="margin-bottom:2.5rem;">Buyers choose the release condition. Conditions are combinable — require an NFT <em>and</em> a trust score <em>and</em> an AI review for high-stakes jobs.</p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;margin-bottom:1.5rem;">
+
+            <div style="padding:2rem;border-radius:22px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px);box-shadow:var(--shadow);">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;">
+                    <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,102,255,.1);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="image" style="width:20px;height:20px;stroke-width:1.8;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 1 — Deterministic</div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--text);">NFT from a named issuer</div>
+                    </div>
+                </div>
+                <p style="font-size:.86rem;color:var(--text-muted);line-height:1.7;margin-bottom:1rem;">Payment only releases when the seller's wallet holds an NFT from a specific issuer address. No forgery possible — the XRPL's consensus enforces it.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Event tickets</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Bills of lading</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Certificates</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Delivery receipts</span>
+                </div>
+            </div>
+
+            <div style="padding:2rem;border-radius:22px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px);box-shadow:var(--shadow);">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;">
+                    <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,102,255,.1);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="globe" style="width:20px;height:20px;stroke-width:1.8;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 2 — Deterministic</div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--text);">Domain + xrp-ledger.toml</div>
+                    </div>
+                </div>
+                <p style="font-size:.86rem;color:var(--text-muted);line-height:1.7;margin-bottom:1rem;">Verifies the seller's wallet is the verified on-chain identity of a named organisation. The wallet's <code style="font-size:.8rem;">Domain</code> field must match and the org's <code style="font-size:.8rem;">xrp-ledger.toml</code> must list it.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Company KYB</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Supplier verification</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Agency accreditation</span>
+                </div>
+            </div>
+
+            <div style="padding:2rem;border-radius:22px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px);box-shadow:var(--shadow);">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;">
+                    <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,102,255,.1);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="badge-check" style="width:20px;height:20px;stroke-width:1.8;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 3 — Deterministic</div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--text);">W3C Verifiable Credentials</div>
+                    </div>
+                </div>
+                <p style="font-size:.86rem;color:var(--text-muted);line-height:1.7;margin-bottom:1rem;">Cryptographically signed credentials from a trusted issuer — professional qualifications, identity, or compliance status — verified without revealing private data to either party.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Professional licences</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">AML compliance</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Identity attestations</span>
+                </div>
+            </div>
+
+            <div style="padding:2rem;border-radius:22px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px);box-shadow:var(--shadow);">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;">
+                    <div style="width:42px;height:42px;border-radius:12px;background:rgba(0,102,255,.1);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i data-lucide="shield-check" style="width:20px;height:20px;stroke-width:1.8;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 4 — Deterministic</div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--text);">Trust score &amp; KYC / sanctions</div>
+                    </div>
+                </div>
+                <p style="font-size:.86rem;color:var(--text-muted);line-height:1.7;margin-bottom:1rem;">Set a minimum trust score threshold (0–100), require Xaman KYC, or block sanctioned wallets. Built from 12 on-chain signals including ledger age, escrow history, and OFAC / UN / EU screening.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Marketplace gating</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">High-value escrows</span>
+                    <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,102,255,.07);color:#004ecc;border:1px solid rgba(0,102,255,.15);">Compliance workflows</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- AI as the 5th, optional gate -->
+        <div style="padding:2rem;border-radius:22px;background:linear-gradient(135deg,rgba(120,0,255,.06),rgba(0,102,255,.04));border:1px solid rgba(120,0,255,.2);backdrop-filter:blur(16px);box-shadow:var(--shadow);display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(120,0,255,.1);color:#7800ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i data-lucide="cpu" style="width:22px;height:22px;stroke-width:1.7;"></i>
+            </div>
+            <div style="flex:1;min-width:240px;">
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Gate 5 — Optional AI</div>
+                <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">LLM audit for open-ended work</div>
+                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">When the deliverable is a piece of writing, a code submission, a data set, or anything else that requires judgement, an AI referee scores it against your exact specification. Deterministic gates run first — the AI step is skipped entirely if a proof gate fails, saving the fee. For high-stakes jobs, set <code style="font-size:.8rem;">require_consensus: true</code> and two independent models must agree before payment releases.</p>
             </div>
         </div>
     </section>
