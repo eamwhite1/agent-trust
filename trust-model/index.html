@@ -154,7 +154,7 @@
         <strong>What you do not have to trust us with</strong>
         <ul style="margin:.6rem 0 0;">
             <li><strong>Custody of funds.</strong> XRP and RLUSD sit in native XRPL crypto-condition escrow — the ledger holds them, not us. We cannot move them.</li>
-            <li><strong>The fulfillment key.</strong> The crypto-condition key that releases escrow is derived from your job spec. Only a valid submission unlocks it — not us.</li>
+            <li><strong>The fulfillment key.</strong> A cryptographically random 32-byte preimage is generated per escrow. Its SHA-256 hash becomes the on-chain XRPL crypto-condition. The preimage is stored AES-256-GCM encrypted and reconstructed in-memory only at the point of release — never transmitted or logged in plaintext. AgentTrust cannot move funds without it; neither can anyone else without breaking SHA-256.</li>
             <li><strong>Fund redirection.</strong> Worker wallet address is locked at escrow creation. We cannot reroute payment.</li>
             <li><strong>Sanctions checks.</strong> Every wallet is screened against OFAC lists at vault creation. Flagged wallets are rejected before any funds move.</li>
             <li><strong>Key security.</strong> Fulfillment keys are encrypted AES-256-GCM at rest and reconstructed in-memory only at the point of escrow release.</li>

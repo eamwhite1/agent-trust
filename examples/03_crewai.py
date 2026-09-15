@@ -24,6 +24,8 @@ from crewai import Agent, Task, Crew, Process
 # ─────────────────────────────────────────────────────────────────────────────
 
 AGENTTRUST_API = "https://mcp.cryptovault.co.uk"
+# Testnet by default — change to wss://xrplcluster.com or https://s1.ripple.com:51234 for mainnet
+XRPL_NODE      = "https://s.altnet.rippletest.net:51234"
 
 PAYER_ADDRESS = os.getenv("PAYER_ADDRESS", "rPayerTestnetAddressHere")
 PAYER_SECRET  = os.getenv("PAYER_SECRET",  "sPayerTestnetSecretHere")

@@ -18,12 +18,16 @@ XRPL wallets:
     For mainnet you need real XRP.
 
 API endpoint: https://mcp.cryptovault.co.uk
+
+Network: XRPL Testnet (default). Change XRPL_NODE to wss://xrplcluster.com for mainnet.
 """
 
 import requests
 import json
 
-BASE_URL = "https://mcp.cryptovault.co.uk"
+BASE_URL    = "https://mcp.cryptovault.co.uk"
+# Testnet by default — change to wss://xrplcluster.com or https://s1.ripple.com:51234 for mainnet
+XRPL_NODE   = "https://s.altnet.rippletest.net:51234"
 
 # ── Configuration ────────────────────────────────────────────────────────────
 
