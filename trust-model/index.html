@@ -240,6 +240,10 @@
         </table>
     </div>
 
+    <div class="callout warn">
+        <strong>Proof gates are oracle-minimized, not oracle-free.</strong> The on-chain crypto-condition is what actually unlocks funds — AgentTrust never touches them. But the proof checks themselves (NFT ownership, domain field, VC signature) are verified server-side via API calls before AgentTrust submits the fulfillment to XRPL. The ledger enforces the lock; we determine whether the condition has been met. If you disable AI audit and rely solely on proof gates, you remove the LLM oracle but retain AgentTrust as the verification oracle. Fully on-chain atomicity (e.g. XLS-30 conditional payments) is the long-term goal; it is not available today.
+    </div>
+
     <div class="callout info">
         <strong>Recommended stack:</strong> deterministic gates when the artifact is checkable on-chain; AI evaluate when the work is qualitative (code quality, creative output, data analysis); XRPL escrow for settlement in either case.
     </div>
