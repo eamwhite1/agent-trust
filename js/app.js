@@ -177,19 +177,22 @@ function updateFeeDisplay() {
 }
 
 function setPaymentMode(mode) {
-    const manualSection = document.getElementById("manual-hash-section");
-    const autoSection   = document.getElementById("auto-pay-section");
-    const btnAuto       = document.getElementById("btn-auto");
-    const btnManual     = document.getElementById("btn-manual");
+    const manualSection  = document.getElementById("manual-hash-section");
+    const autoSection    = document.getElementById("auto-pay-section");
+    const autoPayBottom  = document.getElementById("auto-pay-bottom");
+    const btnAuto        = document.getElementById("btn-auto");
+    const btnManual      = document.getElementById("btn-manual");
     if (!manualSection) return;
     if (mode === "manual") {
         manualSection.style.display = "block";
         autoSection && (autoSection.style.display = "none");
+        autoPayBottom && (autoPayBottom.style.display = "none");
         btnManual?.classList.add("active");
         btnAuto?.classList.remove("active");
     } else {
         manualSection.style.display = "none";
         autoSection && (autoSection.style.display = "block");
+        autoPayBottom && (autoPayBottom.style.display = "block");
         btnAuto?.classList.add("active");
         btnManual?.classList.remove("active");
     }
