@@ -53,7 +53,7 @@ AgentTrust locks funds in XRPL crypto-condition escrow and releases them automat
 3. Call `confirm_escrow_transaction(escrow_id, tx_hash)` to activate the vault.
 4. Worker submits proof; referee verifies; funds release automatically.
 
-Optional trust layers (NFT ownership/DvP, verified domain, W3C Verifiable Credential, AI audit, or any combination) can be required before release. Call `recommend_release_conditions(job_type)` to get recommended parameters for your use case, or `explain_agenttrust_trust_model()` for the full trust model. All addresses are screened against the OFAC SDN sanctions list.
+Before locking funds, call `assess_counterparty_and_job(worker_address, job_type, amount_xrp)` — a single pre-flight tool that aggregates trust score, sanctions, KYC, NFT issuer registry, domain status, recommended release conditions, escrow cap, and go/no-go rules. Returns `proceed: true/false`. Optional trust layers (NFT ownership/DvP, verified domain, W3C Verifiable Credential, AI audit, or any combination) can be required before release. Call `recommend_release_conditions(job_type)` to get recommended parameters for your use case, or `explain_agenttrust_trust_model()` for the full trust model. All addresses are screened against the OFAC SDN sanctions list.
 
 ## Marketplace
 
