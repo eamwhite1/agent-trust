@@ -18,6 +18,8 @@ Usage:
 
 XRPL wallets:
     Get a free testnet wallet at: https://xrpl.org/xrp-testnet-faucet.html
+
+Network: XRPL Testnet (default). Change XRPL_NODE to wss://xrplcluster.com for mainnet.
 """
 
 import os
@@ -25,7 +27,9 @@ import json
 import requests
 from openai import OpenAI
 
-BASE_URL = "https://mcp.cryptovault.co.uk"
+BASE_URL  = "https://mcp.cryptovault.co.uk"
+# Testnet by default — change to wss://xrplcluster.com or https://s1.ripple.com:51234 for mainnet
+XRPL_NODE = "https://s.altnet.rippletest.net:51234"
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
