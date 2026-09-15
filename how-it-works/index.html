@@ -424,7 +424,7 @@
 <div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
     <div class="page-eyebrow"><i data-lucide="zap"></i> How it Works</div>
     <h1>Trustless escrow, settled in seconds</h1>
-    <p class="page-lead">Four independent release conditions — NFT proof, domain identity, verifiable credentials, or trust score — combinable in any mix. Add an AI referee for open-ended work. Payment releases on-chain automatically.</p>
+    <p class="page-lead">Require machine-checkable proof — NFT, domain identity, verifiable credentials, or trust score — before the AI even looks at the work. Stack the conditions you need. Payment releases on-chain automatically.</p>
 </div>
 
 <div class="container">
@@ -476,8 +476,8 @@
          PROOF STACK — four release conditions
     ════════════════════════════════════════════════════════════ -->
     <section style="margin: 1rem 0 4rem;">
-        <h2 class="flow-title" style="margin-bottom:.5rem;">Four ways to release payment</h2>
-        <p class="flow-subtitle" style="margin-bottom:2.5rem;">Buyers choose the release condition. Conditions are combinable — require an NFT <em>and</em> a trust score <em>and</em> an AI review for high-stakes jobs.</p>
+        <h2 class="flow-title" style="margin-bottom:.5rem;">Stack your proof requirements</h2>
+        <p class="flow-subtitle" style="margin-bottom:2.5rem;">Buyers set which checks the seller must pass before the AI audit runs. Proof gates are combinable — fail one and the submission is rejected before a single AI token is spent.</p>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;margin-bottom:1.5rem;">
 
@@ -487,7 +487,7 @@
                         <i data-lucide="image" style="width:20px;height:20px;stroke-width:1.8;"></i>
                     </div>
                     <div>
-                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 1 — Deterministic</div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Proof gate 1</div>
                         <div style="font-size:1rem;font-weight:700;color:var(--text);">NFT from a named issuer</div>
                     </div>
                 </div>
@@ -506,7 +506,7 @@
                         <i data-lucide="globe" style="width:20px;height:20px;stroke-width:1.8;"></i>
                     </div>
                     <div>
-                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 2 — Deterministic</div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Proof gate 2</div>
                         <div style="font-size:1rem;font-weight:700;color:var(--text);">Domain + xrp-ledger.toml</div>
                     </div>
                 </div>
@@ -524,7 +524,7 @@
                         <i data-lucide="badge-check" style="width:20px;height:20px;stroke-width:1.8;"></i>
                     </div>
                     <div>
-                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 3 — Deterministic</div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Proof gate 3</div>
                         <div style="font-size:1rem;font-weight:700;color:var(--text);">W3C Verifiable Credentials</div>
                     </div>
                 </div>
@@ -542,7 +542,7 @@
                         <i data-lucide="shield-check" style="width:20px;height:20px;stroke-width:1.8;"></i>
                     </div>
                     <div>
-                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Gate 4 — Deterministic</div>
+                        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:2px;">Proof gate 4</div>
                         <div style="font-size:1rem;font-weight:700;color:var(--text);">Trust score &amp; KYC / sanctions</div>
                     </div>
                 </div>
@@ -562,9 +562,9 @@
                 <i data-lucide="cpu" style="width:22px;height:22px;stroke-width:1.7;"></i>
             </div>
             <div style="flex:1;min-width:240px;">
-                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Gate 5 — Optional AI</div>
-                <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">LLM audit for open-ended work</div>
-                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">When the deliverable is a piece of writing, a code submission, a data set, or anything else that requires judgement, an AI referee scores it against your exact specification. Deterministic gates run first — the AI step is skipped entirely if a proof gate fails, saving the fee. For high-stakes jobs, set <code style="font-size:.8rem;">require_consensus: true</code> and two independent models must agree before payment releases.</p>
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Always runs</div>
+                <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">AI audit — every submission</div>
+                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">Every submission runs an AI audit against your exact job specification — the $0.10 protocol fee is paid once at escrow setup and covers this. Proof gates run first: if one fails, the submission is rejected before the AI is called. When gates pass, the AI sees all verified proof results as evidence when scoring the work. For high-stakes jobs, set <code style="font-size:.8rem;">require_consensus: true</code> and two independent models must agree before payment releases.</p>
             </div>
         </div>
     </section>
