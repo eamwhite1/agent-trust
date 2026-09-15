@@ -438,7 +438,21 @@ escrow_id = escrow["escrow_id"]   # keep this — needed in later steps
     }
 ).json()
 
-print(result["verdict"])   # "PASS" or "FAIL"</pre>
+print(result["verdict"])   # "PASS" or "FAIL"
+print(result["score"])     # 0–100
+
+# Always read criteria before acting
+for c in result.get("criteria_met", []):
+    print("✓", c)
+for c in result.get("criteria_failed", []):
+    print("✗", c)   # specific, actionable — share with the worker</pre>
+
+                <div class="callout callout-blue" style="margin-bottom:.9rem">
+                    <i data-lucide="list-checks"></i>
+                    <span>The verdict always includes <code class="inline-code">criteria_met</code> and <code class="inline-code">criteria_failed</code> arrays.
+                    Each entry in <code class="inline-code">criteria_failed</code> is a specific, actionable reason — not a generic rejection.
+                    Share them with the worker so they know exactly what to fix before resubmitting.</span>
+                </div>
 
                 <div class="callout callout-green" style="margin-bottom:0">
                     <i data-lucide="check-circle"></i>
