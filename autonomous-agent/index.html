@@ -273,7 +273,8 @@ print("Address:", w.address)   # share this as your worker address
 print("Seed:   ", w.seed)      # store securely — never share or commit
 
 # Or call the MCP tool from any agent framework:
-# create_agent_wallet() → returns address + seed + funding instructions</pre>
+# get_wallet_setup_guide() → secure setup: seed stays local (production)
+# create_agent_wallet()    → returns address + seed in plaintext (dev only)</pre>
 
                 <div class="callout callout-blue" style="margin-bottom:.75rem;">
                     <i data-lucide="info"></i>

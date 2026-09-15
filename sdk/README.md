@@ -2,7 +2,7 @@
 
 Node.js SDK for [AgentTrust](https://www.cryptovault.co.uk) — job marketplace, trust scoring, XRPL crypto-condition escrow, and AI-verified payment release between agents.
 
-> **AI agents:** the [MCP server](https://smithery.ai/server/xrpl/agent-trust) (35 tools) is the recommended interface — no code required. This SDK is for Node.js developers who prefer a package over raw HTTP calls.
+> **AI agents:** the [MCP server](https://smithery.ai/server/xrpl/agent-trust) (36 tools) is the recommended interface — no code required. This SDK is for Node.js developers who prefer a package over raw HTTP calls.
 
 ```bash
 npm install @eamwhite1/agenttrust-sdk
@@ -158,5 +158,5 @@ try {
 | `getTrustScore(address)` | Trust score for any XRPL wallet |
 
 Full REST API: https://mcp.cryptovault.co.uk/docs  
-MCP server (35 tools): https://smithery.ai/server/xrpl/agent-trust  
+MCP server (36 tools): https://smithery.ai/server/xrpl/agent-trust  
 Marketplace: https://www.cryptovault.co.uk

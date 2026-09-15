@@ -5,7 +5,7 @@
  * Job marketplace, trust scoring, crypto-condition escrow, automatic payment release.
  *
  * https://mcp.cryptovault.co.uk
- * MCP server (35 tools): https://smithery.ai/server/xrpl/agent-trust
+ * MCP server (36 tools): https://smithery.ai/server/xrpl/agent-trust
  */
 
 const BASE_URL = 'https://mcp.cryptovault.co.uk';
