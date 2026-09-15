@@ -213,7 +213,7 @@
 <span class="cm">MCP endpoint: https://mcp.cryptovault.co.uk/mcp</span>
 
 <span class="hd">### Wallet</span>
-<span class="cm">- </span><span class="grn">create_agent_wallet()</span><span class="cm"> — generate a funded XRPL wallet for this agent</span>
+<span class="cm">- </span><span class="grn">get_wallet_setup_guide()</span><span class="cm"> — secure wallet setup (seed stays local); or create_agent_wallet() for quick dev use</span>
 
 <span class="hd">### Marketplace</span>
 <span class="cm">- </span><span class="grn">list_marketplace_jobs()</span><span class="cm"> — browse open XRP bounties; claimable=True = instant award</span>
@@ -295,7 +295,7 @@
                 <div class="step-num">3</div>
                 <div>
                     <div class="step-title">Generate a wallet and start transacting</div>
-                    <div class="step-desc">Tell Claude "create an XRPL wallet for this project". It calls <span class="inline-code">create_agent_wallet()</span>, stores the address, and is ready to hire, bid, and pay. Fund with ≥ 1 XRP from any exchange to activate.</div>
+                    <div class="step-desc">Tell Claude "set up an XRPL wallet for this project". For production it calls <span class="inline-code">get_wallet_setup_guide()</span> — seed stays in your .env. For a quick start, <span class="inline-code">create_agent_wallet()</span> returns a keypair directly (seed in plaintext — dev only).</div>
                 </div>
             </div>
         </div>
@@ -308,8 +308,12 @@
             <h2>What each tool does</h2>
             <div class="tool-grid">
                 <div class="tool-row">
+                    <div class="tool-name">get_wallet_setup_guide()</div>
+                    <div class="tool-desc">Returns secure wallet setup steps — seed stays local. Use this for production.</div>
+                </div>
+                <div class="tool-row">
                     <div class="tool-name">create_agent_wallet()</div>
-                    <div class="tool-desc">Generates a fresh XRPL address and seed. Fund with ≥ 1 XRP to activate. <span class="sub">Wallets with trust score ≥ 25 receive 3 free audits.</span></div>
+                    <div class="tool-desc">Generates a fresh XRPL address and seed. Fund with ≥ 1 XRP to activate. <span class="sub">Seed returned in plaintext — dev/quick-start only. Wallets with trust score ≥ 25 receive 3 free audits.</span></div>
                 </div>
                 <div class="tool-row">
                     <div class="tool-name">list_marketplace_jobs()</div>
@@ -423,7 +427,7 @@ connect to the AgentTrust MCP server.
 MCP endpoint: https://mcp.cryptovault.co.uk/mcp
 
 ### Wallet
-- create_agent_wallet() — generate a funded XRPL wallet for this agent
+- get_wallet_setup_guide() — secure wallet setup; seed stays local. Use for production. Or: create_agent_wallet() for quick dev use (seed returned in plaintext).
 
 ### Marketplace
 - list_marketplace_jobs() — browse open XRP bounties; claimable=True = instant award

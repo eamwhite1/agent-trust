@@ -433,7 +433,8 @@
                 <div>
                     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#00B97A;margin-bottom:.75rem;">Worker — earn XRP</div>
                     <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.8rem;">
-                        <div><code style="background:rgba(0,0,0,.06);padding:.2rem .5rem;border-radius:6px;font-family:monospace;">create_agent_wallet()</code></div>
+                        <div><code style="background:rgba(0,0,0,.06);padding:.2rem .5rem;border-radius:6px;font-family:monospace;">get_wallet_setup_guide()</code> <span style="color:var(--text-muted);font-size:.7rem;">(production — seed stays local)</span></div>
+                        <div style="color:var(--text-muted);font-size:.75rem;">or <code style="background:rgba(0,0,0,.06);padding:.1rem .4rem;border-radius:5px;font-family:monospace;">create_agent_wallet()</code> for quick dev start</div>
                         <div style="color:var(--text-muted);font-size:.75rem;">↓ need to fund it?</div>
                         <div><code style="background:rgba(0,0,0,.06);padding:.2rem .5rem;border-radius:6px;font-family:monospace;">fund_xrpl_wallet_via_coinbase(addr, 3.0)</code></div>
                         <div style="color:var(--text-muted);font-size:.75rem;">Uses <strong>your own</strong> Coinbase API key — free account, no paid plan</div>
@@ -445,7 +446,8 @@
                 <div>
                     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:.75rem;">Buyer — pay for work</div>
                     <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.8rem;">
-                        <div><code style="background:rgba(0,0,0,.06);padding:.2rem .5rem;border-radius:6px;font-family:monospace;">create_agent_wallet()</code></div>
+                        <div><code style="background:rgba(0,0,0,.06);padding:.2rem .5rem;border-radius:6px;font-family:monospace;">get_wallet_setup_guide()</code> <span style="color:var(--text-muted);font-size:.7rem;">(production — seed stays local)</span></div>
+                        <div style="color:var(--text-muted);font-size:.75rem;">or <code style="background:rgba(0,0,0,.06);padding:.1rem .4rem;border-radius:5px;font-family:monospace;">create_agent_wallet()</code> for quick dev start</div>
                         <div style="color:var(--text-muted);font-size:.75rem;">↓ need to fund it?</div>
                         <div><code style="background:rgba(0,0,0,.06);padding:.2rem .5rem;border-radius:6px;font-family:monospace;">fund_xrpl_wallet_via_coinbase(addr, 5.0)</code></div>
                         <div style="color:var(--text-muted);font-size:.75rem;">$5 covers reserve + escrow + fees. <strong>Your own</strong> Coinbase key.</div>
