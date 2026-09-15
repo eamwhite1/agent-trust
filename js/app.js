@@ -500,6 +500,7 @@ async function initVault() {
             required_vc_type:       requiredVcType     || undefined,
             proof_policy:           proofPolicy,
             nft_dvp:                nftDvp,
+            require_ai_audit:       _aiAuditOn,
             invoice_requirements:   _invoiceModeOn ? {
                 po_number:            document.getElementById("inv-po-number")?.value.trim() || null,
                 supplier_name:        document.getElementById("inv-supplier-name")?.value.trim() || null,
@@ -638,6 +639,7 @@ async function pollEscrowCreate(uuid, receiptCode) {
 // PROOF TYPE TOGGLES
 // ---------------------------------------------------------------------------
 const _proofState = { nft: false, domain: false, vc: false };
+let _aiAuditOn = true;
 
 function toggleProof(type) {
     _proofState[type] = !_proofState[type];
@@ -659,11 +661,49 @@ function toggleProof(type) {
     // When NFT proof is first toggled on, initialise mode to "verify"
     if (type === "nft" && on) setNftMode("verify");
 
+    const activeCount = Object.values(_proofState).filter(Boolean).length;
+
     // Show proof policy selector only when 2+ proof types are on
-    const activeCount = Object.values(_proofState).filter(Boolean).length
-        + (document.getElementById("nft-dvp-toggle")?.checked ? 0 : 0); // dvp doesn't count as a proof type
     const policyWrap = document.getElementById("proof-policy-wrap");
     if (policyWrap) policyWrap.style.display = activeCount >= 2 ? "block" : "none";
+
+    // Show AI audit toggle whenever at least one proof gate is on;
+    // reset to ON if all gates just turned off
+    const aiWrap = document.getElementById("ai-audit-wrap");
+    if (aiWrap) {
+        aiWrap.style.display = activeCount >= 1 ? "block" : "none";
+        if (activeCount === 0 && !_aiAuditOn) {
+            _aiAuditOn = true;
+            _syncAiAuditUI();
+        }
+    }
+}
+
+function toggleAiAudit() {
+    _aiAuditOn = !_aiAuditOn;
+    _syncAiAuditUI();
+}
+
+function _syncAiAuditUI() {
+    const pill    = document.getElementById("ai-audit-pill");
+    const warning = document.getElementById("ai-audit-warning");
+    const hint    = document.getElementById("ai-audit-hint");
+    if (pill) {
+        pill.textContent = _aiAuditOn ? "ON" : "OFF";
+        if (_aiAuditOn) {
+            pill.style.borderColor = "rgba(34,197,94,.4)";
+            pill.style.background  = "rgba(34,197,94,.12)";
+            pill.style.color       = "#22c55e";
+        } else {
+            pill.style.borderColor = "rgba(255,255,255,.2)";
+            pill.style.background  = "rgba(255,255,255,.06)";
+            pill.style.color       = "var(--text-muted)";
+        }
+    }
+    if (warning) warning.style.display = _aiAuditOn ? "none" : "block";
+    if (hint) hint.textContent = _aiAuditOn
+        ? "Gemini evaluates work against your job spec"
+        : "Payment releases on proof gates alone";
 }
 
 // nftMode: "verify" (proof only) or "transfer" (DvP)
