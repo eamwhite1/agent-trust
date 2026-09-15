@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fees &amp; Limits — AgentTrust</title>
+<meta name="description" content="AgentTrust fee schedule: audit fee, accepted payment assets, free-tier rules, and escrow limits. Loaded live from the API.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="AgentTrust Fees &amp; Limits">
+<meta property="og:description" content="Audit fee, accepted assets, free-tier rules, and escrow caps — loaded live from the API.">
+<meta property="og:url" content="https://www.cryptovault.co.uk/fees/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://www.cryptovault.co.uk/fees/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap&family=DM+Serif+Display:ital@0;1" rel="stylesheet">
+<style>
+    :root {
+        --bg: #fafafa;
+        --text: #0d0d12;
+        --text-muted: #5a5a68;
+        --blue: #0066ff;
+        --green: #00b97a;
+        --amber: #d97706;
+        --red: #dc2626;
+        --border: rgba(0,0,0,.08);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --bg: #0d0d12;
+            --text: #f0f0f5;
+            --text-muted: #8888a0;
+            --border: rgba(255,255,255,.08);
+        }
+    }
+    :root[data-theme="dark"] {
+        --bg: #0d0d12;
+        --text: #f0f0f5;
+        --text-muted: #8888a0;
+        --border: rgba(255,255,255,.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
+    .updated { font-size: .85rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+    p, li { font-size: .95rem; color: var(--text); }
+    ul { padding-left: 1.3rem; }
+    li { margin-bottom: .4rem; }
+    code { background: rgba(0,102,255,.08); color: var(--blue); padding: .15em .4em; border-radius: 4px; font-family: "IBM Plex Mono", monospace; font-size: .85em; }
+    .back { display: inline-block; margin-bottom: 2rem; font-size: .85rem; font-weight: 600; }
+
+    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.2rem 0; font-size: .88rem; line-height: 1.6; }
+    .callout.info  { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); }
+    .callout.good  { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.25); }
+
+    .table-wrap { overflow-x: auto; margin: 1.2rem 0; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: var(--bg); }
+    thead th { text-align: left; padding: .65rem 1rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    tbody td { padding: .7rem 1rem; color: var(--text); vertical-align: top; border-bottom: 1px solid var(--border); line-height: 1.55; }
+    tbody tr:last-child td { border-bottom: none; }
+    .label-col { font-weight: 600; white-space: nowrap; }
+
+    /* Big fee number */
+    .fee-hero { display: flex; align-items: baseline; gap: .5rem; margin: 1.5rem 0 .5rem; }
+    .fee-amount { font-size: 3rem; font-weight: 700; letter-spacing: -.03em; color: var(--text); font-variant-numeric: tabular-nums; }
+    .fee-unit { font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
+
+    /* Cap cards */
+    .cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0; }
+    @media (max-width: 560px) { .cap-grid { grid-template-columns: 1fr; } }
+    .cap-card { border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.2rem; background: var(--bg); }
+    .cap-card .cap-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: .35rem; }
+    .cap-card .cap-value { font-size: 1.4rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    .cap-card .cap-note  { font-size: .78rem; color: var(--text-muted); margin-top: .25rem; }
+    .cap-card.kyc .cap-label { color: var(--green); }
+    .cap-card.kyc .cap-value { color: var(--green); }
+
+    /* loading / error states */
+    .loading { color: var(--text-muted); font-size: .9rem; padding: 2rem 0; }
+    .err { color: var(--red); font-size: .88rem; padding: .75rem 1rem; border-radius: 8px; background: rgba(220,38,38,.06); border: 1px solid rgba(220,38,38,.2); margin: 1rem 0; }
+
+    /* asset pill */
+    .asset-pill { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 600; padding: .2em .7em; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); vertical-align: middle; }
+
+    /* live badge */
+    .live-badge { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--green); }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 2rem 0 1.5rem; }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: .8rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <a class="back" href="/">← AgentTrust</a>
+
+    <h1>Fees &amp; Limits</h1>
+    <p class="updated">
+        Loaded live from <a href="https://mcp.cryptovault.co.uk/fees" target="_blank" rel="noopener"><code>GET /fees</code></a> — always current.
+        &nbsp;<span class="live-badge"><span class="live-dot"></span> Live</span>
+    </p>
+
+    <div id="content"><p class="loading">Loading fee schedule…</p></div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/trust-model/">Trust Model</a>
+            <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+            <a href="/compliance/">Compliance</a>
+            <a href="/terms/">Terms</a>
+        </div>
+    </footer>
+</div>
+
+<script>
+const API = "https://mcp.cryptovault.co.uk/fees";
+
+function fmt(n, currency) {
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
+}
+
+function el(tag, attrs, ...children) {
+    const e = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => {
+        if (k === "class") e.className = v;
+        else if (k === "html") e.innerHTML = v;
+        else e.setAttribute(k, v);
+    });
+    children.forEach(c => typeof c === "string" ? e.append(c) : e.append(c));
+    return e;
+}
+
+function assetRow(a) {
+    const network = a.network === "xrpl:0" ? "XRPL Mainnet" : a.network === "eip155:8453" ? "Base (chain 8453)" : a.network;
+    const amount = a.asset === "XRP"
+        ? `${a.amount_xrp} XRP (≈ $${(0.10).toFixed(2)} USD at live price)`
+        : a.asset === "RLUSD"
+        ? `${a.amount_rlusd} RLUSD`
+        : `${a.amount_usdc} USDC (${a.amount_units.toLocaleString()} units, ${a.decimals} decimals)`;
+    const dest = a.destination || "—";
+    const tr = el("tr", {});
+    tr.append(
+        el("td", { class: "label-col" }, a.asset),
+        el("td", {}, network),
+        el("td", {}, amount),
+        el("td", {}, el("code", {}, dest.length > 20 ? dest.slice(0, 12) + "…" : dest)),
+    );
+    return tr;
+}
+
+async function load() {
+    const root = document.getElementById("content");
+    try {
+        const res = await fetch(API);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        const html = [];
+
+        // Audit fee section
+        html.push(`<h2>Audit Fee</h2>`);
+        html.push(`<div class="fee-hero"><span class="fee-amount">$${d.audit_fee.usd.toFixed(2)}</span><span class="fee-unit">USD per audit</span></div>`);
+        html.push(`<p style="font-size:.88rem;color:var(--text-muted);">Pay in any of the assets below. Each <code>${d.audit_fee.fee_hash_field}</code> is single-use.</p>`);
+
+        // Assets table
+        const wrap = el("div", { class: "table-wrap" });
+        const tbl = el("table", {});
+        const thead = el("thead", {}, el("tr", {},
+            el("th", {}, "Asset"),
+            el("th", {}, "Network"),
+            el("th", {}, "Amount"),
+            el("th", {}, "Destination"),
+        ));
+        const tbody = el("tbody", {});
+        d.audit_fee.assets_accepted.forEach(a => tbody.append(assetRow(a)));
+        tbl.append(thead, tbody);
+        wrap.append(tbl);
+
+        root.innerHTML = html.join("");
+        root.append(wrap);
+
+        // fee_hash format
+        const formats = Object.entries(d.audit_fee.fee_hash_format || {});
+        if (formats.length) {
+            const callout = el("div", { class: "callout info" });
+            callout.innerHTML = `<strong>fee_hash format</strong><ul style="margin:.5rem 0 0;">` +
+                formats.map(([net, desc]) => `<li><strong>${net}:</strong> ${desc}</li>`).join("") +
+                `</ul><p style="margin:.6rem 0 0;">Also accepted via <code>${d.audit_fee.x402_header}</code> header (x402 protocol).</p>`;
+            root.append(callout);
+        }
+
+        // Free tier
+        const ft = d.free_tier;
+        root.insertAdjacentHTML("beforeend", `<h2>Free Tier</h2>`);
+        const freeCallout = el("div", { class: "callout good" });
+        freeCallout.innerHTML =
+            `<strong>${ft.free_audits} free audits</strong> for wallets with trust score ≥ ${ft.min_trust_score} — omit <code>fee_hash</code>.<br>` +
+            `<span style="font-size:.85rem;color:var(--text-muted);">Check your score: <a href="/wallet-score/">${ft.check_score}</a></span>`;
+        root.append(freeCallout);
+
+        // Escrow limits
+        const el2 = d.escrow_limits;
+        root.insertAdjacentHTML("beforeend", `<h2>Escrow Limits</h2>`);
+
+        const capGrid = document.createElement("div");
+        capGrid.className = "cap-grid";
+
+        const defaultCard = document.createElement("div");
+        defaultCard.className = "cap-card";
+        defaultCard.innerHTML = `<div class="cap-label">Default cap</div><div class="cap-value">${fmt(el2.default_cap_usd, "USD")}</div><div class="cap-note">No KYC required below this threshold</div>`;
+
+        const kycCard = document.createElement("div");
+        kycCard.className = "cap-card kyc";
+        kycCard.innerHTML = `<div class="cap-label">KYC cap</div><div class="cap-value">${fmt(el2.kyc_cap_usd, "USD")}</div><div class="cap-note">Xaman KYC required — <a href="/kyc/">verify identity →</a></div>`;
+
+        capGrid.append(defaultCard, kycCard);
+        root.append(capGrid);
+
+        root.insertAdjacentHTML("beforeend",
+            `<p style="font-size:.85rem;color:var(--text-muted);">Travel Rule compliance note issued above ${fmt(el2.travel_rule_warn_usd, "USD")}. ` +
+            `Hard ceiling of ${fmt(el2.kyc_cap_usd, "USD")} applies to all wallets.</p>`
+        );
+
+        // Free endpoints
+        root.insertAdjacentHTML("beforeend", `<h2>What's Free</h2><p>These endpoints never require payment:</p><ul>` +
+            d.free_endpoints.map(e => `<li><code>${e}</code></li>`).join("") +
+            `</ul><p>Paid endpoints require a <code>fee_hash</code> or <code>X-PAYMENT</code> header: ` +
+            d.paid_endpoints.map(e => `<code>${e}</code>`).join(", ") + `.</p>`
+        );
+
+        // Machine-readable note
+        root.insertAdjacentHTML("beforeend",
+            `<div class="callout info" style="margin-top:2rem;">` +
+            `<strong>Machine-readable:</strong> Agents and integrations should call ` +
+            `<a href="https://mcp.cryptovault.co.uk/fees" target="_blank" rel="noopener"><code>GET https://mcp.cryptovault.co.uk/fees</code></a> ` +
+            `or the <code>get_fees()</code> MCP tool rather than hard-coding these values — amounts may change with XRP price. ` +
+            `<a href="https://github.com/eamwhite1/xrpl-referee/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog →</a>` +
+            `</div>`
+        );
+
+    } catch (err) {
+        document.getElementById("content").innerHTML =
+            `<div class="err">Failed to load fee schedule: ${err.message}. ` +
+            `<a href="https://mcp.cryptovault.co.uk/fees" target="_blank" rel="noopener">View raw JSON →</a></div>`;
+    }
+}
+
+load();
+</script>
+</body>
+</html>
