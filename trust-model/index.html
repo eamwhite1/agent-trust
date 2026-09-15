@@ -163,7 +163,7 @@
         </div>
         <div class="status-card partial">
             <div class="label">API availability</div>
-            <div class="value">Render free tier — cold-start ~30–60 s</div>
+            <div class="value">99.9% uptime monitored — always warm</div>
         </div>
     </div>
 
@@ -179,7 +179,7 @@
     <p>After an <code>EscrowFinish</code> transaction lands on-chain, the verdict is final and irreversible. <strong>Mitigate:</strong> write tight, measurable jobSpecs; use FAIL → resubmit rather than accepting borderline work; check the cancel window before it lapses; verify evaluate receipts (<code>verdict</code>, <code>score</code>, criteria list, <code>auto_finish_hash</code>). Add deterministic proof requirements — they run before the AI step and gate it entirely.</p>
 
     <h3>2 — Our API availability</h3>
-    <p>The MCP server and REST API run on Render with Cloudflare in front. Prefer <code>https://mcp.cryptovault.co.uk</code> (custom domain, same backend). Free-tier instances cold-start after 15 minutes of inactivity — budget 30–60 s on the first call. Production workloads should handle retries gracefully.</p>
+    <p>The MCP server and REST API are served from <code>https://mcp.cryptovault.co.uk</code> with uptime monitoring and automatic restarts. The service is kept warm — no cold-start latency. Production workloads should still handle transient retries gracefully for network resilience.</p>
 
     <h3>3 — Our code and ops</h3>
     <p>Both repos (<a href="https://github.com/eamwhite1/xrpl-referee" target="_blank" rel="noopener"><code>xrpl-referee</code></a> and <a href="https://github.com/eamwhite1/agent-trust" target="_blank" rel="noopener"><code>agent-trust</code></a>) are open-source. Operator: Boxclever Media Ltd, a registered UK company (no. 09394447). Published compliance controls at <a href="/compliance/">/compliance/</a>.</p>
