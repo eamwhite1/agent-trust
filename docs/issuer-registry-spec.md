@@ -1,9 +1,10 @@
 # XRPL NFT Issuer Registry — Open Standard Specification
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Status:** Draft  
 **Authors:** AgentTrust / cryptovault.co.uk  
 **Published:** 2026-06-06  
+**Updated:** 2026-09-15  
 **Canonical URL:** https://www.cryptovault.co.uk/docs/issuer-registry-spec.md  
 **Discovery:** https://www.cryptovault.co.uk/.well-known/xrpl-issuer-registry  
 **Live Registry:** https://mcp.cryptovault.co.uk/nft/issuers  
@@ -41,6 +42,13 @@ Each issuer record contains the following fields:
 | `verified` | string | ✓ | Verification status (see §5) |
 | `lei` | string | | Legal Entity Identifier (ISO 17442) if available |
 | `nft_types` | string | | Comma-separated NFT types issued |
+| `created_at` | ISO 8601 | | When the record was first created |
+| `verified_at` | ISO 8601 | | When the verification status last changed |
+| `verified_by` | string | | Operator or automated system that performed the check |
+| `toml_url` | string | | Exact `xrp-ledger.toml` URL that was fetched and checked |
+| `accountset_tx_hash` | string | | On-chain AccountSet tx hash proving the wallet's Domain field |
+
+The `verified_at`, `verified_by`, `toml_url`, and `accountset_tx_hash` fields form an **audit trail** that third-party mirrors can independently verify. A record with `verified_at=null` was verified before v1.1.0 of this spec.
 
 ### 2.1 Example Record
 
@@ -54,7 +62,12 @@ Each issuer record contains the following fields:
   "website": "missionbpm.com",
   "verified": "verified",
   "lei": null,
-  "nft_types": "event-ticket"
+  "nft_types": "event-ticket",
+  "created_at": "2026-04-01T10:00:00Z",
+  "verified_at": "2026-09-15T12:34:56Z",
+  "verified_by": "agentrust-auto-v1",
+  "toml_url": "https://missionbpm.com/.well-known/xrp-ledger.toml",
+  "accountset_tx_hash": "A1B2C3D4E5F6..."
 }
 ```
 
@@ -125,12 +138,15 @@ Organisations already seeded as `verified = "public"` (sourced from public XRPL 
 
 ## 5. Verification Status Values
 
-| Status | Meaning |
-|---|---|
-| `verified` | Organisation has claimed listing; domain ↔ wallet link confirmed via xrp-ledger.toml |
-| `public` | Seeded from public XRPL data (explorers, Foundation assessments); not yet claimed |
-| `pending` | Registration submitted; awaiting verification |
-| `revoked` | Previously verified; verification subsequently failed or withdrawn |
+| Status | Meaning | Agent guidance |
+|---|---|---|
+| `verified` | Organisation has claimed listing; domain ↔ wallet link confirmed via xrp-ledger.toml | Safe to accept as issuer proof |
+| `public` | Seeded from public XRPL data (explorers, Foundation assessments); not yet claimed | Treat with caution — unilaterally attested |
+| `pending` | Registration submitted; awaiting verification | Do not accept as proof; check back later |
+| `disputed` | Verification challenged by a third party; under review | Do not accept as proof; treat as unverified |
+| `revoked` | Previously verified; verification subsequently failed or withdrawn | Do not accept; issuer has lost verified status |
+
+**Missing is not verified.** If `lookup_nft_issuer` returns `registered: false`, the organisation is not in this registry. That tells you nothing about whether the wallet is legitimate — it only means it has not been independently verified here. Do not infer trust from absence.
 
 ---
 
@@ -195,13 +211,15 @@ A paginated, versioned feed designed for external systems to consume and cache. 
 | `per_page` | integer | 100 | Results per page (max 200) |
 | `since` | ISO 8601 string | — | Return only records created after this timestamp (for incremental sync) |
 | `category` | string | — | Filter by category slug |
-| `verified` | string | — | Filter by status: `verified`, `public`, or omit for both |
+| `verified` | string | — | Filter by status: `verified`, `public`, `pending`, `disputed`, `revoked`, or omit for verified+public |
+
+The feed includes `Cache-Control: public, max-age=300` and `ETag` headers for mirror caching.
 
 **Response envelope:**
 
 ```json
 {
-  "spec_version": "1.0.0",
+  "spec_version": "1.1.0",
   "spec": "https://www.cryptovault.co.uk/docs/issuer-registry-spec.md",
   "generated_at": "2026-06-06T12:00:00Z",
   "pagination": {
@@ -212,7 +230,7 @@ A paginated, versioned feed designed for external systems to consume and cache. 
     "next": null
   },
   "filters": { "category": null, "verified": null, "since": null },
-  "issuers": [ /* array of issuer records with created_at timestamp */ ]
+  "issuers": [ /* array of issuer records including verified_at, verified_by, toml_url, accountset_tx_hash */ ]
 }
 ```
 
@@ -257,12 +275,13 @@ The registry is available as an MCP (Model Context Protocol) server for AI agent
 
 | Tool name | Description |
 |---|---|
-| `list_trusted_issuers` | Query registry by name or category |
-| `register_as_issuer` | Submit a new issuer registration |
-| `company_xrpl_lookup` | Find an organisation's XRPL wallet by name |
-| `verify_domain` | Verify wallet ↔ domain ownership via xrp-ledger.toml |
+| `lookup_nft_issuer` | Search registry by name; returns `registered: false` with explanation if not found |
+| `get_nft_issuer_by_wallet` | Exact-match lookup by XRPL wallet address |
+| `verify_nft_ownership` | Verify that a wallet holds a specific NFT token |
 
 Any MCP-compatible AI agent can install this server and use the registry to resolve organisation names to verified XRPL wallets — enabling trust-minimized, human-readable issuer requirements in escrow contracts.
+
+**Honest empty results:** `lookup_nft_issuer` never returns partial matches as if they were verified. If the organisation is not in the registry, you receive `registered: false` — not a guess.
 
 ---
 
