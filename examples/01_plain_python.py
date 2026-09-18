@@ -24,6 +24,7 @@ Network: XRPL Testnet (default). Change XRPL_NODE to wss://xrplcluster.com for m
 
 import requests
 import json
+from utils.clean_json_output import clean_json_output
 
 BASE_URL    = "https://mcp.cryptovault.co.uk"
 # Testnet by default — change to wss://xrplcluster.com or https://s1.ripple.com:51234 for mainnet
@@ -42,7 +43,12 @@ Each bullet must be under 20 words.
 Article: [insert article text here]
 """
 
-# The work the worker agent actually produced
+# The work the worker agent actually produced.
+# If your LLM returns JSON wrapped in markdown fences or with trailing commas,
+# pass it through clean_json_output() before submitting to the referee.
+# Example:
+#   raw = llm.generate(prompt)
+#   deliverable = json.dumps(clean_json_output(raw))
 SUBMITTED_WORK = """
 • AI agents are increasingly being used for autonomous task execution.
 • Payment rails on XRPL enable trustless agent-to-agent transactions.
