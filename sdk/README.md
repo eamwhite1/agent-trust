@@ -116,7 +116,7 @@ console.log(verdict.score);   // 0–100
 
 ```js
 const trust = await at.getTrustScore('rCounterpartyAddress');
-console.log(trust.trust_score);   // 0–100 (12 signals)
+console.log(trust.trust_score);   // 0–100 (11 signals)
 console.log(trust.kyc_verified);  // identity KYC status
 ```
 
