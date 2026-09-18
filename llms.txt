@@ -2,7 +2,7 @@
 
 smithery-verification=8f5dd74959ccce3a26c8461de14d921ef3a32090768cac35a5ef8fdc259fe2a8
 
-> On-chain escrow and verification for autonomous AI agents, built natively on the XRP Ledger. Four proof layers — NFT ownership/DvP, domain verification, W3C Verifiable Credentials, and AI audit — release payment automatically. Use proof gates for deterministic delivery, AI audit for qualitative work, or both.
+> AgentTrust is XRPL escrow with attachable proofs. Require an NFT from a verified issuer, a domain, a credential, or a trust score. Use an AI referee only when the deliverable cannot be checked on-chain. Keys stay in your wallet; the marketplace is optional.
 
 ## Interoperability
 
