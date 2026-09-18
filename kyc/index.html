@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KYC Verification — Higher Escrow Limits — AgentTrust</title>
-<meta name="description" content="How to complete KYC verification via Xaman to unlock higher escrow limits on AgentTrust. Verified status attaches to your wallet and is inherited by your agents.">
+<title>Identity Verification — Higher Escrow Limits — AgentTrust</title>
+<meta name="description" content="How to complete identity verification via Didit to unlock higher escrow limits on AgentTrust. One-time $0.50 fee. Verified status attaches to your wallet permanently.">
 <meta name="robots" content="index, follow">
-<meta property="og:title" content="KYC Verification — AgentTrust">
-<meta property="og:description" content="Verify your XRPL wallet via Xaman KYC to unlock higher escrow limits. Free, XRPL-native identity verification — no middlemen, no cost.">
+<meta property="og:title" content="Identity Verification — AgentTrust">
+<meta property="og:description" content="Verify your XRPL wallet via Didit identity verification to unlock escrows up to $10,000. One-time $0.50 fee — verified status is permanent.">
 <meta property="og:url" content="https://www.cryptovault.co.uk/kyc/">
 <meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -162,13 +162,13 @@ footer a { color: var(--blue); text-decoration: none; }
 
 <div class="page-wrap">
 
-    <div class="doc-eyebrow"><i data-lucide="shield-check"></i> Guide · KYC Verification</div>
-    <h1>Unlock higher escrow limits with <em>Xaman KYC</em></h1>
+    <div class="doc-eyebrow"><i data-lucide="shield-check"></i> Guide · Identity Verification</div>
+    <h1>Unlock higher escrow limits with <em>identity verification</em></h1>
     <p class="doc-lead">
-        By default, AgentTrust enforces a per-escrow limit to keep the protocol open and frictionless.
+        By default, AgentTrust enforces a $3,000 per-escrow limit to keep the protocol open and frictionless.
         For larger transactions — high-value bug bounties, corporate settlements, M&amp;A tranches —
-        human operators complete a one-time identity check via Xaman. Verified status attaches to your
-        XRPL wallet permanently and is inherited by any agents operating on your behalf.
+        human operators complete a one-time identity check via Didit ($0.50 fee). Verified status attaches
+        to your XRPL wallet permanently and is inherited by any agents operating on your behalf.
     </p>
 
     <div class="card">
@@ -218,18 +218,14 @@ footer a { color: var(--blue); text-decoration: none; }
             <div class="step-header">
                 <div class="step-num">1</div>
                 <div>
-                    <div class="step-title">Complete identity verification via Xaman KYC (powered by Veriff)</div>
-                    <div class="step-desc">Xaman (the official XRPL wallet app) includes a built-in KYC flow powered by <strong>Veriff</strong> — tap the link below or open it directly inside the Xaman app.</div>
+                    <div class="step-title">Pay the $0.50 verification fee</div>
+                    <div class="step-desc">Send $0.50 in XRP, RLUSD (XRPL), or USDC (Base chain 8453) to the fee address. Call <code class="inline-code">GET /fees</code> for current amounts and addresses.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="callout callout-blue" style="margin-bottom:.75rem">
-                    <i data-lucide="smartphone"></i>
-                    <span>Open Xaman and tap <strong>xaman.app/detect/xapp/xumm/kyc</strong>, or visit <a href="https://xaman.app/detect/xapp/xumm/kyc" target="_blank" rel="noopener" style="color:var(--accent)">this link</a> on your mobile device to launch the verification flow directly. Accepts passports, driving licences, and national ID cards. Once complete, your XRPL wallet address is marked as KYC-verified.</span>
-                </div>
-                <div class="callout callout-amber" style="margin-bottom:0">
-                    <i data-lucide="shield"></i>
-                    <span>AgentTrust never sees or stores identity documents. All document handling is done by Xaman and Veriff. We query only your verification status via the authenticated Xaman platform API.</span>
+                <div class="callout callout-blue" style="margin-bottom:0">
+                    <i data-lucide="info"></i>
+                    <span>This is a one-time fee. Once your wallet is KYC-verified, the status is permanent — no repeated checks, no renewals. The fee covers Didit's identity verification cost.</span>
                 </div>
             </div>
         </div>
@@ -238,24 +234,30 @@ footer a { color: var(--blue); text-decoration: none; }
             <div class="step-header">
                 <div class="step-num">2</div>
                 <div>
-                    <div class="step-title">Register your verified status with AgentTrust</div>
-                    <div class="step-desc">Once Xaman reports your wallet as KYC-approved, call <code class="inline-code">POST /kyc/verify</code> to cache the result. This is what unlocks higher limits immediately.</div>
+                    <div class="step-title">Start the verification session</div>
+                    <div class="step-desc">Call <code class="inline-code">POST /kyc/start</code> with your wallet address and fee hash. Returns a <code class="inline-code">verification_url</code> — open it to complete ID verification with Didit.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">POST /kyc/verify — register Xaman KYC
+                <div class="code-label">python — start KYC session
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
                 <pre>import httpx
 
 response = httpx.post(
-    "https://mcp.cryptovault.co.uk/kyc/verify",
-    params={"wallet_address": "rYourXRPLWalletAddress"}
+    "https://mcp.cryptovault.co.uk/kyc/start",
+    params={
+        "wallet_address": "rYourXRPLWalletAddress",
+        "fee_hash":       "your_tx_hash_here",
+    }
 ).json()
 
-print(response["kyc_verified"])  # True if Xaman KYC is complete
-print(response["method"])        # "xaman"</pre>
-                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:0;">If <code class="inline-code">kyc_verified</code> is <code class="inline-code">False</code>, the response includes a link to the Xaman KYC flow (powered by Veriff) to complete verification first.</p>
+print(response["verification_url"])  # open this in a browser to complete ID check
+print(response["status"])            # "pending"</pre>
+                <div class="callout callout-amber" style="margin-bottom:0;margin-top:.75rem;">
+                    <i data-lucide="shield"></i>
+                    <span>AgentTrust never sees or stores identity documents. All document handling is done by Didit. We receive only your verification status via a signed webhook.</span>
+                </div>
             </div>
         </div>
 
@@ -263,25 +265,14 @@ print(response["method"])        # "xaman"</pre>
             <div class="step-header">
                 <div class="step-num">3</div>
                 <div>
-                    <div class="step-title">Check status at any time</div>
-                    <div class="step-desc">Query the trust score endpoint to confirm your KYC status and see the impact on your score.</div>
+                    <div class="step-title">Complete ID verification with Didit</div>
+                    <div class="step-desc">Open the <code class="inline-code">verification_url</code> in a browser and follow Didit's flow. Accepts passports, driving licences, and national ID cards. Takes 2–5 minutes.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">python — check KYC status
-                    <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
-                </div>
-                <pre>score = httpx.get(
-    "https://mcp.cryptovault.co.uk/wallet/score/rYourWalletAddress"
-).json()
-
-print(score["signals"]["kyc_verified"])           # True once verified
-print(score["signals"]["score_breakdown"]["agentrust_kyc"])  # +10 pts
-print(score["score"])                             # noticeably higher after KYC</pre>
-
                 <div class="callout callout-green" style="margin-bottom:0">
                     <i data-lucide="check-circle"></i>
-                    <span>Once <code class="inline-code">kyc_verified</code> is <code class="inline-code">True</code>, retry <code class="inline-code">POST /escrow/generate</code> with your original payload — the $10,000 limit now applies automatically.</span>
+                    <span>AgentTrust is notified automatically when Didit approves you. Your wallet is upgraded to the $10,000 escrow cap immediately — no further action needed.</span>
                 </div>
             </div>
         </div>
@@ -290,20 +281,29 @@ print(score["score"])                             # noticeably higher after KYC<
             <div class="step-header">
                 <div class="step-num">4</div>
                 <div>
-                    <div class="step-title">Hit the limit — get a clear error with next steps</div>
-                    <div class="step-desc">If an escrow is attempted above the limit for an unverified wallet, the API returns a <code class="inline-code">403</code> with instructions.</div>
+                    <div class="step-title">Confirm status and retry your escrow</div>
+                    <div class="step-desc">Check your verification status, then retry the escrow that was blocked.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">API response — 403 KYC required
+                <div class="code-label">python — check status and retry
                     <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
                 </div>
-                <pre>{
-  "error": "kyc_required",
-  "kyc_url": "/kyc/verify",
-  "message": "Escrow amount exceeds the $3,000 limit for unverified wallets.
-Complete identity verification via Xaman to unlock escrows up to $10,000."
-}</pre>
+                <pre>status = httpx.get(
+    "https://mcp.cryptovault.co.uk/kyc/status/rYourWalletAddress"
+).json()
+
+print(status["kyc_verified"])  # True once Didit approves
+print(status["method"])        # "didit"
+
+score = httpx.get(
+    "https://mcp.cryptovault.co.uk/wallet/score/rYourWalletAddress"
+).json()
+print(score["signals"]["score_breakdown"]["identity_kyc"])  # +10 pts</pre>
+                <div class="callout callout-green" style="margin-bottom:0;margin-top:.75rem;">
+                    <i data-lucide="check-circle"></i>
+                    <span>Once <code class="inline-code">kyc_verified</code> is <code class="inline-code">True</code>, retry <code class="inline-code">POST /escrow/generate</code> — the $10,000 limit applies automatically.</span>
+                </div>
             </div>
         </div>
 
@@ -312,10 +312,10 @@ Complete identity verification via Xaman to unlock escrows up to $10,000."
     <div class="card" style="margin-top:2.5rem;">
         <div class="card-pad">
             <span class="section-label">For agent developers</span>
-            <h2>Build KYC prompts into your agent flow</h2>
+            <h2>Handle the KYC gate in your agent flow</h2>
             <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.2rem;max-width:580px;">
-                If your agent handles large escrows autonomously, catch the <code class="inline-code">kyc_required</code>
-                error and surface the verification steps to the human operator without breaking the agent loop.
+                When your agent hits the $3,000 cap, catch the <code class="inline-code">kyc_required</code>
+                error and surface the verification URL to the human operator.
             </p>
             <div class="code-label">python — agent-friendly KYC handling
                 <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
@@ -328,10 +328,14 @@ Complete identity verification via Xaman to unlock escrows up to $10,000."
 if response.status_code == 403:
     data = response.json()
     if data.get("error") == "kyc_required":
-        print("KYC required to create this escrow.")
-        print("1. Open https://xaman.app/detect/xapp/xumm/kyc → complete identity verification")
-        print("2. Run: POST /kyc/verify?wallet_address=YOUR_WALLET")
-        print("3. Re-run this task once verified.")
+        # Start a KYC session — fee_hash from a $0.50 payment
+        kyc = httpx.post(
+            "https://mcp.cryptovault.co.uk/kyc/start",
+            params={"wallet_address": WALLET, "fee_hash": fee_hash}
+        ).json()
+        print("Identity verification required.")
+        print(f"Open this URL to verify: {kyc['verification_url']}")
+        print("Re-run this task once approved (check /kyc/status).")
         raise SystemExit(0)
 
 escrow = response.json()</pre>

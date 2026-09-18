@@ -41,7 +41,7 @@ print(score["score_breakdown"]) # per-signal breakdown
 print(score["signals"]["sanctions_clean"])  # False = stop immediately
 ```
 
-11 signals: account age, balance, activity, XRPL domain verification, NFT history, payment completion rate, peer reputation, XRPL Attestation, OFAC sanctions screening, XRPScan entity reputation, and Xaman KYC (human-only).
+11 signals: account age, balance, activity, XRPL domain verification, NFT history, payment completion rate, peer reputation, XRPL Attestation, OFAC sanctions screening, XRPScan entity reputation, and identity KYC — Didit verification (human-only).
 
 ### 2. Lock payment in escrow
 

@@ -218,7 +218,7 @@ async function load() {
 
         const kycCard = document.createElement("div");
         kycCard.className = "cap-card kyc";
-        kycCard.innerHTML = `<div class="cap-label">KYC cap</div><div class="cap-value">${fmt(el2.kyc_cap_usd, "USD")}</div><div class="cap-note">Xaman KYC required — <a href="/kyc/">verify identity →</a></div>`;
+        kycCard.innerHTML = `<div class="cap-label">Verified cap</div><div class="cap-value">${fmt(el2.kyc_cap_usd, "USD")}</div><div class="cap-note">Identity verification required ($0.50) — <a href="/kyc/">verify identity →</a></div>`;
 
         capGrid.append(defaultCard, kycCard);
         root.append(capGrid);
