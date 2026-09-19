@@ -703,24 +703,22 @@ function _syncAiAuditUI() {
     const feeBtn       = document.getElementById("pay-fee-btn");
     const activeProofs = Object.values(_proofState).filter(Boolean).length;
 
-    // AI audit pill — greyed out / non-interactive when no proof gates active
+    // AI audit pill — dimmed when ON and no proof gates active (can't turn off without a gate)
     if (pill) {
         pill.textContent = _aiAuditOn ? "ON" : "OFF";
-        const canToggle = activeProofs > 0;
-        pill.disabled = !canToggle;
-        pill.title = canToggle ? "" : "Enable a proof gate (NFT, domain, or credential) to turn off AI audit";
+        const lockedOn = _aiAuditOn && activeProofs === 0;
+        pill.disabled = lockedOn;
+        pill.title = lockedOn ? "Enable a proof gate (NFT, domain, or credential) to turn off AI audit" : "";
         if (_aiAuditOn) {
             pill.style.borderColor = "rgba(34,197,94,.4)";
             pill.style.background  = "rgba(34,197,94,.12)";
             pill.style.color       = "#22c55e";
-            pill.style.opacity     = "1";
         } else {
             pill.style.borderColor = "rgba(255,255,255,.2)";
             pill.style.background  = "rgba(255,255,255,.06)";
             pill.style.color       = "var(--text-muted)";
-            pill.style.opacity     = "1";
         }
-        if (!canToggle) pill.style.opacity = "0.45";
+        pill.style.opacity = lockedOn ? "0.45" : "1";
     }
     if (warning) warning.style.display = _aiAuditOn ? "none" : "block";
     if (consensusRow) consensusRow.style.display = _aiAuditOn ? "flex" : "none";
