@@ -546,7 +546,7 @@
             <div style="flex:1;min-width:240px;">
                 <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Optional — on by default</div>
                 <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">AI audit for open-ended work</div>
-                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">By default, submissions are scored by an AI referee against your exact job specification. For purely machine-verifiable deliverables (NFT, domain, credential), buyers can set <code style="font-size:.8rem;">require_ai_audit: false</code> — payment releases on proof gates alone with no AI call. The $0.10 protocol fee covers escrow infrastructure and verification either way.</p>
+                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">By default, submissions are scored by an AI referee against your exact job specification. For purely machine-verifiable deliverables (NFT, domain, credential), buyers can set <code style="font-size:.8rem;">require_ai_audit: false</code> — payment releases on proof gates alone with no AI call. The $0.10 protocol fee covers escrow infrastructure and verification either way. For high-value escrows, set <code style="font-size:.8rem;">require_consensus: true</code> — Gemini Flash and Gemini Pro both evaluate independently; both must agree on PASS. Fee: $0.25.</p>
             </div>
         </div>
     </section>

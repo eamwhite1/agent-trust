@@ -504,6 +504,7 @@ async function initVault() {
             proof_policy:           proofPolicy,
             nft_dvp:                nftDvp,
             require_ai_audit:       _aiAuditOn,
+            require_consensus:      _requireConsensus || undefined,
             invoice_requirements:   _invoiceModeOn ? {
                 po_number:            document.getElementById("inv-po-number")?.value.trim() || null,
                 supplier_name:        document.getElementById("inv-supplier-name")?.value.trim() || null,
@@ -643,6 +644,7 @@ async function pollEscrowCreate(uuid, receiptCode) {
 // ---------------------------------------------------------------------------
 const _proofState = { nft: false, domain: false, vc: false };
 let _aiAuditOn = true;
+let _requireConsensus = false;
 
 function toggleProof(type) {
     _proofState[type] = !_proofState[type];
@@ -684,13 +686,24 @@ function toggleProof(type) {
 
 function toggleAiAudit() {
     _aiAuditOn = !_aiAuditOn;
+    if (!_aiAuditOn) _requireConsensus = false;
+    _syncAiAuditUI();
+}
+
+function toggleConsensus() {
+    _requireConsensus = !_requireConsensus;
     _syncAiAuditUI();
 }
 
 function _syncAiAuditUI() {
-    const pill    = document.getElementById("ai-audit-pill");
-    const warning = document.getElementById("ai-audit-warning");
-    const hint    = document.getElementById("ai-audit-hint");
+    const pill         = document.getElementById("ai-audit-pill");
+    const warning      = document.getElementById("ai-audit-warning");
+    const hint         = document.getElementById("ai-audit-hint");
+    const consensusRow = document.getElementById("consensus-row");
+    const consPill     = document.getElementById("consensus-pill");
+    const feeBox       = document.querySelector(".fee-box");
+    const feeBtn       = document.getElementById("pay-fee-btn");
+
     if (pill) {
         pill.textContent = _aiAuditOn ? "ON" : "OFF";
         if (_aiAuditOn) {
@@ -704,9 +717,27 @@ function _syncAiAuditUI() {
         }
     }
     if (warning) warning.style.display = _aiAuditOn ? "none" : "block";
+    if (consensusRow) consensusRow.style.display = _aiAuditOn ? "flex" : "none";
+    if (consPill) {
+        consPill.textContent = _requireConsensus ? "ON" : "OFF";
+        if (_requireConsensus) {
+            consPill.style.borderColor = "rgba(168,85,247,.4)";
+            consPill.style.background  = "rgba(168,85,247,.12)";
+            consPill.style.color       = "#a855f7";
+        } else {
+            consPill.style.borderColor = "rgba(255,255,255,.2)";
+            consPill.style.background  = "rgba(255,255,255,.06)";
+            consPill.style.color       = "var(--text-muted)";
+        }
+    }
     if (hint) hint.textContent = _aiAuditOn
-        ? "Gemini evaluates work against your job spec"
+        ? (_requireConsensus ? "Gemini Flash + Pro both evaluate — $0.25 fee" : "Gemini Flash evaluates work against your job spec — $0.10 fee")
         : "Payment releases on proof gates alone";
+
+    // Update fee display
+    const feeLabel = _requireConsensus ? "$0.25" : "$0.10";
+    if (feeBox) feeBox.innerHTML = `Protocol fee: <strong>${feeLabel}</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer in XRP or RLUSD. Covers escrow infrastructure and verification.`;
+    if (feeBtn) feeBtn.innerHTML = `<i data-lucide="zap"></i> Pay ${feeLabel} fee via Xaman <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span>`;
 }
 
 // nftMode: "verify" (proof only) or "transfer" (DvP)

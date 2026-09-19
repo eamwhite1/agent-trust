@@ -186,6 +186,28 @@ async function load() {
         root.innerHTML = html.join("");
         root.append(wrap);
 
+        // Premium consensus tier
+        if (d.premium_audit_fee) {
+            const pf = d.premium_audit_fee;
+            root.insertAdjacentHTML("beforeend", `<h2 style="margin-top:2.5rem;">Premium Consensus Audit</h2>`);
+            root.insertAdjacentHTML("beforeend",
+                `<div class="fee-hero"><span class="fee-amount">$${pf.usd.toFixed(2)}</span><span class="fee-unit">USD per audit</span></div>`
+            );
+            const premCallout = el("div", { class: "callout info" });
+            premCallout.innerHTML = `<strong>Dual-model verification</strong> — Gemini Flash evaluates first, then Gemini Pro independently reviews the same submission. Both models must agree on PASS or the verdict is FAIL, with combined feedback from both. Set <code>require_consensus: true</code> on <code>POST /audit</code> or <code>POST /evaluate</code>.`;
+            root.append(premCallout);
+            const premWrap = el("div", { class: "table-wrap" });
+            const premTbl = el("table", {});
+            const premThead = el("thead", {}, el("tr", {},
+                el("th", {}, "Asset"), el("th", {}, "Network"), el("th", {}, "Amount"), el("th", {}, "Destination"),
+            ));
+            const premTbody = el("tbody", {});
+            pf.assets_accepted.forEach(a => premTbody.append(assetRow(a)));
+            premTbl.append(premThead, premTbody);
+            premWrap.append(premTbl);
+            root.append(premWrap);
+        }
+
         // fee_hash format
         const formats = Object.entries(d.audit_fee.fee_hash_format || {});
         if (formats.length) {

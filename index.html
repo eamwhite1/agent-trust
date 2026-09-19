@@ -24,7 +24,7 @@
       "documentation": "https://mcp.cryptovault.co.uk/docs",
       "offers": {
         "@type": "Offer",
-        "description": "$0.10 flat fee per escrow audit. Payment released automatically on AI approval.",
+        "description": "$0.10 per standard audit or $0.25 for premium dual-model consensus (Gemini Flash + Pro). Payment released automatically on AI approval.",
         "price": "0.1",
         "priceCurrency": "XRP"
       },
@@ -954,6 +954,24 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                     </div>
                     <div id="ai-audit-warning" style="display:none;margin-top:.55rem;padding:.45rem .6rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:7px;font-size:.7rem;color:#f59e0b;line-height:1.45;">
                         ⚠ AI audit disabled — payment releases on proof gates alone. Only suitable for fully mechanical deliverables.
+                    </div>
+                    <div id="consensus-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(255,255,255,.08);">
+                        <div>
+                            <div style="font-size:.78rem;font-weight:700;color:var(--text);">Premium Consensus
+                                <span class="tooltip-wrap">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-box">
+                                        <strong>Premium Consensus Audit</strong>
+                                        Gemini Flash evaluates the submission first, then Gemini Pro independently reviews the same work. Both models must agree on PASS — if they disagree, the verdict is FAIL with combined feedback from both. Fee: $0.25 (vs $0.10 standard). Recommended for high-value escrows.
+                                    </span>
+                                </span>
+                            </div>
+                            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.1rem;">Flash + Pro dual-model — $0.25</div>
+                        </div>
+                        <button type="button" id="consensus-pill" onclick="toggleConsensus()"
+                            style="padding:.3rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--text-muted);transition:.15s;white-space:nowrap;flex-shrink:0;">
+                            OFF
+                        </button>
                     </div>
                 </div>
             </details>
