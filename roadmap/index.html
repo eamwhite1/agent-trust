@@ -431,6 +431,15 @@
 
             <div class="roadmap-card">
                 <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
+                    <i data-lucide="shield-check" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>Premium Audit — Dual-Model Consensus</h4>
+                <p>Standard audits use Gemini Flash. Premium runs the same deliverable through Gemini Flash and Gemini Pro independently — both must agree on PASS or the verdict is FAIL, with combined feedback from both models. Fee: $0.25. Set <code style="font-size:.75rem;background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;">require_consensus: true</code> on <code style="font-size:.75rem;background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;">POST /audit</code> or <code style="font-size:.75rem;background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;">POST /evaluate</code>.</p>
+                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
+            </div>
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
                     <i data-lucide="git-pull-request" style="width:18px;height:18px;stroke-width:1.8;"></i>
                 </div>
                 <h4>GitHub Action — CI/CD Quality Gates</h4>
@@ -498,15 +507,6 @@
                 <h4>RLUSD-to-RLUSD Escrow</h4>
                 <p>RLUSD is already supported for payments, but native RLUSD escrow (locking stablecoin funds on-chain) requires Ripple to enable the lsfAllowTrustLineLocking flag on their issuer account — a requirement of the XLS-85 token escrow standard. We're ready to activate this the moment they do.</p>
                 <span class="roadmap-badge badge-waiting">Waiting on Ripple</span>
-            </div>
-
-            <div class="roadmap-card">
-                <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
-                    <i data-lucide="shield-check" style="width:18px;height:18px;stroke-width:1.8;"></i>
-                </div>
-                <h4>Premium Audit — Dual-Model Consensus</h4>
-                <p>Standard audits use Gemini Flash. Premium runs the same deliverable through Gemini Flash and Gemini Pro independently — both must agree on PASS or the verdict is FAIL, with combined feedback from both models. Fee: $0.25. Set <code style="font-size:.75rem;background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;">require_consensus: true</code> on <code style="font-size:.75rem;background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;">POST /audit</code> or <code style="font-size:.75rem;background:rgba(0,0,0,.06);padding:.1em .35em;border-radius:4px;">POST /evaluate</code>.</p>
-                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
             </div>
 
             <div class="roadmap-card">

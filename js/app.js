@@ -696,13 +696,12 @@ function toggleConsensus() {
 }
 
 function _syncAiAuditUI() {
-    const pill         = document.getElementById("ai-audit-pill");
-    const warning      = document.getElementById("ai-audit-warning");
-    const hint         = document.getElementById("ai-audit-hint");
-    const consensusRow = document.getElementById("consensus-row");
-    const consPill     = document.getElementById("consensus-pill");
-    const feeBox       = document.querySelector(".fee-box");
-    const feeBtn       = document.getElementById("pay-fee-btn");
+    const pill      = document.getElementById("ai-audit-pill");
+    const warning   = document.getElementById("ai-audit-warning");
+    const hint      = document.getElementById("ai-audit-hint");
+    const consPill  = document.getElementById("consensus-pill");
+    const feeBox    = document.querySelector(".fee-box");
+    const feeBtn    = document.getElementById("pay-fee-btn");
 
     if (pill) {
         pill.textContent = _aiAuditOn ? "ON" : "OFF";
@@ -717,7 +716,6 @@ function _syncAiAuditUI() {
         }
     }
     if (warning) warning.style.display = _aiAuditOn ? "none" : "block";
-    if (consensusRow) consensusRow.style.display = _aiAuditOn ? "flex" : "none";
     if (consPill) {
         consPill.textContent = _requireConsensus ? "ON" : "OFF";
         if (_requireConsensus) {
