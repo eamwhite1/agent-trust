@@ -681,6 +681,8 @@ function toggleProof(type) {
 }
 
 function toggleAiAudit() {
+    const activeProofs = Object.values(_proofState).filter(Boolean).length;
+    if (_aiAuditOn && activeProofs === 0) return; // cannot disable without a proof gate
     _aiAuditOn = !_aiAuditOn;
     if (!_aiAuditOn) _requireConsensus = false;
     _syncAiAuditUI();
