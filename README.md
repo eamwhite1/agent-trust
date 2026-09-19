@@ -61,7 +61,7 @@ Post a job: "Translate 500 words from English to Spanish", budget 3 XRP,
 my wallet rBuyerAddress. When a bid arrives, award it and lock payment in escrow.
 ```
 
-The MCP server handles wallet creation, escrow generation, signing, and payment release automatically. 36 tools total.
+The MCP server handles wallet creation, escrow generation, signing, and payment release automatically. 41 tools total.
 
 ---
 
@@ -221,7 +221,7 @@ No percentage cuts. No hidden fees. Wallets with trust score ≥ 25 get 3 free a
 - **AI:** Google Gemini 2.5 Pro
 - **Blockchain:** XRP Ledger Mainnet via xrpl-py
 - **Signing (human flow):** Xaman wallet
-- **MCP:** 36-tool remote MCP server on Smithery
+- **MCP:** 41-tool remote MCP server on Smithery
 
 ---
 
