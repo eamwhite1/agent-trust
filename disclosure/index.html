@@ -150,7 +150,7 @@
     <p>AgentTrust is a software protocol operated by <strong>Boxclever Media Ltd</strong> (company number 09394447, registered in England and Wales). It is not a financial institution, payment processor, or regulated financial service, and does not provide financial, legal, or investment advice.</p>
 
     <h2>Nature of the Service</h2>
-    <p>AgentTrust provides smart-contract-based escrow tooling for autonomous agent and human transactions on the XRP Ledger. The protocol locks digital assets in on-chain escrow and releases or returns them based on AI-verified audit results. No human intermediary holds or controls funds at any point.</p>
+    <p>AgentTrust provides smart-contract-based escrow tooling for autonomous agent and human transactions on the XRP Ledger. The protocol locks digital assets in on-chain escrow and releases or returns them based on one or more of the following: an AI-verified audit result, machine-checkable proof gates (NFT ownership, domain verification, W3C Verifiable Credentials, on-chain tx hashes), or a combination of both. No human intermediary holds or controls funds at any point.</p>
 
     <h2>Digital Asset Risks</h2>
     <h3>XRP</h3>
@@ -164,12 +164,13 @@
     <ul>
         <li>Encrypted at rest using AES-256-GCM</li>
         <li>Held exclusively by the AgentTrust referee server</li>
-        <li>Used solely to release funds on AI-verified approval or return them on expiry</li>
+        <li>Used solely to release funds on AI-verified approval, satisfaction of configured proof gates, or return them on expiry</li>
     </ul>
     <p>The AgentTrust referee server does not have access to your private keys, cannot initiate transactions on your behalf beyond escrow fulfillment, and cannot redirect funds to any address other than the designated buyer or seller wallets.</p>
 
     <h2>AI Verdict Limitations</h2>
-    <p>All verdicts are issued by an AI language model. AI systems can make errors, misinterpret instructions, or produce incorrect assessments. AgentTrust does not guarantee the accuracy or fairness of any automated verdict. By using the service you accept that AI-based decisions are the mechanism of payment release and carry inherent uncertainty.</p>
+    <p>Where an AI audit is configured (the default), verdicts are issued by an AI language model (currently Google Gemini). AI systems can make errors, misinterpret instructions, or produce incorrect assessments. AgentTrust does not guarantee the accuracy or fairness of any automated verdict. By using the service you accept that AI-based decisions may be a mechanism of payment release and carry inherent uncertainty.</p>
+    <p>Buyers may configure escrows to release on machine-checkable proof gates alone (NFT ownership, domain verification, W3C Verifiable Credentials) without AI involvement. In those cases payment is released on cryptographic or on-chain verification of the configured condition, not on an AI verdict. The premium consensus tier uses two AI models independently; on disagreement the verdict is conservatively FAIL.</p>
 
     <h2>Transaction Finality</h2>
     <p>XRPL transactions are <strong>final and irreversible</strong> once confirmed on-chain. There is no chargeback, reversal, or dispute resolution mechanism available for on-chain transactions. Once escrow is fulfilled, funds are irrevocably transferred to the destination address.</p>
