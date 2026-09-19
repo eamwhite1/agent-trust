@@ -63,6 +63,7 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4
 
 .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
 h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+h1 em { font-style: italic; color: var(--blue); }
 .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 2.5rem; line-height: 1.7; }
 
 /* ── Section titles ── */
@@ -131,13 +132,10 @@ code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
 .tab-panel.active { display: block; }
 
 /* ── Resources grid ── */
-.resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.5rem; }
-.resource-card { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform .15s; }
-.resource-card:hover { transform: translateY(-2px); }
-.resource-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--blue-dim); border: 1px solid var(--blue-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.resource-icon svg { width: 15px; height: 15px; color: var(--blue); }
-.resource-label { font-size: .82rem; font-weight: 600; color: var(--text); }
-.resource-sub { font-size: .72rem; color: var(--text-muted); }
+.resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.2rem; }
+.resource-link { display: flex; align-items: center; gap: .6rem; padding: .85rem 1.1rem; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); text-decoration: none; color: var(--text); font-size: .85rem; font-weight: 600; transition: background .18s, border-color .18s, transform .18s; }
+.resource-link:hover { transform: translateY(-2px); background: rgba(255,255,255,.72); }
+.resource-link svg { width: 15px; height: 15px; color: var(--blue); flex-shrink: 0; }
 
 /* ── Footer ── */
     /* ── Footer ── */
@@ -196,7 +194,7 @@ code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
 <div class="page-wrap">
 
     <span class="page-eyebrow"><i data-lucide="image"></i> NFTs · DvP Escrow</span>
-    <h1>Atomic NFT Delivery-vs-Payment</h1>
+    <h1>Atomic NFT <em>Delivery-vs-Payment</em></h1>
     <p class="page-lead">Trade NFTs on the XRP Ledger without trusting the counterparty. Payment locks in escrow when the buyer commits — it releases automatically only once the NFT is confirmed in the buyer's wallet. Neither party can take the money and run.</p>
 
     <!-- What problem this solves -->
@@ -615,43 +613,22 @@ buyer accepted it, and a statement that the NFT is in the buyer's wallet.</code>
 
     <!-- Resources -->
     <div class="section">
-        <div class="section-label">Resources</div>
-        <h2>Go further</h2>
+        <span class="section-label" style="display:block;margin-bottom:.8rem;margin-top:2.5rem;">Resources</span>
         <div class="resources">
-            <a class="resource-card" href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">
-                <div class="resource-icon"><i data-lucide="book-open"></i></div>
-                <div>
-                    <div class="resource-label">API Docs</div>
-                    <div class="resource-sub">Full OpenAPI reference</div>
-                </div>
+            <a class="resource-link" href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">
+                <i data-lucide="file-text"></i> API Docs &amp; Playground
             </a>
-            <a class="resource-card" href="https://mcp.cryptovault.co.uk/mcp" target="_blank" rel="noopener">
-                <div class="resource-icon"><i data-lucide="plug"></i></div>
-                <div>
-                    <div class="resource-label">MCP Server</div>
-                    <div class="resource-sub">For MCP-compatible agents</div>
-                </div>
+            <a class="resource-link" href="https://mcp.cryptovault.co.uk/mcp" target="_blank" rel="noopener">
+                <i data-lucide="plug"></i> MCP Server
             </a>
-            <a class="resource-card" href="/marketplace/" >
-                <div class="resource-icon"><i data-lucide="store"></i></div>
-                <div>
-                    <div class="resource-label">Marketplace</div>
-                    <div class="resource-sub">Browse NFT sellers</div>
-                </div>
+            <a class="resource-link" href="/marketplace/">
+                <i data-lucide="store"></i> Marketplace
             </a>
-            <a class="resource-card" href="/marketplace/#issuers">
-                <div class="resource-icon"><i data-lucide="shield-check"></i></div>
-                <div>
-                    <div class="resource-label">Issuer Registry</div>
-                    <div class="resource-sub">Verified NFT issuers</div>
-                </div>
+            <a class="resource-link" href="/marketplace/#issuers">
+                <i data-lucide="shield-check"></i> Issuer Registry
             </a>
-            <a class="resource-card" href="/guides/">
-                <div class="resource-icon"><i data-lucide="arrow-left"></i></div>
-                <div>
-                    <div class="resource-label">All Guides</div>
-                    <div class="resource-sub">Other integrations</div>
-                </div>
+            <a class="resource-link" href="/guides/">
+                <i data-lucide="book-open"></i> All Guides
             </a>
         </div>
     </div>
