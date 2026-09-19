@@ -931,53 +931,62 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                     <input type="hidden" id="proof-policy-value" value="ALL">
                 </div>
 
-                <!-- ── AI AUDIT TOGGLE (shown only when ≥1 proof gate is on) ── -->
-                <div id="ai-audit-wrap" style="display:none;margin-bottom:.25rem;padding:.65rem .9rem;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:10px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            </details>
+
+            <!-- ── AI AUDIT SECTION — always visible ── -->
+            <div id="ai-audit-wrap" style="margin-bottom:.75rem;padding:.65rem .9rem;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:10px;">
+
+                <!-- AI Audit on/off row -->
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:.6rem;">
+                        <div style="width:28px;height:28px;border-radius:7px;background:rgba(0,102,255,.1);border:1px solid rgba(0,102,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i data-lucide="cpu" style="width:14px;height:14px;color:var(--blue);stroke-width:2;"></i>
+                        </div>
                         <div>
-                            <div style="font-size:.78rem;font-weight:700;color:var(--text);">AI Audit
+                            <div style="font-size:.84rem;font-weight:700;color:var(--text);">AI Audit
                                 <span class="tooltip-wrap">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-box">
                                         <strong>AI Audit</strong>
-                                        When on, Gemini evaluates the submitted work against your job spec and must return a PASS before payment releases.<br><br>
-                                        Turn off only when your proof gates fully verify delivery quality — e.g. an on-chain NFT transfer that is its own receipt. Do not disable for open-ended or qualitative work.
+                                        Gemini evaluates the submitted work against your job spec and must return a PASS before payment releases. On by default.<br><br>
+                                        Can only be turned off when at least one proof gate (NFT, domain, or credential) is active — those gates verify delivery mechanically, making the AI step optional. For open-ended or qualitative work, always leave this on.
                                     </span>
                                 </span>
                             </div>
-                            <div id="ai-audit-hint" style="font-size:.7rem;color:var(--text-muted);margin-top:.15rem;">Gemini evaluates work against your job spec</div>
+                            <div id="ai-audit-hint" style="font-size:.72rem;color:var(--text-muted);margin-top:.1rem;">Gemini evaluates work against your job spec — $0.10 fee</div>
                         </div>
-                        <button type="button" id="ai-audit-pill" onclick="toggleAiAudit()"
-                            style="padding:.3rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#22c55e;transition:.15s;white-space:nowrap;flex-shrink:0;">
-                            ON
-                        </button>
                     </div>
-                    <div id="ai-audit-warning" style="display:none;margin-top:.55rem;padding:.45rem .6rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:7px;font-size:.7rem;color:#f59e0b;line-height:1.45;">
-                        ⚠ AI audit disabled — payment releases on proof gates alone. Only suitable for fully mechanical deliverables.
-                    </div>
+                    <button type="button" id="ai-audit-pill" onclick="toggleAiAudit()"
+                        style="padding:.3rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#22c55e;transition:.15s;white-space:nowrap;flex-shrink:0;">
+                        ON
+                    </button>
                 </div>
-            </details>
 
-            <!-- Audit tier — always visible -->
-            <div style="margin-bottom:.75rem;padding:.65rem .9rem;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:10px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                <!-- AI audit disabled warning -->
+                <div id="ai-audit-warning" style="display:none;margin-top:.55rem;padding:.45rem .6rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:7px;font-size:.7rem;color:#f59e0b;line-height:1.45;">
+                    ⚠ AI audit disabled — payment releases on proof gates alone. Only suitable for fully mechanical deliverables.
+                </div>
+
+                <!-- Premium Consensus row — visible when AI audit is on -->
+                <div id="consensus-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(0,0,0,.06);">
                     <div>
-                        <div style="font-size:.78rem;font-weight:700;color:var(--text);">Premium Consensus Audit
+                        <div style="font-size:.78rem;font-weight:700;color:var(--text);">Premium Consensus
                             <span class="tooltip-wrap">
                                 <span class="tooltip-icon">?</span>
                                 <span class="tooltip-box">
                                     <strong>Premium Consensus Audit</strong>
-                                    Gemini Flash evaluates the submission first, then Gemini Pro independently reviews the same work. Both models must agree on PASS — if they disagree, the verdict is FAIL with combined feedback from both. Fee: $0.25 (vs $0.10 standard). Recommended for high-value escrows.
+                                    Gemini Flash evaluates first, then Gemini Pro independently reviews the same submission. Both must agree on PASS — disagreement returns FAIL with combined feedback from both models. Fee: $0.25. Recommended for high-value escrows.
                                 </span>
                             </span>
                         </div>
-                        <div id="consensus-hint" style="font-size:.7rem;color:var(--text-muted);margin-top:.15rem;">Flash + Pro dual-model verification — $0.25 fee</div>
+                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:.1rem;">Flash + Pro dual-model — $0.25 fee</div>
                     </div>
                     <button type="button" id="consensus-pill" onclick="toggleConsensus()"
                         style="padding:.3rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--text-muted);transition:.15s;white-space:nowrap;flex-shrink:0;">
                         OFF
                     </button>
                 </div>
+
             </div>
 
             <!-- Fee payment — shown after form is filled, just before submit -->

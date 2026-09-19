@@ -672,16 +672,12 @@ function toggleProof(type) {
     const policyWrap = document.getElementById("proof-policy-wrap");
     if (policyWrap) policyWrap.style.display = activeCount >= 2 ? "block" : "none";
 
-    // Show AI audit toggle whenever at least one proof gate is on;
-    // reset to ON if all gates just turned off
-    const aiWrap = document.getElementById("ai-audit-wrap");
-    if (aiWrap) {
-        aiWrap.style.display = activeCount >= 1 ? "block" : "none";
-        if (activeCount === 0 && !_aiAuditOn) {
-            _aiAuditOn = true;
-            _syncAiAuditUI();
-        }
+    // Reset AI audit to ON if all proof gates are turned off
+    if (activeCount === 0 && !_aiAuditOn) {
+        _aiAuditOn = true;
     }
+    // Always re-sync UI so pill dimming reflects current proof gate state
+    _syncAiAuditUI();
 }
 
 function toggleAiAudit() {
@@ -696,26 +692,36 @@ function toggleConsensus() {
 }
 
 function _syncAiAuditUI() {
-    const pill      = document.getElementById("ai-audit-pill");
-    const warning   = document.getElementById("ai-audit-warning");
-    const hint      = document.getElementById("ai-audit-hint");
-    const consPill  = document.getElementById("consensus-pill");
-    const feeBox    = document.querySelector(".fee-box");
-    const feeBtn    = document.getElementById("pay-fee-btn");
+    const pill         = document.getElementById("ai-audit-pill");
+    const warning      = document.getElementById("ai-audit-warning");
+    const hint         = document.getElementById("ai-audit-hint");
+    const consPill     = document.getElementById("consensus-pill");
+    const consensusRow = document.getElementById("consensus-row");
+    const feeBox       = document.querySelector(".fee-box");
+    const feeBtn       = document.getElementById("pay-fee-btn");
+    const activeProofs = Object.values(_proofState).filter(Boolean).length;
 
+    // AI audit pill — greyed out / non-interactive when no proof gates active
     if (pill) {
         pill.textContent = _aiAuditOn ? "ON" : "OFF";
+        const canToggle = activeProofs > 0;
+        pill.disabled = !canToggle;
+        pill.title = canToggle ? "" : "Enable a proof gate (NFT, domain, or credential) to turn off AI audit";
         if (_aiAuditOn) {
             pill.style.borderColor = "rgba(34,197,94,.4)";
             pill.style.background  = "rgba(34,197,94,.12)";
             pill.style.color       = "#22c55e";
+            pill.style.opacity     = "1";
         } else {
             pill.style.borderColor = "rgba(255,255,255,.2)";
             pill.style.background  = "rgba(255,255,255,.06)";
             pill.style.color       = "var(--text-muted)";
+            pill.style.opacity     = "1";
         }
+        if (!canToggle) pill.style.opacity = "0.45";
     }
     if (warning) warning.style.display = _aiAuditOn ? "none" : "block";
+    if (consensusRow) consensusRow.style.display = _aiAuditOn ? "flex" : "none";
     if (consPill) {
         consPill.textContent = _requireConsensus ? "ON" : "OFF";
         if (_requireConsensus) {
