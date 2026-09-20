@@ -563,7 +563,6 @@ const SIGNALS = [
   { key: "escrow_completion",   label: "Escrow completion",   max: 20, tip: "Up to 20 pts based on this wallet's AgentTrust escrow history — how many escrows were completed vs. failed or expired." },
   { key: "peer_rating",         label: "Peer rating",         max: 15, tip: "Up to 15 pts from star ratings left by counterparties after completed AgentTrust escrows. Reflects real-world trustworthiness in transactions." },
   { key: "kyc_verified", label: "Identity KYC", max: 10, tip: "10 pts if the wallet operator has completed Didit identity verification — a real-identity check (passport/ID). Human-only signal; AI agent wallets cannot hold this. Unlocks escrows up to $10,000." },
-  { key: "agentrust_kyc",       label: "Identity KYC",        max: 10, tip: "10 pts if the wallet operator has completed identity verification via Didit ($0.50 one-time fee). Unlocks escrows up to $10,000 and is the strongest trust signal on the platform." },
 ];
 
 // Pre-fill from URL param
@@ -683,7 +682,6 @@ function render(addr, data) {
     { label: "Known entity",     value: signals.xrpscan_entity || "Unknown", cls: signals.xrpscan_entity ? "positive" : "" },
     { label: "Security flags",   value: flagSummary, cls: flagSummary !== "None" ? "positive" : "" },
     { label: "Identity KYC", value: signals.kyc_verified ? "Verified" : "Not verified", cls: signals.kyc_verified ? "positive" : "" },
-    { label: "AgentTrust KYC",  value: signals.kyc_verified ? "Verified" : "Not verified", cls: signals.kyc_verified ? "positive" : "" },
     { label: "NFTs held",        value: signals.nft_count ?? "—" },
     { label: "Total escrows",    value: signals.total_escrows ?? "—" },
     { label: "Passed escrows",   value: signals.passed_escrows ?? "—", cls: signals.passed_escrows > 0 ? "positive" : "" },
