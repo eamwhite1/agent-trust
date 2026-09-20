@@ -602,6 +602,7 @@ class EscrowRequest(BaseModel):
     accounts_email:   str           # verified invoices forwarded here
     cancel_after_hrs: int = 720
     callback_url:     Optional[str] = None   # optional webhook on PASS/FAIL
+    metadata:         Optional[str] = None   # JSON string — round-trip your ref IDs
 
 @app.post("/api/create-escrow")
 async def create_escrow(req: EscrowRequest):
@@ -634,6 +635,8 @@ async def create_escrow(req: EscrowRequest):
     }
     if req.callback_url:
         body["buyer_callback_url"] = req.callback_url
+    if req.metadata:
+        body["metadata"] = req.metadata
 
     params = httpx.post(f"{REFEREE}/escrow/generate", json=body, timeout=30).json()
 
@@ -675,7 +678,7 @@ app.post('/api/create-escrow', async (req, res) => {
   const {
     po_number, supplier_name, supplier_wallet,
     amount_rlusd, task_description, accounts_email,
-    cancel_after_hrs = 720, callback_url,
+    cancel_after_hrs = 720, callback_url, metadata,
   } = req.body;
 
   // Embed accounts_email so the referee knows where to forward verified invoices
@@ -703,6 +706,7 @@ app.post('/api/create-escrow', async (req, res) => {
     category: 'invoice', max_submissions: 5,
   };
   if (callback_url) body.buyer_callback_url = callback_url;
+  if (metadata) body.metadata = metadata;
 
   const params = await fetch(`${REFEREE}/escrow/generate`, {
     method: 'POST',

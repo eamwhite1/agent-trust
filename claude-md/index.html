@@ -250,6 +250,50 @@
         </div>
     </div>
 
+    <!-- ── Agent skill file ── -->
+    <div class="card" style="margin-top:2rem;">
+        <div class="card-pad">
+            <span class="section-label">Alternative — agent skill file</span>
+            <h2>Use a <em style="font-style:italic;color:var(--blue)">skill.md</em> instead</h2>
+            <p style="font-size:.92rem;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.65;">
+                For Claude Code projects, you can drop a dedicated agent skill file into <span class="inline-code">.claude/agents/</span> instead of (or alongside) the CLAUDE.md snippet. The skill appears as a named sub-agent Claude can invoke automatically whenever payments or escrow are needed — no copy-paste required.
+            </p>
+
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+                <a href="/skill.md" download="agenttrust.md"
+                   style="display:inline-flex;align-items:center;gap:6px;padding:.55rem 1.1rem;background:var(--blue);color:#fff;border-radius:8px;font-size:.85rem;font-weight:600;text-decoration:none;transition:opacity .15s;"
+                   onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                    <i data-lucide="download" style="width:15px;height:15px;"></i> Download skill.md
+                </a>
+                <button onclick="copySkillCmd()" id="skillCmdBtn"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:.55rem 1.1rem;background:transparent;color:var(--blue);border:1.5px solid var(--blue);border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:opacity .15s;font-family:inherit;"
+                        onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">
+                    <i data-lucide="copy" style="width:15px;height:15px;"></i> <span id="skillCmdBtnLabel">Copy install command</span>
+                </button>
+            </div>
+
+            <div class="editor-wrap">
+                <div class="editor-bar">
+                    <div class="editor-dots">
+                        <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+                    </div>
+                    <span class="editor-filename">terminal</span>
+                    <button class="editor-copy" id="skillCopyBtn" onclick="copySkillInstall()">Copy</button>
+                </div>
+                <div class="editor-body">
+                    <pre><span class="cm"># Download directly into your project's agents folder</span>
+<span class="grn">curl</span> -o .claude/agents/agenttrust.md \
+  <span class="val">https://www.cryptovault.co.uk/skill.md</span></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-blue" style="margin-top:1.25rem;">
+                <i data-lucide="info"></i>
+                <div>Claude Code reads every <span class="inline-code">.claude/agents/*.md</span> file automatically. Once the file is in place, Claude will use AgentTrust tools without any further configuration. The skill file is versioned in your repo — pin it or pull the latest from <span class="inline-code">/skill.md</span> to update.</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Setup steps ── -->
     <span class="section-label">Setup</span>
     <h2 style="margin-bottom:1.5rem;">Three steps to connect</h2>
@@ -461,6 +505,25 @@ function copySnippet() {
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2200);
+    });
+}
+
+const SKILL_INSTALL = `curl -o .claude/agents/agenttrust.md \\\n  https://www.cryptovault.co.uk/skill.md`;
+
+function copySkillInstall() {
+    navigator.clipboard.writeText(SKILL_INSTALL).then(() => {
+        const btn = document.getElementById('skillCopyBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2200);
+    });
+}
+
+function copySkillCmd() {
+    navigator.clipboard.writeText(SKILL_INSTALL).then(() => {
+        const lbl = document.getElementById('skillCmdBtnLabel');
+        lbl.textContent = 'Copied!';
+        setTimeout(() => { lbl.textContent = 'Copy install command'; }, 2200);
     });
 }
 </script>
