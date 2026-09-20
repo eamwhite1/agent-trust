@@ -989,11 +989,37 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
 
             </div>
 
+            <!-- Max submissions -->
+            <div class="field-group" style="margin-top:.85rem;">
+                <label class="field-label" for="max-submissions-select">
+                    Seller Attempts
+                    <span class="tooltip-wrap">
+                        <span class="tooltip-icon">?</span>
+                        <span class="tooltip-box">
+                            <strong>How many submissions does the seller get?</strong><br>
+                            3 attempts are included in the base $0.10 fee. Each extra slot costs $0.05 added to your creation fee now. The seller can also buy additional attempts on demand at $0.05 each if they run out.
+                        </span>
+                    </span>
+                </label>
+                <select id="max-submissions-select" onchange="onMaxSubsChange()">
+                    <option value="1">1 attempt — $0.10</option>
+                    <option value="2">2 attempts — $0.10</option>
+                    <option value="3" selected>3 attempts — $0.10 (default)</option>
+                    <option value="4">4 attempts — $0.15</option>
+                    <option value="5">5 attempts — $0.20</option>
+                    <option value="6">6 attempts — $0.25</option>
+                    <option value="7">7 attempts — $0.30</option>
+                    <option value="8">8 attempts — $0.35</option>
+                    <option value="9">9 attempts — $0.40</option>
+                    <option value="10">10 attempts — $0.45</option>
+                </select>
+            </div>
+
             <!-- Fee payment — shown after form is filled, just before submit -->
             <div id="auto-pay-bottom" style="margin-bottom:.75rem;">
-                <div class="fee-box">Protocol fee: <strong>$0.10</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer in XRP or RLUSD. Covers escrow infrastructure and verification.</div>
+                <div class="fee-box">Protocol fee: <strong id="fee-label-text">$0.10</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer in XRP or RLUSD. Covers escrow infrastructure and verification.</div>
                 <button class="btn btn-blue" id="pay-fee-btn" onclick="payFee()">
-                    <i data-lucide="zap"></i> Pay $0.10 fee via Xaman <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span>
+                    <i data-lucide="zap"></i> Pay <span id="fee-label-btn">$0.10</span> fee via Xaman <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span>
                 </button>
                 <div class="status-msg" id="fee-status"></div>
             </div>
