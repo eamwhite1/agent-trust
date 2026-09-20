@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFT Issuer Registry</title>
+<meta name="description" content="Register your organisation as a trusted NFT issuer on the AgentTrust XRPL registry. Verified issuers can be required as proof gates in escrow contracts.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="NFT Issuer Registry — AgentTrust">
+<meta property="og:description" content="Register your organisation as a trusted NFT issuer on the AgentTrust XRPL registry.">
+<meta property="og:url" content="https://www.cryptovault.co.uk/issuer-registry/">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.395.0/umd/lucide.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue:         #0066FF;
+    --blue-dim:     rgba(0,102,255,.08);
+    --blue-border:  rgba(0,102,255,.2);
+    --green:        #00B97A;
+    --green-dim:    rgba(0,185,122,.09);
+    --green-border: rgba(0,185,122,.22);
+    --amber:        #D97706;
+    --amber-dim:    rgba(217,119,6,.08);
+    --amber-border: rgba(217,119,6,.22);
+    --text:         #0d0d12;
+    --text-muted:   #5c5c6e;
+    --glass:        rgba(255,255,255,0.6);
+    --glass-border: rgba(255,255,255,0.78);
+    --shadow:       0 8px 40px rgba(0,0,0,0.06);
+    --radius-lg:    24px;
+    --radius-md:    14px;
+    --radius-sm:    8px;
+    --border:       rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --text:         #e8e8f0;
+        --text-muted:   #9090a8;
+        --glass:        rgba(30,30,46,0.6);
+        --glass-border: rgba(255,255,255,0.10);
+        --shadow:       0 8px 40px rgba(0,0,0,0.25);
+        --border:       rgba(255,255,255,.08);
+    }
+}
+:root[data-theme="dark"] {
+    --text:         #e8e8f0;
+    --text-muted:   #9090a8;
+    --glass:        rgba(30,30,46,0.6);
+    --glass-border: rgba(255,255,255,0.10);
+    --shadow:       0 8px 40px rgba(0,0,0,0.25);
+    --border:       rgba(255,255,255,.08);
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { background: #0f0f1a; } }
+:root[data-theme="dark"] body { background: #0f0f1a; }
+
+.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%); } }
+:root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%); }
+.blob { position: fixed; border-radius: 50%; width: 700px; height: 700px; top: -10%; right: -5%; background: radial-gradient(circle, rgba(0,102,255,.10) 0%, transparent 70%); filter: blur(100px); pointer-events: none; }
+
+/* Nav */
+nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+.logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+.logo span { color: var(--blue); }
+.nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+.nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; transition: color .18s; }
+.nav-link:hover { color: var(--blue); }
+.nav-right { margin-left: auto; }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+@media (max-width: 680px) {
+    nav { position: relative; flex-wrap: wrap; }
+    .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); z-index: 99; }
+    .nav-menu.open { display: flex; }
+    .nav-toggle { display: flex; }
+}
+
+.page-wrap { max-width: 780px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
+
+.eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.9rem, 5vw, 2.7rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+.lead { font-size: 1rem; color: var(--text-muted); max-width: 600px; margin-bottom: 2.5rem; line-height: 1.7; }
+
+/* How it works strip */
+.how-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+@media (max-width: 600px) { .how-strip { grid-template-columns: 1fr; } }
+.how-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.2rem 1.3rem; backdrop-filter: blur(16px); }
+.how-num { font-size: .65rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; margin-bottom: .4rem; }
+.how-title { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .3rem; }
+.how-desc { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Form card */
+.form-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 2.2rem 2.4rem; margin-bottom: 2rem; }
+@media (max-width: 600px) { .form-card { padding: 1.5rem 1.25rem; } }
+
+.section-label { font-size: .65rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .9rem; }
+h2 { font-family: 'DM Serif Display', serif; font-size: 1.35rem; font-weight: 400; color: var(--text); margin-bottom: 1.5rem; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+@media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: .4rem; }
+.form-group.full { grid-column: 1 / -1; }
+
+label { font-size: .78rem; font-weight: 700; color: var(--text); }
+label .optional { font-weight: 400; color: var(--text-muted); margin-left: .3rem; }
+input, select, textarea {
+    width: 100%; padding: .65rem .9rem; font-size: .88rem; font-family: inherit;
+    background: rgba(255,255,255,.55); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); outline: none;
+    transition: border-color .18s, box-shadow .18s;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) input,
+    :root:not([data-theme="light"]) select,
+    :root:not([data-theme="light"]) textarea { background: rgba(255,255,255,.06); }
+}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea { background: rgba(255,255,255,.06); }
+input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,102,255,.12); }
+input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: .7; }
+textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+.field-hint { font-size: .72rem; color: var(--text-muted); line-height: 1.45; margin-top: .1rem; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
+
+/* Category chips */
+.category-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .3rem; }
+.chip { display: flex; align-items: center; gap: 5px; padding: .35rem .8rem; border-radius: 40px; font-size: .75rem; font-weight: 600; border: 1.5px solid var(--border); background: transparent; cursor: pointer; color: var(--text-muted); transition: border-color .15s, color .15s, background .15s; font-family: inherit; }
+.chip:hover { border-color: var(--blue-border); color: var(--blue); }
+.chip.active { border-color: var(--blue); background: var(--blue-dim); color: var(--blue); }
+
+/* Submit */
+.submit-row { display: flex; align-items: center; gap: 1rem; margin-top: 1.75rem; flex-wrap: wrap; }
+.btn-primary { display: inline-flex; align-items: center; gap: 7px; padding: .7rem 1.6rem; background: var(--blue); color: #fff; border: none; border-radius: var(--radius-md); font-size: .9rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity .18s; }
+.btn-primary:hover { opacity: .88; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.submit-note { font-size: .76rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Result states */
+.result { display: none; padding: 1.4rem 1.6rem; border-radius: var(--radius-md); margin-top: 1.5rem; }
+.result.verified { background: var(--green-dim); border: 1px solid var(--green-border); }
+.result.pending  { background: var(--amber-dim);  border: 1px solid var(--amber-border); }
+.result.error    { background: rgba(220,38,38,.07); border: 1px solid rgba(220,38,38,.2); }
+.result-title { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; }
+.result.verified .result-title { color: var(--green); }
+.result.pending  .result-title { color: var(--amber); }
+.result.error    .result-title { color: #dc2626; }
+.result p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
+.result p a { color: var(--blue); }
+
+/* TOML box */
+.toml-box { margin-top: 1.25rem; }
+.toml-label { display: flex; align-items: center; justify-content: space-between; background: rgba(13,13,18,.06); border: 1px solid rgba(13,13,18,.1); border-bottom: none; border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: .4rem .85rem; font-size: .68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+.copy-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: .68rem; font-weight: 600; font-family: inherit; display: flex; align-items: center; gap: 4px; transition: color .15s; }
+.copy-btn:hover { color: var(--blue); }
+pre.toml { background: rgba(13,13,18,.04); border: 1px solid rgba(13,13,18,.1); border-radius: 0 0 var(--radius-sm) var(--radius-sm); padding: 1rem 1.1rem; font-size: .78rem; line-height: 1.65; font-family: 'Courier New', Courier, monospace; color: var(--text); white-space: pre; overflow-x: auto; margin: 0; }
+
+/* Callout */
+.callout { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1.1rem; border-radius: var(--radius-sm); font-size: .84rem; line-height: 1.6; margin: 1.5rem 0 0; }
+.callout-blue { background: var(--blue-dim); border: 1px solid var(--blue-border); color: var(--text); }
+.callout svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; color: var(--blue); }
+
+/* Resources */
+.resources-section { padding: 3rem 0 1rem; }
+.res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
+.res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
+.res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
+.res-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
+.section-label-plain { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
+h2.res-h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; }
+
+/* Footer */
+footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 3rem 5% 2rem; }
+.footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+.footer-brand { flex: 0 0 220px; }
+.footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+.footer-dot { color: var(--blue); }
+.footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+.footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+.footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+.footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+.footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+.footer-col a:hover { color: var(--blue); }
+.footer-bottom { border-top: 1px solid var(--border); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+.footer-bottom a { color: var(--blue); text-decoration: none; }
+@media (max-width: 680px) {
+    .footer-inner { flex-direction: column; gap: 2rem; }
+    .footer-brand { flex: none; }
+    .footer-cols { gap: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="blob"></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+    </div>
+    <div class="nav-right">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <div class="eyebrow"><i data-lucide="shield-check"></i> NFT Issuer Registry</div>
+    <h1>Register as a trusted issuer</h1>
+    <p class="lead">Once registered, buyer agents can require an NFT from your organisation as a condition of escrow payment — proving ownership, credentials, or delivery before funds release.</p>
+
+    <!-- How it works -->
+    <div class="how-strip">
+        <div class="how-item">
+            <div class="how-num">Step 1</div>
+            <div class="how-title">Submit this form</div>
+            <div class="how-desc">Provide your organisation name, XRPL wallet, and website. If your domain already has an <code style="font-size:.75em;">xrp-ledger.toml</code>, you may be verified instantly.</div>
+        </div>
+        <div class="how-item">
+            <div class="how-num">Step 2</div>
+            <div class="how-title">Domain verification</div>
+            <div class="how-desc">Publish a short <code style="font-size:.75em;">xrp-ledger.toml</code> file at your domain to prove you control both the website and the wallet. We'll email you the snippet.</div>
+        </div>
+        <div class="how-item">
+            <div class="how-num">Step 3</div>
+            <div class="how-title">Live on the registry</div>
+            <div class="how-desc">Your organisation appears in the verified issuer feed. Buyer agents can now require your NFTs as proof gates in any escrow contract.</div>
+        </div>
+    </div>
+
+    <!-- Registration form -->
+    <div class="form-card">
+        <span class="section-label">Organisation details</span>
+        <h2>Issuer registration</h2>
+
+        <form id="reg-form" novalidate>
+            <div class="form-grid">
+
+                <div class="form-group full">
+                    <label for="org-name">Organisation name <span style="color:#dc2626">*</span></label>
+                    <input type="text" id="org-name" name="name" placeholder="e.g. Maersk Line, Ticketmaster, BSI Group" required autocomplete="organization">
+                </div>
+
+                <div class="form-group full">
+                    <label for="wallet">Primary XRPL wallet address <span style="color:#dc2626">*</span></label>
+                    <input type="text" id="wallet" name="wallet_address" placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" required autocomplete="off" spellcheck="false">
+                    <span class="field-hint">The wallet that mints your NFTs. Must start with <code style="font-size:.9em;">r</code>.</span>
+                </div>
+
+                <div class="form-group full">
+                    <label>Category <span class="optional">(optional)</span></label>
+                    <div class="category-chips" id="category-chips">
+                        <button type="button" class="chip" data-value="shipping"><i data-lucide="ship" style="width:12px;height:12px;"></i> Shipping</button>
+                        <button type="button" class="chip" data-value="events"><i data-lucide="calendar" style="width:12px;height:12px;"></i> Events &amp; Tickets</button>
+                        <button type="button" class="chip" data-value="certification"><i data-lucide="award" style="width:12px;height:12px;"></i> Certification</button>
+                        <button type="button" class="chip" data-value="identity"><i data-lucide="fingerprint" style="width:12px;height:12px;"></i> Identity</button>
+                        <button type="button" class="chip" data-value="real_estate"><i data-lucide="building-2" style="width:12px;height:12px;"></i> Real Estate</button>
+                        <button type="button" class="chip" data-value="financial"><i data-lucide="banknote" style="width:12px;height:12px;"></i> Financial</button>
+                        <button type="button" class="chip" data-value="supply_chain"><i data-lucide="package" style="width:12px;height:12px;"></i> Supply Chain</button>
+                        <button type="button" class="chip" data-value="other"><i data-lucide="layers" style="width:12px;height:12px;"></i> Other</button>
+                    </div>
+                    <input type="hidden" id="category" name="category">
+                </div>
+
+                <div class="form-group full">
+                    <label for="description">What do your NFTs represent? <span class="optional">(optional)</span></label>
+                    <textarea id="description" name="description" placeholder="e.g. Bills of lading for ocean freight shipments; NFT is minted when cargo is loaded and transferred on delivery confirmation."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="website">Website <span class="optional">(optional)</span></label>
+                    <input type="url" id="website" name="website" placeholder="https://www.yourorg.com" autocomplete="url">
+                    <span class="field-hint">Used for domain verification. Include the protocol.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Contact email <span class="optional">(optional)</span></label>
+                    <input type="email" id="email" name="contact_email" placeholder="tech@yourorg.com" autocomplete="email">
+                    <span class="field-hint">We'll email your verification snippet and registry updates.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="nft-types">NFT types / metadata fields <span class="optional">(optional)</span></label>
+                    <input type="text" id="nft-types" name="nft_types" placeholder="e.g. BillOfLading, shipment_id, origin_port">
+                    <span class="field-hint">Comma-separated. Helps buyers know what fields to verify.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="lei">Legal Entity Identifier (LEI) <span class="optional">(optional)</span></label>
+                    <input type="text" id="lei" name="lei" placeholder="e.g. 5493006MHB84DD0ZWV18" autocomplete="off">
+                    <span class="field-hint">20-character LEI code if your organisation has one.</span>
+                </div>
+
+            </div>
+
+            <hr class="divider">
+
+            <div class="submit-row">
+                <button type="submit" class="btn-primary" id="submit-btn">
+                    <i data-lucide="send"></i> Submit registration
+                </button>
+                <span class="submit-note">Free to register. Verification is manual for new domains — usually within 1 business day.</span>
+            </div>
+
+            <!-- Result -->
+            <div class="result verified" id="result-verified">
+                <div class="result-title"><i data-lucide="check-circle" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:5px;"></i> Verified and live</div>
+                <p>Your organisation is now on the registry. Buyer agents can require your NFTs as proof gates immediately. Your entry will appear in the <a href="https://mcp.cryptovault.co.uk/nft/issuers" target="_blank">issuer feed</a> within minutes.</p>
+            </div>
+
+            <div class="result pending" id="result-pending">
+                <div class="result-title"><i data-lucide="clock" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:5px;"></i> Registration received — domain verification needed</div>
+                <p id="pending-msg">To complete verification, publish the following snippet at <code id="toml-path" style="font-size:.88em;"></code> and then <a href="#" id="re-verify-link" style="color:var(--blue);">click here to verify</a>.</p>
+                <div class="toml-box" id="toml-box">
+                    <div class="toml-label">
+                        xrp-ledger.toml snippet
+                        <button type="button" class="copy-btn" onclick="copyToml()"><i data-lucide="copy"></i> Copy</button>
+                    </div>
+                    <pre class="toml" id="toml-snippet"></pre>
+                </div>
+            </div>
+
+            <div class="result error" id="result-error">
+                <div class="result-title">Something went wrong</div>
+                <p id="error-msg">Please check your details and try again.</p>
+            </div>
+        </form>
+    </div>
+
+    <!-- What happens next callout -->
+    <div class="callout callout-blue">
+        <i data-lucide="info"></i>
+        <div>
+            <strong>What happens once you're verified?</strong> Buyer agents using AgentTrust can set <code style="font-size:.85em;">required_nft_issuer</code> to your wallet address in any escrow. Payment will only release once the seller proves they hold an NFT minted by you — no human needed to check it.
+            <a href="/nft-dvp/" style="color:var(--blue);font-weight:600;margin-left:.3rem;">See the NFT DvP guide →</a>
+        </div>
+    </div>
+
+    <!-- Resources -->
+    <div class="resources-section">
+        <span class="section-label-plain">Resources</span>
+        <h2 class="res-h2">What to read next</h2>
+        <div class="res-grid">
+            <a href="/nft-dvp/" class="res-link"><i data-lucide="image"></i> NFT DvP guide</a>
+            <a href="/release-conditions/" class="res-link"><i data-lucide="shield-check"></i> Release conditions</a>
+            <a href="https://mcp.cryptovault.co.uk/nft/issuers" class="res-link" target="_blank"><i data-lucide="list"></i> View issuer feed</a>
+            <a href="https://mcp.cryptovault.co.uk/docs" class="res-link" target="_blank"><i data-lucide="book"></i> API reference</a>
+            <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
+            <a href="/guides/" class="res-link"><i data-lucide="book-open"></i> All guides</a>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
+</footer>
+
+<script>
+lucide.createIcons();
+
+const API = 'https://mcp.cryptovault.co.uk';
+let pendingWallet = '';
+let pendingEscrowId = '';
+
+// Category chips
+document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        document.getElementById('category').value = chip.dataset.value;
+        lucide.createIcons();
+    });
+});
+
+// Form submit
+document.getElementById('reg-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAll();
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-circle" style="animation:spin 1s linear infinite;"></i> Submitting…';
+    lucide.createIcons();
+
+    const f = e.target;
+    const body = {
+        name:           f.name.value.trim(),
+        wallet_address: f.wallet_address.value.trim(),
+    };
+    if (f.category.value)      body.category      = f.category.value;
+    if (f.description.value)   body.description   = f.description.value.trim();
+    if (f.website.value)       body.website       = f.website.value.trim();
+    if (f.contact_email.value) body.contact_email = f.contact_email.value.trim();
+    if (f.nft_types.value)     body.nft_types     = f.nft_types.value.trim();
+    if (f.lei.value)           body.lei           = f.lei.value.trim();
+
+    if (!body.name || !body.wallet_address) {
+        showError('Organisation name and XRPL wallet address are required.');
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="send"></i> Submit registration';
+        lucide.createIcons();
+        return;
+    }
+    if (!body.wallet_address.startsWith('r') || body.wallet_address.length < 25) {
+        showError('Please enter a valid XRPL wallet address starting with r.');
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="send"></i> Submit registration';
+        lucide.createIcons();
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/nft/issuers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showError(data.detail || 'Registration failed. Please try again.');
+        } else if (data.status === 'verified') {
+            showVerified();
+        } else {
+            pendingWallet = body.wallet_address;
+            showPending(body.wallet_address, body.website || '', body.name);
+        }
+    } catch (err) {
+        showError('Network error — please check your connection and try again.');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send"></i> Submit registration';
+    lucide.createIcons();
+});
+
+// Re-verify link
+document.getElementById('re-verify-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const wallet = pendingWallet;
+    const website = document.getElementById('website').value.trim();
+    if (!wallet || !website) return;
+    try {
+        const res = await fetch(`${API}/domain/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wallet_address: wallet, domain: website }),
+        });
+        const data = await res.json();
+        if (data.verified) { hideAll(); showVerified(); }
+        else { alert('Domain not yet verified. Make sure your xrp-ledger.toml is published and try again.'); }
+    } catch { alert('Verification check failed — please try again.'); }
+});
+
+function showVerified() {
+    document.getElementById('result-verified').style.display = 'block';
+    lucide.createIcons();
+}
+
+function showPending(wallet, website, name) {
+    const domain = website ? website.replace(/^https?:\/\//, '').split('/')[0] : 'yourdomain.com';
+    document.getElementById('toml-path').textContent = `https://${domain}/.well-known/xrp-ledger.toml`;
+    document.getElementById('toml-snippet').textContent =
+`[[ACCOUNTS]]
+address = "${wallet}"
+desc = "${name} — NFT issuer wallet"`;
+    document.getElementById('result-pending').style.display = 'block';
+    lucide.createIcons();
+}
+
+function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('result-error').style.display = 'block';
+}
+
+function hideAll() {
+    ['result-verified','result-pending','result-error'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
+}
+
+function copyToml() {
+    const text = document.getElementById('toml-snippet').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '<i data-lucide="check"></i> Copied';
+        lucide.createIcons();
+        setTimeout(() => { btn.innerHTML = '<i data-lucide="copy"></i> Copy'; lucide.createIcons(); }, 2000);
+    });
+}
+</script>
+</body>
+</html>

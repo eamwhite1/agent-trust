@@ -62,6 +62,12 @@
   </url>
 
   <url>
+    <loc>https://www.cryptovault.co.uk/issuer-registry/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://www.cryptovault.co.uk/agent-hiring/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
