@@ -130,6 +130,7 @@ pre { background: var(--code-bg); border: 1px solid var(--code-border); border-r
 .option-num { width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: .6rem; }
 
 /* Resources */
+.resources-section { padding: 3rem 0 1rem; }
 .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
 .res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
 .res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
@@ -943,19 +944,17 @@ def _generate_invoice(inv_num, buyer_name, amount, currency, task_desc):
     </div>
 
     <!-- Resources -->
-    <div class="card">
-        <div class="card-pad">
-            <span class="section-label">Resources</span>
-            <h2>What to read next</h2>
-            <div class="res-grid">
-                <a href="https://mcp.cryptovault.co.uk/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
-                <a href="https://mcp.cryptovault.co.uk/mcp" class="res-link" target="_blank"><i data-lucide="plug"></i> MCP server</a>
-                <a href="/how-it-works/" class="res-link"><i data-lucide="workflow"></i> How escrow works</a>
-                <a href="/agent-hiring/" class="res-link"><i data-lucide="bot"></i> Agent-hiring guide</a>
-                <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
-                <a href="/" class="res-link"><i data-lucide="zap"></i> Try it now</a>
-                <a href="/guides/" class="res-link"><i data-lucide="book-open"></i> All guides</a>
-            </div>
+    <div class="resources-section">
+        <span class="section-label">Resources</span>
+        <h2>What to read next</h2>
+        <div class="res-grid">
+            <a href="https://mcp.cryptovault.co.uk/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
+            <a href="https://mcp.cryptovault.co.uk/mcp" class="res-link" target="_blank"><i data-lucide="plug"></i> MCP server</a>
+            <a href="/how-it-works/" class="res-link"><i data-lucide="workflow"></i> How escrow works</a>
+            <a href="/agent-hiring/" class="res-link"><i data-lucide="bot"></i> Agent-hiring guide</a>
+            <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
+            <a href="/" class="res-link"><i data-lucide="zap"></i> Try it now</a>
+            <a href="/guides/" class="res-link"><i data-lucide="book-open"></i> All guides</a>
         </div>
     </div>
 
