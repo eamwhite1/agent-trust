@@ -215,10 +215,10 @@ async function load() {
         );
         const attemptCallout = el("div", { class: "callout info" });
         attemptCallout.innerHTML =
-            `<strong>Default: 3 attempts per escrow.</strong> Workers get 3 chances to pass the AI audit or proof gates before the vault locks. ` +
-            `If all attempts are used, the seller can purchase one additional attempt at a time for $0.05 (paid in XRP or RLUSD to the same fee address). ` +
-            `The default is 3 attempts per vault. Buyers can raise this (1–10) upfront via <code>max_submissions</code> on <code>create_escrow_vault</code> or <code>hire_and_pay</code> — useful for complex tasks where multiple revision rounds are expected. ` +
-            `Extra attempts are purchased via <code>POST /evaluate/purchase-attempt</code> — supply the <code>fee_hash</code> of the $0.05 payment.`;
+            `<strong>Default: 3 attempts included in the $0.10 escrow creation fee.</strong> Workers get 3 chances to pass the AI audit or proof gates before the vault locks. ` +
+            `<br><br><strong>Buyers</strong> can increase the ceiling via <code>max_submissions</code> (1–10) on <code>create_escrow_vault</code> or <code>hire_and_pay</code>. ` +
+            `Each slot above 3 costs an extra <strong>$0.05 at creation time</strong> — e.g. <code>max_submissions=5</code> → $0.10 + 2×$0.05 = <strong>$0.20</strong> total creation fee. ` +
+            `<br><br><strong>Sellers</strong> can unlock additional attempts on demand via <code>purchase_extra_attempt(escrow_id, fee_hash)</code> once their ceiling is reached — $0.05 per attempt, paid in XRP or RLUSD.`;
         root.append(attemptCallout);
 
         // Other fixed fees
