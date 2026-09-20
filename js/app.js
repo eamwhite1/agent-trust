@@ -344,7 +344,8 @@ function updateUsdEquiv() {
 
     // Fee spans — update whenever this runs if price is available
     if (xrpPriceUsd) {
-        const feeXrp     = (0.10 / xrpPriceUsd).toFixed(4);
+        const feeUsd     = getCreationFeeUsd();
+        const feeXrp     = (feeUsd / xrpPriceUsd).toFixed(4);
         const feeEquiv   = document.getElementById("fee-usd-equiv");
         const feeBtn     = document.getElementById("fee-btn-usd");
         const compareFee = document.getElementById("compare-fee-usd");
@@ -376,10 +377,12 @@ async function payFee() {
             await new Promise(r => setTimeout(r, 8000));
         }
         try {
+            const feeUsd = getCreationFeeUsd();
+            const feeXrpOverride = xrpPriceUsd ? +(feeUsd / xrpPriceUsd).toFixed(6) : null;
             res = await safeFetch(`${REFEREE_URL}/xumm/fee-payload`, {
                 method:  "POST",
                 headers: { "Content-Type": "application/json" },
-                body:    "{}",
+                body:    JSON.stringify(feeXrpOverride ? { amount_xrp: feeXrpOverride } : {}),
             });
             lastErr = null;
             break;
@@ -401,7 +404,8 @@ async function payFee() {
         feePayloadUUID = data.uuid;
         window.open(data.nextUrl, "_blank");
         const xrpLabel = data.amount_xrp ? ` (${data.amount_xrp} XRP)` : "";
-        showStatus("fee-status", `Xaman opened — sign the $0.10${xrpLabel} fee payment, then return here.`, "info");
+        const feeDisplay = `$${getCreationFeeUsd().toFixed(2)}`;
+        showStatus("fee-status", `Xaman opened — sign the ${feeDisplay}${xrpLabel} fee payment, then return here.`, "info");
         feePollingTimer = setInterval(pollFeePayment, 3000);
     } catch (err) {
         showStatus("fee-status", `❌ Error: ${err.message}`, "error");
@@ -452,7 +456,7 @@ async function initVault() {
         return;
     }
     if (!feeHash) {
-        showStatus("init-status", "❌ Please pay the $0.10 fee first.", "error");
+        showStatus("init-status", `❌ Please pay the $${getCreationFeeUsd().toFixed(2)} fee first.`, "error");
         return;
     }
     // workerEmail is optional — agents use the receipt code directly; humans get an email if provided
@@ -505,6 +509,7 @@ async function initVault() {
             nft_dvp:                nftDvp,
             require_ai_audit:       _aiAuditOn,
             require_consensus:      _requireConsensus || undefined,
+            max_submissions:        _maxSubmissions !== 3 ? _maxSubmissions : undefined,
             invoice_requirements:   _invoiceModeOn ? {
                 po_number:            document.getElementById("inv-po-number")?.value.trim() || null,
                 supplier_name:        document.getElementById("inv-supplier-name")?.value.trim() || null,
@@ -645,6 +650,18 @@ async function pollEscrowCreate(uuid, receiptCode) {
 const _proofState = { nft: false, domain: false, vc: false };
 let _aiAuditOn = true;
 let _requireConsensus = false;
+let _maxSubmissions = 3;
+
+function getCreationFeeUsd() {
+    const extraSlots = Math.max(0, _maxSubmissions - 3);
+    const base = _requireConsensus ? 0.25 : 0.10;
+    return +(base + extraSlots * 0.05).toFixed(2);
+}
+
+function onMaxSubsChange() {
+    _maxSubmissions = parseInt(document.getElementById("max-submissions-select")?.value || "3", 10);
+    _syncAiAuditUI();
+}
 
 function toggleProof(type) {
     _proofState[type] = !_proofState[type];
@@ -739,9 +756,20 @@ function _syncAiAuditUI() {
         : "Payment releases on proof gates alone";
 
     // Update fee display
-    const feeLabel = _requireConsensus ? "$0.25" : "$0.10";
-    if (feeBox) feeBox.innerHTML = `Protocol fee: <strong>${feeLabel}</strong> <span id="fee-usd-equiv" style="color:var(--text-muted);font-size:.85rem;"></span> — paid once by the buyer in XRP or RLUSD. Covers escrow infrastructure and verification.`;
-    if (feeBtn) feeBtn.innerHTML = `<i data-lucide="zap"></i> Pay ${feeLabel} fee via Xaman <span id="fee-btn-usd" style="opacity:.72;font-weight:500;font-size:.88rem;"></span>`;
+    const feeUsd   = getCreationFeeUsd();
+    const feeLabel = `$${feeUsd.toFixed(2)}`;
+    const feeLabelEl = document.getElementById("fee-label-text");
+    const feeLabelBtn = document.getElementById("fee-label-btn");
+    if (feeLabelEl)  feeLabelEl.textContent  = feeLabel;
+    if (feeLabelBtn) feeLabelBtn.textContent  = feeLabel;
+    // Reflow XRP equivalent on the fee button
+    if (xrpPriceUsd) {
+        const feeXrp = (feeUsd / xrpPriceUsd).toFixed(4);
+        const feeEquiv = document.getElementById("fee-usd-equiv");
+        const feeBtnXrp = document.getElementById("fee-btn-usd");
+        if (feeEquiv)   feeEquiv.textContent  = `(≈ ${feeXrp} XRP at current price)`;
+        if (feeBtnXrp)  feeBtnXrp.textContent = `≈ ${feeXrp} XRP`;
+    }
 }
 
 // nftMode: "verify" (proof only) or "transfer" (DvP)
