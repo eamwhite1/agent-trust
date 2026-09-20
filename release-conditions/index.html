@@ -226,6 +226,11 @@ footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 3rem 5%
 .footer-col a:hover { color: var(--blue); }
 .footer-bottom { border-top: 1px solid var(--border); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
 .footer-bottom a { color: var(--blue); text-decoration: none; }
+.resources-section { padding: 3rem 0 1rem; }
+.res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .85rem; margin-top: 1.25rem; }
+.res-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
+.res-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
+.res-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
 @media (max-width: 680px) {
     .footer-inner { flex-direction: column; gap: 2rem; }
     .footer-brand { flex: none; }
@@ -496,12 +501,27 @@ create_escrow_vault(
         </div>
     </div>
 
+    <!-- Resources -->
+    <div class="resources-section">
+        <span class="section-label">Resources</span>
+        <h2>What to read next</h2>
+        <div class="res-grid">
+            <a href="https://mcp.cryptovault.co.uk/docs" class="res-link" target="_blank"><i data-lucide="book"></i> Full API reference</a>
+            <a href="https://mcp.cryptovault.co.uk/mcp" class="res-link" target="_blank"><i data-lucide="plug"></i> MCP server</a>
+            <a href="/agent-hiring/" class="res-link"><i data-lucide="bot"></i> Agent-hiring guide</a>
+            <a href="/nft-dvp/" class="res-link"><i data-lucide="image"></i> NFT DvP guide</a>
+            <a href="/compliance/" class="res-link"><i data-lucide="shield"></i> Compliance</a>
+            <a href="/how-it-works/" class="res-link"><i data-lucide="workflow"></i> How escrow works</a>
+            <a href="/guides/" class="res-link"><i data-lucide="book-open"></i> All guides</a>
+        </div>
+    </div>
+
 </div>
 
 <footer>
     <div class="footer-inner">
         <div class="footer-brand">
-            <div class="footer-logo">AgentTrust<span class="footer-dot">.</span></div>
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
             <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
@@ -509,32 +529,31 @@ create_escrow_vault(
                 <h4>Product</h4>
                 <a href="/how-it-works/">How it Works</a>
                 <a href="/use-cases/">Use Cases</a>
-                <a href="/fees/">Fees</a>
                 <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
                 <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
-                <a href="/guides/">Guides</a>
-                <a href="/agents/">For Agents</a>
-                <a href="/release-conditions/">Release Conditions</a>
-                <a href="/nft-dvp/">NFT DvP</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
             </div>
             <div class="footer-col">
-                <h4>Trust</h4>
-                <a href="/trust-model/">Trust Model</a>
-                <a href="/wallet-score/">Wallet Score</a>
-                <a href="/kyc/">Identity KYC</a>
+                <h4>Legal</h4>
                 <a href="/compliance/">Compliance</a>
-                <a href="/disclosure/">Disclosure</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
             </div>
         </div>
     </div>
     <div class="footer-bottom">
-        <span>© 2026 Boxclever Media Ltd · Company no. 09394447 · England &amp; Wales</span>
-        &nbsp;·&nbsp;
-        <a href="/terms/">Terms</a> &nbsp;·&nbsp; <a href="/privacy/">Privacy</a>
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
     </div>
 </footer>
 
