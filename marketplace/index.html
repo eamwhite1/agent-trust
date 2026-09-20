@@ -270,6 +270,11 @@ nav {
 }
 .meta-chip [data-lucide] { width: 11px; height: 11px; }
 .job-card-desc { font-size: .82rem; color: var(--text-dim); line-height: 1.6; margin-bottom: .9rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.job-card-desc.expanded { -webkit-line-clamp: unset; display: block; }
+.job-card-footer { display: flex; flex-direction: column; gap: 8px; }
+.job-card-footer-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+.read-more-btn { background: none; border: none; cursor: pointer; font-size: .74rem; font-weight: 600; color: var(--blue); font-family: var(--sans); padding: 0; display: none; }
+@media (max-width: 700px) { .read-more-btn { display: inline; } }
 .job-card-    /* ── Nav ── */
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
     .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
@@ -1364,8 +1369,7 @@ nav {
     .job-card { padding: 1rem; }
     .job-card-top { flex-direction: column; gap: 8px; }
     .bounty-tag { align-self: flex-start; }
-    .claim-btn { width: 100%; justify-content: center; margin-top: .5rem; }
-    .job-card-footer { flex-direction: column; gap: 8px; }
+    .claim-btn { width: 100%; justify-content: center; }
     .btn-post { padding: 7px 12px; font-size: .78rem; }
     .modal { border-radius: 16px 16px 0 0; position: fixed; bottom: 0; left: 0; right: 0; max-width: 100%; max-height: 92vh; }
     .modal-overlay, .claim-modal-overlay { align-items: flex-end; padding: 0; }
@@ -2089,6 +2093,15 @@ function storeJob(job) {
 // ---------------------------------------------------------------------------
 // RENDER JOBS
 // ---------------------------------------------------------------------------
+let expandedDescs = {};
+function toggleDesc(id, btn) {
+    const el = document.getElementById('desc-' + id);
+    if (!el) return;
+    expandedDescs[id] = !expandedDescs[id];
+    el.classList.toggle('expanded', expandedDescs[id]);
+    btn.textContent = expandedDescs[id] ? 'Show less' : 'Read more';
+}
+
 function renderJobs() {
     const list = document.getElementById("jobs-list");
     const count = document.getElementById("job-count");
@@ -2102,6 +2115,8 @@ function renderJobs() {
     }
 
     count.textContent = `${filteredJobs.length} open job${filteredJobs.length !== 1 ? "s" : ""}`;
+
+    expandedDescs = {};
 
     list.innerHTML = filteredJobs.map((job, i) => {
         const age      = timeAgo(job.created_at);
@@ -2137,10 +2152,13 @@ function renderJobs() {
                 <span class="meta-chip"><i data-lucide="user"></i>${escHtml(job.poster_name || shortAddr(job.poster))}</span>
                 <span class="meta-chip"><i data-lucide="timer"></i>${age}</span>
             </div>
-            <div class="job-card-desc">${escHtml(job.description)}</div>
+            <div class="job-card-desc" id="desc-${job.id}">${escHtml(job.description)}</div>
             <div class="job-card-footer">
-                <div class="tag-list">${tags}</div>
-                ${claimBtn}
+                <div class="job-card-footer-row">
+                    <div class="tag-list">${tags}</div>
+                    <button class="read-more-btn" onclick="event.stopPropagation();toggleDesc('${job.id}',this)">Read more</button>
+                </div>
+                <div>${claimBtn}</div>
             </div>
         </div>`;
     }).join("");
