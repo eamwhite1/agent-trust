@@ -56,6 +56,12 @@
   </url>
 
   <url>
+    <loc>https://www.cryptovault.co.uk/stranger-test/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://www.cryptovault.co.uk/agent-hiring/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
