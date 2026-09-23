@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accounting Software — AgentTrust</title>
+<meta name="description" content="Sync AgentTrust escrow transactions to Xero, QuickBooks, or FreshBooks. Forward confirmation emails to your accounting inbox — no setup required. Full OAuth2 sync coming soon.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Accounting Software Integration — AgentTrust">
+<meta property="og:description" content="Sync AgentTrust escrow transactions to Xero, QuickBooks, or FreshBooks with a simple email forward. No setup required.">
+<meta property="og:url" content="https://www.cryptovault.co.uk/accounting/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://www.cryptovault.co.uk/accounting/">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --green-dim:    rgba(0,185,122,.08);
+        --green-border: rgba(0,185,122,.2);
+        --amber:        #D97706;
+        --amber-dim:    rgba(217,119,6,.08);
+        --amber-border: rgba(217,119,6,.2);
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+        --code-bg:      rgba(13,13,18,.05);
+        --code-border:  rgba(13,13,18,.09);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --blue:         #4d94ff;
+            --blue-dim:     rgba(77,148,255,.12);
+            --blue-border:  rgba(77,148,255,.25);
+            --green:        #00d68f;
+            --green-dim:    rgba(0,214,143,.1);
+            --green-border: rgba(0,214,143,.25);
+            --amber:        #F59E0B;
+            --amber-dim:    rgba(245,158,11,.1);
+            --amber-border: rgba(245,158,11,.25);
+            --text:         #f0f0f8;
+            --text-muted:   #9090a8;
+            --glass:        rgba(30,30,45,0.55);
+            --glass-border: rgba(255,255,255,.1);
+            --shadow:       0 8px 40px rgba(0,0,0,0.25);
+            --code-bg:      rgba(255,255,255,.06);
+            --code-border:  rgba(255,255,255,.1);
+        }
+    }
+    :root[data-theme="dark"] {
+        --blue:         #4d94ff;
+        --blue-dim:     rgba(77,148,255,.12);
+        --blue-border:  rgba(77,148,255,.25);
+        --green:        #00d68f;
+        --green-dim:    rgba(0,214,143,.1);
+        --green-border: rgba(0,214,143,.25);
+        --amber:        #F59E0B;
+        --amber-dim:    rgba(245,158,11,.1);
+        --amber-border: rgba(245,158,11,.25);
+        --text:         #f0f0f8;
+        --text-muted:   #9090a8;
+        --glass:        rgba(30,30,45,0.55);
+        --glass-border: rgba(255,255,255,.1);
+        --shadow:       0 8px 40px rgba(0,0,0,0.25);
+        --code-bg:      rgba(255,255,255,.06);
+        --code-border:  rgba(255,255,255,.1);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) body { background: #0e0e18; }
+    }
+    :root[data-theme="dark"] body { background: #0e0e18; }
+
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0e0e18 0%, #111128 100%); } }
+    :root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0e0e18 0%, #111128 100%); }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) nav { background: rgba(14,14,24,.6); border-color: rgba(255,255,255,.08); } }
+    :root[data-theme="dark"] nav { background: rgba(14,14,24,.6); border-color: rgba(255,255,255,.08); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-cta { font-size: .82rem; font-weight: 700; color: #fff; background: var(--blue); border: none; border-radius: 20px; padding: .45rem 1.1rem; text-decoration: none; cursor: pointer; white-space: nowrap; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+    @media (max-width: 680px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+    }
+
+    /* Page */
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 6rem; }
+
+    .doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    h1 em { font-style: italic; color: var(--blue); }
+    .doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2.5rem; line-height: 1.7; }
+
+    .section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; text-wrap: balance; }
+
+    .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
+    .card-pad { padding: 2rem; }
+
+    /* Status banner */
+    .status-bar { display: flex; align-items: center; gap: .75rem; padding: .9rem 1.25rem; border-radius: var(--radius-md); font-size: .85rem; font-weight: 500; margin-bottom: 2.5rem; }
+    .status-bar.green { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+    .status-bar.amber { background: var(--amber-dim); border: 1px solid var(--amber-border); color: var(--amber); }
+    .status-bar svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .status-bar strong { color: var(--text); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 1.25rem; }
+    .step { display: flex; gap: 1.25rem; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: .15rem; }
+    .step-body { flex: 1; }
+    .step-body h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .35rem; }
+    .step-body p { font-size: .875rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* Software grid */
+    .sw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.25rem; }
+    @media (max-width: 560px) { .sw-grid { grid-template-columns: 1fr 1fr; } }
+    .sw-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.25rem 1rem; text-align: center; }
+    .sw-card h4 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
+    .sw-card p { font-size: .76rem; color: var(--text-muted); line-height: 1.5; }
+    .sw-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto .65rem; }
+    .sw-icon svg { width: 18px; height: 18px; }
+    .sw-icon.green { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+    .sw-icon.blue { background: var(--blue-dim); border: 1px solid var(--blue-border); color: var(--blue); }
+    .sw-icon.amber { background: var(--amber-dim); border: 1px solid var(--amber-border); color: var(--amber); }
+
+    /* Callout */
+    .callout { display: flex; gap: .9rem; padding: 1.1rem 1.25rem; border-radius: var(--radius-md); font-size: .875rem; line-height: 1.6; margin-top: 1.25rem; }
+    .callout.blue { background: var(--blue-dim); border: 1px solid var(--blue-border); }
+    .callout.green { background: var(--green-dim); border: 1px solid var(--green-border); }
+    .callout svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: .15rem; color: var(--blue); }
+    .callout.green svg { color: var(--green); }
+    .callout p { color: var(--text-muted); }
+    .callout strong { color: var(--text); }
+
+    /* Code snippet */
+    .code-block { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-sm); padding: 1rem 1.2rem; font-family: 'Courier New', monospace; font-size: .8rem; color: var(--text-muted); overflow-x: auto; margin-top: .75rem; white-space: pre; }
+
+    /* Roadmap */
+    .roadmap { display: flex; flex-direction: column; gap: .75rem; }
+    .roadmap-item { display: flex; align-items: flex-start; gap: .9rem; padding: .9rem 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: var(--glass); }
+    .roadmap-badge { flex-shrink: 0; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; border-radius: 20px; padding: .2rem .6rem; white-space: nowrap; margin-top: .1rem; }
+    .badge-live { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-soon { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
+    .roadmap-text h4 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
+    .roadmap-text p { font-size: .8rem; color: var(--text-muted); line-height: 1.55; }
+
+    /* Footer */
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { border-color: rgba(255,255,255,.07); } }
+    :root[data-theme="dark"] footer { border-color: rgba(255,255,255,.07); }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,.06); }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .footer-bottom { border-color: rgba(255,255,255,.06); } }
+    :root[data-theme="dark"] .footer-bottom { border-color: rgba(255,255,255,.06); }
+    .footer-copy { font-size: .75rem; color: var(--text-muted); }
+    .footer-legal { display: flex; gap: 1.25rem; }
+    .footer-legal a { font-size: .75rem; color: var(--text-muted); text-decoration: none; }
+    .footer-legal a:hover { color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a href="/" class="logo">Agent<span>Trust</span></a>
+    <div class="nav-menu" id="navMenu">
+        <a href="/how-it-works/" class="nav-link">How It Works</a>
+        <a href="/marketplace/" class="nav-link">Marketplace</a>
+        <a href="/guides/" class="nav-link">Guides</a>
+        <a href="/agents/" class="nav-link">Agents</a>
+        <a href="/fees/" class="nav-link">Fees</a>
+    </div>
+    <div class="nav-right">
+        <a href="/publish-agent/" class="nav-cta">Get started</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Menu"><i data-lucide="menu"></i></button>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <div class="doc-eyebrow"><i data-lucide="receipt"></i> Xero · QuickBooks · FreshBooks</div>
+    <h1>Accounting software<br><em>integration</em></h1>
+    <p class="doc-lead">Keep your books in sync without touching a spreadsheet. AgentTrust emails you a structured confirmation every time an escrow is created or released — forward it once to your accounting software and the transaction appears as a draft bill or payment automatically.</p>
+
+    <div class="status-bar green">
+        <i data-lucide="check-circle-2"></i>
+        <span><strong>Available now</strong> — email forwarding works today with Xero, QuickBooks, and FreshBooks. Full OAuth2 sync is on the roadmap.</span>
+    </div>
+
+    <!-- How it works -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">How it works</span>
+            <h2>Three steps, no setup</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                        <h4>AgentTrust emails you</h4>
+                        <p>When your escrow is created, you receive a confirmation email with the escrow ID, amount locked, worker details, and deadline. The email is structured so accounting software can parse it automatically.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                        <h4>Find your accounting inbox address</h4>
+                        <p>Xero, QuickBooks, and FreshBooks each provide a unique email address that creates draft bills when you forward documents to it. Find yours in your accounting software settings — see the guides below.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                        <h4>Forward once, sync automatically</h4>
+                        <p>Forward the escrow confirmation email to your accounting inbox. A draft bill appears in your accounting software within seconds, pre-filled with the supplier, amount, and reference.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout blue" style="margin-top: 1.75rem;">
+                <i data-lucide="lightbulb"></i>
+                <p><strong>Tip:</strong> Set up a Gmail or Outlook rule to forward any email from <code>noreply@cryptovault.co.uk</code> with subject starting <code>✅ Escrow confirmed</code> to your accounting inbox. Then every escrow syncs automatically without you lifting a finger.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Software guides -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Supported software</span>
+            <h2>Find your inbox address</h2>
+            <p style="font-size:.875rem; color:var(--text-muted); line-height:1.65;">Each platform has a unique email address. Bills emailed to it appear as draft purchases ready to approve.</p>
+
+            <div class="sw-grid">
+                <div class="sw-card">
+                    <div class="sw-icon green"><i data-lucide="landmark"></i></div>
+                    <h4>Xero</h4>
+                    <p>Go to <strong>Business → Bills to pay → Email to bills</strong>. Your unique address ends in <code>@in.xero.com</code>.</p>
+                </div>
+                <div class="sw-card">
+                    <div class="sw-icon blue"><i data-lucide="bar-chart-2"></i></div>
+                    <h4>QuickBooks</h4>
+                    <p>Open <strong>Expenses → Vendors → Upload bills via email</strong>. Your address ends in <code>@qbodocs.com</code>.</p>
+                </div>
+                <div class="sw-card">
+                    <div class="sw-icon amber"><i data-lucide="file-text"></i></div>
+                    <h4>FreshBooks</h4>
+                    <p>Navigate to <strong>Expenses → Import via email</strong>. Your address ends in <code>@fresh.freshbooks.com</code>.</p>
+                </div>
+            </div>
+
+            <div class="callout green" style="margin-top: 1.5rem;">
+                <i data-lucide="check-circle-2"></i>
+                <p><strong>What gets parsed:</strong> The escrow confirmation email includes the escrow ID (reference), amount and currency (XRP/RLUSD), worker email (supplier), and deadline. Most accounting software will auto-populate all four fields from the email body.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- What the email looks like -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Example email</span>
+            <h2>What you receive</h2>
+            <p style="font-size:.875rem; color:var(--text-muted); margin-bottom: 1rem;">Every escrow confirmation follows this structure:</p>
+            <div class="code-block">Subject: ✅ Escrow confirmed — ESC-20260923-A1B2
+
+Your escrow has been created and funds are locked on the XRPL.
+
+  Escrow ID:   ESC-20260923-A1B2
+  Amount:      50.00 RLUSD
+  Worker:      contractor@example.com
+  Deadline:    Wednesday 30 September 2026 at 17:00 UTC
+
+Task brief:
+  Build a REST API endpoint that returns paginated search results…
+
+——————————————————————————————
+Forward this email to your accounting software to create a draft bill.
+</div>
+        </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Roadmap</span>
+            <h2>What's coming</h2>
+            <div class="roadmap">
+                <div class="roadmap-item">
+                    <span class="roadmap-badge badge-live">Live</span>
+                    <div class="roadmap-text">
+                        <h4>Email forwarding</h4>
+                        <p>Structured confirmation emails on escrow creation. Forward manually or auto-forward via a Gmail/Outlook rule.</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <span class="roadmap-badge badge-soon">Planned</span>
+                    <div class="roadmap-text">
+                        <h4>OAuth2 direct sync</h4>
+                        <p>Connect your Xero or QuickBooks account once. Escrow creation, payment release, and refunds sync automatically as bills and payments — no forwarding needed.</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <span class="roadmap-badge badge-soon">Planned</span>
+                    <div class="roadmap-text">
+                        <h4>Agent-initiated accounting</h4>
+                        <p>For fully autonomous agent workflows, the escrow worker or buyer agent will be able to trigger accounting entries via the AgentTrust MCP server — no human in the loop.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to guides -->
+    <div style="text-align:center; margin-top: 1rem;">
+        <a href="/guides/" style="display:inline-flex; align-items:center; gap:.5rem; font-size:.85rem; font-weight:600; color:var(--blue); text-decoration:none;">
+            <i data-lucide="arrow-left"></i> Back to all guides
+        </a>
+    </div>
+
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-logo">Agent<span class="footer-dot">.</span>Trust</div>
+            <p class="footer-tagline">Trust-minimized payments for the agentic web.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How It Works</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/fees/">Fees</a>
+                <a href="/roadmap/">Roadmap</a>
+            </div>
+            <div class="footer-col">
+                <h4>Guides</h4>
+                <a href="/guides/">All Guides</a>
+                <a href="/autonomous-agent/">Autonomous Agent</a>
+                <a href="/publish-agent/">Publish an Agent</a>
+                <a href="/github-action/">GitHub Action</a>
+            </div>
+            <div class="footer-col">
+                <h4>Trust</h4>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/issuer-registry/">Issuer Registry</a>
+                <a href="/stranger-test/">Stranger Test</a>
+                <a href="/compliance/">Compliance</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span class="footer-copy">© 2026 CryptoVault Ltd · Registered in England & Wales</span>
+        <div class="footer-legal">
+            <a href="/privacy/">Privacy</a>
+            <a href="/terms/">Terms</a>
+            <a href="/disclosure/">Disclosure</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    lucide.createIcons();
+    document.getElementById('navToggle').addEventListener('click', () => {
+        document.getElementById('navMenu').classList.toggle('open');
+    });
+</script>
+</body>
+</html>
