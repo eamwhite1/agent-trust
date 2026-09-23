@@ -60,7 +60,7 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { background: #0f0f1a; } }
 :root[data-theme="dark"] body { background: #0f0f1a; }
 
-.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%); } }
 :root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%); }
 .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
