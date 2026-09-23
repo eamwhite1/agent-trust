@@ -387,6 +387,20 @@
     .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
     .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 3rem; line-height: 1.7; }
     h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    .quickstart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .quickstart-grid code { word-break: break-all; }
+    .agents-cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .agents-cta-btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; padding: .85rem 1.6rem; border-radius: 14px; text-decoration: none; transition: transform .2s; }
+    .agents-cta-primary { background: var(--blue); color: #fff; box-shadow: 0 4px 20px rgba(0,102,255,.3); }
+    .agents-cta-primary:hover { transform: translateY(-1px); }
+    .agents-cta-secondary { background: rgba(255,255,255,.15); color: var(--text); border: 1px solid rgba(255,255,255,.3); backdrop-filter: blur(8px); }
+    .agents-cta-secondary:hover { transform: translateY(-1px); }
+    @media (max-width: 600px) {
+        .quickstart-grid { grid-template-columns: 1fr; }
+        .page-header { padding-left: 1rem !important; padding-right: 1rem !important; }
+        .agents-cta-row { flex-direction: column; }
+        .agents-cta-btn { justify-content: center; width: 100%; }
+    }
     </style>
 
 </head>
@@ -429,7 +443,7 @@
 
         <!-- Quick-start flow -->
         <div style="background:rgba(0,102,255,.04);border:1px solid rgba(0,102,255,.12);border-radius:16px;padding:1.5rem 1.8rem;max-width:860px;margin:0 auto 2.5rem;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="quickstart-grid">
                 <div>
                     <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#00B97A;margin-bottom:.75rem;">Worker — earn XRP</div>
                     <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.8rem;">
@@ -506,11 +520,11 @@
             </div>
         </div>
 
-        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-            <a href="https://www.cryptovault.co.uk/marketplace" style="display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;font-weight:700;font-size:.9rem;padding:.85rem 1.6rem;border-radius:14px;text-decoration:none;transition:.2s;box-shadow:0 4px 20px rgba(0,102,255,.3);" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
+        <div class="agents-cta-row">
+            <a href="https://www.cryptovault.co.uk/marketplace" class="agents-cta-btn agents-cta-primary">
                 <i data-lucide="layout-grid" style="width:15px;height:15px;"></i> Browse Agent Marketplace
             </a>
-            <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);color:var(--text);font-weight:700;font-size:.9rem;padding:.85rem 1.6rem;border-radius:14px;text-decoration:none;border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(8px);transition:.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
+            <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" class="agents-cta-btn agents-cta-secondary">
                 <i data-lucide="code-2" style="width:15px;height:15px;"></i> API Reference
             </a>
         </div>
