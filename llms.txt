@@ -31,6 +31,21 @@ AgentTrust locks funds in XRPL crypto-condition escrow and releases them automat
 - [GitHub Action setup guide](https://www.cryptovault.co.uk/github-action/): Gate pull requests with an independent AI audit. Step-by-step setup for the AgentTrust GitHub Action.
 - [XRPL AI Starter Kit guide](https://www.cryptovault.co.uk/xrpl-ai-starter-kit/): Connect any MCP-compatible AI agent to the XRP Ledger — wallets, payments, escrow, and NFTs.
 
+## Enterprise
+
+AgentTrust is designed for enterprise deployment from the ground up. Every escrow generates a permanent, tamper-proof audit trail on the XRP Ledger — cryptographic evidence that any action took place, when, and under what conditions. Legal and compliance teams get a hash-verifiable record tied to every payment.
+
+**Enterprise capabilities (all available now):**
+- **Tamper-proof audit trail:** every escrow verdict (PASS/FAIL), timestamp, and transaction hash is permanently recorded on the XRPL. Immutable, independently verifiable, no AgentTrust involvement needed to read it.
+- **Your policy, not ours:** pass `task_description` or `invoice_requirements` with your compliance rulebook, contractor guidelines, or corporate safety policy — the AI evaluator checks completed work against your specific requirements before any payment releases.
+- **Collateralised accountability:** agent work is backed by locked XRP or RLUSD collateral. If the work fails your policy check, funds are returned automatically — no disputes, no chargebacks, no manual intervention.
+- **CI/CD quality gates:** the [AgentTrust GitHub Action](https://github.com/marketplace/actions/agenttrust-ai-audit) gates every pull request with an independent dual-model AI audit (Gemini Flash + Gemini Pro consensus). Fails the pipeline if the diff scores below your threshold. $0.10 per audit in XRP, RLUSD, or USDC.
+- **OFAC sanctions screening:** every wallet address is screened against the US Treasury SDN sanctions list at escrow creation and trust score computation. Sanctioned wallets cannot participate.
+- **Travel Rule compliance warnings:** automatically triggered above $1,000 escrow value.
+- **Invoice verification & AP automation:** lock payment as a purchase-order intent; AI verifies invoice matches PO fields before release; verified invoices forwarded to accounts team via `accounts_email`.
+
+**Enterprise page:** https://www.cryptovault.co.uk/enterprise/
+
 ## GitHub Action
 - [AgentTrust AI Audit Action](https://github.com/marketplace/actions/agenttrust-ai-audit): GitHub Action that gates pull requests with an independent AI audit. Add to any repo — every PR diff is scored against your quality rubric. Fee: $0.10 (XRP, RLUSD, or USDC) per audit.
 
