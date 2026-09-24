@@ -11,6 +11,43 @@
 <meta property="og:url" content="https://www.cryptovault.co.uk/enterprise/">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://www.cryptovault.co.uk/enterprise/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "AgentTrust Enterprise",
+  "url": "https://www.cryptovault.co.uk/enterprise/",
+  "applicationCategory": "BusinessApplication",
+  "description": "Enterprise-grade AI agent compliance and audit layer. Tamper-proof audit trail for every autonomous agent action — cryptographic evidence hashed on-chain before payment clears. Policy-gated escrow, OFAC sanctions screening, CI/CD quality gates, and invoice verification for regulated industries.",
+  "featureList": [
+    "Tamper-proof on-chain audit trail (XRPL)",
+    "Policy-gated payment release — your compliance rulebook, not ours",
+    "Collateralised accountability — locked XRP/RLUSD before work starts",
+    "OFAC SDN sanctions screening on every wallet",
+    "Travel Rule compliance warnings above $1,000",
+    "CI/CD quality gates via GitHub Action",
+    "Invoice verification and AP automation",
+    "W3C Verifiable Credential support",
+    "XRPL domain and NFT proof gates"
+  ],
+  "provider": {
+    "@type": "Organization",
+    "name": "AgentTrust",
+    "url": "https://www.cryptovault.co.uk",
+    "legalName": "Boxclever Media Ltd",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "GB"
+    }
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0.10",
+    "priceCurrency": "USD",
+    "description": "Per-audit fee. Escrow settlement on XRPL in XRP or RLUSD."
+  }
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
@@ -111,12 +148,12 @@
     .container { max-width: 1160px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
 
     /* Hero */
-    .hero { text-align: center; margin-bottom: 4.5rem; }
+    .hero { text-align: left; margin-bottom: 4.5rem; }
     .hero-eyebrow { display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.5rem; }
     .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(3rem, 7vw, 5.5rem); letter-spacing: -.03em; line-height: 1.04; color: var(--text); margin-bottom: 1.4rem; text-wrap: balance; }
     .hero h1 em { font-style: italic; color: var(--blue); }
-    .hero-lead { font-size: 1.12rem; color: var(--text-muted); max-width: 620px; margin: 0 auto 2.5rem; line-height: 1.75; }
-    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .hero-lead { font-size: 1.12rem; color: var(--text-muted); max-width: 620px; margin: 0 0 2.5rem; line-height: 1.75; }
+    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: flex-start; }
     @media (max-width: 600px) { .hero h1 { font-size: clamp(2.4rem, 10vw, 3.5rem); } .hero-lead { font-size: 1rem; } }
     .btn-primary { display: inline-flex; align-items: center; gap: .5rem; background: var(--blue); color: #fff; font-size: .9rem; font-weight: 700; padding: .75rem 1.75rem; border-radius: 40px; text-decoration: none; transition: opacity .18s, transform .15s; }
     .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
@@ -280,7 +317,7 @@
                 <div class="cap-icon"><i data-lucide="scroll-text"></i></div>
                 <h4>Your policy, not ours</h4>
                 <p>Upload your compliance rulebook, contractor guidelines, or corporate safety policy. The AI evaluator checks completed work against your specific requirements before any payment releases.</p>
-                <span class="cap-tag">Roadmap</span>
+                <span class="cap-tag">Available now</span>
             </div>
             <div class="cap">
                 <div class="cap-icon"><i data-lucide="lock"></i></div>
@@ -359,6 +396,7 @@
                 <a href="/use-cases/">Use Cases</a>
                 <a href="/roadmap/">Roadmap</a>
                 <a href="/agents/">For Agents</a>
+                <a href="/enterprise/">Enterprise</a>
                 <a href="/marketplace/">Marketplace</a>
                 <a href="/wallet-score/">Wallet Score</a>
             </div>
