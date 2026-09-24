@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 sqlalchemy>=2.0.0
 psycopg2-binary>=2.9.11
+psycopg[binary]
 xrpl-py
 httpx
 python-dotenv
