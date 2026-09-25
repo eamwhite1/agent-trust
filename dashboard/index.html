@@ -153,6 +153,8 @@
     .detail-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: .45rem .9rem; border-radius: 8px; font-size: .78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, border-color .15s; }
     .btn-action:hover { color: var(--blue); border-color: var(--blue-border); }
+    .btn-danger { color: var(--red, #c0392b); }
+    .btn-danger:hover { color: var(--red, #c0392b); border-color: var(--red, #c0392b); }
     .btn-action svg { width: 13px; height: 13px; }
     .proof-gate { display: flex; align-items: center; gap: 6px; font-size: .8rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
     .proof-gate:last-child { border-bottom: none; }
@@ -596,6 +598,7 @@ async function openDetail(escrowId) {
             <div class="detail-actions">
                 ${e.xrpl_explorer ? `<a class="btn-action" href="${e.xrpl_explorer}" target="_blank"><i data-lucide="external-link"></i> XRPL Explorer</a>` : ''}
                 <button class="btn-action" onclick="emailReceipt('${e.escrow_id}')"><i data-lucide="mail"></i> Email receipt</button>
+                ${e.status === 'LOCKED' && !e.escrow_tx_hash ? `<button class="btn-action btn-danger" onclick="abandonVault('${e.escrow_id}')"><i data-lucide="trash-2"></i> Abandon</button>` : ''}
             </div>
             <div class="detail-section">
                 <span class="detail-section-label">Settlement</span>
@@ -766,6 +769,20 @@ async function emailReceipt(escrowId) {
         if (!res.ok) throw new Error();
         showToast('Receipt sent to your email.');
     } catch { showToast('Failed to send receipt.'); }
+}
+
+async function abandonVault(escrowId) {
+    if (!confirm('Mark this vault as Abandoned? There is no on-chain escrow to cancel.')) return;
+    const key = prompt('Enter admin key:');
+    if (!key) return;
+    try {
+        const res = await fetch(`${API}/admin/abandon/${escrowId}?key=${encodeURIComponent(key)}`, { method: 'POST', credentials: 'include' });
+        if (res.status === 403) { showToast('Incorrect admin key.'); return; }
+        if (!res.ok) throw new Error();
+        showToast('Vault marked as Abandoned.');
+        closeDetail();
+        loadEscrows();
+    } catch { showToast('Failed to abandon vault.'); }
 }
 
 function exportCSV() {
