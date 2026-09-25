@@ -516,9 +516,10 @@ function statusPill(e) {
     const status  = typeof e === 'object' ? e.status : e;
     if (verdict === 'PASS') return `<span class="status-pill pill-pass">PASS</span>`;
     if (verdict === 'FAIL') return `<span class="status-pill pill-fail">FAIL</span>`;
-    const map = { RELEASED: 'pill-pass', LOCKED: 'pill-locked', CANCELLED: 'pill-fail', PASS_AWAITING_NFT: 'pill-pending' };
+    const map = { RELEASED: 'pill-pass', LOCKED: 'pill-locked', CANCELLED: 'pill-fail', ABANDONED: 'pill-fail', PENDING: 'pill-pending', PASS_AWAITING_NFT: 'pill-pending' };
     const cls = map[status] || 'pill-pending';
-    const label = status === 'PASS_AWAITING_NFT' ? 'Awaiting NFT' : (status || '—');
+    const labels = { PASS_AWAITING_NFT: 'Awaiting NFT', PENDING: 'Pending', ABANDONED: 'Abandoned' };
+    const label = labels[status] || (status || '—');
     return `<span class="status-pill ${cls}">${label}</span>`;
 }
 
