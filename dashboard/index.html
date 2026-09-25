@@ -150,6 +150,13 @@
     .detail-verdict { background: var(--ground); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-size: .82rem; color: var(--text); line-height: 1.65; white-space: pre-wrap; max-height: 240px; overflow-y: auto; }
     .detail-link { color: var(--blue); text-decoration: none; font-size: .8rem; display: inline-flex; align-items: center; gap: 4px; }
     .detail-link:hover { text-decoration: underline; }
+    .detail-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: .45rem .9rem; border-radius: 8px; font-size: .78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, border-color .15s; }
+    .btn-action:hover { color: var(--blue); border-color: var(--blue-border); }
+    .btn-action svg { width: 13px; height: 13px; }
+    .proof-gate { display: flex; align-items: center; gap: 6px; font-size: .8rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
+    .proof-gate:last-child { border-bottom: none; }
+    .proof-icon { width: 16px; height: 16px; flex-shrink: 0; }
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 199; display: none; }
     .overlay.open { display: block; }
 
@@ -313,9 +320,16 @@
 
         <!-- Audit Trail -->
         <div class="page active" id="page-escrows">
-            <div class="page-header">
-                <h1>Audit Trail</h1>
-                <p>Every agent action — verified on-chain before payment cleared.</p>
+            <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+                <div>
+                    <h1>Audit Trail</h1>
+                    <p>Every agent action — verified on-chain before payment cleared.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding-top:.25rem">
+                    <input type="date" id="filter-from" class="form-input" style="font-size:.78rem;padding:.4rem .65rem" title="From date">
+                    <input type="date" id="filter-to" class="form-input" style="font-size:.78rem;padding:.4rem .65rem" title="To date">
+                    <button class="btn-action" onclick="exportCSV()"><i data-lucide="download"></i> Export CSV</button>
+                </div>
             </div>
             <div class="stat-grid" id="stat-grid">
                 <div class="stat-tile"><div class="stat-label">Total Escrows</div><div class="stat-value" id="stat-total">—</div></div>
@@ -484,17 +498,28 @@ async function loadEscrows() {
     }
 }
 
+function getVerdict(e) {
+    if (!e.ai_verdict) return null;
+    try { return JSON.parse(e.ai_verdict).verdict; } catch { return null; }
+}
+
 function renderStats(escrows) {
     document.getElementById('stat-total').textContent = escrows.length;
-    document.getElementById('stat-pass').textContent = escrows.filter(e => e.status === 'PASS').length;
-    document.getElementById('stat-fail').textContent = escrows.filter(e => e.status === 'FAIL').length;
+    document.getElementById('stat-pass').textContent = escrows.filter(e => getVerdict(e) === 'PASS').length;
+    document.getElementById('stat-fail').textContent = escrows.filter(e => getVerdict(e) === 'FAIL').length;
     document.getElementById('stat-locked').textContent = escrows.filter(e => e.status === 'LOCKED').length;
 }
 
-function statusPill(status) {
-    const map = { PASS: 'pill-pass', FAIL: 'pill-fail', LOCKED: 'pill-locked' };
+function statusPill(e) {
+    // Prefer AI verdict for completed escrows; fall back to lifecycle status
+    const verdict = typeof e === 'object' ? getVerdict(e) : null;
+    const status  = typeof e === 'object' ? e.status : e;
+    if (verdict === 'PASS') return `<span class="status-pill pill-pass">PASS</span>`;
+    if (verdict === 'FAIL') return `<span class="status-pill pill-fail">FAIL</span>`;
+    const map = { RELEASED: 'pill-pass', LOCKED: 'pill-locked', CANCELLED: 'pill-fail', PASS_AWAITING_NFT: 'pill-pending' };
     const cls = map[status] || 'pill-pending';
-    return `<span class="status-pill ${cls}">${status}</span>`;
+    const label = status === 'PASS_AWAITING_NFT' ? 'Awaiting NFT' : (status || '—');
+    return `<span class="status-pill ${cls}">${label}</span>`;
 }
 
 function shortAddr(addr) {
@@ -512,7 +537,7 @@ function renderEscrowTable(escrows) {
     const rows = escrows.map(e => `
         <tr onclick="openDetail('${e.escrow_id}')">
             <td data-label="Project">${e.project_label || '<span style="color:var(--text-faint)">—</span>'}</td>
-            <td data-label="Status">${statusPill(e.status)}</td>
+            <td data-label="Status">${statusPill(e)}</td>
             <td data-label="Amount" style="font-variant-numeric:tabular-nums">${e.amount ? e.amount.toFixed(2) : '—'} <span style="color:var(--text-faint);font-size:.75rem">${e.currency}</span></td>
             <td data-label="Worker" class="mono">${shortAddr(e.worker_address)}</td>
             <td data-label="Tx" class="mono">${e.escrow_tx_hash ? shortAddr(e.escrow_tx_hash) : '—'}</td>
@@ -542,10 +567,35 @@ async function openDetail(escrowId) {
         const explorerLink = e.xrpl_explorer
             ? `<a class="detail-link" href="${e.xrpl_explorer}" target="_blank"><i data-lucide="external-link"></i> View on XRPL Explorer</a>`
             : '—';
+        // Build proof gates section
+        const gates = [];
+        if (e.required_nft_issuer) gates.push({ icon: 'badge-check', label: 'NFT gate', val: `Issuer: ${e.required_nft_issuer}` });
+        if (e.required_domain)     gates.push({ icon: 'globe',       label: 'Domain verification', val: e.required_domain });
+        if (e.required_vc_issuer_did) gates.push({ icon: 'shield',   label: 'W3C Verifiable Credential', val: e.required_vc_issuer_did });
+        if (e.nft_dvp)             gates.push({ icon: 'repeat',      label: 'NFT DvP', val: e.nft_dvp_status || 'required' });
+        const proofSection = gates.length ? `
+            <div class="detail-section">
+                <span class="detail-section-label">Proof gates${e.proof_policy ? ' · policy: ' + e.proof_policy : ''}</span>
+                ${gates.map(g => `<div class="proof-gate"><i data-lucide="${g.icon}" class="proof-icon"></i><span style="color:var(--text-muted);width:150px;flex-shrink:0">${g.label}</span><span style="font-size:.78rem">${g.val}</span></div>`).join('')}
+            </div>` : '';
+
+        // Parse AI verdict JSON if possible
+        let verdictHtml = '';
+        if (e.ai_verdict) {
+            try {
+                const v = JSON.parse(e.ai_verdict);
+                verdictHtml = `<div style="margin-bottom:.5rem;font-size:.83rem"><strong>Score: ${v.score ?? '—'}/100</strong> &nbsp;·&nbsp; ${v.summary || ''}</div><div class="detail-verdict">${v.details || e.ai_verdict}</div>`;
+            } catch { verdictHtml = `<div class="detail-verdict">${e.ai_verdict}</div>`; }
+        }
+
         document.getElementById('detail-content').innerHTML = `
             <div class="detail-title">${e.project_label || 'Escrow ' + e.escrow_id.slice(0,8)}</div>
-            ${statusPill(e.status)}
-            <div style="height:1.25rem"></div>
+            ${statusPill(e)}
+            <div style="height:1rem"></div>
+            <div class="detail-actions">
+                ${e.xrpl_explorer ? `<a class="btn-action" href="${e.xrpl_explorer}" target="_blank"><i data-lucide="external-link"></i> XRPL Explorer</a>` : ''}
+                <button class="btn-action" onclick="emailReceipt('${e.escrow_id}')"><i data-lucide="mail"></i> Email receipt</button>
+            </div>
             <div class="detail-section">
                 <span class="detail-section-label">Settlement</span>
                 <div class="detail-row"><span class="detail-key">Amount</span><span class="detail-val">${e.amount ? e.amount.toFixed(4) : '—'} ${e.currency}</span></div>
@@ -553,18 +603,29 @@ async function openDetail(escrowId) {
                 <div class="detail-row"><span class="detail-key">Worker</span><span class="detail-val mono">${e.worker_address || '—'}</span></div>
                 <div class="detail-row"><span class="detail-key">Escrow Tx</span><span class="detail-val mono">${e.escrow_tx_hash || '—'}</span></div>
                 <div class="detail-row"><span class="detail-key">Release Tx</span><span class="detail-val mono">${e.auto_finish_hash || '—'}</span></div>
-                <div class="detail-row"><span class="detail-key">XRPL Explorer</span><span class="detail-val">${explorerLink}</span></div>
                 <div class="detail-row"><span class="detail-key">Created</span><span class="detail-val">${e.created_at ? new Date(e.created_at).toLocaleString() : '—'}</span></div>
+                ${e.cancel_after_ts ? `<div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.cancel_after_ts).toLocaleString()}</span></div>` : ''}
             </div>
+            ${proofSection}
             ${e.task_description ? `
             <div class="detail-section">
                 <span class="detail-section-label">Task specification</span>
                 <div class="detail-verdict">${e.task_description}</div>
             </div>` : ''}
+            ${e.worker_submission ? `
+            <div class="detail-section">
+                <span class="detail-section-label">Worker submission</span>
+                <div class="detail-verdict">${e.worker_submission}</div>
+            </div>` : ''}
             ${e.ai_verdict ? `
             <div class="detail-section">
                 <span class="detail-section-label">AI Verdict — ${e.model_used || 'AI'}</span>
-                <div class="detail-verdict">${e.ai_verdict}</div>
+                ${verdictHtml}
+            </div>` : ''}
+            ${e.invoice_requirements ? `
+            <div class="detail-section">
+                <span class="detail-section-label">Invoice requirements</span>
+                <div class="detail-verdict">${e.invoice_requirements}</div>
             </div>` : ''}
         `;
         lucide.createIcons();
@@ -696,6 +757,38 @@ async function loadSubscription() {
     } catch {
         document.getElementById('payment-details').textContent = 'Failed to load payment details.';
     }
+}
+
+async function emailReceipt(escrowId) {
+    try {
+        const res = await fetch(`${API}/enterprise/audit/${escrowId}/email-receipt`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) throw new Error();
+        showToast('Receipt sent to your email.');
+    } catch { showToast('Failed to send receipt.'); }
+}
+
+function exportCSV() {
+    const from = document.getElementById('filter-from').value;
+    const to   = document.getElementById('filter-to').value;
+    let rows = escrowData;
+    if (from) rows = rows.filter(e => e.created_at && e.created_at >= from);
+    if (to)   rows = rows.filter(e => e.created_at && e.created_at.slice(0,10) <= to);
+    if (!rows.length) { showToast('No records in that date range.'); return; }
+    const headers = ['Escrow ID','Project','Status','Amount','Currency','Buyer','Worker','Escrow Tx','Release Tx','Date'];
+    const csvRows = [headers, ...rows.map(e => [
+        e.escrow_id, e.project_label || '', e.status,
+        e.amount ? e.amount.toFixed(4) : '',
+        e.currency || '', e.buyer_address || '', e.worker_address || '',
+        e.escrow_tx_hash || '', e.auto_finish_hash || '',
+        e.created_at ? e.created_at.slice(0,10) : '',
+    ])].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `agenttrust-audit-${from||'all'}-${to||'all'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 function showToast(msg) {
