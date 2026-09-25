@@ -598,7 +598,7 @@ async function openDetail(escrowId) {
             <div class="detail-actions">
                 ${e.xrpl_explorer ? `<a class="btn-action" href="${e.xrpl_explorer}" target="_blank"><i data-lucide="external-link"></i> XRPL Explorer</a>` : ''}
                 <button class="btn-action" onclick="emailReceipt('${e.escrow_id}')"><i data-lucide="mail"></i> Email receipt</button>
-                ${e.status === 'LOCKED' || e.status === 'PENDING' ? `<button class="btn-action btn-danger" onclick="abandonVault('${e.escrow_id}')"><i data-lucide="trash-2"></i> Abandon</button>` : ''}
+                ${(e.status === 'LOCKED' && !e.escrow_tx_hash) || e.status === 'PENDING' ? `<button class="btn-action btn-danger" onclick="abandonVault('${e.escrow_id}')"><i data-lucide="trash-2"></i> Abandon</button>` : ''}
             </div>
             <div class="detail-section">
                 <span class="detail-section-label">Settlement</span>
