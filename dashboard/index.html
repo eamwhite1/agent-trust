@@ -155,6 +155,24 @@
     .btn-action:hover { color: var(--blue); border-color: var(--blue-border); }
     .btn-danger { color: var(--red, #c0392b); }
     .btn-danger:hover { color: var(--red, #c0392b); border-color: var(--red, #c0392b); }
+    .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; font-weight: 700; cursor: pointer; border: none; background: var(--blue); color: #fff; transition: opacity .15s; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary svg { width: 13px; height: 13px; }
+    .template-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: .75rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .template-card-body { flex: 1; min-width: 0; }
+    .template-card-name { font-weight: 700; font-size: .9rem; color: var(--text); margin-bottom: .25rem; }
+    .template-card-desc { font-size: .8rem; color: var(--text-muted); margin-bottom: .6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .template-pill { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 600; padding: .2rem .55rem; border-radius: 99px; background: var(--blue-dim); color: var(--blue); margin-right: .35rem; margin-bottom: .25rem; }
+    .apikey-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.5rem; margin-bottom: .6rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .apikey-label { font-weight: 600; font-size: .88rem; color: var(--text); }
+    .apikey-meta { font-size: .75rem; color: var(--text-faint); margin-top: .2rem; }
+    .apikey-secret { font-family: monospace; font-size: .78rem; background: var(--ground); border: 1px solid var(--border); border-radius: 6px; padding: .35rem .65rem; color: var(--text); word-break: break-all; margin-top: .5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--text-muted); margin-bottom: .35rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: .5rem .75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--ground); color: var(--text); font-size: .85rem; box-sizing: border-box; }
+    .form-group textarea { min-height: 90px; resize: vertical; font-family: inherit; }
+    .form-row { display: flex; gap: .75rem; }
+    .form-row .form-group { flex: 1; }
     .btn-action svg { width: 13px; height: 13px; }
     .proof-gate { display: flex; align-items: center; gap: 6px; font-size: .8rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
     .proof-gate:last-child { border-bottom: none; }
@@ -301,6 +319,12 @@
             <button class="nav-item" onclick="showPage('wallets')" id="nav-wallets">
                 <i data-lucide="wallet"></i> Wallets
             </button>
+            <button class="nav-item" onclick="showPage('templates')" id="nav-templates">
+                <i data-lucide="layout-template"></i> Templates
+            </button>
+            <button class="nav-item" onclick="showPage('apikeys')" id="nav-apikeys">
+                <i data-lucide="key"></i> API Keys
+            </button>
             <button class="nav-item" onclick="showPage('subscription')" id="nav-subscription">
                 <i data-lucide="credit-card"></i> Subscription
             </button>
@@ -403,7 +427,38 @@
             </div>
         </div>
 
+        <!-- Templates -->
+        <div class="page" id="page-templates">
+            <div class="page-header">
+                <h1>Templates</h1>
+                <p>Define job policies once — your agents reference a template ID when creating escrows.</p>
+            </div>
+            <div style="margin-bottom:1rem;display:flex;justify-content:flex-end">
+                <button class="btn-primary" onclick="openTemplateModal()"><i data-lucide="plus"></i> New template</button>
+            </div>
+            <div id="templates-list"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+
+        <!-- API Keys -->
+        <div class="page" id="page-apikeys">
+            <div class="page-header">
+                <h1>API Keys</h1>
+                <p>Issue keys for your agents to authenticate as this enterprise account.</p>
+            </div>
+            <div style="margin-bottom:1rem;display:flex;justify-content:flex-end">
+                <button class="btn-primary" onclick="createApiKey()"><i data-lucide="plus"></i> New key</button>
+            </div>
+            <div id="apikeys-list"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+
     </main>
+</div>
+
+<!-- Template modal -->
+<div class="overlay" id="template-overlay" onclick="closeTemplateModal()" style="display:none"></div>
+<div class="detail-panel" id="template-panel" style="display:none">
+    <button class="detail-close" onclick="closeTemplateModal()"><i data-lucide="x"></i></button>
+    <div id="template-modal-content"></div>
 </div>
 
 <!-- Escrow detail panel -->
@@ -459,6 +514,8 @@ function showApp() {
     loadEscrows();
     loadWallets();
     loadSubscription();
+    loadTemplates();
+    loadApiKeys();
 }
 
 function showPage(name) {
@@ -780,6 +837,197 @@ async function abandonVault(escrowId) {
         closeDetail();
         loadEscrows();
     } catch { showToast('Failed to abandon vault.'); }
+}
+
+// ── Templates ──────────────────────────────────────────────────────────────
+let templates = [];
+let editingTemplateId = null;
+
+async function loadTemplates() {
+    try {
+        const res = await fetch(`${API}/enterprise/templates`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        templates = data.templates || [];
+        renderTemplates();
+    } catch {
+        document.getElementById('templates-list').innerHTML = '<div class="empty">Failed to load templates.</div>';
+    }
+}
+
+function renderTemplates() {
+    const el = document.getElementById('templates-list');
+    if (!templates.length) { el.innerHTML = '<div class="empty">No templates yet. Create one to give your agents a policy to follow.</div>'; return; }
+    el.innerHTML = templates.map(t => `
+        <div class="template-card">
+            <div class="template-card-body">
+                <div class="template-card-name">${t.name}</div>
+                ${t.description ? `<div class="template-card-desc">${t.description}</div>` : ''}
+                <div>
+                    ${t.min_amount_xrp ? `<span class="template-pill">Min ${t.min_amount_xrp} XRP</span>` : ''}
+                    ${t.max_amount_xrp ? `<span class="template-pill">Max ${t.max_amount_xrp} XRP</span>` : ''}
+                    ${t.deadline_hours ? `<span class="template-pill">${t.deadline_hours}h deadline</span>` : ''}
+                    ${t.require_nft_proof ? `<span class="template-pill">NFT proof</span>` : ''}
+                    ${t.required_domain ? `<span class="template-pill">Domain: ${t.required_domain}</span>` : ''}
+                    ${t.required_vc_issuer_did ? `<span class="template-pill">VC required</span>` : ''}
+                    ${!t.require_ai_audit ? `<span class="template-pill">No AI audit</span>` : ''}
+                </div>
+                <div style="margin-top:.5rem;font-size:.72rem;color:var(--text-faint)">ID: <code style="font-family:monospace">${t.id}</code></div>
+            </div>
+            <div style="display:flex;gap:.5rem;flex-shrink:0">
+                <button class="btn-action" onclick="openTemplateModal('${t.id}')"><i data-lucide="pencil"></i></button>
+                <button class="btn-action btn-danger" onclick="deleteTemplate('${t.id}')"><i data-lucide="trash-2"></i></button>
+            </div>
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+
+function openTemplateModal(templateId) {
+    editingTemplateId = templateId || null;
+    const t = templateId ? templates.find(x => x.id === templateId) : null;
+    document.getElementById('template-modal-content').innerHTML = `
+        <div class="detail-title">${t ? 'Edit template' : 'New template'}</div>
+        <div style="height:1rem"></div>
+        <div class="form-group"><label>Name *</label><input id="tmpl-name" value="${t ? t.name : ''}" placeholder="e.g. Code Review"></div>
+        <div class="form-group"><label>Description</label><input id="tmpl-desc" value="${t ? (t.description||'') : ''}" placeholder="What this template is for"></div>
+        <div class="form-group"><label>Evaluation rubric</label><textarea id="tmpl-rubric" placeholder="Custom instructions for the AI referee — e.g. 'Check that all unit tests pass and code is documented.'">${t ? (t.rubric||'') : ''}</textarea></div>
+        <div class="form-row">
+            <div class="form-group"><label>Min amount (XRP)</label><input id="tmpl-min" type="number" step="0.01" value="${t && t.min_amount_xrp != null ? t.min_amount_xrp : ''}"></div>
+            <div class="form-group"><label>Max amount (XRP)</label><input id="tmpl-max" type="number" step="0.01" value="${t && t.max_amount_xrp != null ? t.max_amount_xrp : ''}"></div>
+            <div class="form-group"><label>Deadline (hours)</label><input id="tmpl-deadline" type="number" value="${t && t.deadline_hours != null ? t.deadline_hours : ''}"></div>
+        </div>
+        <div class="form-group"><label>Required NFT issuer address</label><input id="tmpl-nft-issuer" value="${t ? (t.required_nft_issuer||'') : ''}" placeholder="rXXX..."></div>
+        <div class="form-group"><label>Required domain (XRPL domain field)</label><input id="tmpl-domain" value="${t ? (t.required_domain||'') : ''}" placeholder="e.g. example.com"></div>
+        <div class="form-group"><label>Required VC issuer DID</label><input id="tmpl-vc" value="${t ? (t.required_vc_issuer_did||'') : ''}" placeholder="did:web:..."></div>
+        <div class="form-group"><label>Proof policy</label>
+            <select id="tmpl-proof-policy">
+                <option value="ALL" ${(!t || t.proof_policy==='ALL') ? 'selected' : ''}>ALL — worker must satisfy every gate</option>
+                <option value="ANY" ${t && t.proof_policy==='ANY' ? 'selected' : ''}>ANY — worker satisfies at least one gate</option>
+            </select>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
+            <input type="checkbox" id="tmpl-ai-audit" ${(!t || t.require_ai_audit) ? 'checked' : ''} style="width:auto">
+            <label for="tmpl-ai-audit" style="margin:0;cursor:pointer">Require AI audit on submission</label>
+        </div>
+        <div style="display:flex;gap:.75rem;margin-top:1.5rem">
+            <button class="btn-primary" onclick="saveTemplate()" style="flex:1">Save template</button>
+            <button class="btn-action" onclick="closeTemplateModal()" style="flex:1;justify-content:center">Cancel</button>
+        </div>
+    `;
+    document.getElementById('template-overlay').style.display = 'block';
+    document.getElementById('template-panel').style.display = 'flex';
+    lucide.createIcons();
+}
+
+function closeTemplateModal() {
+    document.getElementById('template-overlay').style.display = 'none';
+    document.getElementById('template-panel').style.display = 'none';
+}
+
+async function saveTemplate() {
+    const body = {
+        name: document.getElementById('tmpl-name').value.trim(),
+        description: document.getElementById('tmpl-desc').value.trim() || null,
+        rubric: document.getElementById('tmpl-rubric').value.trim() || null,
+        min_amount_xrp: parseFloat(document.getElementById('tmpl-min').value) || null,
+        max_amount_xrp: parseFloat(document.getElementById('tmpl-max').value) || null,
+        deadline_hours: parseInt(document.getElementById('tmpl-deadline').value) || null,
+        required_nft_issuer: document.getElementById('tmpl-nft-issuer').value.trim() || null,
+        require_nft_proof: !!document.getElementById('tmpl-nft-issuer').value.trim(),
+        required_domain: document.getElementById('tmpl-domain').value.trim() || null,
+        required_vc_issuer_did: document.getElementById('tmpl-vc').value.trim() || null,
+        proof_policy: document.getElementById('tmpl-proof-policy').value,
+        require_ai_audit: document.getElementById('tmpl-ai-audit').checked,
+    };
+    if (!body.name) { showToast('Name is required.'); return; }
+    try {
+        const url = editingTemplateId
+            ? `${API}/enterprise/templates/${editingTemplateId}`
+            : `${API}/enterprise/templates`;
+        const method = editingTemplateId ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error();
+        showToast(editingTemplateId ? 'Template updated.' : 'Template created.');
+        closeTemplateModal();
+        loadTemplates();
+    } catch { showToast('Failed to save template.'); }
+}
+
+async function deleteTemplate(id) {
+    if (!confirm('Delete this template?')) return;
+    try {
+        const res = await fetch(`${API}/enterprise/templates/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) throw new Error();
+        showToast('Template deleted.');
+        loadTemplates();
+    } catch { showToast('Failed to delete template.'); }
+}
+
+// ── API Keys ────────────────────────────────────────────────────────────────
+async function loadApiKeys() {
+    try {
+        const res = await fetch(`${API}/enterprise/api-keys`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        renderApiKeys(data.keys || []);
+    } catch {
+        document.getElementById('apikeys-list').innerHTML = '<div class="empty">Failed to load API keys.</div>';
+    }
+}
+
+function renderApiKeys(keys) {
+    const el = document.getElementById('apikeys-list');
+    if (!keys.length) { el.innerHTML = '<div class="empty">No API keys yet. Create one to let your agents authenticate as this account.</div>'; return; }
+    el.innerHTML = keys.map(k => `
+        <div class="apikey-row">
+            <div>
+                <div class="apikey-label">${k.label || 'Unnamed key'}</div>
+                <div class="apikey-meta">Created ${k.created_at ? new Date(k.created_at).toLocaleDateString() : '—'} · Last used ${k.last_used_at ? new Date(k.last_used_at).toLocaleDateString() : 'never'}</div>
+            </div>
+            <button class="btn-action btn-danger" onclick="revokeApiKey('${k.id}', this)"><i data-lucide="trash-2"></i> Revoke</button>
+        </div>
+    `).join('');
+    lucide.createIcons();
+}
+
+async function createApiKey() {
+    const label = prompt('Label for this key (e.g. "Production agent"):');
+    if (label === null) return;
+    try {
+        const res = await fetch(`${API}/enterprise/api-keys`, {
+            method: 'POST', credentials: 'include',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ label: label || null }),
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        // Show key in a modal-like overlay since it won't be shown again
+        document.getElementById('template-modal-content').innerHTML = `
+            <div class="detail-title">API Key created</div>
+            <div style="height:.75rem"></div>
+            <p style="font-size:.85rem;color:var(--text-muted)">Copy this key now — it will not be shown again.</p>
+            <div class="apikey-secret">${data.key}</div>
+            <p style="font-size:.78rem;color:var(--text-faint);margin-top:.75rem">Pass it as the <code>X-API-Key</code> header when calling the AgentTrust API.</p>
+            <div style="margin-top:1.5rem">
+                <button class="btn-primary" onclick="navigator.clipboard.writeText('${data.key}').then(()=>showToast('Copied!'))">Copy to clipboard</button>
+                <button class="btn-action" onclick="closeTemplateModal();loadApiKeys()" style="margin-left:.5rem">Done</button>
+            </div>
+        `;
+        document.getElementById('template-overlay').style.display = 'block';
+        document.getElementById('template-panel').style.display = 'flex';
+        lucide.createIcons();
+    } catch { showToast('Failed to create API key.'); }
+}
+
+async function revokeApiKey(id) {
+    if (!confirm('Revoke this API key? Any agents using it will stop working.')) return;
+    try {
+        const res = await fetch(`${API}/enterprise/api-keys/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) throw new Error();
+        showToast('Key revoked.');
+        loadApiKeys();
+    } catch { showToast('Failed to revoke key.'); }
 }
 
 function exportCSV() {
