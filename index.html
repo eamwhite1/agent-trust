@@ -660,14 +660,14 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                     </span>
                 </label>
                 <select id="buyer-currency" onchange="onBuyerCurrencyChange()">
-                    <option value="RLUSD" selected>RLUSD — Ripple's USD stablecoin, stable value</option>
-                    <option value="XRP">XRP — native XRPL token, no trustline needed</option>
+                    <option value="XRP" selected>XRP — native XRPL token, no trustline needed</option>
+                    <option value="RLUSD" disabled>RLUSD — coming soon (pending Ripple issuer flag)</option>
                 </select>
             </div>
 
             <div class="row-2">
                 <div class="field-group">
-                    <label class="field-label" for="amt">Amount to Escrow (<span id="amt-currency-label">RLUSD</span>) * <span id="amt-trustline-note" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--blue);font-size:.72rem;">— requires trustline
+                    <label class="field-label" for="amt">Amount to Escrow (<span id="amt-currency-label">XRP</span>) * <span id="amt-trustline-note" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--blue);font-size:.72rem;display:none;">— requires trustline
                         <span class="tooltip-wrap" style="vertical-align:middle;">
                             <span class="tooltip-icon">?</span>
                             <span class="tooltip-box">
@@ -1533,7 +1533,7 @@ function toggleInvoiceMode() {
     fields.style.display   = _invoiceModeOn ? 'flex' : 'none';
     if (_invoiceModeOn) {
         const amt = document.getElementById('amt').value.trim();
-        const cur = document.getElementById('buyer-currency').value || 'RLUSD';
+        const cur = document.getElementById('buyer-currency').value || 'XRP';
         if (amt) document.getElementById('inv-amount').value = amt;
         document.getElementById('inv-currency').value = cur;
         updateInvoicePreview();
