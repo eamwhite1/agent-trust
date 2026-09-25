@@ -627,10 +627,13 @@ async function loadSubscription() {
         const res = await fetch(`${API}/enterprise/subscription/payment-details`, { credentials: 'include' });
         const data = await res.json();
         document.getElementById('payment-details').innerHTML = `
+            <div style="margin-bottom:.75rem;padding:.6rem .75rem;background:var(--bg);border-radius:6px;border:1px solid var(--border)">
+                <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.25rem">Your account ID (use as memo)</div>
+                <span class="mono" style="font-size:.85rem;word-break:break-all">${data.memo}</span>
+            </div>
             <div><strong>Send to:</strong> <span class="mono">${data.wallet}</span></div>
-            <div><strong>Amount:</strong> ${data.amount_rlusd} RLUSD</div>
-            <div><strong>Memo:</strong> <span class="mono">${data.memo}</span></div>
-            <div style="margin-top:.5rem;font-size:.75rem;color:var(--text-muted)">${data.memo_note}</div>
+            <div><strong>Amount:</strong> $${data.amount_rlusd} RLUSD (annual)</div>
+            <div style="margin-top:.5rem;font-size:.75rem;color:var(--text-muted)">Include your account ID above as the transaction memo. We'll activate your subscription within 5 minutes of payment.</div>
         `;
 
         const now = new Date();
@@ -645,8 +648,8 @@ async function loadSubscription() {
                 </span>
                 <p style="font-size:.85rem;color:var(--text-muted)">
                     ${account.status === 'trial'
-                        ? `Your 30-day free trial ends <strong>${trialEnd}</strong>. No action needed until then.`
-                        : `Renews on <strong>${expiry}</strong>. Send RLUSD payment below to renew.`}
+                        ? `Your 30-day free trial ends <strong>${trialEnd}</strong>. Send the annual payment below before then to keep access.`
+                        : `Valid until <strong>${expiry}</strong>. Send 199 RLUSD below to renew for another year.`}
                 </p>`;
         } else {
             card.innerHTML = `
