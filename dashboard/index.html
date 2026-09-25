@@ -773,12 +773,9 @@ async function emailReceipt(escrowId) {
 
 async function abandonVault(escrowId) {
     if (!confirm('Mark this vault as Abandoned? There is no on-chain escrow to cancel.')) return;
-    const key = prompt('Enter admin key:');
-    if (!key) return;
     try {
-        const res = await fetch(`${API}/admin/abandon/${escrowId}?key=${encodeURIComponent(key)}`, { method: 'POST', credentials: 'include' });
-        if (res.status === 403) { showToast('Incorrect admin key.'); return; }
-        if (!res.ok) throw new Error();
+        const res = await fetch(`${API}/enterprise/audit/${escrowId}/abandon`, { method: 'POST', credentials: 'include' });
+        if (!res.ok) { const d = await res.json().catch(() => ({})); showToast(d.detail || 'Failed to abandon vault.'); return; }
         showToast('Vault marked as Abandoned.');
         closeDetail();
         loadEscrows();
