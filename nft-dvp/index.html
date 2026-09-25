@@ -564,8 +564,8 @@ buyer accepted it, and a statement that the NFT is in the buyer's wallet.</code>
     <!-- RLUSD option -->
     <div class="section">
         <div class="section-label">Stablecoin trades</div>
-        <h2>Pay in RLUSD instead of XRP</h2>
-        <p>If you want to denominate the trade in USD rather than XRP, use the <code>currency: "RLUSD"</code> field. RLUSD is Ripple's regulated stablecoin on the XRP Ledger, pegged 1:1 to the US dollar.</p>
+        <h2>Pay in RLUSD instead of XRP <span style="font-size:.7em;font-weight:500;color:var(--text-muted);vertical-align:middle;">(coming soon)</span></h2>
+        <p>Native RLUSD escrow is in the codebase and ready, but requires Ripple to enable the <code>lsfAllowTrustLineLocking</code> flag on their issuer account — this is pending. In the meantime, escrows run in XRP; workers who want RLUSD can swap via the XRPL DEX after release using the <code>/dex/quote</code> endpoint. The <code>currency: "RLUSD"</code> field is accepted by the API and will activate automatically once the issuer flag is live.</p>
         <div class="code-block" style="margin-top:1.25rem;">
             <div class="code-header">
                 <span class="code-lang">JSON — RLUSD trade</span>
