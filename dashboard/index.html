@@ -203,18 +203,53 @@
     .toast.show { opacity: 1; }
 
     /* ── Mobile ── */
-    .mobile-header { display: none; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .mobile-menu-btn { background: none; border: none; cursor: pointer; color: var(--text); padding: 4px; }
+    .mobile-header { display: none; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 90; }
+    .mobile-menu-btn { background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+    .mobile-menu-btn:active { background: var(--blue-dim); }
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 99; }
     @media (max-width: 768px) {
-        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform .25s; }
+        /* App layout: column so mobile-header sits on top */
+        .app { flex-direction: column; height: auto; min-height: 100%; }
+        .main { flex: 1; padding: 1rem 1rem 5rem; }
+
+        /* Sidebar: slide in over content */
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transform: translateX(-100%); transition: transform .25s; height: 100%; }
         .sidebar.open { transform: translateX(0); }
         .sidebar-overlay.open { display: block; }
         .mobile-header { display: flex; }
-        .main { padding: 1.25rem; }
+
+        /* Stat tiles: 2-up */
+        .stat-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+        .stat-tile { padding: 1rem; }
+        .stat-value { font-size: 1.5rem; }
+
+        /* Table → card rows on mobile */
+        table, thead, tbody, tr, th, td { display: block; }
+        thead { display: none; }
+        tr { background: var(--surface); border-radius: var(--radius); margin-bottom: .75rem; padding: .85rem 1rem; border: 1px solid var(--border); cursor: pointer; }
+        tr:hover { background: var(--blue-dim); }
+        td { padding: .2rem 0; border: none; font-size: .82rem; display: flex; gap: .5rem; align-items: baseline; }
+        td::before { content: attr(data-label); font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-faint); flex-shrink: 0; min-width: 70px; }
+        td:last-child { border-bottom: none; }
+        .table-wrap { border-radius: 0; border-left: none; border-right: none; background: none; }
+        .table-header { padding: .75rem 0; background: none; border: none; }
+
+        /* Detail panel: full-screen bottom sheet */
+        .detail-panel { width: 100%; top: auto; height: 92dvh; border-radius: 20px 20px 0 0; border: none; border-top: 1px solid var(--border); padding: 1rem 1.25rem 2rem; }
+        .detail-close { min-width: 44px; min-height: 44px; margin-bottom: 1rem; }
+
+        /* Wallet cards: stack vertically */
+        .wallet-card { flex-direction: column; align-items: flex-start; gap: .75rem; }
+        .wallet-addr { font-size: .75rem; word-break: break-all; }
+        .wallet-actions { flex-wrap: wrap; }
+        .btn-sm { min-height: 36px; padding: .4rem .9rem; }
+
+        /* Add-wallet form: stack */
         .form-row { grid-template-columns: 1fr; }
-        .detail-panel { width: 100%; }
-        th:nth-child(n+4), td:nth-child(n+4) { display: none; }
+        .btn-primary { width: 100%; justify-content: center; min-height: 44px; }
+
+        /* Toast: full-width at bottom */
+        .toast { right: 1rem; left: 1rem; text-align: center; }
     }
 </style>
 </head>
@@ -476,12 +511,12 @@ function renderEscrowTable(escrows) {
     document.getElementById('escrow-count').textContent = `${escrows.length} records`;
     const rows = escrows.map(e => `
         <tr onclick="openDetail('${e.escrow_id}')">
-            <td>${e.project_label || '<span style="color:var(--text-faint)">—</span>'}</td>
-            <td>${statusPill(e.status)}</td>
-            <td style="font-variant-numeric:tabular-nums">${e.amount ? e.amount.toFixed(2) : '—'} <span style="color:var(--text-faint);font-size:.75rem">${e.currency}</span></td>
-            <td class="mono">${shortAddr(e.worker_address)}</td>
-            <td class="mono">${e.escrow_tx_hash ? shortAddr(e.escrow_tx_hash) : '—'}</td>
-            <td style="color:var(--text-muted);font-size:.78rem">${e.created_at ? new Date(e.created_at).toLocaleDateString() : '—'}</td>
+            <td data-label="Project">${e.project_label || '<span style="color:var(--text-faint)">—</span>'}</td>
+            <td data-label="Status">${statusPill(e.status)}</td>
+            <td data-label="Amount" style="font-variant-numeric:tabular-nums">${e.amount ? e.amount.toFixed(2) : '—'} <span style="color:var(--text-faint);font-size:.75rem">${e.currency}</span></td>
+            <td data-label="Worker" class="mono">${shortAddr(e.worker_address)}</td>
+            <td data-label="Tx" class="mono">${e.escrow_tx_hash ? shortAddr(e.escrow_tx_hash) : '—'}</td>
+            <td data-label="Date" style="color:var(--text-muted);font-size:.78rem">${e.created_at ? new Date(e.created_at).toLocaleDateString() : '—'}</td>
         </tr>
     `).join('');
     document.getElementById('escrow-table-body').innerHTML = `
@@ -627,7 +662,7 @@ async function loadSubscription() {
         const res = await fetch(`${API}/enterprise/subscription/payment-details`, { credentials: 'include' });
         const data = await res.json();
         document.getElementById('payment-details').innerHTML = `
-            <div style="margin-bottom:.75rem;padding:.6rem .75rem;background:var(--bg);border-radius:6px;border:1px solid var(--border)">
+            <div style="margin-bottom:.75rem;padding:.6rem .75rem;background:var(--ground);border-radius:6px;border:1px solid var(--border)">
                 <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.25rem">Your account ID (use as memo)</div>
                 <span class="mono" style="font-size:.85rem;word-break:break-all">${data.memo}</span>
             </div>
