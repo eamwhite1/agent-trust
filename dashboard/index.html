@@ -455,8 +455,8 @@
 </div>
 
 <!-- Template modal -->
-<div class="overlay" id="template-overlay" onclick="closeTemplateModal()" style="display:none"></div>
-<div class="detail-panel" id="template-panel" style="display:none">
+<div class="overlay" id="template-overlay" onclick="closeTemplateModal()"></div>
+<div class="detail-panel" id="template-panel">
     <button class="detail-close" onclick="closeTemplateModal()"><i data-lucide="x"></i></button>
     <div id="template-modal-content"></div>
 </div>
@@ -915,14 +915,14 @@ function openTemplateModal(templateId) {
             <button class="btn-action" onclick="closeTemplateModal()" style="flex:1;justify-content:center">Cancel</button>
         </div>
     `;
-    document.getElementById('template-overlay').style.display = 'block';
-    document.getElementById('template-panel').style.display = 'flex';
+    document.getElementById('template-overlay').classList.add('open');
+    document.getElementById('template-panel').classList.add('open');
     lucide.createIcons();
 }
 
 function closeTemplateModal() {
-    document.getElementById('template-overlay').style.display = 'none';
-    document.getElementById('template-panel').style.display = 'none';
+    document.getElementById('template-overlay').classList.remove('open');
+    document.getElementById('template-panel').classList.remove('open');
 }
 
 async function saveTemplate() {
@@ -1014,8 +1014,8 @@ async function createApiKey() {
                 <button class="btn-action" onclick="closeTemplateModal();loadApiKeys()" style="margin-left:.5rem">Done</button>
             </div>
         `;
-        document.getElementById('template-overlay').style.display = 'block';
-        document.getElementById('template-panel').style.display = 'flex';
+        document.getElementById('template-overlay').classList.add('open');
+        document.getElementById('template-panel').classList.add('open');
         lucide.createIcons();
     } catch { showToast('Failed to create API key.'); }
 }
