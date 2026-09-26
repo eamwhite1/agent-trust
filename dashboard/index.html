@@ -173,6 +173,10 @@
     .form-group textarea { min-height: 90px; resize: vertical; font-family: inherit; }
     .form-row { display: flex; gap: .75rem; }
     .form-row .form-group { flex: 1; }
+    .create-step { flex: 1; display: flex; align-items: center; gap: .5rem; font-size: .78rem; font-weight: 600; color: var(--text-faint); padding: .5rem .75rem; border-bottom: 2px solid var(--border); }
+    .create-step.active { color: var(--blue); border-color: var(--blue); }
+    .create-step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--border); color: var(--text-faint); display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; flex-shrink: 0; }
+    .create-step.active .create-step-num { background: var(--blue); color: #fff; }
     .btn-action svg { width: 13px; height: 13px; }
     .proof-gate { display: flex; align-items: center; gap: 6px; font-size: .8rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
     .proof-gate:last-child { border-bottom: none; }
@@ -319,6 +323,9 @@
             <button class="nav-item" onclick="showPage('wallets')" id="nav-wallets">
                 <i data-lucide="wallet"></i> Wallets
             </button>
+            <button class="nav-item" onclick="showPage('create')" id="nav-create">
+                <i data-lucide="plus-circle"></i> Create Escrow
+            </button>
             <button class="nav-item" onclick="showPage('templates')" id="nav-templates">
                 <i data-lucide="layout-template"></i> Templates
             </button>
@@ -424,6 +431,86 @@
                     independently verifiable by anyone, no third party needed.
                     Renewal confirmation emails are sent to your account email with a direct XRPL Explorer link.
                 </p>
+            </div>
+        </div>
+
+        <!-- Create Escrow -->
+        <div class="page" id="page-create">
+            <div class="page-header">
+                <h1>Create Escrow</h1>
+                <p>Lock XRP in an AI-verified escrow. Funds release automatically on PASS.</p>
+            </div>
+            <div class="sub-card" style="max-width:640px">
+                <!-- Step indicator -->
+                <div id="create-steps" style="display:flex;gap:0;margin-bottom:1.75rem">
+                    <div class="create-step active" id="cstep-1"><span class="create-step-num">1</span> Details</div>
+                    <div class="create-step" id="cstep-2"><span class="create-step-num">2</span> Pay fee</div>
+                    <div class="create-step" id="cstep-3"><span class="create-step-num">3</span> Sign</div>
+                </div>
+
+                <!-- Step 1: form -->
+                <div id="create-form-step">
+                    <div class="form-group">
+                        <label>Template <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
+                        <select id="ce-template" onchange="applyCreateTemplate()">
+                            <option value="">— No template —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Project label *</label>
+                        <input id="ce-label" placeholder="e.g. Logo design — October">
+                    </div>
+                    <div class="form-group">
+                        <label>Task description *</label>
+                        <textarea id="ce-task" placeholder="Describe what the worker must deliver for payment to release."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Amount (XRP) *</label>
+                            <input id="ce-amount" type="number" step="0.01" min="1" placeholder="e.g. 50">
+                        </div>
+                        <div class="form-group">
+                            <label>Deadline (hours)</label>
+                            <input id="ce-deadline" type="number" value="168" min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Worker XRPL address *</label>
+                        <input id="ce-worker" placeholder="rXXX…">
+                    </div>
+                    <div class="form-group">
+                        <label>Your email <span style="color:var(--text-faint);font-weight:400">(optional — for receipt)</span></label>
+                        <input id="ce-buyer-email" type="email" placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Worker email <span style="color:var(--text-faint);font-weight:400">(optional — sends receipt code)</span></label>
+                        <input id="ce-worker-email" type="email" placeholder="worker@example.com">
+                    </div>
+                    <div id="ce-gates-summary" style="display:none;margin-bottom:1rem;padding:.75rem 1rem;background:var(--blue-dim);border-radius:8px;font-size:.8rem;color:var(--blue)"></div>
+                    <button class="btn-primary" onclick="ceGoToFee()" style="width:100%;justify-content:center">Next — Pay fee →</button>
+                </div>
+
+                <!-- Step 2: pay fee -->
+                <div id="create-fee-step" style="display:none">
+                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem">A $0.10 protocol fee is required to create an escrow. Click below to sign the payment in Xaman.</p>
+                    <button class="btn-primary" id="ce-pay-btn" onclick="cePayFee()" style="width:100%;justify-content:center"><i data-lucide="zap"></i> Open Xaman to pay fee</button>
+                    <div id="ce-fee-status" style="margin-top:.75rem;font-size:.82rem;color:var(--text-muted)"></div>
+                </div>
+
+                <!-- Step 3: sign EscrowCreate -->
+                <div id="create-sign-step" style="display:none">
+                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem">Fee paid. Now sign the EscrowCreate transaction in Xaman to lock the funds.</p>
+                    <button class="btn-primary" id="ce-sign-btn" onclick="ceSign()" style="width:100%;justify-content:center"><i data-lucide="lock"></i> Open Xaman to sign EscrowCreate</button>
+                    <div id="ce-sign-status" style="margin-top:.75rem;font-size:.82rem;color:var(--text-muted)"></div>
+                    <div id="ce-receipt" style="display:none;margin-top:1.25rem;padding:1rem;background:var(--ground);border:1px solid var(--border);border-radius:8px">
+                        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin-bottom:.5rem">Receipt Code</div>
+                        <div style="font-family:monospace;font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:.08em" id="ce-receipt-code"></div>
+                        <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
+                            <button class="btn-action" onclick="navigator.clipboard.writeText(document.getElementById('ce-receipt-code').textContent).then(()=>showToast('Copied!'))"><i data-lucide="copy"></i> Copy code</button>
+                            <button class="btn-action" onclick="ceReset()"><i data-lucide="plus"></i> Create another</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -850,6 +937,12 @@ async function loadTemplates() {
         const data = await res.json();
         templates = data.templates || [];
         renderTemplates();
+        // Populate create-escrow template dropdown
+        const sel = document.getElementById('ce-template');
+        if (sel) {
+            sel.innerHTML = '<option value="">— No template —</option>' +
+                templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        }
     } catch {
         document.getElementById('templates-list').innerHTML = '<div class="empty">Failed to load templates.</div>';
     }
@@ -1028,6 +1121,182 @@ async function revokeApiKey(id) {
         showToast('Key revoked.');
         loadApiKeys();
     } catch { showToast('Failed to revoke key.'); }
+}
+
+// ── Create Escrow ───────────────────────────────────────────────────────────
+let ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null };
+
+function ceSetStep(n) {
+    [1,2,3].forEach(i => {
+        document.getElementById(`cstep-${i}`).classList.toggle('active', i === n);
+    });
+    document.getElementById('create-form-step').style.display = n === 1 ? '' : 'none';
+    document.getElementById('create-fee-step').style.display  = n === 2 ? '' : 'none';
+    document.getElementById('create-sign-step').style.display = n === 3 ? '' : 'none';
+    lucide.createIcons();
+}
+
+function applyCreateTemplate() {
+    const id = document.getElementById('ce-template').value;
+    if (!id) { document.getElementById('ce-gates-summary').style.display = 'none'; return; }
+    const t = templates.find(x => x.id === id);
+    if (!t) return;
+    if (t.min_amount_xrp) document.getElementById('ce-amount').placeholder = `Min ${t.min_amount_xrp} XRP`;
+    if (t.deadline_hours) document.getElementById('ce-deadline').value = t.deadline_hours;
+    const gates = [];
+    if (t.require_nft_proof || t.required_nft_issuer) gates.push('NFT proof required');
+    if (t.required_domain) gates.push(`Domain: ${t.required_domain}`);
+    if (t.required_vc_issuer_did) gates.push('VC credential required');
+    if (!t.require_ai_audit) gates.push('AI audit disabled');
+    const el = document.getElementById('ce-gates-summary');
+    if (gates.length) { el.textContent = '🔒 Template gates: ' + gates.join(' · '); el.style.display = ''; }
+    else el.style.display = 'none';
+}
+
+function ceGoToFee() {
+    const label  = document.getElementById('ce-label').value.trim();
+    const task   = document.getElementById('ce-task').value.trim();
+    const amount = document.getElementById('ce-amount').value;
+    const worker = document.getElementById('ce-worker').value.trim();
+    if (!label || !task || !amount || !worker) { showToast('Please fill in all required fields.'); return; }
+    ceSetStep(2);
+}
+
+async function cePayFee() {
+    const btn = document.getElementById('ce-pay-btn');
+    btn.disabled = true;
+    document.getElementById('ce-fee-status').textContent = 'Connecting…';
+    try {
+        const res = await fetch(`${API}/xumm/fee-payload`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+        const data = await res.json();
+        if (!data.nextUrl) throw new Error('Xaman did not return a sign URL.');
+        ceState.feePayloadUUID = data.uuid;
+        window.open(data.nextUrl, '_blank');
+        document.getElementById('ce-fee-status').textContent = 'Xaman opened — sign the fee payment, then return here.';
+        ceState.feeTimer = setInterval(cePollFee, 3000);
+    } catch(e) {
+        document.getElementById('ce-fee-status').textContent = 'Error: ' + e.message;
+        btn.disabled = false;
+    }
+}
+
+async function cePollFee() {
+    try {
+        const res  = await fetch(`${API}/xumm/payload/${ceState.feePayloadUUID}`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.signed && data.tx_hash) {
+            clearInterval(ceState.feeTimer);
+            ceState.feeHash = data.tx_hash;
+            ceState.buyerAddress = data.signer;
+            document.getElementById('ce-fee-status').textContent = '✅ Fee paid. Generating vault…';
+            await ceGenerateVault();
+        }
+    } catch(e) { console.warn('Fee poll error', e); }
+}
+
+function ceReceiptCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const seg = n => Array.from({length: n}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+    return `AT-${seg(4)}-${seg(4)}`;
+}
+
+async function ceGenerateVault() {
+    const templateId = document.getElementById('ce-template').value || null;
+    const t = templateId ? templates.find(x => x.id === templateId) : null;
+    const receiptCode = ceReceiptCode();
+    ceState.receiptCode = receiptCode;
+    try {
+        const body = {
+            escrow_id:        receiptCode,
+            fee_hash:         ceState.feeHash,
+            project_label:    document.getElementById('ce-label').value.trim(),
+            task_description: document.getElementById('ce-task').value.trim(),
+            buyer_address:    ceState.buyerAddress || '',
+            buyer_email:      document.getElementById('ce-buyer-email').value.trim() || null,
+            worker_address:   document.getElementById('ce-worker').value.trim(),
+            worker_email:     document.getElementById('ce-worker-email').value.trim() || null,
+            amount_xrp:       parseFloat(document.getElementById('ce-amount').value),
+            currency:         'XRP',
+            cancel_after_hrs: parseInt(document.getElementById('ce-deadline').value) || 168,
+            template_id:      templateId,
+            require_nft_proof:      t?.require_nft_proof || undefined,
+            required_nft_issuer:    t?.required_nft_issuer || undefined,
+            required_domain:        t?.required_domain || undefined,
+            required_vc_issuer_did: t?.required_vc_issuer_did || undefined,
+            require_ai_audit:       t ? t.require_ai_audit : true,
+            proof_policy:           t?.proof_policy || 'ALL',
+        };
+        const res  = await fetch(`${API}/escrow/generate`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Vault creation failed.');
+        ceState.setupData = data;
+        ceSetStep(3);
+        document.getElementById('ce-sign-status').textContent = 'Vault created. Click below to sign the EscrowCreate in Xaman.';
+    } catch(e) {
+        document.getElementById('ce-fee-status').textContent = '❌ ' + e.message;
+        document.getElementById('ce-pay-btn').disabled = false;
+    }
+}
+
+async function ceSign() {
+    const btn = document.getElementById('ce-sign-btn');
+    btn.disabled = true;
+    try {
+        const d = ceState.setupData;
+        const escrowTx = {
+            TransactionType: 'EscrowCreate',
+            Amount: d.escrow_amount,
+            Destination: document.getElementById('ce-worker').value.trim(),
+            Condition: d.condition.toUpperCase(),
+        };
+        if (d.cancel_after_ripple) escrowTx.CancelAfter = d.cancel_after_ripple;
+        const res  = await fetch(`${API}/xumm/create-payload`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ txjson: escrowTx }) });
+        const data = await res.json();
+        if (!data.nextUrl) throw new Error('Xaman did not return a sign URL.');
+        window.open(data.nextUrl, '_blank');
+        document.getElementById('ce-sign-status').textContent = 'Xaman opened — sign the EscrowCreate transaction.';
+        ceState.signTimer = setInterval(() => cePollSign(data.uuid), 3000);
+    } catch(e) {
+        document.getElementById('ce-sign-status').textContent = '❌ ' + e.message;
+        btn.disabled = false;
+    }
+}
+
+async function cePollSign(uuid) {
+    try {
+        const res  = await fetch(`${API}/xumm/payload/${uuid}`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.signed && data.tx_hash) {
+            clearInterval(ceState.signTimer);
+            await fetch(`${API}/escrow/${encodeURIComponent(ceState.receiptCode)}/confirm`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ tx_hash: data.tx_hash }),
+            });
+            document.getElementById('ce-receipt-code').textContent = ceState.receiptCode;
+            document.getElementById('ce-receipt').style.display = '';
+            document.getElementById('ce-sign-status').textContent = '✅ Escrow locked on-chain.';
+            document.getElementById('ce-sign-btn').style.display = 'none';
+            loadEscrows();
+            lucide.createIcons();
+        }
+    } catch(e) { console.warn('Sign poll error', e); }
+}
+
+function ceReset() {
+    clearInterval(ceState.feeTimer);
+    clearInterval(ceState.signTimer);
+    ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null };
+    ['ce-label','ce-task','ce-amount','ce-worker','ce-buyer-email','ce-worker-email'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('ce-template').value = '';
+    document.getElementById('ce-deadline').value = '168';
+    document.getElementById('ce-gates-summary').style.display = 'none';
+    document.getElementById('ce-receipt').style.display = 'none';
+    document.getElementById('ce-sign-btn').style.display = '';
+    document.getElementById('ce-fee-status').textContent = '';
+    document.getElementById('ce-sign-status').textContent = '';
+    ceSetStep(1);
 }
 
 function exportCSV() {
