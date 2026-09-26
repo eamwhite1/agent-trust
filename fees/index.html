@@ -281,6 +281,21 @@ async function load() {
             d.paid_endpoints.map(e => `<code>${e}</code>`).join(", ") + `.</p>`
         );
 
+        // Pro subscription
+        root.insertAdjacentHTML("beforeend", `
+            <h2>Pro Plan</h2>
+            <div class="callout good" style="display:block;">
+                <strong>$199 / year</strong> — AgentTrust Pro includes:
+                <ul style="margin-top:.6rem;padding-left:1.2rem;line-height:2;font-size:.875rem;">
+                    <li>Escrow templates — define rubric, proof gates, and amount limits once; agents reference by <code>template_id</code></li>
+                    <li>Agent API keys — authenticate agents as your Pro account via <code>X-API-Key</code></li>
+                    <li>Full audit dashboard across all linked wallets</li>
+                    <li>Manual escrow creator with the full buyer-equivalent field set</li>
+                </ul>
+                <p style="margin-top:.75rem;font-size:.85rem;">Per-audit fees ($0.10) still apply on top of the subscription. <a href="/enterprise/">Learn more →</a></p>
+            </div>
+        `);
+
         // Machine-readable note
         root.insertAdjacentHTML("beforeend",
             `<div class="callout info" style="margin-top:2rem;">` +
