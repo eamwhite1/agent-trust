@@ -177,6 +177,7 @@
     .create-step.active { color: var(--blue); border-color: var(--blue); }
     .create-step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--border); color: var(--text-faint); display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 700; flex-shrink: 0; }
     .create-step.active .create-step-num { background: var(--blue); color: #fff; }
+    .form-section-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-faint); margin: 1.25rem 0 .75rem; border-top: 1px solid var(--border); padding-top: .75rem; }
     .btn-action svg { width: 13px; height: 13px; }
     .proof-gate { display: flex; align-items: center; gap: 6px; font-size: .8rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
     .proof-gate:last-child { border-bottom: none; }
@@ -291,6 +292,12 @@
     <div class="login-card">
         <div class="login-logo">AgentTrust<span>.</span></div>
         <div class="login-sub">Enterprise Dashboard</div>
+        <ul style="text-align:left;font-size:.8rem;color:var(--text-muted);line-height:1.8;margin-bottom:1.75rem;padding-left:1.1rem;">
+            <li>Escrow templates — define policy once, agents enforce it</li>
+            <li>API keys — connect agents as your enterprise account</li>
+            <li>Full audit trail across all linked wallets</li>
+            <li>Create escrows manually with the full buyer field set</li>
+        </ul>
         <a href="https://mcp.cryptovault.co.uk/auth/google" class="btn-google">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -450,44 +457,175 @@
 
                 <!-- Step 1: form -->
                 <div id="create-form-step">
+
+                    <!-- Template -->
                     <div class="form-group">
                         <label>Template <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
                         <select id="ce-template" onchange="applyCreateTemplate()">
                             <option value="">— No template —</option>
                         </select>
                     </div>
+                    <div id="ce-gates-summary" style="display:none;margin-bottom:1rem;padding:.75rem 1rem;background:var(--blue-dim);border-radius:8px;font-size:.8rem;color:var(--blue)"></div>
+
+                    <!-- Core job -->
+                    <div class="form-section-label">Job details</div>
                     <div class="form-group">
                         <label>Project label *</label>
                         <input id="ce-label" placeholder="e.g. Logo design — October">
                     </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Your name / company *</label>
+                            <input id="ce-buyer-name" placeholder="Acme Ltd">
+                        </div>
+                        <div class="form-group">
+                            <label>Your email <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
+                            <input id="ce-buyer-email" type="email" placeholder="you@example.com">
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>Task description *</label>
-                        <textarea id="ce-task" placeholder="Describe what the worker must deliver for payment to release."></textarea>
+                        <textarea id="ce-task" style="min-height:120px" placeholder="Describe exactly what the worker must deliver for payment to release."></textarea>
                     </div>
+
+                    <!-- Reference links -->
+                    <div class="form-group">
+                        <label>Reference URLs <span style="color:var(--text-faint);font-weight:400">(optional — up to 3, fetched and frozen at creation)</span></label>
+                        <div id="ce-spec-links">
+                            <input class="ce-spec-link" placeholder="https://…" style="width:100%;margin-bottom:.4rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">
+                        </div>
+                        <button type="button" class="btn-action" style="margin-top:.3rem;font-size:.75rem" onclick="ceAddSpecLink()"><i data-lucide="plus"></i> Add link</button>
+                    </div>
+
+                    <!-- Worker -->
+                    <div class="form-section-label">Worker</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Worker XRPL address *</label>
+                            <input id="ce-worker" placeholder="rXXX…">
+                        </div>
+                        <div class="form-group">
+                            <label>Worker email <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
+                            <input id="ce-worker-email" type="email" placeholder="worker@example.com">
+                        </div>
+                    </div>
+
+                    <!-- Amount & deadline -->
+                    <div class="form-section-label">Payment</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Amount (XRP) *</label>
                             <input id="ce-amount" type="number" step="0.01" min="1" placeholder="e.g. 50">
                         </div>
                         <div class="form-group">
-                            <label>Deadline (hours)</label>
-                            <input id="ce-deadline" type="number" value="168" min="1">
+                            <label>Deadline</label>
+                            <select id="ce-deadline">
+                                <option value="24">24 hours</option>
+                                <option value="72">3 days</option>
+                                <option value="168" selected>7 days</option>
+                                <option value="336">14 days</option>
+                                <option value="720">30 days</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Seller attempts</label>
+                            <select id="ce-max-subs">
+                                <option value="3" selected>3 (included)</option>
+                                <option value="4">4 (+$0.05)</option>
+                                <option value="5">5 (+$0.10)</option>
+                                <option value="6">6 (+$0.15)</option>
+                                <option value="7">7 (+$0.20)</option>
+                                <option value="8">8 (+$0.25)</option>
+                                <option value="9">9 (+$0.30)</option>
+                                <option value="10">10 (+$0.35)</option>
+                            </select>
                         </div>
                     </div>
+
+                    <!-- Proof gates -->
+                    <div class="form-section-label">Trust requirements <span style="color:var(--text-faint);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+
+                    <!-- NFT gate -->
                     <div class="form-group">
-                        <label>Worker XRPL address *</label>
-                        <input id="ce-worker" placeholder="rXXX…">
+                        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+                            <input type="checkbox" id="ce-nft-on" onchange="ceToggleGate('nft')" style="width:auto">
+                            <label for="ce-nft-on" style="margin:0;cursor:pointer;font-weight:600">NFT Proof — seller must hold (or transfer) an NFT</label>
+                        </div>
+                        <div id="ce-nft-fields" style="display:none;padding-left:1.5rem">
+                            <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
+                                <button type="button" class="btn-action" id="ce-nft-verify-btn" onclick="ceSetNftMode('verify')" style="font-size:.75rem;background:var(--blue-dim);color:var(--blue)">Verify only</button>
+                                <button type="button" class="btn-action" id="ce-nft-dvp-btn" onclick="ceSetNftMode('dvp')" style="font-size:.75rem">Transfer to me (DvP)</button>
+                            </div>
+                            <input id="ce-nft-issuer" placeholder="Restrict to issuer address (optional)" style="width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.82rem;box-sizing:border-box;margin-bottom:.4rem">
+                            <input id="ce-nft-metadata" placeholder='Required metadata JSON (optional) e.g. {"type":"pass"}' style="width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.82rem;box-sizing:border-box">
+                        </div>
                     </div>
+
+                    <!-- Domain gate -->
                     <div class="form-group">
-                        <label>Your email <span style="color:var(--text-faint);font-weight:400">(optional — for receipt)</span></label>
-                        <input id="ce-buyer-email" type="email" placeholder="you@example.com">
+                        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+                            <input type="checkbox" id="ce-domain-on" onchange="ceToggleGate('domain')" style="width:auto">
+                            <label for="ce-domain-on" style="margin:0;cursor:pointer;font-weight:600">Domain Verification — seller's wallet must be linked to a domain</label>
+                        </div>
+                        <div id="ce-domain-fields" style="display:none;padding-left:1.5rem">
+                            <input id="ce-domain-val" placeholder="Specific domain (optional — leave blank for any verified domain)" style="width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.82rem;box-sizing:border-box">
+                        </div>
                     </div>
+
+                    <!-- VC gate -->
                     <div class="form-group">
-                        <label>Worker email <span style="color:var(--text-faint);font-weight:400">(optional — sends receipt code)</span></label>
-                        <input id="ce-worker-email" type="email" placeholder="worker@example.com">
+                        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+                            <input type="checkbox" id="ce-vc-on" onchange="ceToggleGate('vc')" style="width:auto">
+                            <label for="ce-vc-on" style="margin:0;cursor:pointer;font-weight:600">Verifiable Credential — seller must present a signed credential</label>
+                        </div>
+                        <div id="ce-vc-fields" style="display:none;padding-left:1.5rem">
+                            <input id="ce-vc-issuer" placeholder="Issuer DID (optional) e.g. did:web:example.com" style="width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.82rem;box-sizing:border-box;margin-bottom:.4rem">
+                            <input id="ce-vc-type" placeholder="Credential type (optional) e.g. BusinessRegistrationCredential" style="width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.82rem;box-sizing:border-box">
+                        </div>
                     </div>
-                    <div id="ce-gates-summary" style="display:none;margin-bottom:1rem;padding:.75rem 1rem;background:var(--blue-dim);border-radius:8px;font-size:.8rem;color:var(--blue)"></div>
-                    <button class="btn-primary" onclick="ceGoToFee()" style="width:100%;justify-content:center">Next — Pay fee →</button>
+
+                    <!-- Proof policy (shown when 2+ gates active) -->
+                    <div id="ce-proof-policy-row" style="display:none;margin-bottom:1rem">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.35rem">Proof policy</label>
+                        <div style="display:flex;gap:.5rem">
+                            <button type="button" class="btn-action" id="ce-policy-all" onclick="ceSetPolicy('ALL')" style="font-size:.75rem;background:var(--blue-dim);color:var(--blue)">ALL — must satisfy every gate</button>
+                            <button type="button" class="btn-action" id="ce-policy-any" onclick="ceSetPolicy('ANY')" style="font-size:.75rem">ANY — at least one gate</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Audit -->
+                    <div class="form-section-label">Evaluation</div>
+                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
+                        <input type="checkbox" id="ce-ai-audit" checked style="width:auto">
+                        <label for="ce-ai-audit" style="margin:0;cursor:pointer;font-weight:600">AI audit — referee evaluates work against task description ($0.10 fee)</label>
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
+                        <input type="checkbox" id="ce-consensus" style="width:auto">
+                        <label for="ce-consensus" style="margin:0;cursor:pointer;font-weight:600">Premium consensus — dual-model evaluation ($0.25 fee)</label>
+                    </div>
+
+                    <!-- Invoice mode -->
+                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
+                        <input type="checkbox" id="ce-invoice-on" onchange="ceToggleInvoice()" style="width:auto">
+                        <label for="ce-invoice-on" style="margin:0;cursor:pointer;font-weight:600">Require invoice — seller must submit a matching invoice alongside proof of work</label>
+                    </div>
+                    <div id="ce-invoice-fields" style="display:none;padding-left:1.5rem;margin-bottom:.75rem">
+                        <div class="form-row">
+                            <div class="form-group"><label>PO / Reference number</label><input id="ce-inv-po" placeholder="Optional"></div>
+                            <div class="form-group"><label>Supplier name (must match)</label><input id="ce-inv-supplier" placeholder="Optional"></div>
+                        </div>
+                        <div class="form-group"><label>Services / goods description</label><input id="ce-inv-services" placeholder="Optional"></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Invoice date required</label>
+                                <select id="ce-inv-date"><option value="no">No</option><option value="yes">Yes</option></select>
+                            </div>
+                            <div class="form-group"><label>Line items required</label>
+                                <select id="ce-inv-items"><option value="no">No</option><option value="yes">Yes</option></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="ceGoToFee()" style="width:100%;justify-content:center;margin-top:.5rem">Next — Pay fee →</button>
                 </div>
 
                 <!-- Step 2: pay fee -->
@@ -1124,41 +1262,106 @@ async function revokeApiKey(id) {
 }
 
 // ── Create Escrow ───────────────────────────────────────────────────────────
-let ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null };
+let ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null, buyerAddress: null };
+let ceNftMode = 'verify'; // 'verify' | 'dvp'
+let cePolicy  = 'ALL';
 
 function ceSetStep(n) {
-    [1,2,3].forEach(i => {
-        document.getElementById(`cstep-${i}`).classList.toggle('active', i === n);
-    });
+    [1,2,3].forEach(i => document.getElementById(`cstep-${i}`).classList.toggle('active', i === n));
     document.getElementById('create-form-step').style.display = n === 1 ? '' : 'none';
     document.getElementById('create-fee-step').style.display  = n === 2 ? '' : 'none';
     document.getElementById('create-sign-step').style.display = n === 3 ? '' : 'none';
     lucide.createIcons();
 }
 
+function ceAddSpecLink() {
+    const c = document.getElementById('ce-spec-links');
+    if (c.querySelectorAll('.ce-spec-link').length >= 3) return;
+    const inp = document.createElement('input');
+    inp.className = 'ce-spec-link';
+    inp.placeholder = 'https://…';
+    inp.style.cssText = 'width:100%;margin-bottom:.4rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box';
+    c.appendChild(inp);
+}
+
+function ceToggleGate(gate) {
+    const on = document.getElementById(`ce-${gate}-on`).checked;
+    document.getElementById(`ce-${gate}-fields`).style.display = on ? '' : 'none';
+    ceUpdatePolicyRow();
+}
+
+function ceToggleInvoice() {
+    document.getElementById('ce-invoice-fields').style.display =
+        document.getElementById('ce-invoice-on').checked ? '' : 'none';
+}
+
+function ceUpdatePolicyRow() {
+    const active = ['nft','domain','vc'].filter(g => document.getElementById(`ce-${g}-on`).checked).length;
+    document.getElementById('ce-proof-policy-row').style.display = active >= 2 ? '' : 'none';
+}
+
+function ceSetNftMode(mode) {
+    ceNftMode = mode;
+    document.getElementById('ce-nft-verify-btn').style.cssText = mode === 'verify'
+        ? 'font-size:.75rem;background:var(--blue-dim);color:var(--blue)' : 'font-size:.75rem';
+    document.getElementById('ce-nft-dvp-btn').style.cssText = mode === 'dvp'
+        ? 'font-size:.75rem;background:var(--blue-dim);color:var(--blue)' : 'font-size:.75rem';
+}
+
+function ceSetPolicy(p) {
+    cePolicy = p;
+    document.getElementById('ce-policy-all').style.cssText = p === 'ALL'
+        ? 'font-size:.75rem;background:var(--blue-dim);color:var(--blue)' : 'font-size:.75rem';
+    document.getElementById('ce-policy-any').style.cssText = p === 'ANY'
+        ? 'font-size:.75rem;background:var(--blue-dim);color:var(--blue)' : 'font-size:.75rem';
+}
+
 function applyCreateTemplate() {
     const id = document.getElementById('ce-template').value;
-    if (!id) { document.getElementById('ce-gates-summary').style.display = 'none'; return; }
+    const el = document.getElementById('ce-gates-summary');
+    if (!id) { el.style.display = 'none'; return; }
     const t = templates.find(x => x.id === id);
     if (!t) return;
-    if (t.min_amount_xrp) document.getElementById('ce-amount').placeholder = `Min ${t.min_amount_xrp} XRP`;
-    if (t.deadline_hours) document.getElementById('ce-deadline').value = t.deadline_hours;
+    // Apply deadline
+    if (t.deadline_hours) {
+        const sel = document.getElementById('ce-deadline');
+        if ([...sel.options].some(o => o.value == t.deadline_hours)) sel.value = t.deadline_hours;
+    }
+    // Apply gates
+    if (t.require_nft_proof || t.required_nft_issuer) {
+        document.getElementById('ce-nft-on').checked = true;
+        document.getElementById('ce-nft-fields').style.display = '';
+        if (t.required_nft_issuer) document.getElementById('ce-nft-issuer').value = t.required_nft_issuer;
+    }
+    if (t.required_domain) {
+        document.getElementById('ce-domain-on').checked = true;
+        document.getElementById('ce-domain-fields').style.display = '';
+        document.getElementById('ce-domain-val').value = t.required_domain;
+    }
+    if (t.required_vc_issuer_did) {
+        document.getElementById('ce-vc-on').checked = true;
+        document.getElementById('ce-vc-fields').style.display = '';
+        document.getElementById('ce-vc-issuer').value = t.required_vc_issuer_did;
+    }
+    if (!t.require_ai_audit) document.getElementById('ce-ai-audit').checked = false;
+    cePolicy = t.proof_policy || 'ALL';
+    ceUpdatePolicyRow();
     const gates = [];
-    if (t.require_nft_proof || t.required_nft_issuer) gates.push('NFT proof required');
+    if (t.require_nft_proof || t.required_nft_issuer) gates.push('NFT proof');
     if (t.required_domain) gates.push(`Domain: ${t.required_domain}`);
-    if (t.required_vc_issuer_did) gates.push('VC credential required');
-    if (!t.require_ai_audit) gates.push('AI audit disabled');
-    const el = document.getElementById('ce-gates-summary');
-    if (gates.length) { el.textContent = '🔒 Template gates: ' + gates.join(' · '); el.style.display = ''; }
+    if (t.required_vc_issuer_did) gates.push('VC credential');
+    if (!t.require_ai_audit) gates.push('No AI audit');
+    if (gates.length) { el.textContent = '🔒 Template gates applied: ' + gates.join(' · '); el.style.display = ''; }
     else el.style.display = 'none';
 }
 
 function ceGoToFee() {
     const label  = document.getElementById('ce-label').value.trim();
+    const name   = document.getElementById('ce-buyer-name').value.trim();
     const task   = document.getElementById('ce-task').value.trim();
     const amount = document.getElementById('ce-amount').value;
     const worker = document.getElementById('ce-worker').value.trim();
-    if (!label || !task || !amount || !worker) { showToast('Please fill in all required fields.'); return; }
+    if (!label || !name || !task || !amount || !worker) { showToast('Please fill in all required fields (label, your name, task, amount, worker address).'); return; }
     ceSetStep(2);
 }
 
@@ -1202,14 +1405,29 @@ function ceReceiptCode() {
 
 async function ceGenerateVault() {
     const templateId = document.getElementById('ce-template').value || null;
-    const t = templateId ? templates.find(x => x.id === templateId) : null;
     const receiptCode = ceReceiptCode();
     ceState.receiptCode = receiptCode;
+
+    const nftOn    = document.getElementById('ce-nft-on').checked;
+    const domainOn = document.getElementById('ce-domain-on').checked;
+    const vcOn     = document.getElementById('ce-vc-on').checked;
+    const nftIssuer   = nftOn ? (document.getElementById('ce-nft-issuer').value.trim() || null) : null;
+    const nftMetaRaw  = nftOn ? document.getElementById('ce-nft-metadata').value.trim() : null;
+    let nftMetadata = null;
+    if (nftMetaRaw) { try { nftMetadata = JSON.parse(nftMetaRaw); } catch(e) {} }
+    const domainVal   = domainOn ? (document.getElementById('ce-domain-val').value.trim() || 'ANY') : null;
+    const vcIssuer    = vcOn ? (document.getElementById('ce-vc-issuer').value.trim() || null) : null;
+    const vcType      = vcOn ? (document.getElementById('ce-vc-type').value.trim() || null) : null;
+    const specLinks   = [...document.querySelectorAll('.ce-spec-link')].map(i => i.value.trim()).filter(Boolean);
+    const maxSubs     = parseInt(document.getElementById('ce-max-subs').value);
+    const invoiceOn   = document.getElementById('ce-invoice-on').checked;
+
     try {
         const body = {
             escrow_id:        receiptCode,
             fee_hash:         ceState.feeHash,
             project_label:    document.getElementById('ce-label').value.trim(),
+            buyer_name:       document.getElementById('ce-buyer-name').value.trim(),
             task_description: document.getElementById('ce-task').value.trim(),
             buyer_address:    ceState.buyerAddress || '',
             buyer_email:      document.getElementById('ce-buyer-email').value.trim() || null,
@@ -1219,16 +1437,29 @@ async function ceGenerateVault() {
             currency:         'XRP',
             cancel_after_hrs: parseInt(document.getElementById('ce-deadline').value) || 168,
             template_id:      templateId,
-            require_nft_proof:      t?.require_nft_proof || undefined,
-            required_nft_issuer:    t?.required_nft_issuer || undefined,
-            required_domain:        t?.required_domain || undefined,
-            required_vc_issuer_did: t?.required_vc_issuer_did || undefined,
-            require_ai_audit:       t ? t.require_ai_audit : true,
-            proof_policy:           t?.proof_policy || 'ALL',
+            spec_links:       specLinks.length ? specLinks : undefined,
+            require_nft_proof:      nftOn || undefined,
+            required_nft_issuer:    nftIssuer || undefined,
+            required_nft_metadata:  nftMetadata || undefined,
+            nft_dvp:                nftOn && ceNftMode === 'dvp' ? true : undefined,
+            required_domain:        domainVal || undefined,
+            required_vc_issuer_did: vcIssuer || undefined,
+            required_vc_type:       vcType || undefined,
+            proof_policy:           cePolicy,
+            require_ai_audit:       document.getElementById('ce-ai-audit').checked,
+            require_consensus:      document.getElementById('ce-consensus').checked || undefined,
+            max_submissions:        maxSubs !== 3 ? maxSubs : undefined,
+            invoice_requirements:   invoiceOn ? {
+                po_number:            document.getElementById('ce-inv-po').value.trim() || null,
+                supplier_name:        document.getElementById('ce-inv-supplier').value.trim() || null,
+                services_description: document.getElementById('ce-inv-services').value.trim() || null,
+                require_date:         document.getElementById('ce-inv-date').value === 'yes',
+                require_line_items:   document.getElementById('ce-inv-items').value === 'yes',
+            } : undefined,
         };
         const res  = await fetch(`${API}/escrow/generate`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Vault creation failed.');
+        if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
         ceState.setupData = data;
         ceSetStep(3);
         document.getElementById('ce-sign-status').textContent = 'Vault created. Click below to sign the EscrowCreate in Xaman.';
@@ -1285,17 +1516,33 @@ async function cePollSign(uuid) {
 function ceReset() {
     clearInterval(ceState.feeTimer);
     clearInterval(ceState.signTimer);
-    ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null };
-    ['ce-label','ce-task','ce-amount','ce-worker','ce-buyer-email','ce-worker-email'].forEach(id => {
+    ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null, buyerAddress: null };
+    ceNftMode = 'verify'; cePolicy = 'ALL';
+    ['ce-label','ce-buyer-name','ce-task','ce-amount','ce-worker','ce-buyer-email','ce-worker-email',
+     'ce-nft-issuer','ce-nft-metadata','ce-domain-val','ce-vc-issuer','ce-vc-type',
+     'ce-inv-po','ce-inv-supplier','ce-inv-services'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
     });
     document.getElementById('ce-template').value = '';
     document.getElementById('ce-deadline').value = '168';
+    document.getElementById('ce-max-subs').value = '3';
+    document.getElementById('ce-ai-audit').checked = true;
+    document.getElementById('ce-consensus').checked = false;
+    document.getElementById('ce-invoice-on').checked = false;
+    ['nft','domain','vc'].forEach(g => {
+        document.getElementById(`ce-${g}-on`).checked = false;
+        document.getElementById(`ce-${g}-fields`).style.display = 'none';
+    });
+    document.getElementById('ce-invoice-fields').style.display = 'none';
     document.getElementById('ce-gates-summary').style.display = 'none';
+    document.getElementById('ce-proof-policy-row').style.display = 'none';
     document.getElementById('ce-receipt').style.display = 'none';
     document.getElementById('ce-sign-btn').style.display = '';
     document.getElementById('ce-fee-status').textContent = '';
     document.getElementById('ce-sign-status').textContent = '';
+    // Reset spec links to single input
+    const sl = document.getElementById('ce-spec-links');
+    sl.innerHTML = '<input class="ce-spec-link" placeholder="https://…" style="width:100%;margin-bottom:.4rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">';
     ceSetStep(1);
 }
 

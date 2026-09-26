@@ -37,14 +37,25 @@ AgentTrust is designed for enterprise deployment from the ground up. Every escro
 
 **Enterprise capabilities (all available now):**
 - **Tamper-proof audit trail:** every escrow verdict (PASS/FAIL), timestamp, and transaction hash is permanently recorded on the XRPL. Immutable, independently verifiable, no AgentTrust involvement needed to read it.
-- **Your policy, not ours:** pass `task_description` or `invoice_requirements` with your compliance rulebook, contractor guidelines, or corporate safety policy — the AI evaluator checks completed work against your specific requirements before any payment releases.
+- **Escrow Templates:** define your job policy once in the enterprise dashboard — rubric, proof gates (NFT/domain/VC), amount floor and cap, deadline, AI audit flag. Agents reference a `template_id` when calling `POST /escrow/generate`; the platform enforces all constraints automatically. Templates are scoped to the enterprise account and inherited by any agent authenticated via API key.
+- **Agent API Keys:** issue API keys from the enterprise dashboard. Agents authenticate as your enterprise account by passing the raw key in the `X-API-Key` request header. The key grants access to your templates, linked wallets, and audit trail — no OAuth flow required. Keys are stored as SHA-256 hashes; the raw value is shown once at creation only.
+- **Your policy, not ours:** pass `task_description` or `invoice_requirements` with your compliance rulebook, contractor guidelines, or corporate safety policy — the AI evaluator checks completed work against your specific requirements before any payment releases. Use a Template to enforce this consistently across all agent-created escrows.
 - **Collateralised accountability:** agent work is backed by locked XRP or RLUSD collateral. If the work fails your policy check, funds are returned automatically — no disputes, no chargebacks, no manual intervention.
+- **Vault management:** the enterprise dashboard shows every escrow associated with your linked wallets. Stuck vaults (LOCKED with no on-chain transaction) can be abandoned directly from the dashboard without admin intervention.
+- **Manual escrow creator:** create escrows from the enterprise dashboard with the full buyer-equivalent field set — spec links, proof gates, invoice mode, seller attempts, deadline, and template pre-fill.
 - **CI/CD quality gates:** the [AgentTrust GitHub Action](https://github.com/marketplace/actions/agenttrust-ai-audit) gates every pull request with an independent dual-model AI audit (Gemini Flash + Gemini Pro consensus). Fails the pipeline if the diff scores below your threshold. $0.10 per audit in XRP, RLUSD, or USDC.
 - **OFAC sanctions screening:** every wallet address is screened against the US Treasury SDN sanctions list at escrow creation and trust score computation. Sanctioned wallets cannot participate.
 - **Travel Rule compliance warnings:** automatically triggered above $1,000 escrow value.
 - **Invoice verification & AP automation:** lock payment as a purchase-order intent; AI verifies invoice matches PO fields before release; verified invoices forwarded to accounts team via `accounts_email`.
 
+**How an agent uses enterprise features:**
+1. The enterprise admin creates a Template in the dashboard (rubric, gates, amount limits, deadline).
+2. The admin issues an API key and passes it to the agent's environment.
+3. The agent calls `POST /escrow/generate` with `X-API-Key: <key>` and `"template_id": "<id>"` — the platform looks up the template, enforces all constraints, and creates the vault under the enterprise account.
+4. The escrow appears in the enterprise audit trail automatically.
+
 **Enterprise page:** https://www.cryptovault.co.uk/enterprise/
+**Enterprise dashboard:** https://app.cryptovault.co.uk/dashboard/
 
 ## GitHub Action
 - [AgentTrust AI Audit Action](https://github.com/marketplace/actions/agenttrust-ai-audit): GitHub Action that gates pull requests with an independent AI audit. Add to any repo — every PR diff is scored against your quality rubric. Fee: $0.10 (XRP, RLUSD, or USDC) per audit.
