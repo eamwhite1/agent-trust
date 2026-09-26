@@ -297,10 +297,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
         <table>
             <thead><tr><th>ID</th><th>Issue</th><th>Status</th></tr></thead>
             <tbody>
-                <tr><td>D1</td><td>MCP <code>get_dex_quote</code> schema drift — args mismatch REST endpoint, returns HTTP 422</td><td><span class="badge badge-open">OPEN</span></td></tr>
+                <tr><td>D1</td><td>MCP <code>get_dex_quote</code> schema drift — args mismatch REST endpoint, returns HTTP 422</td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
                 <tr><td>—</td><td>RLUSD escrow unavailable until Ripple enables <code>lsfAllowTrustLineLocking</code></td><td><span class="badge badge-doc">Roadmap</span></td></tr>
-                <tr><td>K1/A4</td><td>Create and evaluate are signature-free address claims; evaluate can be griefed (attempt burn) by anyone with <code>escrow_id</code></td><td><span class="badge badge-doc">Documented</span></td></tr>
-                <tr><td>—</td><td>RPC reliability: <code>s1.ripple.com</code> intermittent <code>tooBusy</code>; prefer <code>xrplcluster.com</code></td><td><span class="badge badge-doc">Known</span></td></tr>
+                <tr><td>K1/A4</td><td>Evaluate could be called by anyone with <code>escrow_id</code>, burning attempt slots</td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
+                <tr><td>—</td><td>RPC: <code>s1/s2.ripple.com</code> removed from server; production exclusively uses <code>xrplcluster.com</code></td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
             </tbody>
         </table>
     </div>
