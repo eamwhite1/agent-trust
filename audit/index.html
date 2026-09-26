@@ -167,7 +167,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
         <table>
             <thead><tr><th>Section</th><th>Description</th><th>Result</th></tr></thead>
             <tbody>
-                <tr><td>Pre-audit</td><td>2 XRP seller → buyer top-up</td><td><span class="badge badge-pass">PASS</span></td></tr>
                 <tr><td>R1.1–R1.4</td><td>MCP <code>award_job</code> + <code>award_token</code> regression</td><td><span class="badge badge-pass">PASS</span></td></tr>
                 <tr><td>R2.1–R2.3</td><td><code>prepare_escrow</code> amount enforcement regression</td><td><span class="badge badge-pass">PASS</span></td></tr>
                 <tr><td>H1</td><td>Full XRP happy path (0.1 XRP) end-to-end</td><td><span class="badge badge-pass">PASS</span></td></tr>
@@ -179,17 +178,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
     </div>
 
     <h2>Scope</h2>
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>In scope</th><th>Out of scope</th></tr></thead>
-            <tbody>
-                <tr><td>Regression tests on two previously reported bugs</td><td>RLUSD-denominated escrow (blocked by Ripple <code>lsfAllowTrustLineLocking</code>; on roadmap)</td></tr>
-                <tr><td>Full XRP happy path (0.1 XRP)</td><td>Paid marketing spend</td></tr>
-                <tr><td>Adversarial edge cases (fee skip, replay, submission limits, role checks)</td><td></td></tr>
-                <tr><td>DEX / RLUSD quote tooling</td><td></td></tr>
-            </tbody>
-        </table>
-    </div>
+    <ul style="font-size:.9rem;color:var(--text-muted);line-height:2;padding-left:1.25rem;margin:0 0 1rem;">
+        <li>MCP job award (<code>award_token</code>) and escrow prepare amount checks</li>
+        <li>Full XRP happy path (0.1 XRP)</li>
+        <li>Adversarial edge cases (fee skip, fee replay, submission limits, role checks)</li>
+        <li>DEX / RLUSD quote tooling</li>
+    </ul>
 
     <hr>
 
@@ -273,7 +267,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
         <table>
             <thead><tr><th>Purpose</th><th>XRP</th><th>Tx Hash</th></tr></thead>
             <tbody>
-                <tr><td>Seller → buyer top-up</td><td>2.0</td><td><a href="https://livenet.xrpl.org/transactions/BC70A761FFDB0AA02C6B570512B40610F95588D39C8D8160A09F78C96C5564FD" class="hash" target="_blank" rel="noopener">BC70A761…5564FD</a></td></tr>
                 <tr><td>R2 create fee</td><td>0.065789</td><td><a href="https://livenet.xrpl.org/transactions/CC56766708250FBB6DB9B4198F8D8F734067453554AB38DFBD42E621EBF9E2B7" class="hash" target="_blank" rel="noopener">CC567667…F9E2B7</a></td></tr>
                 <tr><td>H1 create fee</td><td>0.065789</td><td><a href="https://livenet.xrpl.org/transactions/196DAC5B5259A30ACB30693381D6882FC14CC064AAE60339ACBE72D4A2975C57" class="hash" target="_blank" rel="noopener">196DAC5B…975C57</a></td></tr>
                 <tr><td>H1 EscrowCreate</td><td>0.1 locked</td><td><a href="https://livenet.xrpl.org/transactions/971DCB7157EB9DEE74AA90E59BB8ED3D4C7D046E2198E2C088D252642D3AB05A" class="hash" target="_blank" rel="noopener">971DCB71…3AB05A</a></td></tr>
