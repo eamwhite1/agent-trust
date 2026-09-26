@@ -182,8 +182,9 @@
     .section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .7rem; }
     .solution h2 { font-family: 'DM Serif Display', serif; font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: -.025em; line-height: 1.2; color: var(--text); margin-bottom: 1rem; text-wrap: balance; max-width: 640px; }
     .solution-lead { font-size: .95rem; color: var(--text-muted); max-width: 580px; line-height: 1.7; margin-bottom: 2.5rem; }
-    .capabilities { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-    @media (max-width: 640px) { .capabilities { grid-template-columns: 1fr; } }
+    .capabilities { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    @media (max-width: 860px) { .capabilities { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .capabilities { grid-template-columns: 1fr; } }
     .cap { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.6rem; }
     .cap-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--blue-dim); border: 1px solid var(--blue-border); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: var(--blue); }
     .cap-icon svg { width: 18px; height: 18px; }
@@ -346,6 +347,12 @@
                 <p>The AgentTrust GitHub Action blocks code from merging until an AI evaluation passes your defined criteria. Compliance enforced at the point of delivery, not retrospectively.</p>
                 <span class="cap-tag">Available now</span>
             </div>
+            <div class="cap">
+                <div class="cap-icon"><i data-lucide="plus-circle"></i></div>
+                <h4>Manual escrow creator</h4>
+                <p>Create escrows directly from the enterprise dashboard with the full buyer-equivalent field set — spec links, proof gates, invoice mode, and deadline — without writing any code.</p>
+                <span class="cap-tag">Available now</span>
+            </div>
         </div>
 
         <div class="proof-callout">
@@ -361,27 +368,37 @@
     <!-- How it works -->
     <section class="how">
         <span class="section-label">How it works</span>
-        <h2>From agent action to audit record — automatically.</h2>
-        <div class="flow">
+        <h2>Set policy once. Agents enforce it on every job.</h2>
+        <div class="flow" style="grid-template-columns: repeat(3, 1fr);">
             <div class="flow-step">
                 <div class="flow-num">1</div>
-                <h4>Funds lock on-chain</h4>
-                <p>Before any agent begins work, payment is held in XRPL crypto-condition escrow. Neither party can touch it.</p>
+                <h4>Define a Template</h4>
+                <p>Create an Escrow Template in the dashboard — rubric, proof gates, amount floor and cap, deadline. Your policy, written once.</p>
             </div>
             <div class="flow-step">
                 <div class="flow-num">2</div>
-                <h4>Agent completes the task</h4>
-                <p>Your autonomous agent — or a hired external agent — executes the work and submits evidence of completion.</p>
+                <h4>Issue an API Key</h4>
+                <p>Generate an API key and pass it to your agent's environment. The agent authenticates as your enterprise account via <code style="font-size:.78rem">X-API-Key</code>.</p>
             </div>
             <div class="flow-step">
                 <div class="flow-num">3</div>
-                <h4>AI evaluates against policy</h4>
-                <p>The AgentTrust referee evaluates the submitted work against your compliance criteria. Pass or fail, the reasoning is recorded.</p>
+                <h4>Agent creates escrows</h4>
+                <p>The agent calls <code style="font-size:.78rem">/escrow/generate</code> with your <code style="font-size:.78rem">template_id</code>. The platform enforces every constraint automatically — no per-job configuration needed.</p>
             </div>
             <div class="flow-step">
                 <div class="flow-num">4</div>
+                <h4>AI evaluates against your rubric</h4>
+                <p>When work is submitted, the referee scores it against the rubric you defined. Pass or fail, the reasoning is recorded.</p>
+            </div>
+            <div class="flow-step">
+                <div class="flow-num">5</div>
                 <h4>Verdict hashed on-chain</h4>
-                <p>Pass: payment releases and the audit record is written to XRPL. Fail: funds return automatically. Every outcome is permanent and verifiable.</p>
+                <p>Pass: payment releases and the audit record is written to XRPL. Fail: funds return automatically. Every outcome is permanent and independently verifiable.</p>
+            </div>
+            <div class="flow-step">
+                <div class="flow-num">6</div>
+                <h4>Full audit trail in the dashboard</h4>
+                <p>Every escrow created by your agents appears in the enterprise dashboard — verdict, timestamp, XRPL tx hash, and linked wallet. Create escrows manually when needed.</p>
             </div>
         </div>
     </section>
