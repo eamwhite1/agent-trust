@@ -1,162 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mainnet Audit Report — AgentTrust</title>
-<meta name="description" content="Independent mainnet audit of AgentTrust by Grok (xAI), 26 September 2026. Full XRP happy path, regression tests, adversarial cases, and on-chain transaction verification.">
+<meta name="description" content="Independent mainnet audit of AgentTrust by Grok (xAI), 26 September 2026. Full XRP happy path, regression tests, adversarial cases, and on-chain transaction verification. All core paths PASS.">
 <meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.cryptovault.co.uk/audit/">
 <meta property="og:title" content="AgentTrust Mainnet Audit Report — Grok (xAI)">
 <meta property="og:description" content="Independent live mainnet audit covering regression fixes, XRP happy path, adversarial cases, and XRPL transaction verification. All core paths PASS.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
-
+<meta property="og:url" content="https://www.cryptovault.co.uk/audit/">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap&family=DM+Serif+Display:ital@0;1" rel="stylesheet">
 <style>
-:root {
-    --blue: #3B5BDB;
-    --blue-dim: rgba(59,91,219,.1);
-    --green: #2f9e44;
-    --green-dim: rgba(47,158,68,.12);
-    --green-border: rgba(47,158,68,.25);
-    --amber: #e67700;
-    --amber-dim: rgba(230,119,0,.1);
-    --amber-border: rgba(230,119,0,.25);
-    --red-dim: rgba(201,42,42,.08);
-    --red-border: rgba(201,42,42,.2);
-    --text: #1a1a2e;
-    --text-muted: #5c5c7a;
-    --text-faint: #9898b0;
-    --surface: #ffffff;
-    --surface-raised: #f7f7fb;
-    --border: rgba(0,0,0,.09);
-    --radius: 10px;
-    --mono: 'JetBrains Mono', 'Courier New', monospace;
-}
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --blue: #748ffc;
-        --blue-dim: rgba(116,143,252,.12);
-        --green: #69db7c;
-        --green-dim: rgba(105,219,124,.1);
-        --green-border: rgba(105,219,124,.22);
-        --amber: #ffd43b;
-        --amber-dim: rgba(255,212,59,.1);
-        --amber-border: rgba(255,212,59,.22);
-        --text: #e8e8f4;
-        --text-muted: #9898b0;
-        --text-faint: #5c5c7a;
-        --surface: #12121e;
-        --surface-raised: #1a1a2c;
-        --border: rgba(255,255,255,.08);
+    :root {
+        --bg: #fafafa;
+        --text: #0d0d12;
+        --text-muted: #5a5a68;
+        --blue: #0066ff;
+        --border: rgba(0,0,0,.08);
+        --green: #1a7f37;
+        --green-dim: rgba(26,127,55,.1);
+        --green-border: rgba(26,127,55,.22);
+        --amber: #b45309;
+        --amber-dim: rgba(180,83,9,.08);
+        --amber-border: rgba(180,83,9,.2);
     }
-}
-:root[data-theme="dark"] {
-    --blue: #748ffc;
-    --blue-dim: rgba(116,143,252,.12);
-    --green: #69db7c;
-    --green-dim: rgba(105,219,124,.1);
-    --green-border: rgba(105,219,124,.22);
-    --amber: #ffd43b;
-    --amber-dim: rgba(255,212,59,.1);
-    --amber-border: rgba(255,212,59,.22);
-    --text: #e8e8f4;
-    --text-muted: #9898b0;
-    --text-faint: #5c5c7a;
-    --surface: #12121e;
-    --surface-raised: #1a1a2c;
-    --border: rgba(255,255,255,.08);
-}
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        line-height: 1.65;
+    }
+    .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem 6rem;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-block; font-size: .85rem; color: var(--text-muted); margin-bottom: 2rem; }
+    .back:hover { color: var(--blue); text-decoration: none; }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface); line-height: 1.65; }
-a { color: var(--blue); text-decoration: none; }
-a:hover { text-decoration: underline; }
+    /* Header */
+    .audit-eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: .75rem; display: flex; align-items: center; gap: 8px; }
+    .audit-eyebrow::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
+    .audit-meta { font-size: .85rem; color: var(--text-muted); margin: .5rem 0 1.5rem; display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
+    .verdict-banner { display: flex; align-items: center; gap: .75rem; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 8px; padding: 1rem 1.25rem; font-size: .9rem; font-weight: 600; color: var(--green); margin-bottom: 2.5rem; }
 
-/* Nav */
-nav { position: sticky; top: env(safe-area-inset-top,0); z-index: 100; display: flex; align-items: center; padding: .9rem 5%; background: rgba(255,255,255,.55); backdrop-filter: blur(28px); border-bottom: 1px solid var(--border); gap: 2rem; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) nav { background: rgba(18,18,30,.65); } }
-:root[data-theme="dark"] nav { background: rgba(18,18,30,.65); }
-.nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.15rem; color: var(--text); text-decoration: none; white-space: nowrap; }
-.nav-links { display: flex; gap: 1.5rem; align-items: center; margin-left: auto; }
-.nav-link { font-size: .85rem; font-weight: 500; color: var(--text-muted); text-decoration: none; }
-.nav-link:hover { color: var(--text); text-decoration: none; }
-.nav-cta { font-size: .82rem; font-weight: 700; background: var(--blue); color: #fff; padding: .45rem 1.1rem; border-radius: 40px; text-decoration: none; }
-@media (max-width: 680px) { .nav-links { gap: 1rem; } .nav-link:not(.nav-cta) { display: none; } }
+    /* Typography */
+    h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-top: 2.5rem;
+        margin-bottom: .75rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: .5rem;
+    }
+    h3 { font-size: .95rem; font-weight: 700; margin: 1.75rem 0 .5rem; }
+    p, li { font-size: .95rem; color: #1a1a24; }
+    p { margin: .5rem 0 .75rem; }
+    ul { padding-left: 1.3rem; margin: .5rem 0 1rem; }
+    li { margin-bottom: .35rem; }
+    code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: .8rem;
+        background: rgba(0,0,0,.05);
+        border: 1px solid rgba(0,0,0,.07);
+        border-radius: 4px;
+        padding: .1rem .35rem;
+        color: var(--text);
+    }
+    .hash {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: .8rem;
+        color: var(--blue);
+    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
-/* Layout */
-.page { max-width: 860px; margin: 0 auto; padding: 3.5rem 5% 5rem; }
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th { background: #f2f2f5; font-weight: 700; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); padding: .6rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: .6rem 1rem; border-bottom: 1px solid var(--border); color: #1a1a24; vertical-align: top; line-height: 1.5; }
+    tr:last-child td { border-bottom: none; }
 
-/* Header */
-.audit-header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
-.audit-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1rem; }
-.audit-eyebrow::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-dim); }
-h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.7rem, 4vw, 2.4rem); letter-spacing: -.025em; line-height: 1.15; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
-.audit-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: .82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
-.audit-meta span { display: flex; align-items: center; gap: .4rem; }
-.verdict-banner { display: flex; align-items: center; gap: .75rem; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: var(--radius); padding: 1rem 1.25rem; font-size: .9rem; font-weight: 600; color: var(--green); }
-.verdict-banner svg { flex-shrink: 0; }
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; font-size: .7rem; font-weight: 700; padding: .18rem .5rem; border-radius: 20px; letter-spacing: .03em; white-space: nowrap; }
+    .badge-pass { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-open { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
+    .badge-doc { background: rgba(0,102,255,.08); color: var(--blue); border: 1px solid rgba(0,102,255,.18); }
 
-/* Section headings */
-h2 { font-family: 'DM Serif Display', serif; font-size: 1.35rem; letter-spacing: -.02em; color: var(--text); margin: 2.5rem 0 1rem; }
-h3 { font-size: .92rem; font-weight: 700; color: var(--text); margin: 1.75rem 0 .6rem; letter-spacing: -.01em; }
-p { font-size: .9rem; color: var(--text-muted); line-height: 1.75; margin-bottom: .75rem; }
-p:last-child { margin-bottom: 0; }
+    /* Finding / note boxes */
+    .finding { background: var(--amber-dim); border: 1px solid var(--amber-border); border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; }
+    .finding-label { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--amber); margin-bottom: .35rem; }
+    .finding p { font-size: .88rem; margin: .35rem 0 0; color: var(--text-muted); }
+    .note { background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; }
+    .note-label { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); margin-bottom: .35rem; }
+    .note p { font-size: .88rem; margin: .35rem 0 0; color: #1a1a24; }
 
-/* Tables */
-.table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: var(--radius); border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-th { background: var(--surface-raised); font-weight: 700; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); padding: .65rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
-td { padding: .6rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.5; }
-tr:last-child td { border-bottom: none; }
-td:first-child { white-space: nowrap; }
+    /* Disclaimer */
+    .disclaimer { background: #f2f2f5; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin: 2rem 0; font-size: .82rem; color: var(--text-muted); line-height: 1.65; }
 
-/* Badges */
-.badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 20px; letter-spacing: .03em; white-space: nowrap; }
-.badge-pass { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
-.badge-open { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
-.badge-doc { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,91,219,.2); }
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.15rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+    .badge-live { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700; color: var(--text-muted); background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.07); border-radius: 20px; padding: .3rem .7rem; white-space: nowrap; }
+    .ping-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; display: inline-block; }
+    .btn-nav { font-size: .8rem; font-weight: 700; background: var(--blue); color: #fff; padding: .4rem 1rem; border-radius: 40px; text-decoration: none; }
+    @media (max-width: 680px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+    }
 
-/* Code / hash */
-code { font-family: var(--mono); font-size: .78rem; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 5px; padding: .15rem .4rem; color: var(--text); }
-.hash { font-family: var(--mono); font-size: .75rem; color: var(--blue); }
-
-/* Finding box */
-.finding { background: var(--amber-dim); border: 1px solid var(--amber-border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin: 1rem 0; }
-.finding-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--amber); margin-bottom: .4rem; }
-.finding p { color: var(--text-muted); font-size: .85rem; margin: 0; }
-
-/* Disclaimer */
-.disclaimer { background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin: 2rem 0; font-size: .8rem; color: var(--text-muted); line-height: 1.65; }
-
-/* Footer */
-footer { border-top: 1px solid var(--border); padding: 2.5rem 5%; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; font-size: .8rem; color: var(--text-faint); }
-footer a { color: var(--text-muted); }
-
-/* Divider */
-hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+    /* Footer */
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+    .footer-bottom a { color: var(--blue); text-decoration: none; }
+    @media (max-width: 680px) { .footer-inner { flex-direction: column; gap: 2rem; } .footer-brand { flex: none; } .footer-cols { gap: 1.5rem; } }
 </style>
+</head>
+<body>
 
 <nav>
-    <a href="/" class="nav-logo">AgentTrust</a>
-    <div class="nav-links">
-        <a href="/how-it-works/" class="nav-link">How it Works</a>
-        <a href="/marketplace/" class="nav-link">Marketplace</a>
-        <a href="/enterprise/" class="nav-link">Pro</a>
-        <a href="https://app.cryptovault.co.uk/dashboard/" class="nav-cta">Dashboard</a>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/enterprise/">Enterprise</a>
+    </div>
+    <div class="nav-right">
+        <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener" style="text-decoration:none;">
+            <span class="ping-dot"></span> Live on XRPL
+        </a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            &#9776;
+        </button>
     </div>
 </nav>
 
-<div class="page">
+<div class="wrap">
+    <a class="back" href="/">← AgentTrust</a>
 
-    <header class="audit-header">
-        <div class="audit-eyebrow">Independent Mainnet Audit</div>
-        <h1>AgentTrust Audit Report</h1>
-        <div class="audit-meta">
-            <span>📅 26 September 2026</span>
-            <span>🤖 Auditor: Grok (xAI)</span>
-            <span>🌐 Network: XRPL Mainnet</span>
-            <span>💰 Budget: ~2.5 XRP</span>
-        </div>
-        <div class="verdict-banner">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            All core payment paths PASS — two previously reported bugs confirmed fixed — findings documented below.
-        </div>
-    </header>
+    <div class="audit-eyebrow">Independent Mainnet Audit</div>
+    <h1>Mainnet Audit Report</h1>
+    <div class="audit-meta">
+        <span>26 September 2026</span>
+        <span>·</span>
+        <span>Auditor: Grok (xAI)</span>
+        <span>·</span>
+        <span>Network: XRPL Mainnet</span>
+        <span>·</span>
+        <span>Budget: ~2.5 XRP</span>
+    </div>
+    <div class="verdict-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        All core payment paths PASS — two previously reported bugs confirmed fixed — findings documented below.
+    </div>
 
     <div class="disclaimer">
         <strong>Disclaimer:</strong> This is an independent technical exercise by an autonomous AI agent (Grok, xAI) using live mainnet funds under its own control. It is not a formal security certification, legal opinion, or guarantee of future behaviour. All transaction hashes are verifiable on any XRPL explorer.
@@ -178,7 +204,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
     </div>
 
     <h2>Scope</h2>
-    <ul style="font-size:.9rem;color:var(--text-muted);line-height:2;padding-left:1.25rem;margin:0 0 1rem;">
+    <ul>
         <li>MCP job award (<code>award_token</code>) and escrow prepare amount checks</li>
         <li>Full XRP happy path (0.1 XRP)</li>
         <li>Adversarial edge cases (fee skip, fee replay, submission limits, role checks)</li>
@@ -188,13 +214,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
     <hr>
 
     <h2>Section 1 — Regression: <code>award_job</code> Fix</h2>
-    <p>An earlier probe the same day found that MCP <code>award_job</code> was not passing <code>award_token</code> to the REST endpoint, causing every award attempt to return HTTP 403. This test confirms the fix.</p>
+    <p>An earlier probe the same day found MCP <code>award_job</code> was not passing <code>award_token</code> to the REST endpoint, causing every award attempt to return HTTP 403. This test confirms the fix.</p>
     <div class="table-wrap">
         <table>
             <thead><tr><th>ID</th><th>Test</th><th>Expected</th><th>Actual</th><th>Verdict</th></tr></thead>
             <tbody>
                 <tr><td>R1.1</td><td><code>post_job</code> (buyer)</td><td>posted + <code>award_token</code></td><td>Job <code>JOB-AUDIT-20260926-R1</code> posted; token returned</td><td><span class="badge badge-pass">PASS</span></td></tr>
-                <tr><td>R1.2</td><td><code>submit_bid</code> (seller), proposed = budget</td><td>bid submitted</td><td>Bid <code>BID-8D997268</code>, proposed_xrp=0.1</td><td><span class="badge badge-pass">PASS</span></td></tr>
+                <tr><td>R1.2</td><td><code>submit_bid</code> (seller)</td><td>bid submitted</td><td>Bid <code>BID-8D997268</code>, proposed_xrp=0.1</td><td><span class="badge badge-pass">PASS</span></td></tr>
                 <tr><td>R1.3</td><td>MCP <code>award_job</code> with correct token</td><td>awarded, no 403</td><td>status=awarded, worker=seller, agreed_xrp=0.1</td><td><span class="badge badge-pass">PASS</span></td></tr>
                 <tr><td>R1.4</td><td><code>award_job</code> with wrong token</td><td>HTTP 403</td><td>MCP: <code>not_authorized</code> / "Invalid award_token"; REST HTTP 403</td><td><span class="badge badge-pass">PASS</span></td></tr>
             </tbody>
@@ -202,14 +228,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
     </div>
 
     <h2>Section 2 — Regression: <code>prepare_escrow</code> Amount Enforcement</h2>
-    <p>Earlier behaviour silently accepted a mismatched amount in <code>prepare_escrow</code>, which could allow a buyer to sign an EscrowCreate for a different value than the registered vault. This test confirms the fix.</p>
+    <p>Earlier behaviour silently accepted a mismatched amount, which could allow signing an EscrowCreate for a different value than the registered vault. This test confirms the fix.</p>
     <div class="table-wrap">
         <table>
             <thead><tr><th>ID</th><th>Test</th><th>Expected</th><th>Actual</th><th>Verdict</th></tr></thead>
             <tbody>
                 <tr><td>R2.1</td><td><code>create_escrow_vault</code> 0.1 XRP + fee</td><td>vault created</td><td><code>AT-AUDIT-R2-20260926</code> LOCKED</td><td><span class="badge badge-pass">PASS</span></td></tr>
-                <tr><td>R2.2</td><td><code>prepare_escrow</code> with amount 0.01 (wrong)</td><td>HTTP 400 citing registered amount</td><td><code>{"detail":"amount_xrp 0.01 does not match the registered vault amount 0.1 XRP."}</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
-                <tr><td>R2.3</td><td><code>prepare_escrow</code> with correct amount 0.1</td><td>signable EscrowCreate returned</td><td><code>Amount: "100000"</code> drops — ready to sign</td><td><span class="badge badge-pass">PASS</span></td></tr>
+                <tr><td>R2.2</td><td><code>prepare_escrow</code> with amount 0.01 (wrong)</td><td>HTTP 400</td><td><code>{"detail":"amount_xrp 0.01 does not match the registered vault amount 0.1 XRP."}</code></td><td><span class="badge badge-pass">PASS</span></td></tr>
+                <tr><td>R2.3</td><td><code>prepare_escrow</code> with correct amount 0.1</td><td>signable EscrowCreate</td><td><code>Amount: "100000"</code> drops — ready to sign</td><td><span class="badge badge-pass">PASS</span></td></tr>
             </tbody>
         </table>
     </div>
@@ -235,8 +261,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
 
     <h2>Section 4 — DEX / RLUSD Quote (D1)</h2>
     <div class="finding">
-        <div class="finding-label">Open — schema drift</div>
-        <p>MCP <code>get_dex_quote</code> arguments (<code>from</code> / <code>to</code> / <code>amount</code>) do not match the REST endpoint which expects <code>worker_address</code> and <code>xrp_amount</code> — returns HTTP 422. RLUSD-denominated escrow remains unavailable pending Ripple enabling <code>lsfAllowTrustLineLocking</code>; both are on the roadmap.</p>
+        <div class="finding-label">Open at audit time — fixed post-audit</div>
+        <p>MCP <code>get_dex_quote</code> arguments did not match the REST endpoint, returning HTTP 422. RLUSD-denominated escrow is separately unavailable pending Ripple enabling <code>lsfAllowTrustLineLocking</code>.</p>
+    </div>
+    <div class="note">
+        <div class="note-label">Fixed in v2.8.0</div>
+        <p><code>get_dex_quote</code> MCP tool updated to send <code>xrp_amount</code> + <code>worker_address</code>, matching the REST endpoint. RLUSD escrow remains on the roadmap pending Ripple.</p>
     </div>
 
     <h2>Section 5 — Adversarial Cases</h2>
@@ -246,18 +276,21 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
             <tbody>
                 <tr><td>A1</td><td>Create vault without <code>fee_hash</code> (trust score &lt; 25)</td><td>HTTP 402</td><td>MCP + REST HTTP 402 with x402 payment-required envelope</td><td><span class="badge badge-pass">PASS</span></td></tr>
                 <tr><td>A2</td><td>Reuse a spent <code>fee_hash</code></td><td>HTTP 403</td><td>REST HTTP 403: "payment hash already used"</td><td><span class="badge badge-pass">PASS</span></td></tr>
-                <tr><td>A3</td><td><code>max_submissions=2</code> → exhaust limit → purchase extra attempt → PASS</td><td>limit enforced; EscrowFinish on PASS</td><td>Limit enforced; extra attempt purchased; EscrowFinish <a href="https://livenet.xrpl.org/transactions/5ED7B51E141436CBE2C58671C568ABB0FB87869277F8D593CCB62583FF374433" class="hash" target="_blank" rel="noopener">5ED7B51E…374433</a></td><td><span class="badge badge-pass">PASS</span></td></tr>
-                <tr><td>A4</td><td>Evaluate from unauthenticated caller on live vault</td><td>Document response</td><td>Accepted — ran evaluation and returned FAIL (consumed an attempt)</td><td><span class="badge badge-doc">DOCUMENTED</span></td></tr>
+                <tr><td>A3</td><td><code>max_submissions=2</code> → exhaust → purchase extra attempt → PASS</td><td>limit enforced; EscrowFinish on PASS</td><td>Limit enforced; extra attempt purchased; EscrowFinish <a href="https://livenet.xrpl.org/transactions/5ED7B51E141436CBE2C58671C568ABB0FB87869277F8D593CCB62583FF374433" class="hash" target="_blank" rel="noopener">5ED7B51E…374433</a></td><td><span class="badge badge-pass">PASS</span></td></tr>
+                <tr><td>A4</td><td>Evaluate from unauthenticated caller on live vault</td><td>Document response</td><td>Accepted — evaluation ran and returned FAIL (consumed an attempt slot)</td><td><span class="badge badge-doc">DOCUMENTED</span></td></tr>
             </tbody>
         </table>
     </div>
 
     <h2>Section 6 — K1: Signature-Free Address Claims</h2>
     <div class="finding">
-        <div class="finding-label">Known limitation — documented</div>
-        <p><strong>Finding:</strong> <code>create_escrow_vault</code> and <code>evaluate_escrow_work</code> accept address strings without requiring the caller to prove ownership via an XRPL signature. Anyone with knowledge of an <code>escrow_id</code> can submit work and consume an attempt slot (A4).</p>
-        <p style="margin-top:.6rem;"><strong>Mitigations already present:</strong> <code>award_token</code> on job award; single-use <code>fee_hash</code>; the EscrowCreate transaction still requires the buyer's private key to lock funds on-chain; EscrowFinish is performed by the referee after PASS — an attacker cannot redirect escrowed XRP without the buyer signing the EscrowCreate.</p>
-        <p style="margin-top:.6rem;"><strong>Recommendation:</strong> Add wallet-ownership proof for create/evaluate (XRPL challenge memo or signed payload), or issue a worker capability token at award time that is required at evaluate time.</p>
+        <div class="finding-label">Known limitation at audit time — fixed post-audit</div>
+        <p><strong>Finding:</strong> <code>POST /evaluate</code> accepted submissions from any caller who knew the <code>escrow_id</code>, allowing attempt-slot burning without being the awarded worker.</p>
+        <p><strong>Mitigations already present:</strong> <code>award_token</code> on job award; single-use <code>fee_hash</code>; the EscrowCreate transaction requires the buyer's private key to lock funds on-chain; EscrowFinish is performed by the referee after PASS — an attacker could not redirect escrowed XRP without the buyer signing the EscrowCreate.</p>
+    </div>
+    <div class="note">
+        <div class="note-label">Fixed in v2.8.0</div>
+        <p>A one-time <code>evaluate_token</code> is now generated at vault creation and returned to the buyer, who shares it with the worker. <code>POST /evaluate</code> returns HTTP 403 if the token is missing or invalid. Existing vaults are unaffected (backwards-compatible).</p>
     </div>
 
     <hr>
@@ -290,29 +323,64 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
             </tbody>
         </table>
     </div>
-    <p>Seller net vs post-transfer: <strong>+0.084 XRP</strong> ≈ +0.1 (H1) + 0.05 (A3) − 2×0.033 (extra attempts) − ledger fees.</p>
+    <p>Seller net: <strong>+0.084 XRP</strong> ≈ +0.1 (H1) + 0.05 (A3) − 2×0.033 (extra attempts) − ledger fees.</p>
 
-    <h2>Open Issues</h2>
+    <h2>Open Issues &amp; Post-Audit Resolution</h2>
     <div class="table-wrap">
         <table>
             <thead><tr><th>ID</th><th>Issue</th><th>Status</th></tr></thead>
             <tbody>
-                <tr><td>D1</td><td>MCP <code>get_dex_quote</code> schema drift — args mismatch REST endpoint, returns HTTP 422</td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
+                <tr><td>D1</td><td>MCP <code>get_dex_quote</code> schema drift — wrong arg names, HTTP 422</td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
                 <tr><td>—</td><td>RLUSD escrow unavailable until Ripple enables <code>lsfAllowTrustLineLocking</code></td><td><span class="badge badge-doc">Roadmap</span></td></tr>
                 <tr><td>K1/A4</td><td>Evaluate could be called by anyone with <code>escrow_id</code>, burning attempt slots</td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
-                <tr><td>—</td><td>RPC: <code>s1/s2.ripple.com</code> removed from server; production exclusively uses <code>xrplcluster.com</code></td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
+                <tr><td>—</td><td><code>s1/s2.ripple.com</code> removed from server; production exclusively uses <code>xrplcluster.com</code></td><td><span class="badge badge-pass">Fixed v2.8.0</span></td></tr>
             </tbody>
         </table>
     </div>
 
     <div class="disclaimer">
-        <strong>About this audit:</strong> Conducted autonomously by Grok (xAI) on 26 September 2026 against XRPL mainnet. Wallet addresses and all transaction hashes above are public on the XRP Ledger. MCP endpoint: <code>https://mcp.cryptovault.co.uk/mcp/</code>. Private keys were used only in-process to sign transactions and are not included in this report.
+        <strong>About this audit:</strong> Conducted autonomously by Grok (xAI) on 26 September 2026 against XRPL mainnet. Wallet addresses and all transaction hashes are public on the XRP Ledger. MCP endpoint: <code>https://mcp.cryptovault.co.uk/mcp/</code>. Private keys were used only in-process to sign transactions and are not included in this report.
     </div>
-
 </div>
 
 <footer>
-    <span>© 2026 AgentTrust / CryptoVault</span>
-    <span>Audit by Grok (xAI) · 26 Sep 2026 · XRPL Mainnet</span>
-    <a href="/">agentrust.cryptovault.co.uk</a>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/enterprise/">Enterprise</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="/audit/">Audit Report</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
 </footer>
+</body>
+</html>
