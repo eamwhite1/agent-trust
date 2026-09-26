@@ -21,6 +21,8 @@
   "description": "Enterprise-grade AI agent compliance and audit layer. Tamper-proof audit trail for every autonomous agent action — cryptographic evidence hashed on-chain before payment clears. Policy-gated escrow, OFAC sanctions screening, CI/CD quality gates, and invoice verification for regulated industries.",
   "featureList": [
     "Tamper-proof on-chain audit trail (XRPL)",
+    "Escrow Templates — define policy once, agents reference by template_id",
+    "API Key authentication — agents connect as your enterprise account via X-API-Key",
     "Policy-gated payment release — your compliance rulebook, not ours",
     "Collateralised accountability — locked XRP/RLUSD before work starts",
     "OFAC SDN sanctions screening on every wallet",
@@ -28,7 +30,8 @@
     "CI/CD quality gates via GitHub Action",
     "Invoice verification and AP automation",
     "W3C Verifiable Credential support",
-    "XRPL domain and NFT proof gates"
+    "XRPL domain and NFT proof gates",
+    "Enterprise dashboard with manual escrow creator and vault management"
   ],
   "provider": {
     "@type": "Organization",
@@ -314,6 +317,18 @@
                 <span class="cap-tag">Available now</span>
             </div>
             <div class="cap">
+                <div class="cap-icon"><i data-lucide="layout-template"></i></div>
+                <h4>Escrow Templates</h4>
+                <p>Define your job policy once — rubric, proof gates, amount floor and cap, deadline. Agents reference a <code style="font-size:.78rem;background:var(--blue-dim);border-radius:4px;padding:1px 5px">template_id</code> when creating escrows; the platform enforces your constraints automatically.</p>
+                <span class="cap-tag">Available now</span>
+            </div>
+            <div class="cap">
+                <div class="cap-icon"><i data-lucide="key"></i></div>
+                <h4>Agent API Keys</h4>
+                <p>Issue API keys from the enterprise dashboard. Agents authenticate as your enterprise account via the <code style="font-size:.78rem;background:var(--blue-dim);border-radius:4px;padding:1px 5px">X-API-Key</code> header — inheriting your templates, linked wallets, and audit trail without any OAuth flow.</p>
+                <span class="cap-tag">Available now</span>
+            </div>
+            <div class="cap">
                 <div class="cap-icon"><i data-lucide="scroll-text"></i></div>
                 <h4>Your policy, not ours</h4>
                 <p>Upload your compliance rulebook, contractor guidelines, or corporate safety policy. The AI evaluator checks completed work against your specific requirements before any payment releases.</p>
@@ -374,7 +389,7 @@
     <!-- CTA -->
     <section class="cta-section">
         <h2>Ready to put your agent workflows<br>on a compliance footing?</h2>
-        <p>We're working with early enterprise partners to shape the dashboard and policy evaluation tooling. Start your 30-day free trial — no credit card required.</p>
+        <p>The enterprise dashboard is live — create escrow templates, issue agent API keys, manage vaults, and view the full audit trail. Sign in with Google to get started.</p>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
             <a href="https://app.cryptovault.co.uk" class="btn-primary"><i data-lucide="zap"></i> Start free trial</a>
             <a href="/trust-model/" class="btn-ghost">Read the trust model <i data-lucide="arrow-right"></i></a>
