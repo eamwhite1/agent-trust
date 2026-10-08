@@ -191,6 +191,13 @@
     .wallet-addr { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--text); }
     .wallet-label { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
     .wallet-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .wallet-delegations { width: 100%; padding-top: .75rem; margin-top: .5rem; border-top: 1px solid var(--border); }
+    .delegations-header { font-size: .72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+    .delegation-row { display: flex; align-items: center; gap: .75rem; font-size: .78rem; padding: .35rem 0; flex-wrap: wrap; }
+    .delegation-addr { font-family: 'Courier New', monospace; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .delegation-perms { color: var(--blue); background: var(--blue-dim); border-radius: 4px; padding: 1px 7px; font-size: .72rem; white-space: nowrap; }
+    .delegation-revoke-hint { font-size: .72rem; color: var(--text-faint); text-decoration: none; white-space: nowrap; }
+    .delegation-revoke-hint:hover { color: var(--red); }
     .btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: .35rem .75rem; border-radius: 20px; font-size: .75rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, border-color .15s; }
     .btn-sm:hover { color: var(--blue); border-color: var(--blue-border); }
     .btn-sm.danger:hover { color: var(--red); border-color: var(--red); }
@@ -955,9 +962,13 @@ function renderWallets(wallets) {
                 }
                 <button class="btn-sm danger" onclick="removeWallet(${w.wallet_id})"><i data-lucide="trash-2"></i></button>
             </div>
+            <div class="wallet-delegations" id="delegations-${w.wallet_id}">
+                <span style="font-size:.75rem;color:var(--text-faint)">Loading delegations…</span>
+            </div>
         </div>
     `).join('');
     lucide.createIcons();
+    wallets.forEach(w => loadDelegations(w.wallet_id));
 }
 
 async function addWallet() {
@@ -1001,6 +1012,33 @@ async function removeWallet(walletId) {
     await fetch(`${API}/enterprise/wallets/${walletId}`, { method: 'DELETE', credentials: 'include' });
     loadWallets();
     loadEscrows();
+}
+
+async function loadDelegations(walletId) {
+    const el = document.getElementById(`delegations-${walletId}`);
+    if (!el) return;
+    try {
+        const res  = await fetch(`${API}/enterprise/wallets/${walletId}/delegations`, { credentials: 'include' });
+        const data = await res.json();
+        const rows = data.delegations || [];
+        if (!rows.length) {
+            el.innerHTML = '<span style="font-size:.75rem;color:var(--text-faint)">No XLS-75 delegations active.</span>';
+            return;
+        }
+        el.innerHTML = `
+            <div class="delegations-header"><i data-lucide="key" style="width:13px;height:13px;vertical-align:middle;margin-right:4px;"></i>XLS-75 Delegations</div>
+            ${rows.map(d => `
+                <div class="delegation-row">
+                    <span class="delegation-addr" title="${d.delegate}">${d.delegate}</span>
+                    <span class="delegation-perms">${(d.permissions || []).join(', ')}</span>
+                    <a class="delegation-revoke-hint" href="https://xrpl.org/delegateset.html" target="_blank" rel="noopener" title="To revoke: submit a DelegateSet with empty permissions from your wallet">Revoke via DelegateSet</a>
+                </div>
+            `).join('')}
+        `;
+        lucide.createIcons();
+    } catch {
+        el.innerHTML = '<span style="font-size:.75rem;color:var(--text-faint)">Could not load delegations.</span>';
+    }
 }
 
 // ── Subscription ──
