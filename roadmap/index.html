@@ -432,6 +432,15 @@
 
             <div class="roadmap-card">
                 <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
+                    <i data-lucide="key" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>Delegated Agent Keys (XLS-75)</h4>
+                <p>XLS-75 Permission Delegation went live on XRPL mainnet 8 October 2026. AgentTrust now supports it natively: a buyer issues a one-time <code style="font-size:.75rem;">DelegateSet</code> granting an agent address permission to sign <code style="font-size:.75rem;">EscrowCreate</code> on their behalf — the buyer's seed never touches the agent environment. Pass <code style="font-size:.75rem;">delegate_address</code> to <code style="font-size:.75rem;">hire_and_pay()</code> and the platform validates the delegation, builds the tx with a <code style="font-size:.75rem;">Delegate</code> field, and lets the agent sign and submit while ownership stays with the buyer.</p>
+                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
+            </div>
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
                     <i data-lucide="shield-check" style="width:18px;height:18px;stroke-width:1.8;"></i>
                 </div>
                 <h4>Premium Audit — Dual-Model Consensus</h4>
@@ -482,15 +491,6 @@
                 <h4>NFT Delivery-vs-Payment</h4>
                 <p>NFT trades on XRPL with payment-protected settlement — buyer locks funds in escrow, seller transfers the NFT, and the AI referee verifies on-chain ownership before releasing payment. Two sequential transactions today; true single-ledger atomicity arrives with XLS-56 on 9 October 2026 (see roadmap below).</p>
                 <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
-            </div>
-
-            <div class="roadmap-card">
-                <div class="roadmap-icon" style="background:rgba(99,102,241,.1);color:#818cf8;">
-                    <i data-lucide="key" style="width:18px;height:18px;stroke-width:1.8;"></i>
-                </div>
-                <h4>Delegated Agent Keys (XLS-75)</h4>
-                <p>XLS-75 Permission Delegation went live on XRPL mainnet 8 October 2026. AgentTrust now supports it natively: a buyer issues a one-time <code style="font-size:.75rem;">DelegateSet</code> granting an agent address permission to sign <code style="font-size:.75rem;">EscrowCreate</code> on their behalf — the buyer's seed never touches the agent environment. Pass <code style="font-size:.75rem;">delegate_address</code> to <code style="font-size:.75rem;">hire_and_pay()</code> and the platform validates the delegation, builds the tx with a <code style="font-size:.75rem;">Delegate</code> field, and lets the agent sign and submit while ownership stays with the buyer.</p>
-                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped 8 Oct 2026</span>
             </div>
 
         </div>
