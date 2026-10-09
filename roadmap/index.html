@@ -441,6 +441,15 @@
 
             <div class="roadmap-card">
                 <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
+                    <i data-lucide="zap" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                </div>
+                <h4>Atomic NFT Swaps (XLS-56)</h4>
+                <p>XLS-56 Batch Transactions went live on XRPL mainnet 9 October 2026. Both legs of an NFT Delivery-vs-Payment — NFT transfer and escrow release — now settle in a single ledger close: truly atomic, zero window for either leg to fail independently. When AI audit is enabled, the referee's PASS verdict gates entry to the atomic settlement — you get AI-verified work <em>and</em> single-ledger atomicity together. When the NFT transfer is itself the deliverable, skip the AI entirely and let XLS-56 handle the whole thing on-chain. Use <code style="font-size:.75rem;">get_batch_dvp_payload()</code> or <code style="font-size:.75rem;">GET /escrow/{id}/batch-dvp-payload</code>.</p>
+                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped 9 Oct 2026</span>
+            </div>
+
+            <div class="roadmap-card">
+                <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
                     <i data-lucide="shield-check" style="width:18px;height:18px;stroke-width:1.8;"></i>
                 </div>
                 <h4>Premium Audit — Dual-Model Consensus</h4>
@@ -489,7 +498,7 @@
                     <i data-lucide="image" style="width:18px;height:18px;stroke-width:1.8;"></i>
                 </div>
                 <h4>NFT Delivery-vs-Payment</h4>
-                <p>NFT trades on XRPL with payment-protected settlement — buyer locks funds in escrow, seller transfers the NFT, and the AI referee verifies on-chain ownership before releasing payment. Two sequential transactions today; true single-ledger atomicity arrives with XLS-56 on 9 October 2026 (see roadmap below).</p>
+                <p>NFT trades on XRPL with payment-protected settlement — buyer locks funds in escrow, seller transfers the NFT, and the AI referee verifies on-chain ownership before releasing payment. XLS-56 Batch Transactions are now live on mainnet — use <code style="font-size:.75rem;">GET /escrow/{id}/batch-dvp-payload</code> for single-ledger atomic settlement.</p>
                 <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
             </div>
 
@@ -501,14 +510,6 @@
         <p class="roadmap-sub">What we're building next — and what we're pushing the ecosystem to make possible.</p>
         <div class="roadmap-grid">
 
-            <div class="roadmap-card">
-                <div class="roadmap-icon" style="background:rgba(99,102,241,.1);color:#818cf8;">
-                    <i data-lucide="zap" style="width:18px;height:18px;stroke-width:1.8;"></i>
-                </div>
-                <h4>Atomic NFT Swaps</h4>
-                <p>Today's NFT Delivery-vs-Payment uses two sequential transactions — buyer accepts the NFT, then payment releases. With XLS-56 Batch/Atomic Transactions (activating 9 October 2026), both happen in a single ledger close: truly atomic, zero window for either leg to fail independently. When AI audit is enabled, the referee runs first — its PASS verdict gates entry to the atomic settlement, giving you AI-verified work <em>and</em> atomic settlement together. When the NFT transfer is itself the deliverable, skip the AI entirely and let XLS-56 handle the whole thing on-chain.</p>
-                <span class="roadmap-badge" style="background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.25);">Launching 9 Oct 2026</span>
-            </div>
 
             <div class="roadmap-card">
                 <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">

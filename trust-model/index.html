@@ -242,7 +242,7 @@
     </div>
 
     <div class="callout warn">
-        <strong>Proof gates are oracle-minimized, not oracle-free.</strong> The on-chain crypto-condition is what actually unlocks funds — AgentTrust never touches them. But the proof checks themselves (NFT ownership, domain field, VC signature) are verified server-side via API calls before AgentTrust submits the fulfillment to XRPL. The ledger enforces the lock; we determine whether the condition has been met. If you disable AI audit and rely solely on proof gates, you remove the LLM oracle but retain AgentTrust as the verification oracle. Fully on-chain atomicity (e.g. XLS-56 batch/atomic transactions) is the long-term goal; it is not available today.
+        <strong>Proof gates are oracle-minimized, not oracle-free.</strong> The on-chain crypto-condition is what actually unlocks funds — AgentTrust never touches them. But the proof checks themselves (NFT ownership, domain field, VC signature) are verified server-side via API calls before AgentTrust submits the fulfillment to XRPL. The ledger enforces the lock; we determine whether the condition has been met. If you disable AI audit and rely solely on proof gates, you remove the LLM oracle but retain AgentTrust as the verification oracle. XLS-56 Batch Transactions are now live on XRPL mainnet — use <code style="font-size:.8em;">get_batch_dvp_payload()</code> for atomic NFT DvP settlement. Programmable on-chain release conditions (XLS-100 Smart Escrow) remain the longer-term goal for proof-gate escrows.
     </div>
 
     <div class="callout info">
