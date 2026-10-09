@@ -432,20 +432,20 @@
 
             <div class="roadmap-card">
                 <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
-                    <i data-lucide="key" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                    <i data-lucide="zap" style="width:18px;height:18px;stroke-width:1.8;"></i>
                 </div>
-                <h4>Delegated Agent Keys (XLS-75)</h4>
-                <p>XLS-75 Permission Delegation went live on XRPL mainnet 8 October 2026. AgentTrust now supports it natively: a buyer issues a one-time <code style="font-size:.75rem;">DelegateSet</code> granting an agent address permission to sign <code style="font-size:.75rem;">EscrowCreate</code> on their behalf — the buyer's seed never touches the agent environment. Pass <code style="font-size:.75rem;">delegate_address</code> to <code style="font-size:.75rem;">hire_and_pay()</code> and the platform validates the delegation, builds the tx with a <code style="font-size:.75rem;">Delegate</code> field, and lets the agent sign and submit while ownership stays with the buyer.</p>
+                <h4>Atomic NFT Swaps (XLS-56)</h4>
+                <p>XLS-56 Batch Transactions went live on XRPL mainnet 9 October 2026. Both legs of an NFT Delivery-vs-Payment — NFT transfer and escrow release — now settle in a single ledger close: truly atomic, zero window for either leg to fail independently. When AI audit is enabled, the referee's PASS verdict gates entry to the atomic settlement — you get AI-verified work <em>and</em> single-ledger atomicity together. When the NFT transfer is itself the deliverable, skip the AI entirely and let XLS-56 handle the whole thing on-chain. Use <code style="font-size:.75rem;">get_batch_dvp_payload()</code> or <code style="font-size:.75rem;">GET /escrow/{id}/batch-dvp-payload</code>.</p>
                 <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
             </div>
 
             <div class="roadmap-card">
                 <div class="roadmap-icon" style="background:rgba(0,185,122,.1);color:var(--green);">
-                    <i data-lucide="zap" style="width:18px;height:18px;stroke-width:1.8;"></i>
+                    <i data-lucide="key" style="width:18px;height:18px;stroke-width:1.8;"></i>
                 </div>
-                <h4>Atomic NFT Swaps (XLS-56)</h4>
-                <p>XLS-56 Batch Transactions went live on XRPL mainnet 9 October 2026. Both legs of an NFT Delivery-vs-Payment — NFT transfer and escrow release — now settle in a single ledger close: truly atomic, zero window for either leg to fail independently. When AI audit is enabled, the referee's PASS verdict gates entry to the atomic settlement — you get AI-verified work <em>and</em> single-ledger atomicity together. When the NFT transfer is itself the deliverable, skip the AI entirely and let XLS-56 handle the whole thing on-chain. Use <code style="font-size:.75rem;">get_batch_dvp_payload()</code> or <code style="font-size:.75rem;">GET /escrow/{id}/batch-dvp-payload</code>.</p>
-                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped 9 Oct 2026</span>
+                <h4>Delegated Agent Keys (XLS-75)</h4>
+                <p>XLS-75 Permission Delegation went live on XRPL mainnet 8 October 2026. AgentTrust now supports it natively: a buyer issues a one-time <code style="font-size:.75rem;">DelegateSet</code> granting an agent address permission to sign <code style="font-size:.75rem;">EscrowCreate</code> on their behalf — the buyer's seed never touches the agent environment. Pass <code style="font-size:.75rem;">delegate_address</code> to <code style="font-size:.75rem;">hire_and_pay()</code> and the platform validates the delegation, builds the tx with a <code style="font-size:.75rem;">Delegate</code> field, and lets the agent sign and submit while ownership stays with the buyer.</p>
+                <span class="roadmap-badge" style="background:rgba(0,185,122,.12);color:var(--green);border-color:rgba(0,185,122,.25);">Shipped</span>
             </div>
 
             <div class="roadmap-card">
