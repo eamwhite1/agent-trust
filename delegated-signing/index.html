@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delegated Agent Keys — AgentTrust</title>
+<meta name="description" content="Use XLS-75 Permission Delegation to let a hot agent key sign XRPL escrow transactions on behalf of a cold buyer wallet — without sharing the seed.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Delegated Agent Keys (XLS-75) — AgentTrust">
+<meta property="og:description" content="Keep your XRPL buyer wallet cold. Grant a hot agent key permission to sign EscrowCreate on your behalf with one DelegateSet transaction.">
+<meta property="og:url" content="https://www.cryptovault.co.uk/delegated-signing/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://www.cryptovault.co.uk/delegated-signing/">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --green-dim:    rgba(0,185,122,.08);
+        --green-border: rgba(0,185,122,.2);
+        --amber:        #D97706;
+        --red:          #DC2626;
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --text-faint:   #9ca3af;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+        --code-bg:      rgba(13,13,18,.05);
+        --code-border:  rgba(13,13,18,.09);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --blue:         #4d94ff;
+            --blue-dim:     rgba(77,148,255,.12);
+            --blue-border:  rgba(77,148,255,.25);
+            --green:        #2dd4a0;
+            --green-dim:    rgba(45,212,160,.1);
+            --green-border: rgba(45,212,160,.25);
+            --text:         #f0f0f8;
+            --text-muted:   #9ca3b8;
+            --text-faint:   #6b7280;
+            --glass:        rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.10);
+            --shadow:       0 8px 40px rgba(0,0,0,0.3);
+            --code-bg:      rgba(255,255,255,.06);
+            --code-border:  rgba(255,255,255,.10);
+        }
+    }
+    :root[data-theme="dark"] {
+        --blue:         #4d94ff;
+        --blue-dim:     rgba(77,148,255,.12);
+        --blue-border:  rgba(77,148,255,.25);
+        --green:        #2dd4a0;
+        --green-dim:    rgba(45,212,160,.1);
+        --green-border: rgba(45,212,160,.25);
+        --text:         #f0f0f8;
+        --text-muted:   #9ca3b8;
+        --text-faint:   #6b7280;
+        --glass:        rgba(255,255,255,0.05);
+        --glass-border: rgba(255,255,255,0.10);
+        --shadow:       0 8px 40px rgba(0,0,0,0.3);
+        --code-bg:      rgba(255,255,255,.06);
+        --code-border:  rgba(255,255,255,.10);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,185,122,.1) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .btn-nav { display: inline-flex; align-items: center; gap: 6px; padding: .45rem 1rem; border-radius: 20px; font-size: .8rem; font-weight: 600; text-decoration: none; transition: all .18s; }
+    .btn-nav-ghost { border: 1.5px solid var(--blue-border); color: var(--blue); background: none; }
+    .btn-nav-ghost:hover { background: var(--blue-dim); }
+    .btn-nav-primary { background: var(--blue); color: #fff; border: 1.5px solid transparent; }
+    .btn-nav-primary:hover { opacity: .88; }
+
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 4rem 5% 5rem; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 600; color: var(--blue); text-decoration: none; margin-bottom: 2rem; }
+    .back:hover { opacity: .75; }
+
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--blue); margin-bottom: .9rem; }
+    .page-eyebrow [data-lucide] { width: 13px; height: 13px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 400; line-height: 1.15; letter-spacing: -.03em; margin-bottom: 1rem; }
+    .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 640px; line-height: 1.7; margin-bottom: 2.5rem; }
+
+    .section { margin-bottom: 3rem; }
+    .section-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--blue); display: block; margin-bottom: .6rem; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 1.65rem; font-weight: 400; letter-spacing: -.02em; margin-bottom: 1rem; }
+    p { color: var(--text-muted); line-height: 1.75; margin-bottom: .75rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* Cards */
+    .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.25rem; }
+    .card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow); }
+    .card-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--blue-dim); border: 1px solid var(--blue-border); display: flex; align-items: center; justify-content: center; margin-bottom: .9rem; color: var(--blue); }
+    .card-icon [data-lucide] { width: 18px; height: 18px; stroke-width: 1.8; }
+    .card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; color: var(--text); }
+    .card p { font-size: .85rem; margin-bottom: 0; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step-row { display: flex; gap: 1.25rem; padding: 1.5rem 0; border-bottom: 1px solid var(--glass-border); }
+    .step-row:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+    .step-body p { font-size: .88rem; }
+
+    /* Code */
+    .code-block { margin: 1rem 0; }
+    .code-label { display: flex; align-items: center; justify-content: space-between; background: rgba(13,13,18,.08); border: 1px solid var(--code-border); border-bottom: none; border-radius: var(--radius-sm) var(--radius-sm) 0 0; padding: .45rem .9rem; }
+    .code-lang { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-faint); }
+    .copy-btn { display: inline-flex; align-items: center; gap: 5px; font-size: .7rem; font-weight: 600; color: var(--text-faint); background: none; border: none; cursor: pointer; padding: 0; transition: color .15s; }
+    .copy-btn:hover { color: var(--blue); }
+    pre { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 0 0 var(--radius-sm) var(--radius-sm); padding: 1.1rem 1.25rem; overflow-x: auto; font-size: .82rem; line-height: 1.65; font-family: 'Courier New', monospace; color: var(--text); }
+    code { font-family: 'Courier New', monospace; font-size: .85em; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: .1em .4em; }
+    .comment { color: var(--text-faint); }
+    .kw { color: var(--blue); }
+    .str { color: var(--green); }
+
+    /* Callouts */
+    .callout { display: flex; gap: 1rem; background: var(--blue-dim); border: 1px solid var(--blue-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .callout-icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px; color: var(--blue); }
+    .callout p { font-size: .88rem; margin-bottom: 0; color: var(--text-muted); }
+    .callout.warning { background: rgba(220,38,38,.06); border-color: rgba(220,38,38,.2); }
+    .callout.warning .callout-icon { color: var(--red); }
+    .callout.green { background: var(--green-dim); border-color: var(--green-border); }
+    .callout.green .callout-icon { color: var(--green); }
+
+    /* Permissions table */
+    .perms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1rem; }
+    .perm-row { display: flex; align-items: center; gap: .6rem; font-size: .85rem; }
+    .perm-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .perm-icon.yes { background: var(--green-dim); color: var(--green); }
+    .perm-icon.no  { background: rgba(220,38,38,.08); color: var(--red); }
+    .perm-icon [data-lucide] { width: 11px; height: 11px; stroke-width: 2.5; }
+
+    /* Comparison strip */
+    .compare-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.25rem; }
+    .compare-half { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.25rem; }
+    .compare-half h4 { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .75rem; }
+    .compare-half h4.old { color: var(--text-faint); }
+    .compare-half h4.new { color: var(--green); }
+    .compare-half ul { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+    .compare-half li { font-size: .85rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: .5rem; line-height: 1.5; }
+    .compare-half li::before { content: '—'; color: var(--text-faint); flex-shrink: 0; }
+    .compare-half.new-half li::before { content: '✓'; color: var(--green); }
+
+    /* Footer */
+    footer { background: rgba(13,13,18,.96); color: rgba(255,255,255,.55); padding: 3rem 5% 2rem; margin-top: 4rem; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 3rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: #fff; letter-spacing: -.02em; }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: rgba(255,255,255,.38); margin-top: .5rem; line-height: 1.6; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #fff; margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: rgba(255,255,255,.45); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,.08); font-size: .75rem; color: rgba(255,255,255,.28); }
+    .footer-bottom a { color: rgba(255,255,255,.38); text-decoration: none; }
+    .footer-bottom a:hover { color: rgba(255,255,255,.7); }
+
+    @media (max-width: 640px) {
+        .card-grid { grid-template-columns: 1fr; }
+        .compare-strip { grid-template-columns: 1fr; }
+        .perms-grid { grid-template-columns: 1fr; }
+        .nav-menu { display: none; }
+        .footer-brand { flex: none; }
+        .footer-cols { gap: 1.5rem; }
+    }
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/enterprise/">Enterprise</a>
+    </div>
+    <div class="nav-right">
+        <a class="btn-nav btn-nav-ghost" href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+        <a class="btn-nav btn-nav-primary" href="https://app.cryptovault.co.uk" target="_blank" rel="noopener">Dashboard</a>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    <a class="back" href="/guides/"><i data-lucide="arrow-left"></i> All guides</a>
+
+    <span class="page-eyebrow"><i data-lucide="key"></i> XLS-75 · Security · XRPL</span>
+    <h1>Delegated Agent Keys</h1>
+    <p class="page-lead">Keep your buyer wallet cold. Use XLS-75 Permission Delegation to let a hot agent key sign XRPL escrow transactions on your behalf — without ever sharing your seed.</p>
+
+    <!-- The problem -->
+    <div class="section">
+        <span class="section-label">The problem</span>
+        <h2>Your seed is the risk</h2>
+        <p>Every time an agent creates an XRPL escrow, it signs an <code>EscrowCreate</code> transaction. Signing requires access to the buyer's private key. Until now, that meant the seed had to live in the agent's environment — exposed to logs, memory, environment variables, and anyone with access to that runtime.</p>
+        <p>For high-value buyer wallets, that's an unacceptable risk. You want the wallet that holds funds to be cold — used only when you deliberately initiate something — while a separate, disposable hot key handles the day-to-day signing.</p>
+
+        <div class="compare-strip">
+            <div class="compare-half">
+                <h4 class="old">Before XLS-75</h4>
+                <ul>
+                    <li>Buyer seed lives in the agent process</li>
+                    <li>Compromised agent = compromised wallet</li>
+                    <li>Rotating the key means updating every escrow flow</li>
+                    <li>No way to scope what the agent can sign</li>
+                </ul>
+            </div>
+            <div class="compare-half new-half">
+                <h4 class="new">With XLS-75 delegation</h4>
+                <ul>
+                    <li>Buyer wallet stays cold — signs nothing at runtime</li>
+                    <li>Agent holds a scoped hot key with limited permissions</li>
+                    <li>Revoke the hot key without touching the buyer wallet</li>
+                    <li>Account stays as buyer on-chain — ownership preserved</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="section">
+        <span class="section-label">How it works</span>
+        <h2>One DelegateSet. Runtime signing without the seed.</h2>
+        <p>XLS-75 introduces a <code>DelegateSet</code> transaction that grants a named address permission to sign specific transaction types on your behalf. The buyer submits this once from their cold wallet. After that, the delegated agent can sign and submit those transaction types — the <code>Delegate</code> field on each tx names the signer, but <code>Account</code> remains the buyer, so ownership and cancellation rights stay where they belong.</p>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon"><i data-lucide="shield-check"></i></div>
+                <h3>Scoped permissions</h3>
+                <p>You choose exactly which transaction types the delegate can sign. Grant <code>EscrowCreate</code> and nothing else if that's all the agent needs.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="user"></i></div>
+                <h3>Account ownership preserved</h3>
+                <p>The on-chain <code>Account</code> field stays as the buyer's address. The escrow belongs to the buyer, cancellation is theirs, the audit trail is theirs.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="rotate-ccw"></i></div>
+                <h3>Revoke instantly</h3>
+                <p>Submit a <code>DelegateSet</code> with an empty permissions list from the buyer wallet. The grant is gone immediately — no escrow modifications needed.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="key"></i></div>
+                <h3>Disposable hot keys</h3>
+                <p>Generate a fresh agent keypair per deployment or per project. Compromise one key, rotate it — your buyer wallet is untouched.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- What can be delegated -->
+    <div class="section">
+        <span class="section-label">Permissions</span>
+        <h2>What can and can't be delegated</h2>
+        <p>XLS-75 supports delegation for these transaction types on XRPL mainnet (live 8 October 2026):</p>
+        <div class="perms-grid">
+            <div class="perm-row"><span class="perm-icon yes"><i data-lucide="check"></i></span>EscrowCreate</div>
+            <div class="perm-row"><span class="perm-icon yes"><i data-lucide="check"></i></span>EscrowFinish</div>
+            <div class="perm-row"><span class="perm-icon yes"><i data-lucide="check"></i></span>EscrowCancel</div>
+            <div class="perm-row"><span class="perm-icon yes"><i data-lucide="check"></i></span>Payment</div>
+            <div class="perm-row"><span class="perm-icon yes"><i data-lucide="check"></i></span>NFTokenCreateOffer</div>
+            <div class="perm-row"><span class="perm-icon yes"><i data-lucide="check"></i></span>NFTokenAcceptOffer</div>
+            <div class="perm-row"><span class="perm-icon no"><i data-lucide="x"></i></span>DelegateSet (cannot self-extend)</div>
+            <div class="perm-row"><span class="perm-icon no"><i data-lucide="x"></i></span>Batch (outer tx)</div>
+            <div class="perm-row"><span class="perm-icon no"><i data-lucide="x"></i></span>SetRegularKey</div>
+            <div class="perm-row"><span class="perm-icon no"><i data-lucide="x"></i></span>SignerListSet</div>
+            <div class="perm-row"><span class="perm-icon no"><i data-lucide="x"></i></span>AccountDelete</div>
+            <div class="perm-row"><span class="perm-icon no"><i data-lucide="x"></i></span>AccountSet</div>
+        </div>
+        <div class="callout warning" style="margin-top:1.25rem;">
+            <i data-lucide="alert-triangle" class="callout-icon"></i>
+            <p><strong>No spend caps.</strong> XLS-75 grants signing permission only — it does not limit the amount the delegate can move. Only delegate to addresses you control, and revoke immediately if a key is compromised.</p>
+        </div>
+    </div>
+
+    <!-- Setup -->
+    <div class="section">
+        <span class="section-label">Setup guide</span>
+        <h2>Three steps to delegated signing</h2>
+        <div class="steps">
+            <div class="step-row">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <h4>Generate a hot agent keypair</h4>
+                    <p>Create a fresh XRPL wallet for the agent. This is the key that will live in the agent's environment. Keep it separate from any wallet that holds significant funds.</p>
+                    <div class="code-block">
+                        <div class="code-label">
+                            <span class="code-lang">Python</span>
+                            <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                        </div>
+<pre><span class="comment"># Run once — store the agent seed in your deployment environment</span>
+<span class="kw">from</span> xrpl.wallet <span class="kw">import</span> Wallet
+
+agent_wallet = Wallet.create()
+<span class="kw">print</span>(<span class="str">"Agent address:"</span>, agent_wallet.address)   <span class="comment"># share with buyer</span>
+<span class="kw">print</span>(<span class="str">"Agent seed:   "</span>, agent_wallet.seed)       <span class="comment"># store in .env</span></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <h4>Buyer submits a DelegateSet from their cold wallet</h4>
+                    <p>The buyer runs this once — ideally offline or from a hardware wallet. It grants the agent address permission to sign <code>EscrowCreate</code> transactions on their behalf. Max 10 permissions per <code>DelegateSet</code>.</p>
+                    <div class="code-block">
+                        <div class="code-label">
+                            <span class="code-lang">Python</span>
+                            <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                        </div>
+<pre><span class="kw">from</span> xrpl.wallet <span class="kw">import</span> Wallet
+<span class="kw">from</span> xrpl.models.transactions <span class="kw">import</span> DelegateSet
+<span class="kw">from</span> xrpl.asyncio.clients <span class="kw">import</span> AsyncJsonRpcClient
+<span class="kw">from</span> xrpl.asyncio.transaction <span class="kw">import</span> submit_and_wait
+
+buyer_wallet  = Wallet.from_seed(<span class="str">"sBuyerSeedHere"</span>)  <span class="comment"># cold wallet</span>
+agent_address = <span class="str">"rAgentAddressHere"</span>
+
+tx = DelegateSet(
+    account     = buyer_wallet.address,
+    authorize   = agent_address,
+    permissions = [{<span class="str">"Permission"</span>: {<span class="str">"PermissionValue"</span>: <span class="str">"EscrowCreate"</span>}}],
+)
+
+client = AsyncJsonRpcClient(<span class="str">"wss://xrplcluster.com"</span>)
+result = <span class="kw">await</span> submit_and_wait(tx, client, buyer_wallet)
+<span class="kw">print</span>(result.result[<span class="str">"meta"</span>][<span class="str">"TransactionResult"</span>])  <span class="comment"># tesSUCCESS</span></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    <h4>Agent signs escrows using delegate_address</h4>
+                    <p>Pass <code>delegate_address</code> to <code>hire_and_pay()</code> or <code>POST /escrow/prepare</code>. AgentTrust validates the on-chain delegation, then builds an <code>EscrowCreate</code> with a <code>Delegate</code> field. The agent signs and submits it — <code>Account</code> stays as the buyer's address.</p>
+                    <div class="code-block">
+                        <div class="code-label">
+                            <span class="code-lang">Python (MCP)</span>
+                            <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+                        </div>
+<pre><span class="comment"># Agent has: buyer_address (public), agent_wallet (hot key)</span>
+<span class="comment"># Buyer has: submitted DelegateSet granting agent EscrowCreate permission</span>
+
+result = <span class="kw">await</span> hire_and_pay(
+    task             = <span class="str">"Translate the product spec into Spanish"</span>,
+    buyer_address    = <span class="str">"rBuyerAddressHere"</span>,   <span class="comment"># buyer's cold wallet</span>
+    amount_xrp       = <span class="str">10.0</span>,
+    worker_address   = <span class="str">"rWorkerAddressHere"</span>,
+    escrow_id        = <span class="str">"job-translate-001"</span>,
+    delegate_address = agent_wallet.address,    <span class="comment"># XLS-75: agent signs</span>
+)
+
+<span class="comment"># result["transaction"] now carries Delegate = agent_wallet.address</span>
+<span class="comment"># Account = buyer_address (ownership stays with buyer)</span>
+tx_blob = agent_wallet.sign(result[<span class="str">"transaction"</span>]).tx_blob
+submit_escrow_transaction(<span class="str">"job-translate-001"</span>, tx_blob)</pre>
+                    </div>
+                    <div class="callout green" style="margin-top:1rem;">
+                        <i data-lucide="check-circle" class="callout-icon"></i>
+                        <p>AgentTrust validates the delegation against the live XRPL ledger before building the transaction. If no active grant is found it returns a 400 with a clear message — the buyer must submit the <code>DelegateSet</code> first.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revocation -->
+    <div class="section">
+        <span class="section-label">Key rotation</span>
+        <h2>Revoking a delegation</h2>
+        <p>Submit a <code>DelegateSet</code> with an empty <code>permissions</code> list from the buyer wallet. The ledger removes the grant immediately — no pending transactions are affected, and the agent key can no longer sign new escrows.</p>
+        <div class="code-block">
+            <div class="code-label">
+                <span class="code-lang">Python</span>
+                <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
+            </div>
+<pre><span class="comment"># Revoke: empty permissions list removes the delegation</span>
+tx = DelegateSet(
+    account     = buyer_wallet.address,
+    authorize   = agent_address,
+    permissions = [],
+)
+result = <span class="kw">await</span> submit_and_wait(tx, client, buyer_wallet)</pre>
+        </div>
+        <p>To rotate to a new agent key: revoke the old delegation, generate a new agent keypair, and submit a fresh <code>DelegateSet</code> authorising the new address.</p>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="section">
+        <span class="section-label">Visibility</span>
+        <h2>Viewing active delegations in the dashboard</h2>
+        <p>The <a href="https://app.cryptovault.co.uk" style="color:var(--blue);">AgentTrust Pro dashboard</a> shows active XLS-75 delegations for every linked wallet. Each wallet card lists which agent addresses hold grants and what permissions they carry. Use this to audit your key exposure at a glance — and to spot any grants you no longer need.</p>
+        <div class="callout">
+            <i data-lucide="info" class="callout-icon"></i>
+            <p>The dashboard reads delegations directly from the XRPL ledger in real time via <code>GET /enterprise/wallets/{id}/delegations</code>. Revoking on-chain is immediately reflected — no sync delay.</p>
+        </div>
+    </div>
+
+    <!-- Reference -->
+    <div class="section">
+        <span class="section-label">Reference</span>
+        <h2>Quick reference</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3 style="margin-bottom:.5rem;font-size:.9rem;">MCP tool</h3>
+                <p style="font-size:.82rem;"><code>hire_and_pay(delegate_address=...)</code><br>Pass the agent's XRPL address. Returns an <code>EscrowCreate</code> tx with the <code>Delegate</code> field set. Agent signs and submits.</p>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:.5rem;font-size:.9rem;">REST endpoint</h3>
+                <p style="font-size:.82rem;"><code>POST /escrow/prepare</code> with <code>"delegate_address": "r..."</code>. Validates the on-chain grant, returns the delegated tx.</p>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:.5rem;font-size:.9rem;">Setup guide</h3>
+                <p style="font-size:.82rem;">Call <code>get_wallet_setup_guide()</code> → <code>optional_xls75_delegation</code> for setup and revoke code examples with full context.</p>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom:.5rem;font-size:.9rem;">View delegations</h3>
+                <p style="font-size:.82rem;"><code>GET /enterprise/wallets/{id}/delegations</code> — lists active grants for a linked wallet. Also visible in the Pro dashboard.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/enterprise/">Enterprise</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
+                <a href="/audit/">Audit Report</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
+</footer>
+
+<script>
+    lucide.createIcons();
+    function copyCode(btn) {
+        const pre = btn.closest('.code-label').nextElementSibling;
+        navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+            btn.innerHTML = '<i data-lucide="check" style="width:11px;height:11px;"></i> Copied';
+            lucide.createIcons();
+            setTimeout(() => {
+                btn.innerHTML = '<i data-lucide="copy" style="width:11px;height:11px;"></i> Copy';
+                lucide.createIcons();
+            }, 1800);
+        });
+    }
+</script>
+</body>
+</html>
