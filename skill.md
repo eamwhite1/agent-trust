@@ -61,10 +61,14 @@ hire_and_pay(
     # optional white-label:
     callback_url    = "https://yourapp.com/webhooks/escrow",
     metadata        = '{"order_id": "ORD-001"}',
+    # optional XLS-75 delegation (live mainnet 8 Oct 2026):
+    delegate_address = "",   # hot agent address that signs/submits on buyer's behalf
 )
 # Sign and submit the returned transaction to XRPL, then:
 confirm_escrow_transaction(escrow_id, tx_hash)
 ```
+
+**XLS-75 delegation:** if `delegate_address` is set, the returned EscrowCreate tx carries a `Delegate` field — the delegate agent signs and submits it, `Account` stays as the buyer's address. Buyer must have issued a `DelegateSet` granting the delegate `EscrowCreate` permission first. See `get_wallet_setup_guide()` → `optional_xls75_delegation` for setup and revoke code.
 
 ---
 
@@ -79,6 +83,12 @@ evaluate_escrow_work(
 # On FAIL: read criteria_failed, fix the work, resubmit with the same escrow_id
 # 3 attempts by default; if exhausted:
 purchase_extra_attempt(escrow_id, fee_hash)   # $0.05 per extra attempt
+
+# NFT DvP vaults (nft_dvp=True): PASS sets status to PASS_AWAITING_NFT
+# Seller registers their NFTokenCreateOffer, then buyer calls:
+get_batch_dvp_payload(escrow_id)
+# Returns a pre-built XLS-56 Batch tx — sign once to atomically accept NFT
+# and release payment in a single ledger close (live on mainnet 9 Oct 2026)
 ```
 
 ---
