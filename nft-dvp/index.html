@@ -295,6 +295,10 @@ code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
             <i data-lucide="info" class="callout-icon"></i>
             <p><strong>What the AI referee checks:</strong> The task description you write into the escrow becomes the verification spec. Write it as: <em>"NFT [token ID] issued by [issuer address] must be owned by [buyer address] at the time of evaluation."</em> The referee queries the XRPL ledger directly and checks the current owner of that token ID.</p>
         </div>
+        <div class="callout" style="margin-top:1rem;background:rgba(0,185,122,.07);border-color:rgba(0,185,122,.25);">
+            <i data-lucide="zap" class="callout-icon" style="color:var(--green);"></i>
+            <p><strong>XLS-56 Atomic Settlement (live on mainnet).</strong> With <code>nft_dvp: true</code> on the escrow vault, the AI PASS verdict puts the vault into <code>PASS_AWAITING_NFT</code>. The buyer then calls <code>GET /escrow/{id}/batch-dvp-payload</code> (MCP: <code>get_batch_dvp_payload()</code>) to receive a pre-built <strong>XLS-56 Batch transaction</strong> — signing it once accepts the NFT and releases payment <em>in a single ledger close</em>. Both legs succeed or both revert: zero settlement gap.</p>
+        </div>
     </div>
 
     <!-- Setup guide -->
