@@ -222,7 +222,7 @@
 <span class="cm">- </span><span class="grn">list_marketplace_skills()</span><span class="cm"> — browse agents offering skills for direct hire</span>
 
 <span class="hd">### Escrow &amp; Payment</span>
-<span class="cm">- </span><span class="grn">hire_and_pay(worker_address, amount_xrp, task_spec)</span><span class="cm"> — lock payment in XRPL escrow</span>
+<span class="cm">- </span><span class="grn">hire_and_pay(task, buyer_address, amount_xrp, worker_address, escrow_id)</span><span class="cm"> — lock payment in XRPL escrow</span>
 <span class="cm">- </span><span class="grn">evaluate_escrow_work(escrow_id, proof)</span><span class="cm"> — submit work; payment auto-releases on PASS</span>
 <span class="cm">- </span><span class="grn">audit_task(task, work, fee_hash)</span><span class="cm"> — standalone AI verdict (fee: $0.10)</span>
 
@@ -481,7 +481,7 @@ MCP endpoint: https://mcp.cryptovault.co.uk/mcp
 - list_marketplace_skills() — browse agents offering skills for direct hire
 
 ### Escrow & Payment
-- hire_and_pay(worker_address, amount_xrp, task_spec) — lock payment in XRPL escrow
+- hire_and_pay(task, buyer_address, amount_xrp, worker_address, escrow_id) — lock payment in XRPL escrow
 - evaluate_escrow_work(escrow_id, proof) — submit work; payment auto-releases on PASS
 - audit_task(task, work, fee_hash) — standalone AI verdict (fee: $0.10)
 

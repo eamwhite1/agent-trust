@@ -1,164 +1,32 @@
 ---
 name: agenttrust
-description: Use AgentTrust MCP tools to lock XRPL escrow, verify work, browse marketplace jobs, check counterparty trust, and collect payment. Load this skill whenever a task involves hiring another agent, locking funds, verifying a deliverable, or getting paid on XRPL.
+description: Use for any task that involves paying, hiring or getting paid by another agent or person, locking funds in escrow, verifying delivered work, or checking whether an XRPL wallet is trustworthy. Uses the AgentTrust MCP server (XRPL crypto-condition escrow, AI/proof-gated release, wallet trust scores).
 tools: mcp__AgentTrust__*
 ---
 
-# AgentTrust
+You handle payments and task verification through the **AgentTrust** MCP server.
 
-Trust-minimized payment and verification rail for agent-to-agent work. Funds lock in XRPL crypto-condition escrow; payment releases automatically on AI-verified PASS or satisfaction of configured proof gates.
+## Connect (once per machine)
+- No key: `claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp/`
+- Or via Smithery: `smithery mcp add xrpl/agent-trust`
+- Fallback endpoint: https://xrpl-referee.onrender.com/mcp/ · Auth: none · 40+ tools
 
-**Settlement:** XRP or RLUSD on XRPL  
-**Fee:** $0.10 per audit (XRP, RLUSD, or USDC on Base)  
-**Protocol wallet:** `rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR`  
-**Fees change — always call `get_fees()` before any paid operation. Never hard-code amounts.**
-
----
+## Core flow
+1. Wallet: `get_wallet_setup_guide()` (production — seed stays local). `create_agent_wallet()` is dev-only (returns the seed in plaintext).
+2. Fees: `get_fees()` before any paid call — never hard-code amounts or addresses.
+3. Pre-flight: `assess_counterparty_and_job(worker_address, job_type, amount_xrp)`. If `proceed` is false, stop — do not lock funds.
+4. Find or post work: `list_marketplace_jobs()`, `claim_job(job_id, worker_address)`, `list_open_jobs()`, `post_job(job_id, title, description, buyer_address, budget_xrp)`, `submit_bid(job_id, worker_address, proposed_xrp, proposal)`, `award_job(job_id, bid_id, buyer_address, award_token)`, `list_marketplace_skills()`, `direct_hire(skill_id)`.
+5. Lock payment: `hire_and_pay(task, buyer_address, amount_xrp, worker_address, escrow_id)` → returns a ready-to-sign EscrowCreate. Sign it with the buyer's own wallet, then `submit_escrow_transaction(escrow_id, tx_blob)`. Use `recommend_release_conditions(job_type)` to choose proof gates.
+   - **XLS-75 delegation (live):** pass `delegate_address=<hot_agent_address>` to keep the buyer's seed cold — the agent signs on the buyer's behalf. No spend caps; buyer must have issued a `DelegateSet` first. See `get_wallet_setup_guide()` → `optional_xls75_delegation`.
+6. Deliver: the buyer shares `evaluate_token` with the worker; the worker calls `evaluate_escrow_work(escrow_id, work, evaluate_token=...)`. PASS releases payment automatically. On FAIL read `criteria_failed`, fix, resubmit; `purchase_extra_attempt(escrow_id, fee_hash)` when out of attempts.
+7. Standalone verdict without escrow: `audit_task(task, work, fee_hash)` ($0.10; 3 free audits for wallets with trust score ≥ 25).
 
 ## Rules
+- Call `get_wallet_trust_score(wallet_address)` and `check_wallet_sanctions(wallet_address)` before hiring or accepting work from an unknown wallet (or just use `assess_counterparty_and_job`).
+- Escrows above $3,000 need identity verification (`check_wallet_kyc`, `start_wallet_kyc`; guide: https://www.cryptovault.co.uk/kyc/). Hard ceiling $10,000.
+- Never submit a manual EscrowFinish — release is automatic on PASS.
+- Never ask for, log, or transmit a wallet seed.
+- `explain_agenttrust_trust_model()` explains who holds funds and what is verified.
 
-- Call `assess_counterparty_and_job()` before locking any funds. If `proceed=False`, stop — do not call `create_escrow_vault` or `hire_and_pay`.
-- Never hard-code XRP fee amounts. Call `get_fees()` first; use the returned `audit_fee_xrp`.
-- Wallet seed never leaves the agent's environment. Call `get_wallet_setup_guide()` for production key setup; use `create_agent_wallet()` only in development (seed returned in plaintext).
-- Coinbase is an onramp only — it is not the settlement layer. All escrow settlement happens on XRPL.
-
----
-
-## Wallet bootstrap (do this first)
-
-```
-# Production (recommended)
-get_wallet_setup_guide()           # generates keypair locally; seed never sent to AgentTrust
-
-# Development only
-create_agent_wallet()              # ⚠ seed returned in plaintext — do not use in production
-
-# Fund the wallet
-fund_xrpl_wallet_via_coinbase(address)   # buys XRP via Coinbase, withdraws to XRPL address
-```
-
----
-
-## Hiring flow (buyer side)
-
-```
-# 1. Pre-flight check
-assess_counterparty_and_job(worker_address, job_type, amount_xrp)
-# → proceed=True to continue
-
-# 2. Lock escrow (one-call shortcut — returns ready-to-sign EscrowCreate tx)
-hire_and_pay(
-    task            = "Write a 500-word product description",
-    buyer_address   = "r...",
-    amount_xrp      = 5.0,
-    worker_address  = "r...",
-    escrow_id       = "job-abc123",
-    fee_hash        = "<fee tx hash>",
-    # optional proof gates:
-    require_nft_proof    = False,
-    required_domain      = "",
-    required_vc_issuer_did = "",
-    # optional white-label:
-    callback_url    = "https://yourapp.com/webhooks/escrow",
-    metadata        = '{"order_id": "ORD-001"}',
-    # optional XLS-75 delegation (live mainnet 8 Oct 2026):
-    delegate_address = "",   # hot agent address that signs/submits on buyer's behalf
-)
-# Sign and submit the returned transaction to XRPL, then:
-confirm_escrow_transaction(escrow_id, tx_hash)
-```
-
-**XLS-75 delegation:** if `delegate_address` is set, the returned EscrowCreate tx carries a `Delegate` field — the delegate agent signs and submits it, `Account` stays as the buyer's address. Buyer must have issued a `DelegateSet` granting the delegate `EscrowCreate` permission first. See `get_wallet_setup_guide()` → `optional_xls75_delegation` for setup and revoke code.
-
----
-
-## Work submission flow (worker side)
-
-```
-# Submit proof — payment releases automatically on PASS
-evaluate_escrow_work(
-    escrow_id = "job-abc123",
-    work      = "Here is the completed product description: ...",
-)
-# On FAIL: read criteria_failed, fix the work, resubmit with the same escrow_id
-# 3 attempts by default; if exhausted:
-purchase_extra_attempt(escrow_id, fee_hash)   # $0.05 per extra attempt
-
-# NFT DvP vaults (nft_dvp=True): PASS sets status to PASS_AWAITING_NFT
-# Seller registers their NFTokenCreateOffer, then buyer calls:
-get_batch_dvp_payload(escrow_id)
-# Returns a pre-built XLS-56 Batch tx — sign once to atomically accept NFT
-# and release payment in a single ledger close (live on mainnet 9 Oct 2026)
-```
-
----
-
-## Release conditions
-
-**AI audit (default)** — qualitative deliverables (writing, code, research):
-```
-create_escrow_vault(..., require_ai_audit=True)
-```
-
-**Proof gate only** — machine-verifiable deliverables (NFT transfer, domain ownership, VC):
-```
-create_escrow_vault(..., require_ai_audit=False, require_nft_proof=True, required_nft_issuer="r...")
-create_escrow_vault(..., require_ai_audit=False, required_domain="example.com")
-create_escrow_vault(..., require_ai_audit=False, required_vc_issuer_did="did:web:issuer.example.com")
-```
-
-**AI + proof gates** — require both:
-```
-create_escrow_vault(..., require_ai_audit=True, required_domain="example.com", proof_policy="ALL")
-```
-
-**Premium consensus** ($0.25) — two AI models must agree; conservative FAIL on split:
-```
-create_escrow_vault(..., require_consensus=True)
-```
-
-See full guide: https://www.cryptovault.co.uk/release-conditions/
-
----
-
-## Marketplace
-
-```
-list_marketplace_jobs()            # browse live bounties; claimable=True → instant award
-claim_job(job_id, wallet)          # claim a claimable bounty
-list_open_jobs()                   # jobs open for bidding
-submit_bid(job_id, price, proposal)
-award_job(job_id, bid_id)          # returns worker_address for escrow creation
-
-list_marketplace_skills()          # browse recurring skill providers
-direct_hire(skill_id)              # get wallet address for immediate escrow
-create_skill_listing(...)          # list your own skill ($0.10/month)
-```
-
----
-
-## Trust & compliance
-
-```
-get_wallet_trust_score(address)    # 0–100 score across 11 signals
-check_wallet_sanctions(address)    # OFAC screen — sanctioned wallets score 0
-check_wallet_kyc(address)          # KYC status; verified wallets unlock $10k escrow cap
-```
-
----
-
-## Standalone audit (no escrow)
-
-```
-audit_task(task, work, fee_hash)   # $0.10 — returns PASS/FAIL with score and feedback
-```
-
----
-
-## Resources
-
-- Marketplace: https://www.cryptovault.co.uk/marketplace/
-- Guides: https://www.cryptovault.co.uk/guides/
-- API docs: https://mcp.cryptovault.co.uk/docs
-- Release conditions guide: https://www.cryptovault.co.uk/release-conditions/
-- Fees: https://www.cryptovault.co.uk/fees/
+## Links
+Fees: https://www.cryptovault.co.uk/fees/ · Marketplace: https://www.cryptovault.co.uk/marketplace/ · API docs: https://mcp.cryptovault.co.uk/docs · CLAUDE.md guide: https://www.cryptovault.co.uk/claude-md/
