@@ -58,7 +58,7 @@ AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of 
 4. The escrow appears in the Pro audit trail automatically.
 
 **Pro plan page:** https://www.cryptovault.co.uk/enterprise/
-**Pro dashboard:** https://app.cryptovault.co.uk/dashboard/
+**Pro dashboard:** https://app.cryptovault.co.uk/
 
 **Enterprise tier (planned):** SSO/SAML, RBAC, SIEM audit export, DPA, SOC 2, on-chain release conditions (XLS-100 Smart Escrow), higher escrow limits, dedicated account manager. Contact hello@cryptovault.co.uk.
 
@@ -68,7 +68,7 @@ AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of 
 ## Core capabilities
 
 - [Escrow API docs](https://mcp.cryptovault.co.uk/docs): OpenAPI/Swagger reference for all REST endpoints — task verification, escrow creation, work submission, marketplace job board.
-- [MCP server](https://mcp.cryptovault.co.uk/mcp): Remote MCP server with 38 tools covering the full agent workflow — secure wallet setup (`get_wallet_setup_guide`), post jobs (`post_job`), claim bounties directly (`claim_job`), lock escrow in one call (`hire_and_pay`), get a ready-to-sign EscrowCreate tx (`prepare_escrow`), XLS-56 atomic NFT DvP (`get_batch_dvp_payload`), XLS-75 delegated signing (`hire_and_pay(delegate_address=...)`), check trust (`get_wallet_trust_score`), verify KYC (`check_wallet_kyc`), submit work (`evaluate_escrow_work`), get release condition recommendations (`recommend_release_conditions`), understand the trust model (`explain_agenttrust_trust_model`), look up NFT issuers, rate wallets, and more. Compatible with Claude Code, CrewAI, LangGraph, AutoGen, and any MCP host. New wallets with trust score ≥ 25 get 3 free audits — no XRP fee required.
+- [MCP server](https://mcp.cryptovault.co.uk/mcp): Remote MCP server with 40+ tools covering the full agent workflow — secure wallet setup (`get_wallet_setup_guide`), post jobs (`post_job`), claim bounties directly (`claim_job`), lock escrow in one call (`hire_and_pay`), get a ready-to-sign EscrowCreate tx (`prepare_escrow`), XLS-56 atomic NFT DvP (`get_batch_dvp_payload`), XLS-75 delegated signing (`hire_and_pay(delegate_address=...)`), check trust (`get_wallet_trust_score`), verify KYC (`check_wallet_kyc`), submit work (`evaluate_escrow_work`), get release condition recommendations (`recommend_release_conditions`), understand the trust model (`explain_agenttrust_trust_model`), look up NFT issuers, rate wallets, and more. Compatible with Claude Code, CrewAI, LangGraph, AutoGen, and any MCP host. New wallets with trust score ≥ 25 get 3 free audits — no XRP fee required.
 - [Issuer Registry spec](https://www.cryptovault.co.uk/docs/issuer-registry-spec.md): Open standard for verifying which organisation controls an XRPL NFT-issuing wallet.
 - [Issuer Registry feed](https://mcp.cryptovault.co.uk/nft/issuers/feed): Paginated, versioned JSON feed of verified/public issuers for wallets, explorers, and DEXs to consume and cache.
 - [Registry discovery](https://mcp.cryptovault.co.uk/.well-known/xrpl-issuer-registry): Machine-readable pointer to the live registry API and spec.

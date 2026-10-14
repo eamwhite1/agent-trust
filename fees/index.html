@@ -106,7 +106,59 @@
         &nbsp;<span class="live-badge"><span class="live-dot"></span> Live</span>
     </p>
 
-    <div id="content"><p class="loading">Loading fee schedule…</p></div>
+    <div id="content">
+        <h2>Audit Fee</h2>
+        <div class="fee-hero"><span class="fee-amount">$0.10</span><span class="fee-unit">USD per audit</span></div>
+        <p style="font-size:.88rem;color:var(--text-muted);">Pay in any of the assets below. Each <code>fee_hash</code> is single-use.</p>
+        <div class="table-wrap"><table>
+            <thead><tr><th>Asset</th><th>Network</th><th>Amount</th><th>Destination</th></tr></thead>
+            <tbody>
+                <tr><td class="label-col">XRP</td><td>XRPL Mainnet</td><td>XRP at live price (≈ $0.10)</td><td><code>rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code></td></tr>
+                <tr><td class="label-col">RLUSD</td><td>XRPL Mainnet</td><td>0.10 RLUSD</td><td><code>rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code></td></tr>
+                <tr><td class="label-col">USDC</td><td>Base (chain 8453)</td><td>0.10 USDC</td><td><code>0xd7c5180a0785a6f5778bb030c2238e34a8548dea</code></td></tr>
+            </tbody>
+        </table></div>
+
+        <h2>Premium Consensus</h2>
+        <div class="fee-hero"><span class="fee-amount">$0.25</span><span class="fee-unit">USD per audit</span></div>
+        <p style="font-size:.88rem;color:var(--text-muted);">Two AI models must independently agree before returning PASS.</p>
+        <div class="table-wrap"><table>
+            <thead><tr><th>Asset</th><th>Network</th><th>Amount</th><th>Destination</th></tr></thead>
+            <tbody>
+                <tr><td class="label-col">XRP</td><td>XRPL Mainnet</td><td>XRP ≈ $0.25 at live price</td><td><code>rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code></td></tr>
+                <tr><td class="label-col">RLUSD</td><td>XRPL Mainnet</td><td>0.25 RLUSD</td><td><code>rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR</code></td></tr>
+                <tr><td class="label-col">USDC</td><td>Base (chain 8453)</td><td>0.25 USDC</td><td><code>0xd7c5180a0785a6f5778bb030c2238e34a8548dea</code></td></tr>
+            </tbody>
+        </table></div>
+
+        <h2>Other Fees</h2>
+        <ul>
+            <li><strong>Extra submission attempt:</strong> $0.05 — 3 attempts included by default; each slot above 3 costs $0.05 at vault creation (<code>max_submissions</code> up to 10).</li>
+            <li><strong>Identity KYC (Didit):</strong> $0.50 one-time — unlocks escrows up to $10,000.</li>
+            <li><strong>Skill listing:</strong> $0.10/month — list a recurring skill on the marketplace for 30 days via <code>create_skill_listing()</code>.</li>
+            <li><strong>Batch wallet trust scores:</strong> $0.10 per batch — score up to 50 XRPL addresses in one call. Single score lookups free.</li>
+        </ul>
+
+        <h2>Free Tier</h2>
+        <div class="callout good">3 free audits for wallets with trust score ≥ 25. No XRP fee required — just omit <code>fee_hash</code>.</div>
+
+        <h2>Escrow Limits</h2>
+        <div class="cap-grid">
+            <div class="cap-card"><div class="cap-label">Default cap</div><div class="cap-value">$3,000</div><div class="cap-note">No KYC required below this threshold</div></div>
+            <div class="cap-card kyc"><div class="cap-label">Verified cap</div><div class="cap-value">$10,000</div><div class="cap-note">Identity verification required ($0.50) — <a href="/kyc/">verify identity →</a></div></div>
+        </div>
+        <p style="font-size:.85rem;color:var(--text-muted);">Travel Rule compliance note issued above $1,000. Hard ceiling of $10,000 applies to all wallets.</p>
+
+        <h2>Pro Plan</h2>
+        <div class="callout good" style="display:block;">
+            <strong>$199 / year</strong> — AgentTrust Pro includes escrow templates, agent API keys, and full audit dashboard.
+            <p style="margin-top:.75rem;font-size:.85rem;">Per-audit fees ($0.10) still apply on top of the subscription. <a href="/enterprise/">Learn more →</a></p>
+        </div>
+
+        <div class="callout info" style="margin-top:2rem;">
+            <strong>Live values:</strong> <a href="https://mcp.cryptovault.co.uk/fees" target="_blank" rel="noopener"><code>GET https://mcp.cryptovault.co.uk/fees</code></a> — agents should call <code>get_fees()</code> rather than hard-coding amounts.
+        </div>
+    </div>
 
     <footer>
         <div class="footer-links">
@@ -137,10 +189,10 @@ function el(tag, attrs, ...children) {
     return e;
 }
 
-function assetRow(a) {
+function assetRow(a, usd) {
     const network = a.network === "xrpl:0" ? "XRPL Mainnet" : a.network === "eip155:8453" ? "Base (chain 8453)" : a.network;
     const amount = a.asset === "XRP"
-        ? `${a.amount_xrp} XRP (≈ $${(0.10).toFixed(2)} USD at live price)`
+        ? `${a.amount_xrp} XRP (≈ $${(usd).toFixed(2)} USD at live price)`
         : a.asset === "RLUSD"
         ? `${a.amount_rlusd} RLUSD`
         : `${a.amount_usdc} USDC (${a.amount_units.toLocaleString()} units, ${a.decimals} decimals)`;
@@ -179,7 +231,7 @@ async function load() {
             el("th", {}, "Destination"),
         ));
         const tbody = el("tbody", {});
-        d.audit_fee.assets_accepted.forEach(a => tbody.append(assetRow(a)));
+        d.audit_fee.assets_accepted.forEach(a => tbody.append(assetRow(a, d.audit_fee.usd)));
         tbl.append(thead, tbody);
         wrap.append(tbl);
 
@@ -202,7 +254,7 @@ async function load() {
                 el("th", {}, "Asset"), el("th", {}, "Network"), el("th", {}, "Amount"), el("th", {}, "Destination"),
             ));
             const premTbody = el("tbody", {});
-            pf.assets_accepted.forEach(a => premTbody.append(assetRow(a)));
+            pf.assets_accepted.forEach(a => premTbody.append(assetRow(a, pf.usd)));
             premTbl.append(premThead, premTbody);
             premWrap.append(premTbl);
             root.append(premWrap);
@@ -307,9 +359,9 @@ async function load() {
         );
 
     } catch (err) {
-        document.getElementById("content").innerHTML =
-            `<div class="err">Failed to load fee schedule: ${err.message}. ` +
-            `<a href="https://mcp.cryptovault.co.uk/fees" target="_blank" rel="noopener">View raw JSON →</a></div>`;
+        document.getElementById("content").insertAdjacentHTML("beforeend",
+            `<div class="err">Note: live fee data unavailable (${err.message}). ` +
+            `<a href="https://mcp.cryptovault.co.uk/fees" target="_blank" rel="noopener">View raw JSON →</a></div>`);
     }
 }
 
