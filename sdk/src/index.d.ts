@@ -8,7 +8,23 @@ export interface AuditResult {
   verdict: 'PASS' | 'FAIL';
   score: number;
   summary: string;
-  criteria?: Record<string, string>;
+  criteria_met?: string[];
+  criteria_failed?: string[];
+}
+
+export interface AssessOptions {
+  workerAddress: string;
+  jobType?: string;
+  amountXrp: number;
+}
+
+export interface AssessResult {
+  proceed: boolean;
+  reason: string;
+  trust_score: number;
+  sanctions_clear: boolean;
+  kyc_verified: boolean;
+  escrow_cap_usd: number;
 }
 
 export interface PostJobOptions {
@@ -47,6 +63,26 @@ export interface ClaimJobOptions {
   workerAddress: string;
 }
 
+export interface HireAndPayOptions {
+  task: string;
+  buyerAddress: string;
+  amountXrp: number;
+  workerAddress: string;
+  escrowId: string;
+  feeHash: string;
+  delegateAddress?: string;
+  cancelAfterHrs?: number;
+  callbackUrl?: string;
+  metadata?: string;
+}
+
+export interface HireAndPayResult {
+  tx_dict: Record<string, unknown>;
+  escrow_id: string;
+  evaluate_token: string;
+}
+
+/** @deprecated Use HireAndPayOptions */
 export interface GenerateEscrowOptions {
   escrowId: string;
   feeHash: string;
@@ -59,21 +95,15 @@ export interface GenerateEscrowOptions {
   buyerName?: string;
 }
 
-export interface EscrowResult {
-  condition: string;
-  finish_after_ripple: number;
-  cancel_after_ripple: number;
-  tx_dict?: Record<string, unknown>;
-}
-
-export interface SubmitEscrowTxOptions {
+export interface ConfirmEscrowOptions {
   escrowId: string;
-  txBlob: string;
+  txHash: string;
 }
 
 export interface SubmitWorkOptions {
   escrowId: string;
   work: string;
+  evaluateToken: string;
 }
 
 export interface TrustScore {
@@ -101,19 +131,33 @@ export declare class AgentTrustPaymentRequired extends AgentTrustError {
 export declare class AgentTrust {
   constructor(options?: { baseUrl?: string });
 
+  getFees(): Promise<Record<string, unknown>>;
+  assessCounterparty(options: AssessOptions): Promise<AssessResult>;
+
   audit(options: AuditOptions): Promise<AuditResult>;
+
   postJob(options: PostJobOptions): Promise<{ job_id: string; award_token: string }>;
   getJobs(filters?: GetJobsOptions): Promise<{ jobs: unknown[] }>;
   getJob(jobId: string): Promise<unknown>;
   submitBid(options: SubmitBidOptions): Promise<{ bid_id: string; chat_token: string }>;
   awardBid(options: AwardBidOptions): Promise<unknown>;
   claimJob(options: ClaimJobOptions): Promise<unknown>;
-  generateEscrow(options: GenerateEscrowOptions): Promise<EscrowResult>;
-  submitEscrowTx(options: SubmitEscrowTxOptions): Promise<{ status: string; tx_hash: string }>;
+
+  hireAndPay(options: HireAndPayOptions): Promise<HireAndPayResult>;
+  confirmEscrow(options: ConfirmEscrowOptions): Promise<{ status: string }>;
   submitWork(options: SubmitWorkOptions): Promise<AuditResult>;
+  getEscrow(escrowId: string): Promise<unknown>;
+  getBatchDvpPayload(escrowId: string): Promise<{ batch_tx: Record<string, unknown> }>;
+
   getTrustScore(address: string): Promise<TrustScore>;
+  checkSanctions(address: string): Promise<{ sanctioned: boolean }>;
+  checkKyc(address: string): Promise<{ kyc_verified: boolean; escrow_cap_usd: number }>;
+
+  /** @deprecated Use hireAndPay() */
+  generateEscrow(options: GenerateEscrowOptions): Promise<unknown>;
+  /** @deprecated Use confirmEscrow() */
+  submitEscrowTx(options: { escrowId: string; txBlob: string }): Promise<unknown>;
 }
 
 export declare const PAYMENT_DESTINATION: string;
-export declare const AUDIT_FEE_XRP: string;
 export declare const BASE_URL: string;
