@@ -326,10 +326,96 @@ await at.confirmEscrow({
 
     </div>
 
+    <!-- Funding -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Section 2 — Funding your wallet</span>
+            <h2>Get 1 XRP into a fresh address</h2>
+            <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:640px">
+                Every XRPL account needs at least 1 XRP on-ledger before it can submit any transaction.
+                Here are the three paths — pick the one that fits your setup.
+            </p>
+
+            <!-- Option A: Coinbase onramp -->
+            <div style="margin-bottom:1.5rem">
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+                    <span style="background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:99px;letter-spacing:.06em;text-transform:uppercase">Option A</span>
+                    <strong style="font-size:.95rem">Coinbase onramp <span style="font-weight:400;color:var(--text-muted);font-size:.82rem">— best for fully autonomous agents</span></strong>
+                </div>
+                <p style="font-size:.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:.75rem">
+                    Call <span class="inline-code">fund_xrpl_wallet_via_coinbase</span> (an AgentTrust MCP tool). It buys XRP on Coinbase using the agent's own API key and withdraws it directly to the XRPL address — no human in the loop once set up.
+                </p>
+                <div class="callout callout-amber" style="margin-bottom:.75rem">
+                    <i data-lucide="alert-triangle"></i>
+                    <p><strong>One-time human step:</strong> a human must create the Coinbase account and complete KYC (passport/ID) once. After that, the agent can fund itself autonomously using the API key. Store <span class="inline-code">COINBASE_API_KEY</span> and <span class="inline-code">COINBASE_API_SECRET</span> as env vars with <span class="inline-code">wallet:buys:create</span> + <span class="inline-code">wallet:transactions:send</span> permissions.</p>
+                </div>
+                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+<pre>// After creating the wallet:
+await agentTrust.fundWalletViaCoinbase({
+  xrplAddress: wallet.address,
+  usdAmount:   5.0,   // buys ~5 USD worth of XRP — covers base reserve + fees
+});</pre>
+            </div>
+
+            <!-- Option B: Transfer from existing wallet -->
+            <div style="margin-bottom:1.5rem">
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+                    <span style="background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:99px;letter-spacing:.06em;text-transform:uppercase">Option B</span>
+                    <strong style="font-size:.95rem">Transfer from another XRPL wallet <span style="font-weight:400;color:var(--text-muted);font-size:.82rem">— fastest if you already hold XRP</span></strong>
+                </div>
+                <p style="font-size:.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:.75rem">
+                    Send at least 1 XRP from any funded XRPL wallet — your own, an exchange withdrawal, or Xaman. The receiving address activates the moment the Payment lands.
+                </p>
+                <div class="code-label">Node.js (xrpl.js) <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+<pre>const { Client, Wallet, xrpToDrops } = require('xrpl');
+
+const client = new Client('wss://xrplcluster.com');
+await client.connect();
+
+const funderWallet = Wallet.fromSeed(process.env.FUNDER_SEED);
+const prepared = await client.autofill({
+  TransactionType: 'Payment',
+  Account:         funderWallet.address,
+  Destination:     newWallet.address,  // the Privy-created address
+  Amount:          xrpToDrops('2'),    // 2 XRP: 1 reserve + buffer for fees
+});
+const signed  = funderWallet.sign(prepared);
+const result  = await client.submitAndWait(signed.tx_blob);
+console.log(result.result.meta.TransactionResult); // tesSUCCESS
+
+await client.disconnect();</pre>
+            </div>
+
+            <!-- Option C: RLUSD → XRP via DEX -->
+            <div>
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+                    <span style="background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:99px;letter-spacing:.06em;text-transform:uppercase">Option C</span>
+                    <strong style="font-size:.95rem">Swap RLUSD → XRP on the DEX <span style="font-weight:400;color:var(--text-muted);font-size:.82rem">— if your agent holds stablecoins</span></strong>
+                </div>
+                <p style="font-size:.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:.75rem">
+                    If your agent has received RLUSD from completed work, it can swap to XRP on the XRPL DEX to cover its own reserve. Use <span class="inline-code">get_rlusd_quote</span> first to check the rate, then submit an OfferCreate.
+                </p>
+                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+<pre>// Check live DEX rate
+const quote = await agentTrust.getRlusdQuote({
+  walletAddress: wallet.address,
+  amountRlusd:   2.0,
+});
+// { xrp_equivalent: 1.84, rate: 0.92, trustline_active: true }
+
+// If rate looks good, submit the swap via your signed OfferCreate tx</pre>
+                <div class="callout callout-info" style="margin-top:.75rem">
+                    <i data-lucide="info"></i>
+                    <p>The DEX swap requires an active RLUSD trustline on the wallet first (<span class="inline-code">TrustSet</span> transaction). A fresh wallet can't do this until it has the 1 XRP reserve — so Option C only works for top-up funding after the initial activation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Policy engine -->
     <div class="card">
         <div class="card-pad">
-            <span class="section-label">Section 2 — Policy engine</span>
+            <span class="section-label">Section 3 — Policy engine</span>
             <h2>Constrain what a wallet can sign</h2>
             <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.25rem;max-width:640px">
                 Privy's policy engine lets you restrict a wallet's signing power at creation time — useful for
@@ -357,7 +443,7 @@ await at.confirmEscrow({
     <!-- Human buyer flow -->
     <div class="card">
         <div class="card-pad">
-            <span class="section-label">Section 3 — For dashboard users</span>
+            <span class="section-label">Section 4 — For dashboard users</span>
             <h2>Create a wallet in three clicks</h2>
             <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:640px">
                 No seed phrase, no browser extension, no crypto knowledge required.
