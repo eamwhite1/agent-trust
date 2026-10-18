@@ -404,6 +404,28 @@
             <div class="wallet-list" id="wallet-list">
                 <div class="empty"><span class="spinner"></span></div>
             </div>
+
+            <!-- Privy: create a new XRPL wallet -->
+            <div class="add-wallet-form" style="margin-bottom:1rem;border-color:var(--blue-border);background:var(--blue-dim)">
+                <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+                    <div style="flex:1;min-width:200px">
+                        <h3 style="color:var(--blue);margin-bottom:.35rem">New to XRPL? Get a wallet instantly</h3>
+                        <p style="font-size:.82rem;color:var(--text-muted);line-height:1.55">
+                            Create a secure XRPL wallet via <strong>Privy</strong> — no seed phrase to manage.
+                            Sign in with email or social, and your wallet address is ready in seconds.
+                        </p>
+                    </div>
+                    <a href="https://privy.io" target="_blank" rel="noopener" id="privy-cta-btn"
+                       style="display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.1rem;border-radius:8px;background:var(--blue);color:#fff;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        Create wallet with Privy
+                    </a>
+                </div>
+                <p style="font-size:.75rem;color:var(--text-faint);margin-top:.75rem">
+                    After creating your wallet on Privy, copy the XRPL address (starts with <code style="font-size:.72rem">r</code>) and paste it below. Fund it with at least 1 XRP to activate it on-ledger.
+                </p>
+            </div>
+
             <div class="add-wallet-form">
                 <h3>Link a wallet</h3>
                 <div class="form-row">

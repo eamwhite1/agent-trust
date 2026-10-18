@@ -159,5 +159,22 @@ export declare class AgentTrust {
   submitEscrowTx(options: { escrowId: string; txBlob: string }): Promise<unknown>;
 }
 
+export interface PrivyWalletOptions {
+  appId: string;
+  appSecret: string;
+}
+
+export interface PrivyWalletResult {
+  id: string;
+  address: string;
+  publicKey: string;
+}
+
+export declare class PrivyWallet {
+  constructor(options: PrivyWalletOptions);
+  createWallet(): Promise<PrivyWalletResult>;
+  signTransaction(walletId: string, address: string, publicKey: string, tx: Record<string, unknown>): Promise<string>;
+}
+
 export declare const PAYMENT_DESTINATION: string;
 export declare const BASE_URL: string;

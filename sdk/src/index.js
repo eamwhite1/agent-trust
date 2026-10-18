@@ -393,6 +393,99 @@ class AgentTrust {
   }
 }
 
+// ── Privy XRPL Wallet ─────────────────────────────────────────────────────────
+
+/**
+ * Server-side XRPL wallet creation and signing via Privy.
+ *
+ * Privy issues an XRPL wallet (r-address) and signs transactions server-side —
+ * no seed phrase stored in your code. Requires a Privy app with XRPL enabled.
+ *
+ * @example
+ * const privy = new PrivyWallet({ appId: process.env.PRIVY_APP_ID, appSecret: process.env.PRIVY_APP_SECRET });
+ * const wallet = await privy.createWallet();
+ * // Fund wallet with 1 XRP (base reserve) before use
+ * const signed = await privy.signTransaction(wallet.id, wallet.address, wallet.publicKey, txObject);
+ * await xrplClient.submit(signed);
+ */
+class PrivyWallet {
+  /**
+   * @param {object} options
+   * @param {string} options.appId     - Privy app ID
+   * @param {string} options.appSecret - Privy app secret
+   */
+  constructor({ appId, appSecret } = {}) {
+    if (!appId || !appSecret) throw new AgentTrustError('PrivyWallet requires appId and appSecret');
+    this._appId = appId;
+    this._appSecret = appSecret;
+    this._base = 'https://api.privy.io/v1';
+  }
+
+  /** @private */
+  async _req(method, path, body) {
+    const creds = Buffer.from(`${this._appId}:${this._appSecret}`).toString('base64');
+    const res = await fetch(`${this._base}${path}`, {
+      method,
+      headers: {
+        'Authorization': `Basic ${creds}`,
+        'privy-app-id': this._appId,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      throw new AgentTrustError(`Privy API error ${res.status}: ${text}`);
+    }
+    return res.json();
+  }
+
+  /**
+   * Create a new server-side XRPL wallet via Privy.
+   * Fund the returned address with at least 1 XRP before submitting transactions.
+   *
+   * @returns {Promise<{id: string, address: string, publicKey: string}>}
+   */
+  async createWallet() {
+    const data = await this._req('POST', '/wallets', { chain_type: 'xrpl' });
+    return {
+      id: data.id,
+      address: data.address,
+      publicKey: data.public_key,
+    };
+  }
+
+  /**
+   * Sign an XRPL transaction using a Privy wallet.
+   * Builds the signing payload with xrpl.js encodeForSigning, sends to Privy,
+   * and returns the signed transaction blob ready to submit.
+   *
+   * @param {string} walletId   - Privy wallet ID
+   * @param {string} address    - XRPL r-address of the wallet
+   * @param {string} publicKey  - 33-byte compressed secp256k1 pubkey (hex, no 0x)
+   * @param {object} tx         - Unsigned XRPL transaction object (pre-autofilled)
+   * @returns {Promise<string>} - Signed transaction blob (hex), ready for xrpl.submit()
+   */
+  async signTransaction(walletId, address, publicKey, tx) {
+    // Import xrpl for encoding — only required when signing
+    let encodeForSigning;
+    try {
+      ({ encodeForSigning } = require('xrpl'));
+    } catch {
+      throw new AgentTrustError(
+        'xrpl package is required for transaction signing. Install it: npm install xrpl'
+      );
+    }
+    const forSigning = { ...tx, Account: address, SigningPubKey: publicKey };
+    const prefixedHex = encodeForSigning(forSigning);
+    const { data } = await this._req('POST', `/wallets/${walletId}/rpc`, {
+      method: 'xrpl_signTransaction',
+      params: { transaction: prefixedHex, encoding: 'hex' },
+    });
+    return data.signed_transaction;
+  }
+}
+
 // ── Error classes ──────────────────────────────────────────────────────────────
 
 class AgentTrustError extends Error {
@@ -411,6 +504,7 @@ class AgentTrustPaymentRequired extends AgentTrustError {
 
 module.exports = {
   AgentTrust,
+  PrivyWallet,
   AgentTrustError,
   AgentTrustPaymentRequired,
   PAYMENT_DESTINATION,
