@@ -198,10 +198,14 @@
     .delegation-perms { color: var(--blue); background: var(--blue-dim); border-radius: 4px; padding: 1px 7px; font-size: .72rem; white-space: nowrap; }
     .delegation-revoke-hint { font-size: .72rem; color: var(--text-faint); text-decoration: none; white-space: nowrap; }
     .delegation-revoke-hint:hover { color: var(--red); }
-    .btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: .35rem .75rem; border-radius: 20px; font-size: .75rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, border-color .15s; }
+    .btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: .35rem .75rem; border-radius: 20px; font-size: .75rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, border-color .15s; position: relative; }
     .btn-sm:hover { color: var(--blue); border-color: var(--blue-border); }
     .btn-sm.danger:hover { color: var(--red); border-color: var(--red); }
     .btn-sm svg { width: 12px; height: 12px; }
+    .btn-sm[data-tip] { position: relative; }
+    .btn-sm[data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; font-size: .7rem; font-weight: 500; white-space: nowrap; padding: .3rem .6rem; border-radius: 6px; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 200; }
+    .btn-sm[data-tip]::before { content: ''; position: absolute; bottom: calc(100% + 1px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1a1a2e; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 200; }
+    .btn-sm[data-tip]:hover::after, .btn-sm[data-tip]:hover::before { opacity: 1; }
     .verified-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700; color: var(--green); background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 20px; padding: .15rem .5rem; }
     .unverified-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700; color: var(--amber); background: var(--amber-dim); border-radius: 20px; padding: .15rem .5rem; }
 
@@ -445,6 +449,32 @@
                     </div>
                 </div>
                 <p id="wallet-add-msg" style="font-size:.8rem;margin-top:.75rem;color:var(--text-muted);display:none"></p>
+            </div>
+        </div>
+
+        <!-- Fund modal -->
+        <div id="fund-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                    <h3 style="margin:0;font-size:1rem">Fund wallet</h3>
+                    <button onclick="closeFundModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;line-height:1">✕</button>
+                </div>
+                <p id="fund-modal-addr" style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem;word-break:break-all"></p>
+                <div style="display:flex;flex-direction:column;gap:.75rem">
+                    <div style="border:1px solid var(--border);border-radius:10px;padding:1rem">
+                        <div style="font-size:.8rem;font-weight:700;margin-bottom:.3rem">Option A — Coinbase onramp</div>
+                        <div style="font-size:.78rem;color:var(--text-muted);line-height:1.55">Best for agents. Requires <code style="font-size:.72rem">COINBASE_API_KEY</code> + <code style="font-size:.72rem">COINBASE_API_SECRET</code> env vars. Call <code style="font-size:.72rem">fund_xrpl_wallet_via_coinbase(address)</code> via the MCP tool — buys XRP on Coinbase and withdraws it directly.</div>
+                    </div>
+                    <div style="border:1px solid var(--border);border-radius:10px;padding:1rem">
+                        <div style="font-size:.8rem;font-weight:700;margin-bottom:.3rem">Option B — Send from exchange or wallet</div>
+                        <div style="font-size:.78rem;color:var(--text-muted);line-height:1.55;margin-bottom:.6rem">Withdraw XRP from Coinbase, Kraken, or any exchange directly to this address. Or send from Xaman / another XRPL wallet. Minimum 1 XRP to activate the account.</div>
+                        <div style="display:flex;align-items:center;gap:.5rem;background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:8px;padding:.5rem .75rem">
+                            <code id="fund-modal-addr-copy" style="font-size:.75rem;flex:1;word-break:break-all;color:var(--blue)"></code>
+                            <button onclick="copyFundAddress()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:.25rem .6rem;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap">Copy</button>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://www.cryptovault.co.uk/privy-wallet/" target="_blank" style="display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:var(--blue)">Full funding guide →</a>
             </div>
         </div>
 
@@ -1004,13 +1034,14 @@ function renderWallets(wallets) {
                 <div class="wallet-label">${w.label || 'No label'}</div>
             </div>
             <div class="wallet-actions">
-                ${w.privy_wallet_id ? `<button class="btn-sm" onclick="openWithdrawModal(${w.wallet_id}, '${w.xrpl_address}')"><i data-lucide="send"></i> Send</button>` : ''}
+                <button class="btn-sm" onclick="openFundModal('${w.xrpl_address}')" data-tip="Show funding options"><i data-lucide="arrow-down-to-line"></i> Fund</button>
+                ${w.privy_wallet_id ? `<button class="btn-sm" onclick="openWithdrawModal(${w.wallet_id}, '${w.xrpl_address}')" data-tip="Send XRP from this wallet"><i data-lucide="send"></i> Send</button>` : ''}
                 ${w.verified
                     ? '<span class="verified-badge"><i data-lucide="check"></i> Verified</span>'
                     : `<span class="unverified-badge">Unverified</span>
-                       <button class="btn-sm" onclick="verifyWallet(${w.wallet_id})"><i data-lucide="shield"></i> Verify</button>`
+                       <button class="btn-sm" onclick="verifyWallet(${w.wallet_id})" data-tip="Prove ownership: send an AccountSet tx from this address with the challenge in a Memo, then click Verify"><i data-lucide="shield"></i> Verify</button>`
                 }
-                <button class="btn-sm danger" onclick="removeWallet(${w.wallet_id})"><i data-lucide="trash-2"></i></button>
+                <button class="btn-sm danger" onclick="removeWallet(${w.wallet_id})" data-tip="Remove wallet"><i data-lucide="trash-2"></i></button>
             </div>
             <div class="wallet-delegations" id="delegations-${w.wallet_id}">
                 <span style="font-size:.75rem;color:var(--text-faint)">Loading delegations…</span>
@@ -1068,6 +1099,22 @@ async function submitWithdraw() {
         btn.disabled = false;
         btn.textContent = 'Send';
     }
+}
+
+function openFundModal(address) {
+    document.getElementById('fund-modal-addr').textContent = address;
+    document.getElementById('fund-modal-addr-copy').textContent = address;
+    document.getElementById('fund-modal').style.display = 'flex';
+}
+function closeFundModal() {
+    document.getElementById('fund-modal').style.display = 'none';
+}
+function copyFundAddress() {
+    const addr = document.getElementById('fund-modal-addr-copy').textContent;
+    navigator.clipboard.writeText(addr);
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
 }
 
 async function createPrivyWallet() {
