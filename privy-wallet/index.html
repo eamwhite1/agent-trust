@@ -357,41 +357,38 @@ await at.confirmEscrow({
     <!-- Human buyer flow -->
     <div class="card">
         <div class="card-pad">
-            <span class="section-label">Section 3 — Human buyer flow</span>
-            <h2>Getting a wallet from the dashboard</h2>
+            <span class="section-label">Section 3 — For dashboard users</span>
+            <h2>Create a wallet in three clicks</h2>
             <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1.5rem;max-width:640px">
-                If your app has integrated the Privy SDK, buyers can create an XRPL wallet with email or social login.
-                This is the zero-friction path for non-technical users.
+                No seed phrase, no browser extension, no crypto knowledge required.
+                Privy creates a real XRPL wallet using your existing email or social login.
             </p>
             <div class="steps">
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
                         <div class="step-num" style="background:var(--blue)">1</div>
-                        <div><div class="step-title">Open the AgentTrust dashboard → Wallets</div>
-                        <div class="step-desc">At <a href="https://app.cryptovault.co.uk/" style="color:var(--blue)">app.cryptovault.co.uk</a>, go to the Wallets section. Click <strong>"Privy wallet guide"</strong> to open this page, then follow the steps for your setup.</div></div>
+                        <div><div class="step-title">Go to the dashboard → Wallets</div>
+                        <div class="step-desc">Open <a href="https://app.cryptovault.co.uk/" style="color:var(--blue)">app.cryptovault.co.uk</a> and navigate to the <strong>Wallets</strong> section. You'll see a <strong>"Create wallet with Privy"</strong> card at the top.</div></div>
                     </div>
                 </div>
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
                         <div class="step-num" style="background:var(--blue)">2</div>
-                        <div><div class="step-title">Sign in on your Privy-powered app</div>
-                        <div class="step-desc">Email, Google, or Apple login. No extension or seed phrase — Privy creates the wallet behind the scenes.</div></div>
+                        <div><div class="step-title">Sign in with email, Google, or Apple</div>
+                        <div class="step-desc">Click <strong>Create wallet with Privy</strong>. You'll sign in with a social account you already have — no new app to download, no seed phrase to write down. Privy generates your XRPL wallet behind the scenes and your address is linked to your AgentTrust account automatically.</div></div>
                     </div>
                 </div>
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
                         <div class="step-num" style="background:var(--blue)">3</div>
-                        <div><div class="step-title">Copy your XRPL address</div>
-                        <div class="step-desc">Your address starts with <span class="inline-code">r</span>. Paste it into the "Link a wallet" form in the AgentTrust dashboard.</div></div>
+                        <div><div class="step-title">Fund with 1 XRP to activate</div>
+                        <div class="step-desc">Your wallet address (starting with <span class="inline-code">r</span>) needs at least 1 XRP to go live on the XRPL ledger. Send it from an exchange like Coinbase or Kraken — the dashboard will show your wallet as active once the deposit arrives.</div></div>
                     </div>
                 </div>
-                <div class="step" style="box-shadow:none">
-                    <div class="step-header">
-                        <div class="step-num" style="background:var(--blue)">4</div>
-                        <div><div class="step-title">Fund with 1 XRP</div>
-                        <div class="step-desc">Send at least 1 XRP to activate the account on-ledger. Use an exchange, Coinbase, or the <span class="inline-code">fund_xrpl_wallet_via_coinbase</span> MCP tool.</div></div>
-                    </div>
-                </div>
+            </div>
+            <div class="callout callout-info" style="margin-top:1.5rem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                <div><strong>Your keys, your wallet.</strong> Privy holds nothing on your behalf — your wallet is a real XRPL account. You can export your private key at any time from your Privy account settings if you ever want to move to a hardware wallet or another app.</div>
             </div>
         </div>
     </div>
