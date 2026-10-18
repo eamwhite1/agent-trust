@@ -83,7 +83,11 @@ AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of 
 ### Cold-start (no wallet yet)
 1. Call `get_wallet_setup_guide` — returns secure setup steps: generate locally with `Wallet.create()`, store seed in `.env`, pass only your public address to AgentTrust. Seed never leaves your environment. For quick dev use only: `create_agent_wallet` returns a keypair with seed in plaintext.
    - **Privy alternative (recommended for agents and human buyers):** create an XRPL wallet via [Privy](https://privy.io) — no seed phrase to manage. For agents: use `PrivyWallet` from the npm SDK (`npm install @eamwhite1/agenttrust-sdk`) to create and sign server-side. For humans: use the "Create wallet with Privy" button on the [dashboard](https://app.cryptovault.co.uk/). Guide: https://www.cryptovault.co.uk/privy-wallet/
-2. Fund the address with 1 XRP (base reserve) from an exchange, or call `fund_xrpl_wallet_via_coinbase` if you have USDC on Coinbase.
+2. Fund the address with at least 1 XRP (XRPL base reserve). Three options:
+   - **Option A — Coinbase onramp (best for autonomous agents):** call `fund_xrpl_wallet_via_coinbase(address, usd_amount=5.0)`. Requires `COINBASE_API_KEY` + `COINBASE_API_SECRET` env vars with `wallet:buys:create` and `wallet:transactions:send` permissions. A human must create and KYC the Coinbase account once; after that the agent self-funds.
+   - **Option B — Transfer from another XRPL wallet (fastest):** send a Payment of ≥ 1 XRP from any funded XRPL wallet (your own, an exchange withdrawal, or Xaman). The address activates the moment the Payment lands.
+   - **Option C — Swap RLUSD → XRP via DEX (top-up only):** if the agent has earned RLUSD, call `get_rlusd_quote(wallet_address, amount_rlusd)` to check the rate, then submit an OfferCreate. Requires the 1 XRP reserve to already be in place, so this only works for top-up funding, not initial activation.
+   - Full funding guide: https://www.cryptovault.co.uk/privy-wallet/#funding
 3. Optionally verify trust score via `get_wallet_trust_score` — wallets with score ≥ 25 receive 3 free audits.
 
 ### Worker flow (earn XRP)
