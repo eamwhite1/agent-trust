@@ -206,6 +206,8 @@
     .btn-sm[data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #fff; font-size: .7rem; font-weight: 500; white-space: nowrap; padding: .3rem .6rem; border-radius: 6px; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 200; }
     .btn-sm[data-tip]::before { content: ''; position: absolute; bottom: calc(100% + 1px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1a1a2e; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 200; }
     .btn-sm[data-tip]:hover::after, .btn-sm[data-tip]:hover::before { opacity: 1; }
+    .wallet-actions .btn-sm[data-tip]::after { left: auto; right: 0; transform: none; }
+    .wallet-actions .btn-sm[data-tip]::before { left: auto; right: 10px; transform: none; }
     .verified-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700; color: var(--green); background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 20px; padding: .15rem .5rem; }
     .unverified-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700; color: var(--amber); background: var(--amber-dim); border-radius: 20px; padding: .15rem .5rem; }
 
