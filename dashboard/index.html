@@ -437,11 +437,38 @@
                         <label class="form-label">Label (optional)</label>
                         <input class="form-input" id="new-wallet-label" placeholder="e.g. Procurement agent">
                     </div>
-                    <button class="btn-primary" onclick="addWallet()">
-                        <i data-lucide="plus"></i> Link
-                    </button>
+                    <div style="display:flex;flex-direction:column;gap:.35rem">
+                        <label class="form-label" style="visibility:hidden">Link</label>
+                        <button class="btn-primary" onclick="addWallet()">
+                            <i data-lucide="plus"></i> Link
+                        </button>
+                    </div>
                 </div>
                 <p id="wallet-add-msg" style="font-size:.8rem;margin-top:.75rem;color:var(--text-muted);display:none"></p>
+            </div>
+        </div>
+
+        <!-- Withdraw modal -->
+        <div id="withdraw-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+                    <h3 style="margin:0;font-size:1rem">Send XRP</h3>
+                    <button onclick="closeWithdrawModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;line-height:1">✕</button>
+                </div>
+                <p id="withdraw-from-label" style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem"></p>
+                <div class="form-group" style="margin-bottom:.75rem">
+                    <label class="form-label">Destination address</label>
+                    <input class="form-input" id="withdraw-dest" placeholder="rXXXXXXXXXXXXXXXX" spellcheck="false">
+                </div>
+                <div class="form-group" style="margin-bottom:1.25rem">
+                    <label class="form-label">Amount (XRP)</label>
+                    <input class="form-input" id="withdraw-amount" type="number" min="0.000001" step="any" placeholder="10">
+                </div>
+                <div id="withdraw-msg" style="font-size:.8rem;margin-bottom:.75rem;display:none"></div>
+                <div style="display:flex;gap:.75rem">
+                    <button class="btn-action" onclick="closeWithdrawModal()" style="flex:1">Cancel</button>
+                    <button class="btn-primary" id="withdraw-submit-btn" onclick="submitWithdraw()" style="flex:1">Send</button>
+                </div>
             </div>
         </div>
 
@@ -977,6 +1004,7 @@ function renderWallets(wallets) {
                 <div class="wallet-label">${w.label || 'No label'}</div>
             </div>
             <div class="wallet-actions">
+                ${w.privy_wallet_id ? `<button class="btn-sm" onclick="openWithdrawModal(${w.wallet_id}, '${w.xrpl_address}')"><i data-lucide="send"></i> Send</button>` : ''}
                 ${w.verified
                     ? '<span class="verified-badge"><i data-lucide="check"></i> Verified</span>'
                     : `<span class="unverified-badge">Unverified</span>
@@ -991,6 +1019,55 @@ function renderWallets(wallets) {
     `).join('');
     lucide.createIcons();
     wallets.forEach(w => loadDelegations(w.wallet_id));
+}
+
+let withdrawWalletId = null;
+
+function openWithdrawModal(walletId, address) {
+    withdrawWalletId = walletId;
+    document.getElementById('withdraw-from-label').textContent = `From: ${address}`;
+    document.getElementById('withdraw-dest').value = '';
+    document.getElementById('withdraw-amount').value = '';
+    const msg = document.getElementById('withdraw-msg');
+    msg.style.display = 'none';
+    document.getElementById('withdraw-submit-btn').disabled = false;
+    document.getElementById('withdraw-submit-btn').textContent = 'Send';
+    document.getElementById('withdraw-modal').style.display = 'flex';
+}
+
+function closeWithdrawModal() {
+    document.getElementById('withdraw-modal').style.display = 'none';
+    withdrawWalletId = null;
+}
+
+async function submitWithdraw() {
+    const dest = document.getElementById('withdraw-dest').value.trim();
+    const amount = document.getElementById('withdraw-amount').value.trim();
+    const msg = document.getElementById('withdraw-msg');
+    const btn = document.getElementById('withdraw-submit-btn');
+    if (!dest || !amount) { msg.style.display='block'; msg.style.color='var(--red,#dc2626)'; msg.textContent='Enter destination and amount.'; return; }
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    msg.style.display = 'none';
+    try {
+        const res = await fetch(`${API}/enterprise/wallets/${withdrawWalletId}/withdraw`, {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destination: dest, amount_xrp: parseFloat(amount) }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed');
+        msg.style.display = 'block';
+        msg.style.color = 'var(--green,#16a34a)';
+        msg.textContent = `✓ Sent ${amount} XRP — tx: ${data.tx_hash || data.engine_result}`;
+        btn.textContent = 'Done';
+    } catch (e) {
+        msg.style.display = 'block';
+        msg.style.color = 'var(--red,#dc2626)';
+        msg.textContent = `Error: ${e.message}`;
+        btn.disabled = false;
+        btn.textContent = 'Send';
+    }
 }
 
 async function createPrivyWallet() {
@@ -1010,6 +1087,8 @@ async function createPrivyWallet() {
         status.style.color = 'var(--green, #16a34a)';
         status.innerHTML = `✓ Wallet created: <strong>${data.xrpl_address}</strong> — fund with at least 1 XRP to activate it on-ledger.`;
         await loadWallets();
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Create another wallet';
     } catch (e) {
         status.style.color = 'var(--red, #dc2626)';
         status.textContent = `Error: ${e.message}`;
