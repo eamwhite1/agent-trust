@@ -171,7 +171,7 @@
     .form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--text-muted); margin-bottom: .35rem; }
     .form-group input, .form-group textarea, .form-group select { width: 100%; padding: .5rem .75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--ground); color: var(--text); font-size: .85rem; box-sizing: border-box; }
     .form-group textarea { min-height: 90px; resize: vertical; font-family: inherit; }
-    .form-row { display: flex; gap: .75rem; }
+    .form-row { display: flex; gap: .75rem; align-items: flex-end; }
     .form-row .form-group { flex: 1; }
     .create-step { flex: 1; display: flex; align-items: center; gap: .5rem; font-size: .78rem; font-weight: 600; color: var(--text-faint); padding: .5rem .75rem; border-bottom: 2px solid var(--border); }
     .create-step.active { color: var(--blue); border-color: var(--blue); }
@@ -409,20 +409,19 @@
             <div class="add-wallet-form" style="margin-bottom:1rem;border-color:var(--blue-border);background:var(--blue-dim)">
                 <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">
                     <div style="flex:1;min-width:200px">
-                        <h3 style="color:var(--blue);margin-bottom:.35rem">New to XRPL? Get a wallet instantly</h3>
+                        <h3 style="color:var(--blue);margin-bottom:.35rem">New to XRPL? Create a wallet without a seed phrase</h3>
                         <p style="font-size:.82rem;color:var(--text-muted);line-height:1.55">
-                            Create a secure XRPL wallet via <strong>Privy</strong> — no seed phrase to manage.
-                            Sign in with email or social, and your wallet address is ready in seconds.
+                            <strong>Privy</strong> is a developer wallet SDK. If you or your developer has integrated Privy into your app, you can create an XRPL wallet through it — no seed phrase to store or secure. For a step-by-step setup guide (including the npm SDK for agents), see the link below.
                         </p>
                     </div>
-                    <a href="https://privy.io" target="_blank" rel="noopener" id="privy-cta-btn"
+                    <a href="https://www.cryptovault.co.uk/privy-wallet/" target="_blank" rel="noopener"
                        style="display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.1rem;border-radius:8px;background:var(--blue);color:#fff;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                        Create wallet with Privy
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Privy wallet guide
                     </a>
                 </div>
                 <p style="font-size:.75rem;color:var(--text-faint);margin-top:.75rem">
-                    After creating your wallet on Privy, copy the XRPL address (starts with <code style="font-size:.72rem">r</code>) and paste it below. Fund it with at least 1 XRP to activate it on-ledger.
+                    Once you have an XRPL address (starts with <code style="font-size:.72rem">r</code>), paste it into the form below. Fund it with at least 1 XRP to activate it on-ledger.
                 </p>
             </div>
 
