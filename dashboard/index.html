@@ -1029,9 +1029,12 @@ function renderWallets(wallets) {
     }
     document.getElementById('wallet-list').innerHTML = wallets.map(w => `
         <div class="wallet-card">
-            <div>
+            <div style="flex:1;min-width:0">
                 <div class="wallet-addr">${w.xrpl_address}</div>
-                <div class="wallet-label">${w.label || 'No label'}</div>
+                <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.2rem">
+                    <div class="wallet-label">${w.label || 'No label'}</div>
+                    <div id="balance-${w.wallet_id}" style="font-size:.75rem;color:var(--text-faint)">—</div>
+                </div>
             </div>
             <div class="wallet-actions">
                 <button class="btn-sm" onclick="openFundModal('${w.xrpl_address}')" data-tip="Show funding options"><i data-lucide="arrow-down-to-line"></i> Fund</button>
@@ -1049,7 +1052,35 @@ function renderWallets(wallets) {
         </div>
     `).join('');
     lucide.createIcons();
-    wallets.forEach(w => loadDelegations(w.wallet_id));
+    wallets.forEach(w => {
+        loadDelegations(w.wallet_id);
+        loadWalletBalance(w.wallet_id, w.xrpl_address);
+    });
+}
+
+async function loadWalletBalance(walletId, address) {
+    const el = document.getElementById(`balance-${walletId}`);
+    if (!el) return;
+    try {
+        const res = await fetch('https://xrplcluster.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ method: 'account_info', params: [{ account: address, ledger_index: 'validated' }] }),
+        });
+        const data = await res.json();
+        const drops = data?.result?.account_data?.Balance;
+        if (drops === undefined) {
+            el.textContent = 'Not activated';
+            el.style.color = 'var(--amber)';
+        } else {
+            const xrp = (parseInt(drops) / 1_000_000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+            el.textContent = `${xrp} XRP`;
+            el.style.color = 'var(--text-muted)';
+            el.style.fontWeight = '600';
+        }
+    } catch {
+        el.textContent = '';
+    }
 }
 
 let withdrawWalletId = null;
