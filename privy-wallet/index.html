@@ -22,7 +22,6 @@
         --green:        #00B97A;
         --red:          #E5373D;
         --amber:        #D97706;
-        --privy:        #7c3aed;
         --privy-dim:    rgba(124,58,237,.08);
         --privy-border: rgba(124,58,237,.2);
         --text:         #0d0d12;
@@ -64,7 +63,7 @@
 
     .doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
     h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
-    h1 em { font-style: italic; color: var(--privy); }
+    h1 em { font-style: italic; color: var(--blue); }
     .doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2.5rem; line-height: 1.7; }
 
     .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
@@ -367,28 +366,28 @@ await at.confirmEscrow({
             <div class="steps">
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
-                        <div class="step-num" style="background:var(--privy)">1</div>
+                        <div class="step-num" style="background:var(--blue)">1</div>
                         <div><div class="step-title">Open the AgentTrust dashboard → Wallets</div>
                         <div class="step-desc">At <a href="https://app.cryptovault.co.uk/" style="color:var(--blue)">app.cryptovault.co.uk</a>, go to the Wallets section. Click <strong>"Privy wallet guide"</strong> to open this page, then follow the steps for your setup.</div></div>
                     </div>
                 </div>
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
-                        <div class="step-num" style="background:var(--privy)">2</div>
+                        <div class="step-num" style="background:var(--blue)">2</div>
                         <div><div class="step-title">Sign in on your Privy-powered app</div>
                         <div class="step-desc">Email, Google, or Apple login. No extension or seed phrase — Privy creates the wallet behind the scenes.</div></div>
                     </div>
                 </div>
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
-                        <div class="step-num" style="background:var(--privy)">3</div>
+                        <div class="step-num" style="background:var(--blue)">3</div>
                         <div><div class="step-title">Copy your XRPL address</div>
                         <div class="step-desc">Your address starts with <span class="inline-code">r</span>. Paste it into the "Link a wallet" form in the AgentTrust dashboard.</div></div>
                     </div>
                 </div>
                 <div class="step" style="box-shadow:none">
                     <div class="step-header">
-                        <div class="step-num" style="background:var(--privy)">4</div>
+                        <div class="step-num" style="background:var(--blue)">4</div>
                         <div><div class="step-title">Fund with 1 XRP</div>
                         <div class="step-desc">Send at least 1 XRP to activate the account on-ledger. Use an exchange, Coinbase, or the <span class="inline-code">fund_xrpl_wallet_via_coinbase</span> MCP tool.</div></div>
                     </div>
