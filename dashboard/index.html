@@ -534,6 +534,48 @@
             </div>
         </div>
 
+        <!-- Delegation modal -->
+        <div id="delegate-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+                    <h3 style="margin:0;font-size:1rem">Grant XLS-75 Delegation</h3>
+                    <button onclick="closeDelegateModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;line-height:1">✕</button>
+                </div>
+                <p id="delegate-from-label" style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem"></p>
+                <p style="font-size:.82rem;color:var(--text-muted);line-height:1.6;margin-bottom:1.25rem">
+                    A delegation lets an agent key sign specific transaction types on behalf of this wallet — without ever holding your seed phrase. Live on XRPL mainnet since 8 Oct 2026.
+                </p>
+                <div class="form-group" style="margin-bottom:1rem">
+                    <label class="form-label">Agent wallet address to delegate to</label>
+                    <input class="form-input" id="delegate-agent-addr" placeholder="rXXXXXXXXXXXXXXXX" spellcheck="false">
+                </div>
+                <div style="margin-bottom:1.25rem">
+                    <label class="form-label" style="display:block;margin-bottom:.6rem">Transaction types to permit</label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem .75rem">
+                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="dp-EscrowCreate" checked> EscrowCreate</label>
+                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="dp-Payment"> Payment</label>
+                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="dp-NFTokenCreateOffer"> NFTokenCreateOffer</label>
+                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="dp-NFTokenAcceptOffer"> NFTokenAcceptOffer</label>
+                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="dp-EscrowFinish"> EscrowFinish</label>
+                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="dp-EscrowCancel"> EscrowCancel</label>
+                    </div>
+                </div>
+                <div id="delegate-unsigned-tx" style="display:none;margin-bottom:1rem">
+                    <p style="font-size:.8rem;font-weight:600;margin-bottom:.4rem;color:var(--text)">Sign this transaction with your wallet (e.g. Xaman) and submit it to XRPL:</p>
+                    <div style="position:relative">
+                        <pre id="delegate-tx-json" style="font-size:.7rem;background:var(--ground);border:1px solid var(--border);border-radius:8px;padding:.75rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto"></pre>
+                        <button onclick="copyDelegateTx()" style="position:absolute;top:.5rem;right:.5rem;background:var(--blue);color:#fff;border:none;border-radius:6px;padding:.2rem .5rem;font-size:.68rem;font-weight:600;cursor:pointer">Copy</button>
+                    </div>
+                    <a href="https://xaman.app" target="_blank" rel="noopener" style="display:inline-block;margin-top:.6rem;font-size:.78rem;color:var(--blue)">Open Xaman →</a>
+                </div>
+                <div id="delegate-msg" style="font-size:.8rem;margin-bottom:.75rem;display:none"></div>
+                <div style="display:flex;gap:.75rem">
+                    <button class="btn-action" onclick="closeDelegateModal()" style="flex:1">Cancel</button>
+                    <button class="btn-primary" id="delegate-submit-btn" onclick="submitDelegate()" style="flex:1">Grant delegation</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Subscription -->
         <div class="page" id="page-subscription">
             <div class="page-header">
@@ -1082,6 +1124,7 @@ function renderWallets(wallets) {
                     : `<span class="unverified-badge">Unverified</span>
                        <button class="btn-sm" onclick="${w.privy_wallet_id ? `verifyPrivyWallet(${w.wallet_id})` : `showVerifyInstructions(${w.wallet_id})`}" data-tip="${w.privy_wallet_id ? 'Click to verify automatically — no manual steps needed' : 'Click to see verification instructions'}"><i data-lucide="shield"></i> Verify</button>`
                 }
+                <button class="btn-sm" onclick="openDelegateModal(${w.wallet_id}, '${w.xrpl_address}', ${!!w.privy_wallet_id})" data-tip="Grant XLS-75 delegation to an agent key"><i data-lucide="key"></i> Delegate</button>
                 <button class="btn-sm danger" onclick="removeWallet(${w.wallet_id})" data-tip="Remove wallet"><i data-lucide="trash-2"></i></button>
             </div>
             <div class="wallet-delegations" id="delegations-${w.wallet_id}">
@@ -1305,6 +1348,74 @@ async function loadDelegations(walletId) {
     } catch {
         el.innerHTML = '<span style="font-size:.75rem;color:var(--text-faint)">Could not load delegations.</span>';
     }
+}
+
+// ── Delegation modal ──
+let delegateWalletId = null;
+let delegateIsPrivy = false;
+
+function openDelegateModal(walletId, address, isPrivy) {
+    delegateWalletId = walletId;
+    delegateIsPrivy = isPrivy;
+    document.getElementById('delegate-from-label').textContent = `Wallet: ${address}`;
+    document.getElementById('delegate-agent-addr').value = '';
+    document.getElementById('delegate-msg').style.display = 'none';
+    document.getElementById('delegate-unsigned-tx').style.display = 'none';
+    document.getElementById('delegate-submit-btn').textContent = isPrivy ? 'Grant delegation' : 'Build transaction';
+    document.getElementById('delegate-submit-btn').disabled = false;
+    document.getElementById('delegate-modal').style.display = 'flex';
+}
+
+function closeDelegateModal() {
+    document.getElementById('delegate-modal').style.display = 'none';
+    delegateWalletId = null;
+}
+
+function copyDelegateTx() {
+    const txt = document.getElementById('delegate-tx-json').textContent;
+    navigator.clipboard.writeText(txt).then(() => showToast('Transaction JSON copied'));
+}
+
+async function submitDelegate() {
+    const agentAddr = document.getElementById('delegate-agent-addr').value.trim();
+    if (!agentAddr) { showDelegateMsg('Enter the agent wallet address.', 'amber'); return; }
+
+    const TX_TYPES = ['EscrowCreate','Payment','NFTokenCreateOffer','NFTokenAcceptOffer','EscrowFinish','EscrowCancel'];
+    const perms = TX_TYPES.filter(t => document.getElementById(`dp-${t}`)?.checked);
+    if (!perms.length) { showDelegateMsg('Select at least one transaction type.', 'amber'); return; }
+
+    const btn = document.getElementById('delegate-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Working…';
+
+    try {
+        const res = await fetch(`${API}/enterprise/wallets/${delegateWalletId}/delegate`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ delegate_address: agentAddr, permissions: perms }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showDelegateMsg(data.detail || 'Request failed.', 'red'); btn.disabled = false; btn.textContent = delegateIsPrivy ? 'Grant delegation' : 'Build transaction'; return; }
+
+        if (data.status === 'unsigned') {
+            document.getElementById('delegate-tx-json').textContent = JSON.stringify(data.tx, null, 2);
+            document.getElementById('delegate-unsigned-tx').style.display = 'block';
+            showDelegateMsg('Transaction ready. Sign and submit it with your wallet.', 'blue');
+            btn.textContent = 'Done';
+        } else {
+            showDelegateMsg(`✓ Delegation granted on-chain (${data.engine_result}).`, 'green');
+            btn.textContent = 'Granted';
+            setTimeout(() => { loadDelegations(delegateWalletId); }, 2000);
+        }
+    } catch { showDelegateMsg('Network error — please try again.', 'red'); btn.disabled = false; btn.textContent = delegateIsPrivy ? 'Grant delegation' : 'Build transaction'; }
+}
+
+function showDelegateMsg(msg, color) {
+    const el = document.getElementById('delegate-msg');
+    el.textContent = msg;
+    el.style.color = `var(--${color})`;
+    el.style.display = 'block';
 }
 
 // ── Subscription ──
