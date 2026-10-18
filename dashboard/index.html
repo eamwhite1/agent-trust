@@ -454,6 +454,36 @@
             </div>
         </div>
 
+        <!-- Verify instructions modal (non-Privy wallets) -->
+        <div id="verify-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+                    <h3 style="margin:0;font-size:1rem">Verify wallet ownership</h3>
+                    <button onclick="document.getElementById('verify-modal').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;line-height:1">✕</button>
+                </div>
+                <p style="font-size:.82rem;color:var(--text-muted);line-height:1.6;margin-bottom:1.25rem">
+                    To prove you control this wallet, submit any XRPL transaction from it with the challenge string below in the <strong>Memo</strong> field. An AccountSet is recommended — it costs only the 12 drop fee.
+                </p>
+                <div style="background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:8px;padding:.75rem 1rem;margin-bottom:1.25rem">
+                    <div style="font-size:.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Your challenge string</div>
+                    <div style="display:flex;align-items:center;gap:.5rem">
+                        <code id="verify-instructions-challenge" style="font-size:.8rem;flex:1;word-break:break-all"></code>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('verify-instructions-challenge').textContent);showToast('Copied')" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:.25rem .6rem;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap">Copy</button>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.25rem">
+                    <div style="font-size:.78rem;font-weight:700;margin-bottom:.1rem">Step 1 — Add the memo and submit</div>
+                    <div style="font-size:.78rem;color:var(--text-muted);line-height:1.6">Use <a href="https://xaman.app" target="_blank" style="color:var(--blue)">Xaman</a> (tap ··· → AccountSet → Add Memo → paste the challenge) or any XRPL wallet that supports memo fields. The transaction must be sent <em>from</em> <code id="verify-instructions-addr" style="font-size:.7rem"></code>.</div>
+                    <div style="font-size:.78rem;font-weight:700;margin-top:.4rem">Step 2 — Click Verify</div>
+                    <div style="font-size:.78rem;color:var(--text-muted)">Once the transaction is confirmed on-chain (usually &lt;5 seconds), click Verify below. The dashboard checks the ledger automatically.</div>
+                </div>
+                <div style="display:flex;gap:.75rem">
+                    <button class="btn-action" onclick="document.getElementById('verify-modal').style.display='none'" style="flex:1">Close</button>
+                    <button id="verify-instructions-walletid" class="btn-primary" onclick="verifyWallet(parseInt(this.dataset.id));document.getElementById('verify-modal').style.display='none'" style="flex:1">Verify now</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Fund modal -->
         <div id="fund-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem">
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
@@ -1037,6 +1067,12 @@ function renderWallets(wallets) {
                     <div class="wallet-label">${w.label || 'No label'}</div>
                     <div id="balance-${w.wallet_id}" style="font-size:.75rem;color:var(--text-faint)">—</div>
                 </div>
+                ${!w.verified && !w.privy_wallet_id && w.verify_challenge ? `
+                <div style="margin-top:.4rem;font-size:.72rem;color:var(--text-faint);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+                    <span>Challenge:</span>
+                    <code style="font-size:.7rem;background:var(--blue-dim);color:var(--blue);padding:.1rem .4rem;border-radius:4px;user-select:all">${w.verify_challenge}</code>
+                    <button onclick="navigator.clipboard.writeText('${w.verify_challenge}');showToast('Challenge copied')" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:.7rem;padding:0;font-weight:600">Copy</button>
+                </div>` : ''}
             </div>
             <div class="wallet-actions">
                 <button class="btn-sm" onclick="openFundModal('${w.xrpl_address}')" data-tip="Show funding options"><i data-lucide="arrow-down-to-line"></i> Fund</button>
@@ -1044,7 +1080,7 @@ function renderWallets(wallets) {
                 ${w.verified
                     ? '<span class="verified-badge"><i data-lucide="check"></i> Verified</span>'
                     : `<span class="unverified-badge">Unverified</span>
-                       <button class="btn-sm" onclick="verifyWallet(${w.wallet_id})" data-tip="Prove ownership: send an AccountSet tx from this address with the challenge in a Memo, then click Verify"><i data-lucide="shield"></i> Verify</button>`
+                       <button class="btn-sm" onclick="${w.privy_wallet_id ? `verifyPrivyWallet(${w.wallet_id})` : `showVerifyInstructions(${w.wallet_id})`}" data-tip="${w.privy_wallet_id ? 'Click to verify automatically — no manual steps needed' : 'Click to see verification instructions'}"><i data-lucide="shield"></i> Verify</button>`
                 }
                 <button class="btn-sm danger" onclick="removeWallet(${w.wallet_id})" data-tip="Remove wallet"><i data-lucide="trash-2"></i></button>
             </div>
@@ -1209,8 +1245,32 @@ async function verifyWallet(walletId) {
         const res = await fetch(`${API}/enterprise/wallets/${walletId}/verify`, { method: 'POST', credentials: 'include' });
         const data = await res.json();
         if (data.verified) { showToast('Wallet verified!'); loadWallets(); }
-        else showToast(data.message || 'Challenge not found yet.');
+        else showToast(data.message || 'Challenge not found yet. Submit the AccountSet tx first, then click Verify.');
     } catch { showToast('Verification check failed.'); }
+}
+
+async function verifyPrivyWallet(walletId) {
+    showToast('Verifying… signing challenge on-chain');
+    try {
+        const res = await fetch(`${API}/enterprise/wallets/${walletId}/verify-privy`, { method: 'POST', credentials: 'include' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed');
+        showToast('✓ Wallet verified!');
+        loadWallets();
+    } catch (e) {
+        showToast(`Verification failed: ${e.message}`);
+    }
+}
+
+function showVerifyInstructions(walletId) {
+    // Find the challenge from the rendered card
+    const card = document.getElementById(`balance-${walletId}`)?.closest('.wallet-card');
+    const challenge = card?.querySelector('code')?.textContent || '';
+    const addr = card?.querySelector('.wallet-addr')?.textContent || '';
+    document.getElementById('verify-instructions-challenge').textContent = challenge;
+    document.getElementById('verify-instructions-addr').textContent = addr;
+    document.getElementById('verify-instructions-walletid').dataset.id = walletId;
+    document.getElementById('verify-modal').style.display = 'flex';
 }
 
 async function removeWallet(walletId) {
