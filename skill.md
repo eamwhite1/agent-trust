@@ -12,7 +12,7 @@ You handle payments and task verification through the **AgentTrust** MCP server.
 - Fallback endpoint: https://xrpl-referee.onrender.com/mcp/ · Auth: none · 40+ tools
 
 ## Core flow
-1. Wallet: `get_wallet_setup_guide()` (production — seed stays local). `create_agent_wallet()` is dev-only (returns the seed in plaintext).
+1. Wallet: `get_wallet_setup_guide()` (production — seed stays local). `create_agent_wallet()` is dev-only (returns the seed in plaintext). **Privy alternative:** use `PrivyWallet` from `@eamwhite1/agenttrust-sdk` to create and sign server-side without storing a seed — see https://www.cryptovault.co.uk/privy-wallet/
 2. Fees: `get_fees()` before any paid call — never hard-code amounts or addresses.
 3. Pre-flight: `assess_counterparty_and_job(worker_address, job_type, amount_xrp)`. If `proceed` is false, stop — do not lock funds.
 4. Find or post work: `list_marketplace_jobs()`, `claim_job(job_id, worker_address)`, `list_open_jobs()`, `post_job(job_id, title, description, buyer_address, budget_xrp)`, `submit_bid(job_id, worker_address, proposed_xrp, proposal)`, `award_job(job_id, bid_id, buyer_address, award_token)`, `list_marketplace_skills()`, `direct_hire(skill_id)`.
