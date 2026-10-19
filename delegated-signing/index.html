@@ -452,10 +452,32 @@ result = <span class="kw">await</span> submit_and_wait(tx, client, buyer_wallet)
         <div class="card-pad">
             <span class="section-label">Visibility</span>
             <h2>Viewing active delegations in the dashboard</h2>
-            <p>The <a href="https://app.cryptovault.co.uk" style="color:var(--blue)">AgentTrust Pro dashboard</a> shows active XLS-75 delegations for every linked wallet. Each wallet card lists which agent addresses hold grants and what permissions they carry — use this to audit your key exposure at a glance.</p>
+            <p>The <a href="https://app.cryptovault.co.uk" style="color:var(--blue)">AgentTrust Pro dashboard</a> lets you grant and view XLS-75 delegations for every linked wallet — no code required.</p>
+
+            <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:.75rem">
+                <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:1rem 1.25rem;backdrop-filter:blur(12px)">
+                    <div style="font-weight:700;font-size:.9rem;margin-bottom:.35rem;display:flex;align-items:center;gap:.5rem">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                        Granting a delegation
+                    </div>
+                    <p style="font-size:.84rem;color:var(--text-muted);line-height:1.7">Each wallet card has a <strong>Delegate</strong> button. Click it to open the delegation modal: enter the agent wallet address, tick the transaction types you want to permit (EscrowCreate, Payment, NFToken* etc.), and click <strong>Grant delegation</strong>.</p>
+                    <ul style="font-size:.83rem;color:var(--text-muted);line-height:1.8;margin-top:.6rem;padding-left:1.2rem">
+                        <li><strong>Privy wallets:</strong> the DelegateSet transaction is built, signed, and submitted to XRPL automatically — one click, no manual steps.</li>
+                        <li><strong>Regular (self-custodied) wallets:</strong> the modal generates the unsigned DelegateSet JSON. Copy it and sign with Xaman or xrpl.js, then submit to XRPL yourself.</li>
+                    </ul>
+                </div>
+                <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:1rem 1.25rem;backdrop-filter:blur(12px)">
+                    <div style="font-weight:700;font-size:.9rem;margin-bottom:.35rem;display:flex;align-items:center;gap:.5rem">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                        Viewing active delegations
+                    </div>
+                    <p style="font-size:.84rem;color:var(--text-muted);line-height:1.7">Below each wallet card the dashboard lists every active delegation: the authorised agent address and the permission types it holds. Data is read directly from the XRPL ledger in real time — revoking on-chain is immediately reflected, no sync delay.</p>
+                </div>
+            </div>
+
             <div class="callout callout-info" style="margin-top:1rem">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                <div>The dashboard reads delegations directly from the XRPL ledger in real time via <span class="inline-code">GET /enterprise/wallets/{id}/delegations</span>. Revoking on-chain is immediately reflected — no sync delay.</div>
+                <div>Dashboard delegation uses <span class="inline-code">POST /enterprise/wallets/{id}/delegate</span> to build the tx and <span class="inline-code">GET /enterprise/wallets/{id}/delegations</span> to read the live state from the ledger.</div>
             </div>
         </div>
     </div>
