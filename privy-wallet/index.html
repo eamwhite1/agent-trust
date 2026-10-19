@@ -123,6 +123,7 @@
     .footer-brand { flex: 0 0 220px; }
     .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
     .footer-logo span { color: var(--blue); }
+    .footer-dot { color: var(--blue); }
     .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
     .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
     .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
@@ -229,7 +230,7 @@
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">Node.js <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+                <div class="code-label">Node.js <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button></div>
 <pre>const { PrivyWallet } = require('@eamwhite1/agenttrust-sdk');
 
 const privy = new PrivyWallet({
@@ -254,7 +255,7 @@ console.log('Fund this address:', wallet.address);</pre>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">Node.js <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+                <div class="code-label">Node.js <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button></div>
 <pre>const { Client, xrpToDrops } = require('xrpl');
 
 const xrpl = new Client('wss://xrplcluster.com');
@@ -288,7 +289,7 @@ await xrpl.disconnect();</pre>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-label">Node.js <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+                <div class="code-label">Node.js <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button></div>
 <pre>const { AgentTrust } = require('@eamwhite1/agenttrust-sdk');
 const at = new AgentTrust();
 
@@ -349,7 +350,7 @@ await at.confirmEscrow({
                     <i data-lucide="alert-triangle"></i>
                     <p><strong>One-time human step:</strong> a human must create the Coinbase account and complete KYC (passport/ID) once. After that, the agent can fund itself autonomously using the API key. Store <span class="inline-code">COINBASE_API_KEY</span> and <span class="inline-code">COINBASE_API_SECRET</span> as env vars with <span class="inline-code">wallet:buys:create</span> + <span class="inline-code">wallet:transactions:send</span> permissions.</p>
                 </div>
-                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button></div>
 <pre>// After creating the wallet:
 await agentTrust.fundWalletViaCoinbase({
   xrplAddress: wallet.address,
@@ -366,7 +367,7 @@ await agentTrust.fundWalletViaCoinbase({
                 <p style="font-size:.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:.75rem">
                     Send at least 1 XRP from any funded XRPL wallet — your own, an exchange withdrawal, or Xaman. The receiving address activates the moment the Payment lands.
                 </p>
-                <div class="code-label">Node.js (xrpl.js) <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+                <div class="code-label">Node.js (xrpl.js) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button></div>
 <pre>const { Client, Wallet, xrpToDrops } = require('xrpl');
 
 const client = new Client('wss://xrplcluster.com');
@@ -395,7 +396,7 @@ await client.disconnect();</pre>
                 <p style="font-size:.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:.75rem">
                     If your agent has received RLUSD from completed work, it can swap to XRP on the XRPL DEX to cover its own reserve. Use <span class="inline-code">get_rlusd_quote</span> first to check the rate, then submit an OfferCreate.
                 </p>
-                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)">Copy</button></div>
+                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button></div>
 <pre>// Check live DEX rate
 const quote = await agentTrust.getRlusdQuote({
   walletAddress: wallet.address,
@@ -494,41 +495,57 @@ const quote = await agentTrust.getRlusdQuote({
 <footer>
     <div class="footer-inner">
         <div class="footer-brand">
-            <div class="footer-logo">AgentTrust<span>.</span></div>
-            <p class="footer-tagline">Trustless payments and work verification for AI agents on XRPL.</p>
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
                 <h4>Product</h4>
                 <a href="/how-it-works/">How it Works</a>
                 <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
                 <a href="/enterprise/">Enterprise</a>
-                <a href="/fees/">Fees</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
-                <a href="https://mcp.cryptovault.co.uk/docs">API Docs</a>
-                <a href="/skill.md">skill.md</a>
-                <a href="/claude-md/">CLAUDE.md</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
+                <a href="/audit/">Audit Report</a>
             </div>
             <div class="footer-col">
-                <h4>Community</h4>
-                <a href="https://github.com/eamwhite1/xrpl-referee" target="_blank" rel="noopener">GitHub</a>
-                <a href="https://www.cryptovault.co.uk/marketplace/">Marketplace</a>
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
             </div>
         </div>
     </div>
-    <div class="footer-bottom">&copy; 2026 AgentTrust · <a href="/privacy/">Privacy</a></div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
 </footer>
 
 <script>
-    if (window.lucide) lucide.createIcons();
+    lucide.createIcons();
+
     function copyBlock(btn) {
         const pre = btn.closest('.code-label').nextElementSibling;
-        navigator.clipboard.writeText(pre.textContent);
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy', 1800);
+        navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+            btn.innerHTML = '<i data-lucide="check" style="width:11px;height:11px;"></i> Copied';
+            lucide.createIcons();
+            setTimeout(() => {
+                btn.innerHTML = '<i data-lucide="copy" style="width:11px;height:11px;"></i> Copy';
+                lucide.createIcons();
+            }, 1800);
+        });
     }
 </script>
 </body>
