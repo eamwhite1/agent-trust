@@ -1142,6 +1142,7 @@ function statusPill(e) {
         REMEDY:               'pill-pending',
         CHALLENGE_UPHELD:     'pill-pending',
         AWAITING_FUNDING:     'pill-pending',
+        RELEASE_FAILED:       'pill-fail',
     };
     const labels = {
         LOCKED:               'Locked',
@@ -1156,6 +1157,7 @@ function statusPill(e) {
         REMEDY:               'Remedy',
         CHALLENGE_UPHELD:     'Remedy Available',
         AWAITING_FUNDING:     'Awaiting Funding',
+        RELEASE_FAILED:       'Release Failed',
     };
     const cls   = map[status]    || 'pill-pending';
     const label = labels[status] || (status || '—');
@@ -1309,7 +1311,7 @@ async function openDetail(escrowId) {
                 <span class="detail-section-label">Challenge window open</span>
                 <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${escapeHtml(e.challenge_deadline)}">calculating…</span></div>
                 <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
-                <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Fee: <strong>0.5 XRP</strong> — refunded if upheld, paid to seller if rejected. AgentTrust keeps none of it.</p>
+                <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Disputes coming soon — funds will auto-release when the timer ends.</p>
                 <button class="btn-action" style="margin-top:.3rem;opacity:.5;cursor:not-allowed" disabled title="Disputes coming soon"><i data-lucide="alert-triangle"></i> Challenge this verdict <span style="font-size:.72rem;font-weight:400">(coming soon)</span></button>
             </div>` : '';
 
