@@ -156,6 +156,9 @@
     .btn-role { padding: .25rem .65rem; border-radius: 6px; font-size: .75rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, background .15s, border-color .15s; }
     .btn-role:hover { color: var(--text); border-color: var(--blue-border); }
     .btn-role.active { background: var(--blue-dim); color: var(--blue); border-color: var(--blue-border); }
+    .field-hint { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--border); color: var(--text-muted); font-size: .65rem; font-weight: 700; cursor: default; position: relative; vertical-align: middle; margin-left: 2px; }
+    .field-hint:hover::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: var(--text); color: var(--surface); font-size: .72rem; font-weight: 400; line-height: 1.45; padding: .4rem .6rem; border-radius: 6px; white-space: normal; width: 220px; z-index: 100; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    .optional-badge { font-size: .68rem; font-weight: 400; color: var(--text-faint); margin-left: 4px; }
     .btn-danger { color: var(--red, #c0392b); }
     .btn-danger:hover { color: var(--red, #c0392b); border-color: var(--red, #c0392b); }
     .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; font-weight: 700; cursor: pointer; border: none; background: var(--blue); color: #fff; transition: opacity .15s; }
@@ -467,22 +470,6 @@
                 <p id="wallet-add-msg" style="font-size:.8rem;margin-top:.75rem;color:var(--text-muted);display:none"></p>
             </div>
 
-            <!-- Seller profile toggle -->
-            <div class="add-wallet-form" style="margin-top:1rem">
-                <h3>Public seller profile</h3>
-                <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.9rem;line-height:1.55">
-                    Allow buyers to see your trust score, PASS / FAIL counts, and average attempts on the public worker page. Your wallet addresses are never exposed — only aggregate stats.
-                </p>
-                <div style="display:flex;align-items:center;gap:.75rem">
-                    <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
-                        <input type="checkbox" id="seller-profile-toggle" onchange="toggleSellerProfile(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
-                        <span id="seller-profile-slider" style="position:absolute;inset:0;border-radius:22px;background:var(--border);cursor:pointer;transition:background .2s"></span>
-                        <span id="seller-profile-knob" style="position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></span>
-                    </label>
-                    <span id="seller-profile-label" style="font-size:.85rem;font-weight:600;color:var(--text-muted)">Off — profile is private</span>
-                </div>
-                <p id="seller-profile-msg" style="font-size:.78rem;margin-top:.5rem;color:var(--text-muted);display:none"></p>
-            </div>
         </div>
 
         <!-- Verify instructions modal (non-Privy wallets) -->
@@ -716,6 +703,7 @@
                         <div class="form-group">
                             <label>Worker email <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
                             <input id="ce-worker-email" type="email" placeholder="worker@example.com">
+                            <div style="font-size:.72rem;color:var(--text-faint);margin-top:.2rem">Optional — used to email the seller their evaluate token</div>
                         </div>
                     </div>
                     <div id="worker-trust-panel" style="display:none;margin-top:-.25rem;margin-bottom:.75rem;padding:.75rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--ground);font-size:.82rem"></div>
@@ -728,7 +716,7 @@
                             <input id="ce-amount" type="number" step="0.01" min="1" placeholder="e.g. 50">
                         </div>
                         <div class="form-group">
-                            <label>Deadline</label>
+                            <label>Deadline <span class="field-hint" data-tip="The escrow automatically cancels and refunds the buyer if no PASS verdict is reached before this deadline.">?</span></label>
                             <select id="ce-deadline">
                                 <option value="24">24 hours</option>
                                 <option value="72">3 days</option>
@@ -737,8 +725,28 @@
                                 <option value="720">30 days</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Release mode -->
+                    <div class="form-row" style="margin-top:.5rem">
                         <div class="form-group">
-                            <label>Seller attempts</label>
+                            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Challenge window gives you a period to dispute before funds release.">?</span></label>
+                            <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
+                                <option value="auto">Auto-release on PASS</option>
+                                <option value="challenge_window">Challenge window (buyer review period)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="ce-challenge-hours-group" style="display:none">
+                            <label>Challenge window duration <span class="field-hint" data-tip="How long you have to dispute a PASS verdict before funds release automatically.">?</span></label>
+                            <select id="ce-challenge-hours">
+                                <option value="4">4 hours</option>
+                                <option value="8">8 hours</option>
+                                <option value="12">12 hours</option>
+                                <option value="24" selected>24 hours</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Seller attempts <span class="field-hint" data-tip="How many times the seller can submit work before the escrow is cancelled. 3 are included; each extra slot costs $0.05 at creation.">?</span></label>
                             <select id="ce-max-subs">
                                 <option value="3" selected>3 (included)</option>
                                 <option value="4">4 (+$0.05)</option>
@@ -748,33 +756,6 @@
                                 <option value="8">8 (+$0.25)</option>
                                 <option value="9">9 (+$0.30)</option>
                                 <option value="10">10 (+$0.35)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Release mode -->
-                    <div class="form-row" style="margin-top:.5rem">
-                        <div class="form-group">
-                            <label>Release mode</label>
-                            <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
-                                <option value="auto">Auto-release on PASS</option>
-                                <option value="challenge_window">Challenge window (buyer review period)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="ce-challenge-hours-group" style="display:none">
-                            <label>Challenge window</label>
-                            <select id="ce-challenge-hours">
-                                <option value="4">4 hours</option>
-                                <option value="8">8 hours</option>
-                                <option value="12">12 hours</option>
-                                <option value="24" selected>24 hours</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>AI verification</label>
-                            <select id="ce-ai-verification">
-                                <option value="false">Standard (Flash)</option>
-                                <option value="true">Dual-model (Flash + Pro, +$0.25)</option>
                             </select>
                         </div>
                     </div>
@@ -830,16 +811,23 @@
                         </div>
                     </div>
 
-                    <!-- AI Audit -->
+                    <!-- Evaluation -->
                     <div class="form-section-label">Evaluation</div>
-                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
-                        <input type="checkbox" id="ce-ai-audit" checked style="width:auto">
-                        <label for="ce-ai-audit" style="margin:0;cursor:pointer;font-weight:600">AI audit — referee evaluates work against task description ($0.10 fee)</label>
+                    <div class="form-group" style="display:flex;align-items:flex-start;gap:.6rem">
+                        <input type="checkbox" id="ce-ai-audit" checked style="width:auto;margin-top:.2rem" onchange="ceToggleAiAudit()">
+                        <div>
+                            <label for="ce-ai-audit" style="margin:0;cursor:pointer;font-weight:600">AI audit <span style="font-weight:400;color:var(--text-muted)">— referee evaluates work against criteria ($0.10 fee)</span> <span class="field-hint" data-tip="The AI referee scores the submission against your criteria and returns PASS/FAIL with reasoning. Required for escrow automation.">?</span></label>
+                            <div id="ce-ai-tier-row" style="margin-top:.5rem;padding-left:.1rem">
+                                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;margin-bottom:.3rem">
+                                    <input type="radio" name="ce-ai-tier" id="ce-ai-standard" value="false" checked style="width:auto"> Standard — Gemini Flash only
+                                </label>
+                                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem">
+                                    <input type="radio" name="ce-ai-tier" id="ce-ai-consensus" value="true" style="width:auto"> Dual-model — Flash + Pro must both agree on PASS <span style="color:var(--text-muted)">+$0.25</span> <span class="field-hint" data-tip="Both Gemini Flash and Gemini Pro evaluate independently. A PASS requires both to agree — disagreement returns INCONCLUSIVE, protecting against false positives.">?</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
-                        <input type="checkbox" id="ce-consensus" style="width:auto">
-                        <label for="ce-consensus" style="margin:0;cursor:pointer;font-weight:600">Premium consensus — dual-model evaluation ($0.25 fee)</label>
-                    </div>
+                    <input type="hidden" id="ce-ai-verification" value="false">
 
                     <!-- Invoice mode -->
                     <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
@@ -1888,9 +1876,11 @@ function renderTemplates() {
                     ${t.max_amount_xrp ? `<span class="template-pill">Max ${t.max_amount_xrp} XRP</span>` : ''}
                     ${t.deadline_hours ? `<span class="template-pill">${t.deadline_hours}h deadline</span>` : ''}
                     ${t.require_nft_proof ? `<span class="template-pill">NFT proof</span>` : ''}
-                    ${t.required_domain ? `<span class="template-pill">Domain: ${t.required_domain}</span>` : ''}
+                    ${t.required_domain ? `<span class="template-pill">Domain: ${escapeHtml(t.required_domain)}</span>` : ''}
                     ${t.required_vc_issuer_did ? `<span class="template-pill">VC required</span>` : ''}
-                    ${!t.require_ai_audit ? `<span class="template-pill">No AI audit</span>` : ''}
+                    ${!t.require_ai_audit ? `<span class="template-pill">No AI audit</span>` : t.require_consensus ? `<span class="template-pill" style="background:var(--green-dim);color:var(--green)">Dual-model</span>` : `<span class="template-pill">AI audit</span>`}
+                    ${t.release_mode && t.release_mode !== 'auto' ? `<span class="template-pill" style="background:var(--amber-dim);color:var(--amber)">Challenge window</span>` : ''}
+                    ${t.max_submissions && t.max_submissions !== 3 ? `<span class="template-pill">${t.max_submissions} attempts</span>` : ''}
                 </div>
                 <div style="margin-top:.5rem;font-size:.72rem;color:var(--text-faint)">ID: <code style="font-family:monospace">${t.id}</code></div>
             </div>
@@ -1908,27 +1898,71 @@ function openTemplateModal(templateId) {
     const t = templateId ? templates.find(x => x.id === templateId) : null;
     document.getElementById('template-modal-content').innerHTML = `
         <div class="detail-title">${t ? 'Edit template' : 'New template'}</div>
-        <div style="height:1rem"></div>
-        <div class="form-group"><label>Name *</label><input id="tmpl-name" value="${t ? t.name : ''}" placeholder="e.g. Code Review"></div>
-        <div class="form-group"><label>Description</label><input id="tmpl-desc" value="${t ? (t.description||'') : ''}" placeholder="What this template is for"></div>
-        <div class="form-group"><label>Evaluation rubric</label><textarea id="tmpl-rubric" placeholder="Custom instructions for the AI referee — e.g. 'Check that all unit tests pass and code is documented.'">${t ? (t.rubric||'') : ''}</textarea></div>
-        <div class="form-row">
-            <div class="form-group"><label>Min amount (XRP)</label><input id="tmpl-min" type="number" step="0.01" value="${t && t.min_amount_xrp != null ? t.min_amount_xrp : ''}"></div>
-            <div class="form-group"><label>Max amount (XRP)</label><input id="tmpl-max" type="number" step="0.01" value="${t && t.max_amount_xrp != null ? t.max_amount_xrp : ''}"></div>
-            <div class="form-group"><label>Deadline (hours)</label><input id="tmpl-deadline" type="number" value="${t && t.deadline_hours != null ? t.deadline_hours : ''}"></div>
+        <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem">Templates let you define job policies once and reuse them. Your agents reference a template ID when creating escrows — any unset fields are left to the agent to fill in.</p>
+        <div class="form-group"><label>Name *</label><input id="tmpl-name" value="${t ? escapeHtml(t.name) : ''}" placeholder="e.g. Code Review, Smart Contract Audit"></div>
+        <div class="form-group"><label>Description <span class="optional-badge">optional</span></label><input id="tmpl-desc" value="${t ? escapeHtml(t.description||'') : ''}" placeholder="Short note on what this template is for"></div>
+        <div class="form-group">
+            <label>AI evaluation rubric <span class="optional-badge">optional</span> <span class="field-hint" data-tip="Extra instructions given to the AI referee alongside the task description. Use this to enforce your quality bar — e.g. 'All public functions must have docstrings'.">?</span></label>
+            <textarea id="tmpl-rubric" placeholder="e.g. All unit tests must pass. Code must be documented. No hardcoded secrets." style="min-height:70px">${t ? escapeHtml(t.rubric||'') : ''}</textarea>
         </div>
-        <div class="form-group"><label>Required NFT issuer address</label><input id="tmpl-nft-issuer" value="${t ? (t.required_nft_issuer||'') : ''}" placeholder="rXXX..."></div>
-        <div class="form-group"><label>Required domain (XRPL domain field)</label><input id="tmpl-domain" value="${t ? (t.required_domain||'') : ''}" placeholder="e.g. example.com"></div>
-        <div class="form-group"><label>Required VC issuer DID</label><input id="tmpl-vc" value="${t ? (t.required_vc_issuer_did||'') : ''}" placeholder="did:web:..."></div>
-        <div class="form-group"><label>Proof policy</label>
-            <select id="tmpl-proof-policy">
-                <option value="ALL" ${(!t || t.proof_policy==='ALL') ? 'selected' : ''}>ALL — worker must satisfy every gate</option>
-                <option value="ANY" ${t && t.proof_policy==='ANY' ? 'selected' : ''}>ANY — worker satisfies at least one gate</option>
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:.75rem 0 .4rem">Payment limits <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-faint);font-size:.72rem">(optional — leave blank to allow any amount)</span></div>
+        <div class="form-row">
+            <div class="form-group"><label>Min amount (XRP) <span class="optional-badge">optional</span></label><input id="tmpl-min" type="number" step="0.01" placeholder="e.g. 10" value="${t && t.min_amount_xrp != null ? t.min_amount_xrp : ''}"></div>
+            <div class="form-group"><label>Max amount (XRP) <span class="optional-badge">optional</span></label><input id="tmpl-max" type="number" step="0.01" placeholder="e.g. 500" value="${t && t.max_amount_xrp != null ? t.max_amount_xrp : ''}"></div>
+            <div class="form-group"><label>Default deadline (hours) <span class="optional-badge">optional</span></label><input id="tmpl-deadline" type="number" placeholder="168" value="${t && t.deadline_hours != null ? t.deadline_hours : ''}"></div>
+        </div>
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:.75rem 0 .4rem">Evaluation</div>
+        <div class="form-group" style="display:flex;align-items:flex-start;gap:.6rem">
+            <input type="checkbox" id="tmpl-ai-audit" ${(!t || t.require_ai_audit) ? 'checked' : ''} style="width:auto;margin-top:.2rem" onchange="document.getElementById('tmpl-ai-tier-row').style.display=this.checked?'':'none'">
+            <div>
+                <label for="tmpl-ai-audit" style="margin:0;cursor:pointer;font-weight:600">Require AI audit <span style="font-weight:400;color:var(--text-muted)">— $0.10 fee per evaluation</span></label>
+                <div id="tmpl-ai-tier-row" style="margin-top:.45rem;${(!t || t.require_ai_audit) ? '' : 'display:none'}">
+                    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;margin-bottom:.25rem">
+                        <input type="radio" name="tmpl-ai-tier" id="tmpl-ai-standard" value="false" ${(!t || !t.require_consensus) ? 'checked' : ''} style="width:auto"> Standard — Gemini Flash
+                    </label>
+                    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem">
+                        <input type="radio" name="tmpl-ai-tier" id="tmpl-ai-consensus" value="true" ${t && t.require_consensus ? 'checked' : ''} style="width:auto"> Dual-model — Flash + Pro must agree <span style="color:var(--text-muted)">+$0.25</span>
+                        <span class="field-hint" data-tip="Both models must independently return PASS. Disagreement returns INCONCLUSIVE — protects against AI false positives.">?</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Challenge window gives the buyer time to dispute before funds release.">?</span></label>
+            <select id="tmpl-release-mode" onchange="document.getElementById('tmpl-challenge-hours-row').style.display=this.value==='challenge_window'?'':'none'">
+                <option value="auto" ${(!t || !t.release_mode || t.release_mode==='auto') ? 'selected' : ''}>Auto-release on PASS</option>
+                <option value="challenge_window" ${t && t.release_mode && t.release_mode!=='auto' ? 'selected' : ''}>Challenge window</option>
             </select>
         </div>
-        <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
-            <input type="checkbox" id="tmpl-ai-audit" ${(!t || t.require_ai_audit) ? 'checked' : ''} style="width:auto">
-            <label for="tmpl-ai-audit" style="margin:0;cursor:pointer">Require AI audit on submission</label>
+        <div id="tmpl-challenge-hours-row" style="${t && t.release_mode && t.release_mode!=='auto' ? '' : 'display:none'}">
+            <div class="form-group"><label>Challenge window duration</label>
+                <select id="tmpl-challenge-hours">
+                    <option value="4" ${t && t.release_mode==='challenge_window_hrs:4' ? 'selected' : ''}>4 hours</option>
+                    <option value="8" ${t && t.release_mode==='challenge_window_hrs:8' ? 'selected' : ''}>8 hours</option>
+                    <option value="12" ${t && t.release_mode==='challenge_window_hrs:12' ? 'selected' : ''}>12 hours</option>
+                    <option value="24" ${(!t || t.release_mode!=='challenge_window_hrs:4' && t.release_mode!=='challenge_window_hrs:8' && t.release_mode!=='challenge_window_hrs:12') ? 'selected' : ''}>24 hours</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Seller attempts <span class="field-hint" data-tip="Max submissions allowed before escrow is cancelled. 3 included; extra slots cost $0.05 each at escrow creation.">?</span></label>
+            <select id="tmpl-max-subs">
+                <option value="3" ${(!t || t.max_submissions===3) ? 'selected' : ''}>3 (included)</option>
+                <option value="4" ${t && t.max_submissions===4 ? 'selected' : ''}>4 (+$0.05)</option>
+                <option value="5" ${t && t.max_submissions===5 ? 'selected' : ''}>5 (+$0.10)</option>
+                <option value="6" ${t && t.max_submissions===6 ? 'selected' : ''}>6 (+$0.15)</option>
+                <option value="10" ${t && t.max_submissions===10 ? 'selected' : ''}>10 (+$0.35)</option>
+            </select>
+        </div>
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:.75rem 0 .4rem">Trust requirements <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-faint);font-size:.72rem">(optional)</span></div>
+        <div class="form-group"><label>Required NFT issuer address <span class="optional-badge">optional</span> <span class="field-hint" data-tip="Seller must hold an NFT from this issuer. Leave blank to skip NFT requirement.">?</span></label><input id="tmpl-nft-issuer" value="${t ? escapeHtml(t.required_nft_issuer||'') : ''}" placeholder="rXXX… (leave blank to skip)"></div>
+        <div class="form-group"><label>Required domain <span class="optional-badge">optional</span> <span class="field-hint" data-tip="Seller's XRPL wallet must have this domain set in its AccountRoot Domain field.">?</span></label><input id="tmpl-domain" value="${t ? escapeHtml(t.required_domain||'') : ''}" placeholder="e.g. example.com"></div>
+        <div class="form-group"><label>Required VC issuer DID <span class="optional-badge">optional</span> <span class="field-hint" data-tip="Seller must present a W3C Verifiable Credential issued by this DID.">?</span></label><input id="tmpl-vc" value="${t ? escapeHtml(t.required_vc_issuer_did||'') : ''}" placeholder="did:web:…"></div>
+        <div class="form-group"><label>Proof policy <span class="field-hint" data-tip="ALL: seller must satisfy every trust requirement. ANY: satisfying one is enough.">?</span></label>
+            <select id="tmpl-proof-policy">
+                <option value="ALL" ${(!t || t.proof_policy==='ALL') ? 'selected' : ''}>ALL — must satisfy every gate</option>
+                <option value="ANY" ${t && t.proof_policy==='ANY' ? 'selected' : ''}>ANY — at least one gate</option>
+            </select>
         </div>
         <div style="display:flex;gap:.75rem;margin-top:1.5rem">
             <button class="btn-primary" onclick="saveTemplate()" style="flex:1">Save template</button>
@@ -1959,6 +1993,13 @@ async function saveTemplate() {
         required_vc_issuer_did: document.getElementById('tmpl-vc').value.trim() || null,
         proof_policy: document.getElementById('tmpl-proof-policy').value,
         require_ai_audit: document.getElementById('tmpl-ai-audit').checked,
+        require_consensus: document.querySelector('input[name="tmpl-ai-tier"]:checked')?.value === 'true',
+        release_mode: (() => {
+            const m = document.getElementById('tmpl-release-mode').value;
+            if (m === 'challenge_window') return `challenge_window_hrs:${document.getElementById('tmpl-challenge-hours').value}`;
+            return 'auto';
+        })(),
+        max_submissions: parseInt(document.getElementById('tmpl-max-subs').value) || 3,
     };
     if (!body.name) { showToast('Name is required.'); return; }
     try {
@@ -2132,7 +2173,15 @@ function applyCreateTemplate() {
         document.getElementById('ce-vc-fields').style.display = '';
         document.getElementById('ce-vc-issuer').value = t.required_vc_issuer_did;
     }
-    if (!t.require_ai_audit) document.getElementById('ce-ai-audit').checked = false;
+    if (!t.require_ai_audit) { document.getElementById('ce-ai-audit').checked = false; document.getElementById('ce-ai-tier-row').style.display = 'none'; }
+    if (t.require_consensus) { document.getElementById('ce-ai-consensus').checked = true; syncAiVerification(); }
+    if (t.release_mode && t.release_mode !== 'auto') {
+        document.getElementById('ce-release-mode').value = 'challenge_window';
+        ceToggleReleaseMode();
+        const hrs = t.release_mode.replace('challenge_window_hrs:', '');
+        if (hrs && document.getElementById('ce-challenge-hours').querySelector(`option[value="${hrs}"]`)) document.getElementById('ce-challenge-hours').value = hrs;
+    }
+    if (t.max_submissions && document.getElementById('ce-max-subs').querySelector(`option[value="${t.max_submissions}"]`)) document.getElementById('ce-max-subs').value = t.max_submissions;
     cePolicy = t.proof_policy || 'ALL';
     ceUpdatePolicyRow();
     const gates = [];
@@ -2404,7 +2453,9 @@ function ceReset() {
     document.getElementById('ce-deadline').value = '168';
     document.getElementById('ce-max-subs').value = '3';
     document.getElementById('ce-ai-audit').checked = true;
-    document.getElementById('ce-consensus').checked = false;
+    document.getElementById('ce-ai-standard').checked = true;
+    document.getElementById('ce-ai-verification').value = 'false';
+    document.getElementById('ce-ai-tier-row').style.display = '';
     document.getElementById('ce-invoice-on').checked = false;
     ['nft','domain','vc'].forEach(g => {
         document.getElementById(`ce-${g}-on`).checked = false;
@@ -2419,7 +2470,6 @@ function ceReset() {
     document.getElementById('ce-sign-status').textContent = '';
     document.getElementById('ce-release-mode').value = 'auto';
     document.getElementById('ce-challenge-hours-group').style.display = 'none';
-    document.getElementById('ce-ai-verification').value = 'false';
     // Reset criteria to single empty row
     document.getElementById('ce-criteria-list').innerHTML = `<div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem"><input class="ce-criterion-desc" placeholder="e.g. API returns HTTP 200 with JSON body" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem"><select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem"><option value="judgment">Judgment</option><option value="evidence">Evidence</option><option value="code">Code gate</option></select><button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button></div>`;
     // Reset spec links to single input
@@ -2490,6 +2540,21 @@ function ceToggleReleaseMode() {
     const mode = document.getElementById('ce-release-mode').value;
     document.getElementById('ce-challenge-hours-group').style.display = mode === 'challenge_window' ? '' : 'none';
 }
+
+function ceToggleAiAudit() {
+    const on = document.getElementById('ce-ai-audit').checked;
+    document.getElementById('ce-ai-tier-row').style.display = on ? '' : 'none';
+    syncAiVerification();
+}
+
+function syncAiVerification() {
+    const consensus = document.querySelector('input[name="ce-ai-tier"]:checked');
+    document.getElementById('ce-ai-verification').value = consensus ? consensus.value : 'false';
+}
+
+document.addEventListener('change', e => {
+    if (e.target.name === 'ce-ai-tier') syncAiVerification();
+});
 
 // ── Challenge countdown ──
 function startChallengeCountdown() {
