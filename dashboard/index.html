@@ -388,10 +388,10 @@
                 </div>
             </div>
             <div class="stat-grid" id="stat-grid">
-                <div class="stat-tile"><div class="stat-label">Total Escrows</div><div class="stat-value" id="stat-total">—</div></div>
-                <div class="stat-tile"><div class="stat-label">Passed</div><div class="stat-value" id="stat-pass" style="color:var(--green)">—</div></div>
-                <div class="stat-tile"><div class="stat-label">Failed</div><div class="stat-value" id="stat-fail" style="color:var(--red)">—</div></div>
-                <div class="stat-tile"><div class="stat-label">In Progress</div><div class="stat-value" id="stat-locked" style="color:var(--blue)">—</div></div>
+                <div class="stat-tile"><div class="stat-label" id="stat-label-1">Total Escrows</div><div class="stat-value" id="stat-total">—</div></div>
+                <div class="stat-tile"><div class="stat-label" id="stat-label-2">Passed</div><div class="stat-value" id="stat-pass" style="color:var(--green)">—</div></div>
+                <div class="stat-tile"><div class="stat-label" id="stat-label-3">Failed</div><div class="stat-value" id="stat-fail" style="color:var(--red)">—</div></div>
+                <div class="stat-tile"><div class="stat-label" id="stat-label-4">In Progress</div><div class="stat-value" id="stat-locked" style="color:var(--blue)">—</div></div>
             </div>
             <div class="table-wrap">
                 <div class="table-header">
@@ -1004,7 +1004,8 @@ async function loadEscrows() {
         escrowData = data.escrows || [];
         renderEscrowTable(escrowData);
         renderStats(escrowData);
-    } catch {
+    } catch(err) {
+        console.error('loadEscrows failed:', err);
         document.getElementById('escrow-table-body').innerHTML = '<div class="empty">Failed to load escrows.</div>';
     }
 }
