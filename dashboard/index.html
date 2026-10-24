@@ -901,6 +901,7 @@
 const API = 'https://mcp.cryptovault.co.uk';
 let account = null;
 let escrowData = [];
+let enterpriseWallets = [];
 
 async function init() {
     const params = new URLSearchParams(location.search);
@@ -1327,6 +1328,7 @@ async function loadWallets() {
 }
 
 function renderWallets(wallets) {
+    enterpriseWallets = wallets.map(w => w.xrpl_address).filter(Boolean);
     if (!wallets.length) {
         document.getElementById('wallet-list').innerHTML = '<div class="empty">No wallets linked yet.</div>';
         return;
@@ -2224,14 +2226,25 @@ function exportCSV() {
     if (from) rows = rows.filter(e => e.created_at && e.created_at >= from);
     if (to)   rows = rows.filter(e => e.created_at && e.created_at.slice(0,10) <= to);
     if (!rows.length) { showToast('No records in that date range.'); return; }
-    const headers = ['Escrow ID','Project','Status','Amount','Currency','Buyer','Worker','Escrow Tx','Release Tx','Date'];
-    const csvRows = [headers, ...rows.map(e => [
-        e.escrow_id, e.project_label || '', e.status,
-        e.amount ? e.amount.toFixed(4) : '',
-        e.currency || '', e.buyer_address || '', e.worker_address || '',
-        e.escrow_tx_hash || '', e.auto_finish_hash || '',
-        e.created_at ? e.created_at.slice(0,10) : '',
-    ])].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+    const includeRole = currentRole === 'all';
+    const headers = ['Escrow ID','Project','Status','Amount','Currency','Buyer','Worker','Escrow Tx','Release Tx','Date', ...(includeRole ? ['Role'] : [])];
+    const csvRows = [headers, ...rows.map(e => {
+        const linkedAddrs = (enterpriseWallets || []);
+        let roleVal = '';
+        if (includeRole) {
+            const isBuyer = linkedAddrs.includes(e.buyer_address);
+            const isSeller = linkedAddrs.includes(e.worker_address);
+            roleVal = isBuyer && isSeller ? 'both' : isBuyer ? 'buyer' : isSeller ? 'seller' : '';
+        }
+        return [
+            e.escrow_id, e.project_label || '', e.status,
+            e.amount ? e.amount.toFixed(4) : '',
+            e.currency || '', e.buyer_address || '', e.worker_address || '',
+            e.escrow_tx_hash || '', e.auto_finish_hash || '',
+            e.created_at ? e.created_at.slice(0,10) : '',
+            ...(includeRole ? [roleVal] : []),
+        ];
+    })].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -2350,8 +2363,139 @@ async function submitChallenge() {
     } catch { showToast('Network error'); }
 }
 
+function submitWork(escrowId) {
+    const work = document.getElementById('submit-work-text').value.trim();
+    const tok = document.getElementById('submit-work-token').value.trim();
+    if (!work) { showToast('Please enter your work / proof of delivery.'); return; }
+    if (!tok) { showToast('Evaluate token required — ask the buyer to share it.'); return; }
+    const btn = document.getElementById('submit-work-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    fetch(`${API}/evaluate`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ escrow_id: escrowId, work, evaluate_token: tok })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false; btn.textContent = 'Submit Work';
+        if (data.verdict) {
+            showToast(`Verdict: ${data.verdict}`);
+            loadEscrows();
+            openDetail(escrowId);
+        } else {
+            showToast(data.detail || JSON.stringify(data));
+        }
+    })
+    .catch(err => { btn.disabled = false; btn.textContent = 'Submit Work'; showToast('Error: ' + err.message); });
+}
+
+function openRequestDealModal() {
+    document.getElementById('rd-criteria-list').innerHTML = '';
+    document.getElementById('rd-result').style.display = 'none';
+    ['rd-buyer-addr','rd-task','rd-amount','rd-external-ref','rd-external-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('rd-deadline').value = '';
+    document.getElementById('rd-release-mode').value = 'ai';
+    rdAddCriterion();
+    document.getElementById('request-deal-modal').style.display = 'flex';
+}
+
+function closeRequestDealModal() {
+    document.getElementById('request-deal-modal').style.display = 'none';
+}
+
+function rdAddCriterion() {
+    const list = document.getElementById('rd-criteria-list');
+    const row = document.createElement('div');
+    row.className = 'rd-criterion-row';
+    row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem';
+    row.innerHTML = `<select class="rd-crit-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem"><option value="judgment">Judgment</option><option value="evidence">Evidence</option><option value="code">Code gate</option></select><input class="rd-crit-desc" placeholder="e.g. Deliverable URL is publicly accessible" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem"><button type="button" onclick="this.closest('.rd-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>`;
+    list.appendChild(row);
+}
+
+function submitDealRequest() {
+    const buyerAddr = document.getElementById('rd-buyer-addr').value.trim();
+    const task = document.getElementById('rd-task').value.trim();
+    const amount = parseFloat(document.getElementById('rd-amount').value);
+    const deadlineVal = document.getElementById('rd-deadline').value;
+    const externalRef = document.getElementById('rd-external-ref').value.trim();
+    const externalUrl = document.getElementById('rd-external-url').value.trim();
+    const releaseMode = document.getElementById('rd-release-mode').value;
+    if (!task) { showToast('Task description is required.'); return; }
+    if (!amount || amount <= 0) { showToast('Amount must be a positive number.'); return; }
+    const criteria = [...document.querySelectorAll('#rd-criteria-list .rd-criterion-row')].map(row => ({
+        type: row.querySelector('.rd-crit-type').value,
+        description: row.querySelector('.rd-crit-desc').value.trim()
+    })).filter(c => c.description);
+    const body = { task, amount_xrp: amount, release_mode: releaseMode };
+    if (buyerAddr) body.buyer_address = buyerAddr;
+    if (deadlineVal) body.cancel_after = Math.floor(new Date(deadlineVal).getTime() / 1000);
+    if (externalRef) body.external_ref = externalRef;
+    if (externalUrl) body.external_url = externalUrl;
+    if (criteria.length) body.criteria = criteria;
+    const btn = document.getElementById('rd-submit-btn');
+    btn.disabled = true; btn.textContent = 'Requesting…';
+    fetch(`${API}/escrow/request`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false; btn.textContent = 'Send Request';
+        if (data.pay_url || data.escrow_id) {
+            const resultDiv = document.getElementById('rd-result');
+            resultDiv.style.display = 'block';
+            const payUrl = data.pay_url ? escapeHtml(data.pay_url) : '';
+            const workerUrl = data.worker_url ? escapeHtml(data.worker_url) : '';
+            resultDiv.innerHTML = `<p style="color:var(--green,#16a34a);font-weight:600">Deal request created!</p>${payUrl ? `<p style="font-size:.82rem;margin:.3rem 0">Buyer funding link:</p><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem"><code style="flex:1;font-size:.75rem;word-break:break-all;padding:.4rem .6rem;background:var(--ground);border-radius:6px">${payUrl}</code><button onclick="navigator.clipboard.writeText(${JSON.stringify(data.pay_url||'')})" style="padding:.3rem .7rem;background:var(--blue,#2563eb);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.78rem">Copy</button></div>` : ''}${workerUrl ? `<p style="font-size:.82rem;margin:.3rem 0">Worker confirmation link:</p><code style="font-size:.75rem;word-break:break-all;padding:.4rem .6rem;background:var(--ground);border-radius:6px;display:block">${workerUrl}</code>` : ''}`;
+            loadEscrows();
+        } else {
+            showToast(data.detail || JSON.stringify(data));
+        }
+    })
+    .catch(err => { btn.disabled = false; btn.textContent = 'Send Request'; showToast('Error: ' + err.message); });
+}
+
 init();
 </script>
+
+<!-- Request-a-deal modal -->
+<div id="request-deal-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:540px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h3 style="margin:0">Request a Deal</h3>
+            <button onclick="closeRequestDealModal()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:1.4rem;line-height:1">×</button>
+        </div>
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Buyer wallet address <span style="font-weight:400;color:var(--text-faint)">(optional — leave blank for open request)</span></label>
+        <input id="rd-buyer-addr" placeholder="rXXXXX…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;margin-bottom:.75rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Task description *</label>
+        <textarea id="rd-task" rows="3" placeholder="Describe the work you will deliver…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:.75rem"></textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Amount (XRP) *</label><input id="rd-amount" type="number" min="0.1" step="0.1" placeholder="10" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Deadline <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-deadline" type="datetime-local" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">External ref <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-external-ref" placeholder="e.g. GH-123" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">External URL <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-external-url" type="url" placeholder="https://…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+        </div>
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Release mode</label>
+        <select id="rd-release-mode" style="width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;margin-bottom:.75rem">
+            <option value="ai">AI verdict</option>
+            <option value="buyer">Buyer approval</option>
+            <option value="consensus">Dual-model consensus</option>
+        </select>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+            <label style="font-size:.85rem;font-weight:600">Criteria</label>
+            <button onclick="rdAddCriterion()" style="padding:.25rem .7rem;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:.82rem">+ Add</button>
+        </div>
+        <div id="rd-criteria-list" style="margin-bottom:.75rem"></div>
+        <div id="rd-result" style="display:none;margin-bottom:.75rem;padding:.75rem;background:var(--ground);border-radius:8px;font-size:.85rem"></div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+            <button class="btn-action" onclick="closeRequestDealModal()">Cancel</button>
+            <button id="rd-submit-btn" class="btn-action" style="background:var(--blue,#2563eb);color:#fff;border-color:transparent" onclick="submitDealRequest()">Send Request</button>
+        </div>
+    </div>
+</div>
 
 <!-- Challenge modal -->
 <div id="challenge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
