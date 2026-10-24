@@ -393,6 +393,12 @@
                 <div class="stat-tile"><div class="stat-label" id="stat-label-3">Failed</div><div class="stat-value" id="stat-fail" style="color:var(--red)">—</div></div>
                 <div class="stat-tile"><div class="stat-label" id="stat-label-4">In Progress</div><div class="stat-value" id="stat-locked" style="color:var(--blue)">—</div></div>
             </div>
+            <!-- Incoming deal requests (buyer) -->
+            <div id="incoming-requests-section" style="display:none;margin-bottom:1rem"></div>
+
+            <!-- Challenges against me (seller) -->
+            <div id="challenges-against-me-section" style="display:none;margin-bottom:1rem"></div>
+
             <div class="table-wrap">
                 <div class="table-header">
                     <span class="table-title">Escrow records</span>
@@ -459,6 +465,23 @@
                     </div>
                 </div>
                 <p id="wallet-add-msg" style="font-size:.8rem;margin-top:.75rem;color:var(--text-muted);display:none"></p>
+            </div>
+
+            <!-- Seller profile toggle -->
+            <div class="add-wallet-form" style="margin-top:1rem">
+                <h3>Public seller profile</h3>
+                <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.9rem;line-height:1.55">
+                    Allow buyers to see your trust score, PASS / FAIL counts, and average attempts on the public worker page. Your wallet addresses are never exposed — only aggregate stats.
+                </p>
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0">
+                        <input type="checkbox" id="seller-profile-toggle" onchange="toggleSellerProfile(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
+                        <span id="seller-profile-slider" style="position:absolute;inset:0;border-radius:22px;background:var(--border);cursor:pointer;transition:background .2s"></span>
+                        <span id="seller-profile-knob" style="position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></span>
+                    </label>
+                    <span id="seller-profile-label" style="font-size:.85rem;font-weight:600;color:var(--text-muted)">Off — profile is private</span>
+                </div>
+                <p id="seller-profile-msg" style="font-size:.78rem;margin-top:.5rem;color:var(--text-muted);display:none"></p>
             </div>
         </div>
 
@@ -685,13 +708,17 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Worker XRPL address *</label>
-                            <input id="ce-worker" placeholder="rXXX…">
+                            <div style="display:flex;gap:.4rem">
+                                <input id="ce-worker" placeholder="rXXX…" style="flex:1" oninput="clearWorkerLookup()">
+                                <button type="button" class="btn-action" style="flex-shrink:0;white-space:nowrap" onclick="lookupWorker()"><i data-lucide="search"></i> Look up</button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Worker email <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
                             <input id="ce-worker-email" type="email" placeholder="worker@example.com">
                         </div>
                     </div>
+                    <div id="worker-trust-panel" style="display:none;margin-top:-.25rem;margin-bottom:.75rem;padding:.75rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--ground);font-size:.82rem"></div>
 
                     <!-- Amount & deadline -->
                     <div class="form-section-label">Payment</div>
@@ -731,7 +758,7 @@
                             <label>Release mode</label>
                             <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
                                 <option value="auto">Auto-release on PASS</option>
-                                <!-- Challenge window temporarily hidden pending backend fix -->
+                                <option value="challenge_window">Challenge window (buyer review period)</option>
                             </select>
                         </div>
                         <div class="form-group" id="ce-challenge-hours-group" style="display:none">
@@ -840,7 +867,11 @@
 
                 <!-- Step 2: pay fee -->
                 <div id="create-fee-step" style="display:none">
-                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem">A $0.10 protocol fee is required to create an escrow. Click below to sign the payment in Xaman.</p>
+                    <div id="fee-preview-box" style="margin-bottom:1rem;padding:.75rem 1rem;border-radius:8px;background:var(--blue-dim);border:1px solid var(--blue-border);font-size:.82rem">
+                        <div style="font-weight:700;margin-bottom:.4rem;color:var(--blue)">Fee breakdown</div>
+                        <div id="fee-preview-rows" style="color:var(--text-muted)"><span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Loading…</div>
+                    </div>
+                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem">Click below to sign the protocol fee payment in Xaman. Funds are held by the XRPL ledger — not by AgentTrust.</p>
                     <button class="btn-primary" id="ce-pay-btn" onclick="cePayFee()" style="width:100%;justify-content:center"><i data-lucide="zap"></i> Open Xaman to pay fee</button>
                     <div id="ce-fee-status" style="margin-top:.75rem;font-size:.82rem;color:var(--text-muted)"></div>
                 </div>
@@ -1004,6 +1035,8 @@ async function loadEscrows() {
         escrowData = data.escrows || [];
         renderEscrowTable(escrowData);
         renderStats(escrowData);
+        renderIncomingRequests(escrowData);
+        renderChallengesAgainstMe(escrowData);
     } catch(err) {
         console.error('loadEscrows failed:', err);
         document.getElementById('escrow-table-body').innerHTML = '<div class="empty">Failed to load escrows.</div>';
@@ -1065,6 +1098,36 @@ function renderIncomingRequests(escrows) {
                 ${e.pay_url ? `<a href="${escapeHtml(e.pay_url)}" target="_blank" class="btn-primary" style="font-size:.75rem;padding:.35rem .8rem;text-decoration:none;flex-shrink:0">Fund escrow</a>` : ''}
                 <button class="btn-action" onclick="openDetail('${escapeHtml(e.escrow_id)}')">View</button>
             </div>`).join('')}
+        </div>`;
+    lucide.createIcons();
+}
+
+function renderChallengesAgainstMe(escrows) {
+    const section = document.getElementById('challenges-against-me-section');
+    if (!section) return;
+    if (currentRole !== 'seller' && currentRole !== 'all') { section.style.display = 'none'; return; }
+    const challenged = escrows.filter(e =>
+        ['CHALLENGED','REMEDY','CHALLENGE_UPHELD'].includes(e.status) &&
+        (currentRole === 'all' ? e.role === 'seller' : true)
+    );
+    if (!challenged.length) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    section.innerHTML = `
+        <div class="incoming-requests" style="border-color:var(--amber);background:var(--amber-dim)">
+            <div class="incoming-requests-title" style="color:var(--amber)">⚠ Challenges against you (${challenged.length})</div>
+            ${challenged.map(e => {
+                const statusLabel = e.status === 'CHALLENGED' ? 'Under review' : e.status === 'REMEDY' ? 'Remedy available' : 'Challenge upheld';
+                const statusColor = e.status === 'CHALLENGED' ? 'var(--red)' : 'var(--amber)';
+                const deadlineStr = e.challenge_deadline ? `Deadline: ${new Date(e.challenge_deadline).toLocaleDateString()}` : '';
+                return `<div class="incoming-request-row">
+                    <div style="flex:1;min-width:0">
+                        <div style="font-weight:600;font-size:.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(e.task_description || e.project_label || e.escrow_id)}</div>
+                        <div style="font-size:.75rem;color:var(--text-muted)">${escapeHtml(shortAddr(e.buyer_address))} · ${Number(e.amount||0).toFixed(2)} ${escapeHtml(e.currency||'XRP')}${deadlineStr ? ' · ' + escapeHtml(deadlineStr) : ''}</div>
+                    </div>
+                    <span style="font-size:.72rem;font-weight:700;color:${statusColor};flex-shrink:0">${escapeHtml(statusLabel)}</span>
+                    <button class="btn-action" onclick="openDetail('${escapeHtml(e.escrow_id)}')">View</button>
+                </div>`;
+            }).join('')}
         </div>`;
     lucide.createIcons();
 }
@@ -1268,6 +1331,11 @@ async function openDetail(escrowId) {
                 ${(e.status === 'LOCKED' && !e.escrow_tx_hash) || e.status === 'PENDING' ? `<button class="btn-action btn-danger" onclick="abandonVault('${escapeHtml(e.escrow_id)}')"><i data-lucide="trash-2"></i> Abandon</button>` : ''}
             </div>
             ${submitWorkHtml}
+            ${e.escrow_tx_hash && !['RELEASED','CANCELLED','ABANDONED'].includes(e.status) ? `
+            <div style="background:var(--amber-dim);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:.6rem .9rem;margin-bottom:.75rem;font-size:.8rem;color:var(--text-muted);display:flex;align-items:center;gap:.5rem">
+                <i data-lucide="lock" style="width:14px;height:14px;color:var(--amber);flex-shrink:0"></i>
+                <span><strong style="color:var(--amber)">Escrow is funded and on-chain.</strong> Task specification, amount, and criteria cannot be changed.</span>
+            </div>` : ''}
             <div class="detail-section">
                 <span class="detail-section-label">Settlement</span>
                 <div class="detail-row"><span class="detail-key">Amount</span><span class="detail-val">${e.amount != null ? Number(e.amount).toFixed(4) : '—'} ${escapeHtml(e.currency||'')}</span></div>
@@ -1349,6 +1417,55 @@ async function loadWallets() {
         renderWallets(wallets);
     } catch {
         document.getElementById('wallet-list').innerHTML = '<div class="empty">Failed to load wallets.</div>';
+    }
+    loadSellerProfileState();
+}
+
+async function loadSellerProfileState() {
+    try {
+        const res = await fetch(`${API}/enterprise/profile`, { credentials: 'include' });
+        if (!res.ok) return;
+        const d = await res.json();
+        setSellerProfileUI(!!d.public_seller_profile);
+    } catch {}
+}
+
+function setSellerProfileUI(enabled) {
+    const toggle = document.getElementById('seller-profile-toggle');
+    const slider = document.getElementById('seller-profile-slider');
+    const knob   = document.getElementById('seller-profile-knob');
+    const label  = document.getElementById('seller-profile-label');
+    if (!toggle) return;
+    toggle.checked = enabled;
+    if (enabled) {
+        slider.style.background = 'var(--green)';
+        knob.style.transform = 'translateX(18px)';
+        label.textContent = 'On — stats visible on public worker page';
+        label.style.color = 'var(--green)';
+    } else {
+        slider.style.background = 'var(--border)';
+        knob.style.transform = '';
+        label.textContent = 'Off — profile is private';
+        label.style.color = 'var(--text-muted)';
+    }
+}
+
+async function toggleSellerProfile(enabled) {
+    setSellerProfileUI(enabled);
+    const msg = document.getElementById('seller-profile-msg');
+    if (msg) { msg.style.display = ''; msg.textContent = 'Saving…'; }
+    try {
+        const res = await fetch(`${API}/enterprise/profile`, {
+            method: 'PATCH', credentials: 'include',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ public_seller_profile: enabled })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (msg) { msg.textContent = enabled ? '✅ Profile is now public.' : '✅ Profile is now private.'; setTimeout(() => { if (msg) msg.style.display = 'none'; }, 2500); }
+    } catch(err) {
+        if (msg) { msg.textContent = `Failed to save: ${err.message}`; msg.style.color = 'var(--red)'; }
+        setSellerProfileUI(!enabled);
+        document.getElementById('seller-profile-toggle').checked = !enabled;
     }
 }
 
@@ -2035,6 +2152,73 @@ function ceGoToFee() {
     const worker = document.getElementById('ce-worker').value.trim();
     if (!label || !name || !task || !amount || !worker) { showToast('Please fill in all required fields (label, your name, task, amount, worker address).'); return; }
     ceSetStep(2);
+    loadFeePreview();
+}
+
+async function loadFeePreview() {
+    const box = document.getElementById('fee-preview-rows');
+    if (!box) return;
+    try {
+        const res = await fetch(`${API}/fees`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const f = await res.json();
+        const rows = [];
+        const baseAmt = f.audit_fee_xrp ? `${parseFloat(f.audit_fee_xrp).toFixed(4)} XRP` : f.audit_fee_usd ? `$${f.audit_fee_usd}` : '$0.10';
+        rows.push(`<div style="display:flex;justify-content:space-between"><span>Protocol fee</span><strong>${escapeHtml(baseAmt)}</strong></div>`);
+        if (document.getElementById('ce-ai-verification') && document.getElementById('ce-ai-verification').value === 'true') {
+            const consAmt = f.consensus_fee_xrp ? `${parseFloat(f.consensus_fee_xrp).toFixed(4)} XRP` : f.consensus_fee_usd ? `$${f.consensus_fee_usd}` : '+$0.25';
+            rows.push(`<div style="display:flex;justify-content:space-between"><span>Dual-model consensus</span><strong>${escapeHtml(consAmt)}</strong></div>`);
+        }
+        const extraSubs = Math.max(0, parseInt(document.getElementById('ce-max-subs')?.value || 3) - 3);
+        if (extraSubs > 0) {
+            const extraAmt = f.extra_attempt_fee_usd ? `$${(parseFloat(f.extra_attempt_fee_usd) * extraSubs).toFixed(2)}` : `$${(0.05 * extraSubs).toFixed(2)}`;
+            rows.push(`<div style="display:flex;justify-content:space-between"><span>Extra attempts (×${extraSubs})</span><strong>${escapeHtml(extraAmt)}</strong></div>`);
+        }
+        if (f.accepted_assets) rows.push(`<div style="color:var(--text-faint);margin-top:.35rem">Accepted: ${escapeHtml(f.accepted_assets.join(', '))}</div>`);
+        box.innerHTML = rows.join('');
+    } catch {
+        box.innerHTML = 'Protocol fee: $0.10 · Consensus: +$0.25 · Extra attempts: +$0.05 each';
+    }
+}
+
+async function lookupWorker() {
+    const addr = document.getElementById('ce-worker').value.trim();
+    const panel = document.getElementById('worker-trust-panel');
+    if (!addr || !addr.startsWith('r') || addr.length < 25) { showToast('Enter a valid XRPL address first.'); return; }
+    panel.style.display = '';
+    panel.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Looking up…';
+    try {
+        const res = await fetch(`${API}/trust/${encodeURIComponent(addr)}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+        const score = d.trust_score ?? d.score ?? null;
+        const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
+        const passCount = d.pass_count ?? d.escrows_passed ?? '—';
+        const failCount = d.fail_count ?? d.escrows_failed ?? '—';
+        const kycBadge = d.kyc_verified ? `<span style="font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:4px;background:var(--green-dim);color:var(--green);margin-left:.4rem">KYC ✓</span>` : '';
+        const domainBadge = d.domain ? `<span style="font-size:.7rem;color:var(--text-muted);margin-left:.4rem">${escapeHtml(d.domain)}</span>` : '';
+        panel.innerHTML = `
+            <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+                <div>
+                    <span style="font-size:1.1rem;font-weight:700;color:${scoreColor}">${score !== null ? score : '—'}</span>
+                    <span style="font-size:.72rem;color:var(--text-muted)">/100 trust score</span>${kycBadge}${domainBadge}
+                </div>
+                <div style="display:flex;gap:1rem;font-size:.78rem;color:var(--text-muted)">
+                    <span style="color:var(--green)">✓ ${passCount} passed</span>
+                    <span style="color:var(--red)">✗ ${failCount} failed</span>
+                    ${d.avg_attempts != null ? `<span>avg ${parseFloat(d.avg_attempts).toFixed(1)} attempts</span>` : ''}
+                    ${d.challenges_lost != null ? `<span style="color:var(--amber)">${d.challenges_lost} challenges lost</span>` : ''}
+                </div>
+            </div>
+            ${d.sanctions_hit ? `<div style="color:var(--red);font-weight:700;margin-top:.4rem;font-size:.8rem">⛔ OFAC sanctions match — do not proceed.</div>` : ''}`;
+    } catch(err) {
+        panel.innerHTML = `<span style="color:var(--text-muted)">Could not fetch trust data — ${escapeHtml(err.message)}</span>`;
+    }
+}
+
+function clearWorkerLookup() {
+    const panel = document.getElementById('worker-trust-panel');
+    if (panel) panel.style.display = 'none';
 }
 
 async function cePayFee() {
@@ -2135,7 +2319,7 @@ async function ceGenerateVault() {
             // Release mode
             ...(() => {
                 const mode = document.getElementById('ce-release-mode').value;
-                if (mode === 'challenge') {
+                if (mode === 'challenge_window') {
                     const hrs = document.getElementById('ce-challenge-hours').value;
                     return { release_mode: `challenge_window_hrs:${hrs}` };
                 }
@@ -2304,7 +2488,7 @@ function ceAddCriterion() {
 
 function ceToggleReleaseMode() {
     const mode = document.getElementById('ce-release-mode').value;
-    document.getElementById('ce-challenge-hours-group').style.display = mode === 'challenge' ? '' : 'none';
+    document.getElementById('ce-challenge-hours-group').style.display = mode === 'challenge_window' ? '' : 'none';
 }
 
 // ── Challenge countdown ──
