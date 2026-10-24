@@ -153,6 +153,9 @@
     .detail-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: .45rem .9rem; border-radius: 8px; font-size: .78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, border-color .15s; }
     .btn-action:hover { color: var(--blue); border-color: var(--blue-border); }
+    .btn-role { padding: .25rem .65rem; border-radius: 6px; font-size: .75rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--text-muted); transition: color .15s, background .15s, border-color .15s; }
+    .btn-role:hover { color: var(--text); border-color: var(--blue-border); }
+    .btn-role.active { background: var(--blue-dim); color: var(--blue); border-color: var(--blue-border); }
     .btn-danger { color: var(--red, #c0392b); }
     .btn-danger:hover { color: var(--red, #c0392b); border-color: var(--red, #c0392b); }
     .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; font-weight: 700; cursor: pointer; border: none; background: var(--blue); color: #fff; transition: opacity .15s; }
@@ -393,6 +396,11 @@
             <div class="table-wrap">
                 <div class="table-header">
                     <span class="table-title">Escrow records</span>
+                    <span style="display:flex;gap:.25rem;align-items:center;margin-left:auto">
+                        <button id="role-btn-buyer"  class="btn-role active" onclick="setRole('buyer')">Buying</button>
+                        <button id="role-btn-seller" class="btn-role"        onclick="setRole('seller')">Selling</button>
+                        <button id="role-btn-all"    class="btn-role"        onclick="setRole('all')">All</button>
+                    </span>
                     <span id="escrow-count" style="font-size:.8rem;color:var(--text-muted)"></span>
                 </div>
                 <div id="escrow-table-body">
@@ -902,6 +910,7 @@ const API = 'https://mcp.cryptovault.co.uk';
 let account = null;
 let escrowData = [];
 let enterpriseWallets = [];
+let currentRole = (() => { try { return localStorage.getItem('at_role_filter') || 'buyer'; } catch { return 'buyer'; } })();
 
 async function init() {
     const params = new URLSearchParams(location.search);
@@ -932,6 +941,11 @@ function showLoginError(err) {
 function showApp() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-shell').style.display = 'flex';
+    // Initialise role toggle active state
+    ['buyer','seller','all'].forEach(r => {
+        const btn = document.getElementById(`role-btn-${r}`);
+        if (btn) btn.classList.toggle('active', r === currentRole);
+    });
     document.getElementById('account-name').textContent = account.name || account.email;
     document.getElementById('account-email').textContent = account.email;
     const badge = document.getElementById('account-badge');
@@ -969,9 +983,19 @@ async function logout() {
 }
 
 // ── Escrows ──
+function setRole(role) {
+    currentRole = role;
+    try { localStorage.setItem('at_role_filter', role); } catch {}
+    ['buyer','seller','all'].forEach(r => {
+        const btn = document.getElementById(`role-btn-${r}`);
+        if (btn) btn.classList.toggle('active', r === role);
+    });
+    loadEscrows();
+}
+
 async function loadEscrows() {
     try {
-        const res = await fetch(`${API}/enterprise/escrows?limit=100`, { credentials: 'include' });
+        const res = await fetch(`${API}/enterprise/escrows?limit=100&role=${currentRole}`, { credentials: 'include' });
         if (res.status === 402) {
             document.getElementById('escrow-table-body').innerHTML = '<div class="empty">Subscription required to view audit trail.</div>';
             return;
