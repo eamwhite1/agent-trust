@@ -1047,6 +1047,58 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
     </div>
 
     <!-- ════════════════════════════════════════════════════════════
+         FUND PANEL  (?fund=<escrow_id>)
+    ════════════════════════════════════════════════════════════ -->
+    <div id="panel-fund" style="display:none;">
+        <div class="card" style="max-width:580px;margin:0 auto;">
+            <span class="section-label">Seller-Initiated Escrow</span>
+            <h2 class="card-title">Fund This Escrow</h2>
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.4rem;">
+                The seller has already specified the job terms. Lock your funds in XRPL escrow — payment releases automatically once the work is verified.
+            </p>
+            <div id="fund-info-panel" style="display:none;margin-bottom:1.4rem;">
+                <div class="info-grid" style="display:flex;flex-direction:column;gap:.55rem;">
+                    <div style="display:flex;justify-content:space-between;font-size:.85rem;">
+                        <span style="color:var(--text-muted);">Task</span>
+                        <span id="fund-task" style="font-weight:600;text-align:right;max-width:65%;"></span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:.85rem;">
+                        <span style="color:var(--text-muted);">Amount</span>
+                        <span id="fund-amount" style="font-weight:600;"></span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:.85rem;">
+                        <span style="color:var(--text-muted);">Seller</span>
+                        <span id="fund-seller" style="font-family:monospace;font-size:.8rem;"></span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:.85rem;" id="fund-criteria-row" style="display:none;">
+                        <span style="color:var(--text-muted);">Criteria</span>
+                        <span id="fund-criteria-count" style="font-weight:600;"></span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:.85rem;" id="fund-deadline-row" style="display:none;">
+                        <span style="color:var(--text-muted);">Deadline</span>
+                        <span id="fund-deadline" style="font-weight:600;"></span>
+                    </div>
+                </div>
+                <div id="fund-criteria-list" style="margin-top:1rem;display:none;">
+                    <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;">Acceptance Criteria</div>
+                    <ul id="fund-criteria-items" style="margin:0;padding:0 0 0 1.1rem;font-size:.82rem;color:var(--text);line-height:1.7;"></ul>
+                </div>
+            </div>
+            <div class="status-msg" id="fund-info-status"></div>
+            <div id="fund-sign-section" style="display:none;margin-top:1rem;">
+                <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem;">
+                    Sign the EscrowCreate transaction in Xaman. Once confirmed on the XRP Ledger the vault activates and the seller can begin work.
+                </p>
+                <div id="fund-qr-container" style="text-align:center;margin-bottom:1rem;"></div>
+                <button class="btn btn-primary" id="fund-sign-btn" onclick="doFundEscrow()">
+                    <i data-lucide="lock"></i> Sign &amp; Fund in Xaman
+                </button>
+            </div>
+            <div class="status-msg" id="fund-sign-status"></div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
          SELLER PANEL
     ════════════════════════════════════════════════════════════ -->
     <div id="panel-worker" style="display:none;">
@@ -1605,6 +1657,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function switchTab(tab) {
     document.getElementById("panel-landing").style.display = "none";
+    document.getElementById("panel-fund").style.display    = "none";
     document.getElementById("main-tabs").style.display     = "";
     document.getElementById("panel-buyer").style.display   = tab === "buyer"  ? "block" : "none";
     document.getElementById("panel-worker").style.display  = tab === "worker" ? "block" : "none";
@@ -1613,15 +1666,100 @@ function switchTab(tab) {
     lucide.createIcons();
 }
 
-// Auto-trigger collect OR worker pre-fill from URL params
+async function showFundingPanel(escrowId) {
+    const API = window.REFEREE_URL || "https://mcp.cryptovault.co.uk";
+    document.getElementById("panel-landing").style.display = "none";
+    document.getElementById("main-tabs").style.display     = "none";
+    document.getElementById("panel-fund").style.display    = "block";
+    lucide.createIcons();
+
+    const statusEl = document.getElementById("fund-info-status");
+    statusEl.textContent = "⏳ Loading escrow details…";
+    statusEl.style.display = "block";
+
+    try {
+        const res  = await fetch(`${API}/escrow/${encodeURIComponent(escrowId)}`);
+        const data = await res.json();
+        if (!res.ok) { statusEl.textContent = `❌ ${data.detail || "Escrow not found."}`; return; }
+
+        statusEl.style.display = "none";
+        const infoPanel = document.getElementById("fund-info-panel");
+        infoPanel.style.display = "block";
+        document.getElementById("fund-task").textContent   = data.task_description || "—";
+        document.getElementById("fund-amount").textContent = data.display_amount   || "—";
+        document.getElementById("fund-seller").textContent = data.worker_address   || "—";
+
+        const criteriaArr = data.criteria_v2 || data.criteria || [];
+        if (criteriaArr.length > 0) {
+            document.getElementById("fund-criteria-row").style.display = "flex";
+            document.getElementById("fund-criteria-count").textContent = `${criteriaArr.length} criteria`;
+            const ul = document.getElementById("fund-criteria-items");
+            ul.innerHTML = criteriaArr.map(c => `<li>${typeof c === "string" ? c : (c.description || c.name || JSON.stringify(c))}</li>`).join("");
+            document.getElementById("fund-criteria-list").style.display = "block";
+        }
+        if (data.deadline) {
+            document.getElementById("fund-deadline-row").style.display = "flex";
+            document.getElementById("fund-deadline").textContent = data.deadline;
+        }
+
+        if (data.status === "AWAITING_FUNDING") {
+            document.getElementById("fund-sign-section").style.display = "block";
+            lucide.createIcons();
+        } else {
+            statusEl.textContent = `ℹ️ This escrow is already in status: ${data.status}`;
+            statusEl.style.display = "block";
+        }
+    } catch (e) {
+        statusEl.textContent = `❌ ${e.message}`;
+        statusEl.style.display = "block";
+    }
+}
+
+async function doFundEscrow() {
+    const API      = window.REFEREE_URL || "https://mcp.cryptovault.co.uk";
+    const escrowId = new URLSearchParams(window.location.search).get("fund");
+    const btn      = document.getElementById("fund-sign-btn");
+    const statusEl = document.getElementById("fund-sign-status");
+    if (!escrowId) return;
+
+    btn.disabled = true;
+    statusEl.textContent = "⏳ Preparing transaction…";
+    statusEl.style.display = "block";
+
+    try {
+        const res  = await fetch(`${API}/escrow/${encodeURIComponent(escrowId)}/fund`, { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) { statusEl.textContent = `❌ ${data.detail || "Failed to prepare funding tx."}`; btn.disabled = false; return; }
+
+        // Show Xaman QR if payload URL returned
+        const qrContainer = document.getElementById("fund-qr-container");
+        if (data.xaman_qr_png) {
+            qrContainer.innerHTML = `<img src="${data.xaman_qr_png}" alt="Scan with Xaman" style="width:200px;height:200px;border-radius:10px;">
+                <p style="font-size:.78rem;color:var(--text-muted);margin-top:.5rem;">Scan with Xaman to sign the EscrowCreate</p>`;
+        } else if (data.xaman_deeplink) {
+            qrContainer.innerHTML = `<a href="${data.xaman_deeplink}" class="btn btn-primary" style="display:inline-block;">Open in Xaman</a>`;
+        }
+        btn.style.display = "none";
+        statusEl.textContent = "✅ Transaction ready — sign in Xaman to fund the escrow.";
+        lucide.createIcons();
+    } catch (e) {
+        statusEl.textContent = `❌ ${e.message}`;
+        btn.disabled = false;
+    }
+}
+
+// Auto-trigger collect OR worker/fund pre-fill from URL params
 (function() {
     const params    = new URLSearchParams(window.location.search);
     const collectId = params.get("collect");
     const workerId  = params.get("worker");
+    const fundId    = params.get("fund");
     const recipient = params.get("recipient");
     const ref       = params.get("ref");
     if (collectId) {
         loadDelivery(collectId.trim().toUpperCase());
+    } else if (fundId) {
+        showFundingPanel(fundId.trim().toUpperCase());
     } else if (workerId) {
         switchTab("worker");
         const f = document.getElementById("worker-project-id");
