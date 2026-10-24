@@ -935,6 +935,50 @@ async function loadJobInfo(projectId) {
             await fetchDexQuote(data.worker_address, data.amount_xrp);
         }
 
+        // REMEDY banner — challenge upheld, one extra attempt granted
+        const existingRemedyBanner = document.getElementById("remedy-banner");
+        if (existingRemedyBanner) existingRemedyBanner.remove();
+        if (data.status === "REMEDY" && !data.remedy_attempt_used) {
+            const banner = document.createElement("div");
+            banner.id = "remedy-banner";
+            banner.style.cssText = "margin-top:1rem;padding:.9rem 1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);border-radius:10px;";
+            const challengeIds = data.challenge_criteria_ids || [];
+            const idsText = challengeIds.length ? ` (criteria: ${challengeIds.join(", ")})` : "";
+            banner.innerHTML = `<div style="font-size:.85rem;font-weight:700;color:#d97706;margin-bottom:.3rem;">⚠️ Challenge upheld — remedy attempt available</div>
+                <p style="font-size:.8rem;color:var(--text-muted);margin:0;">The buyer challenged this verdict${idsText}. You have been granted one extra submission to address the disputed criteria. Re-submit your work below.</p>`;
+            const infoPanel = document.getElementById("job-info-panel");
+            if (infoPanel) infoPanel.after(banner);
+        }
+
+        // Criteria v2 list with per-criterion results
+        const existingCriteriaPanel = document.getElementById("criteria-results-panel");
+        if (existingCriteriaPanel) existingCriteriaPanel.remove();
+        const criteriaArr = data.criteria_v2 || data.criteria || [];
+        const verdicts    = data.evaluation_verdicts || [];
+        if (criteriaArr.length > 0) {
+            const panel = document.createElement("div");
+            panel.id = "criteria-results-panel";
+            panel.style.cssText = "margin-top:1rem;padding:.9rem 1rem;background:var(--surface, #f9f9fb);border:1px solid var(--border, #e4e4ea);border-radius:10px;";
+            const rows = criteriaArr.map((c, i) => {
+                const label   = typeof c === "string" ? c : (c.description || c.name || `Criterion ${i+1}`);
+                const verdict = verdicts[i];
+                let badge = "";
+                if (verdict) {
+                    const pass = verdict.pass === true || verdict.pass === "true" || verdict.passed === true;
+                    const fail = verdict.pass === false || verdict.pass === "false" || verdict.passed === false;
+                    if (pass)      badge = `<span style="font-size:.72rem;font-weight:700;color:#00b97a;background:rgba(0,185,122,.1);padding:.15rem .45rem;border-radius:4px;">PASS</span>`;
+                    else if (fail) badge = `<span style="font-size:.72rem;font-weight:700;color:#e5373d;background:rgba(229,55,61,.1);padding:.15rem .45rem;border-radius:4px;">FAIL</span>`;
+                }
+                return `<div style="display:flex;align-items:flex-start;gap:.6rem;padding:.35rem 0;border-bottom:1px solid var(--border, #e4e4ea);">
+                    <span style="flex:1;font-size:.82rem;">${label}</span>${badge}</div>`;
+            }).join("");
+            panel.innerHTML = `<div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;">Acceptance Criteria</div>${rows}`;
+            const remedyBanner = document.getElementById("remedy-banner");
+            const infoPanel    = document.getElementById("job-info-panel");
+            if (remedyBanner) remedyBanner.after(panel);
+            else if (infoPanel) infoPanel.after(panel);
+        }
+
         // NFT DvP panel — shown when work passed but awaiting NFT transfer
         const dvpPanel = document.getElementById("nft-dvp-seller-panel");
         if (data.nft_dvp && data.status === "PASS_AWAITING_NFT") {
