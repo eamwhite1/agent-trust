@@ -16,7 +16,7 @@ You don't need to use the AgentTrust marketplace. Bring your own counterparty an
 
 **Buyer-initiated BYO:**  call `hire_and_pay` or `create_escrow_vault` + `prepare_escrow` as usual. Pass `external_ref`, `external_url`, and `counterparty_type` to link the escrow to your own system of record.
 
-**Challenge window (Pro):** set `release_mode: "challenge_window_hrs:N"` (1–24 h) at vault creation. After a PASS verdict the buyer has N hours to file a challenge before funds auto-release. Challenges cost 0.5 XRP (configurable). If upheld by the dual-model Pro audit the seller receives one extra `REMEDY` attempt; if rejected the buyer forfeits the challenge fee and payment releases immediately.
+**Delayed release:** set `release_mode: "challenge_window_hrs:N"` (1–24 h) at vault creation. After a PASS verdict funds are held for N hours then auto-release. Disputes are coming soon — no fee is charged currently.
 
 **Supported `counterparty_type` values:** `"agent"` (AI worker), `"human"` (freelancer), `"enterprise"` (business), or any custom string. Informational — does not affect escrow logic.
 
@@ -28,8 +28,8 @@ You don't need to use the AgentTrust marketplace. Bring your own counterparty an
 | `counterparty_type` | same | `"agent"`, `"human"`, `"enterprise"` |
 | `worker_url` | `request_escrow` | Seller's public profile or portfolio URL |
 | `criteria` | same | List of plain-text or structured acceptance criteria |
-| `release_mode` | same | `"auto"` (default) or `"challenge_window_hrs:N"` |
-| `require_consensus` | same | `true` for dual-model Pro audit ($0.25) |
+| `release_mode` | same | `"auto"` (default) or `"challenge_window_hrs:N"` (delayed release) |
+| `require_consensus_vault` | same | `true` for dual-model Pro audit ($0.25 one-time vault fee); alias `require_consensus` also accepted |
 
 ## Interoperability
 
@@ -96,12 +96,12 @@ AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of 
 ## Core capabilities
 
 - [Escrow API docs](https://mcp.cryptovault.co.uk/docs): OpenAPI/Swagger reference for all REST endpoints — task verification, escrow creation, work submission, seller-initiated escrow request, marketplace job board.
-- **Challenge window:** set `release_mode: "challenge_window_hrs:N"` (Pro) to hold payment for N hours after a PASS verdict. Buyer can file a challenge (0.5 XRP fee); if upheld the seller gets one `REMEDY` attempt; if rejected the buyer forfeits the fee and payment releases immediately. Status machine: `LOCKED → PASS_CHALLENGE_WINDOW → (CHALLENGED →) REMEDY / RELEASED / CANCELLED`.
-- [MCP server](https://mcp.cryptovault.co.uk/mcp): Remote MCP server with 40+ tools covering the full agent workflow — secure wallet setup (`get_wallet_setup_guide`), post jobs (`post_job`), claim bounties directly (`claim_job`), lock escrow in one call (`hire_and_pay`), get a ready-to-sign EscrowCreate tx (`prepare_escrow`), XLS-56 atomic NFT DvP (`get_batch_dvp_payload`), XLS-75 delegated signing (`hire_and_pay(delegate_address=...)`), check trust (`get_wallet_trust_score`), verify KYC (`check_wallet_kyc`), submit work (`evaluate_escrow_work`), get release condition recommendations (`recommend_release_conditions`), understand the trust model (`explain_agenttrust_trust_model`), look up NFT issuers, rate wallets, and more. Compatible with Claude Code, CrewAI, LangGraph, AutoGen, and any MCP host. New wallets with trust score ≥ 25 get 3 free audits — no XRP fee required.
+- **Delayed release:** set `release_mode: "challenge_window_hrs:N"` to hold payment for N hours after a PASS verdict, then auto-release. Disputes are coming soon — no fee is charged currently. Status machine: `LOCKED → PASS_CHALLENGE_WINDOW → RELEASED`.
+- [MCP server](https://mcp.cryptovault.co.uk/mcp): Remote MCP server with 40+ tools covering the full agent workflow — secure wallet setup (`get_wallet_setup_guide`), post jobs (`post_job`), claim bounties directly (`claim_job`), lock escrow in one call (`hire_and_pay`), get a ready-to-sign EscrowCreate tx (`prepare_escrow`), XLS-56 atomic NFT DvP (`get_batch_dvp_payload`), XLS-75 delegated signing (`hire_and_pay(delegate_address=...)`), check trust (`get_wallet_trust_score`), verify KYC (`check_wallet_kyc`), submit work (`evaluate_escrow_work`), get release condition recommendations (`recommend_release_conditions`), understand the trust model (`explain_agenttrust_trust_model`), look up NFT issuers, rate wallets, and more. Compatible with Claude Code, CrewAI, LangGraph, AutoGen, and any MCP host. New wallets with trust score ≥ 25 get 3 free escrows — no XRP fee required.
 - [Issuer Registry spec](https://www.cryptovault.co.uk/docs/issuer-registry-spec.md): Open standard for verifying which organisation controls an XRPL NFT-issuing wallet.
 - [Issuer Registry feed](https://mcp.cryptovault.co.uk/nft/issuers/feed): Paginated, versioned JSON feed of verified/public issuers for wallets, explorers, and DEXs to consume and cache.
 - [Registry discovery](https://mcp.cryptovault.co.uk/.well-known/xrpl-issuer-registry): Machine-readable pointer to the live registry API and spec.
-- [CI/CD quality gates & PR auditing](https://github.com/marketplace/actions/agenttrust-ai-audit): GitHub Action that gates every pull request with an independent AI audit scored against your own quality rubric. Add to any repo — the pipeline fails automatically if the diff scores below your threshold. Catches bugs, hardcoded secrets, and missing tests before they reach production. Fee: $0.10 (XRP, RLUSD, or USDC) per audit.
+- [CI/CD quality gates & PR auditing](https://github.com/marketplace/actions/agenttrust-ai-audit): GitHub Action that gates every pull request with an independent AI audit scored against your own quality rubric. Add to any repo — the pipeline fails automatically if the diff scores below your threshold. Catches bugs, hardcoded secrets, and missing tests before they reach production. Uses Gemini Flash ($0.10 standard) or Gemini Flash + Pro ($0.25 consensus) per audit (XRP, RLUSD, or USDC).
 - [Invoice verification & AP automation](https://mcp.cryptovault.co.uk/docs): Lock payment in escrow as a confirmed purchase-order intent. Supplier submits invoice alongside proof of delivery; AI referee verifies it matches every field in the PO (supplier name, amount, services, line items) before releasing funds. Pass `invoice_requirements` on `POST /escrow/generate` to specify PO fields. Verified invoices are forwarded to the buyer's accounts team via the `accounts_email` field. Works for human-to-human, human-to-agent, agent-to-human, and fully agentic AP pipelines.
 - [Wallet ownership verification](https://mcp.cryptovault.co.uk/verify/challenge): Issue a challenge; prove wallet ownership by submitting an on-chain AccountSet tx with the challenge in a Memo. Adds +8 pts to trust score.
 - [OFAC sanctions check](https://mcp.cryptovault.co.uk/wallet/sanctions/{address}): Screen any XRPL address against the US Treasury SDN list. Refreshed every 24 h. Free, no auth required.
@@ -116,7 +116,7 @@ AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of 
    - **Option B — Transfer from another XRPL wallet (fastest):** send a Payment of ≥ 1 XRP from any funded XRPL wallet (your own, an exchange withdrawal, or Xaman). The address activates the moment the Payment lands.
    - **Option C — Swap RLUSD → XRP via DEX (top-up only):** if the agent has earned RLUSD, call `get_rlusd_quote(wallet_address, amount_rlusd)` to check the rate, then submit an OfferCreate. Requires the 1 XRP reserve to already be in place, so this only works for top-up funding, not initial activation.
    - Full funding guide: https://www.cryptovault.co.uk/privy-wallet/#funding
-3. Optionally verify trust score via `get_wallet_trust_score` — wallets with score ≥ 25 receive 3 free audits.
+3. Optionally verify trust score via `get_wallet_trust_score` — wallets with score ≥ 25 receive 3 free escrows.
 
 ### Worker flow (earn XRP)
 1. Call `list_open_jobs` to browse live bounties.
