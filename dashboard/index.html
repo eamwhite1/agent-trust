@@ -943,6 +943,11 @@ let escrowData = [];
 let enterpriseWallets = [];
 let currentRole = (() => { try { return localStorage.getItem('at_role_filter') || 'buyer'; } catch { return 'buyer'; } })();
 
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 async function init() {
     const params = new URLSearchParams(location.search);
     if (params.get('error')) showLoginError(params.get('error'));
