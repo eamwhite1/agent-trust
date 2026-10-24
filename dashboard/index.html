@@ -730,14 +730,14 @@
                     <!-- Release mode -->
                     <div class="form-row" style="margin-top:.5rem">
                         <div class="form-group">
-                            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Challenge window gives you a period to dispute before funds release.">?</span></label>
+                            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Delayed release holds funds for N hours after PASS before auto-releasing. Disputes coming soon.">?</span></label>
                             <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
                                 <option value="auto">Auto-release on PASS</option>
-                                <option value="challenge_window">Challenge window (buyer review period)</option>
+                                <option value="challenge_window">Delayed release (N h)</option>
                             </select>
                         </div>
                         <div class="form-group" id="ce-challenge-hours-group" style="display:none">
-                            <label>Challenge window duration <span class="field-hint" data-tip="How long you have to dispute a PASS verdict before funds release automatically.">?</span></label>
+                            <label>Delay duration <span class="field-hint" data-tip="How long funds are held after PASS before auto-releasing. Disputes coming soon.">?</span></label>
                             <select id="ce-challenge-hours">
                                 <option value="4">4 hours</option>
                                 <option value="8">8 hours</option>
@@ -1190,7 +1190,7 @@ function renderEscrowTable(escrows) {
     const showRole = currentRole === 'all';
     const rows = escrows.map(e => {
         const counterparty = e.role === 'buyer' ? e.worker_address : e.buyer_address;
-        const releaseModeLabel = !e.release_mode || e.release_mode === 'auto' ? 'auto' : e.release_mode.replace('challenge_window_hrs:','') + 'h win.';
+        const releaseModeLabel = !e.release_mode || e.release_mode === 'auto' ? 'auto' : e.release_mode.replace('challenge_window_hrs:','') + 'h delay';
         const txLink = e.release_tx_hash
             ? `<a href="https://livenet.xrpl.org/transactions/${escapeHtml(e.release_tx_hash)}" target="_blank" class="detail-link" style="font-size:.75rem" onclick="event.stopPropagation()"><i data-lucide="external-link"></i></a>`
             : '—';
@@ -1310,7 +1310,7 @@ async function openDetail(escrowId) {
                 <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${escapeHtml(e.challenge_deadline)}">calculating…</span></div>
                 <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
                 <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Fee: <strong>0.5 XRP</strong> — refunded if upheld, paid to seller if rejected. AgentTrust keeps none of it.</p>
-                <button class="btn-action" style="margin-top:.3rem" onclick="openChallengeModal('${escapeHtml(e.escrow_id)}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>
+                <button class="btn-action" style="margin-top:.3rem;opacity:.5;cursor:not-allowed" disabled title="Disputes coming soon"><i data-lucide="alert-triangle"></i> Challenge this verdict <span style="font-size:.72rem;font-weight:400">(coming soon)</span></button>
             </div>` : '';
 
         document.getElementById('detail-content').innerHTML = `
@@ -1885,7 +1885,7 @@ function renderTemplates() {
                     ${t.required_domain ? `<span class="template-pill">Domain: ${escapeHtml(t.required_domain)}</span>` : ''}
                     ${t.required_vc_issuer_did ? `<span class="template-pill">VC required</span>` : ''}
                     ${!t.require_ai_audit ? `<span class="template-pill">No AI audit</span>` : t.require_consensus ? `<span class="template-pill" style="background:var(--green-dim);color:var(--green)">Dual-model</span>` : `<span class="template-pill">AI audit</span>`}
-                    ${t.release_mode && t.release_mode !== 'auto' ? `<span class="template-pill" style="background:var(--amber-dim);color:var(--amber)">Challenge window</span>` : ''}
+                    ${t.release_mode && t.release_mode !== 'auto' ? `<span class="template-pill" style="background:var(--amber-dim);color:var(--amber)">Delayed release</span>` : ''}
                     ${t.max_submissions && t.max_submissions !== 3 ? `<span class="template-pill">${t.max_submissions} attempts</span>` : ''}
                 </div>
                 <div style="margin-top:.5rem;font-size:.72rem;color:var(--text-faint)">ID: <code style="font-family:monospace">${t.id}</code></div>
@@ -2779,22 +2779,11 @@ init();
 
 <!-- Challenge modal -->
 <div id="challenge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-        <h3 style="margin:0 0 .5rem">Challenge verdict</h3>
-        <p style="font-size:.85rem;color:var(--text-faint);margin-bottom:1rem">Select the criteria you dispute and explain why. A challenge fee of <strong id="challenge-fee-display">0.5 XRP</strong> is required — refunded if the challenge is upheld.</p>
-        <div id="challenge-criteria-list" style="margin-bottom:1rem"></div>
-        <div style="margin-bottom:.75rem">
-            <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Reason for challenge *</label>
-            <textarea id="challenge-reason" style="min-height:80px;width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box" placeholder="Explain specifically why the work does not meet the criteria…"></textarea>
-        </div>
-        <div style="margin-bottom:1rem">
-            <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Challenge fee tx hash *</label>
-            <input id="challenge-fee-hash" placeholder="Paste transaction hash after paying fee" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">
-            <div style="font-size:.75rem;color:var(--text-faint);margin-top:.3rem">Send <strong id="challenge-fee-amount-display">0.5 XRP</strong> to <strong id="challenge-platform-wallet">—</strong>, then paste the transaction hash above.</div>
-        </div>
-        <div style="display:flex;gap:.6rem;justify-content:flex-end">
-            <button class="btn-action" onclick="closeChallengeModal()">Cancel</button>
-            <button class="btn-action" style="background:var(--blue,#2563eb);color:#fff;border-color:transparent" onclick="submitChallenge()">Submit challenge</button>
+    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <h3 style="margin:0 0 .5rem">Disputes coming soon</h3>
+        <p style="font-size:.85rem;color:var(--text-faint);margin-bottom:1.25rem">Challenge window disputes are not yet available. No fee is required — do not send any payment. The delayed release window will auto-release funds to the seller once the timer expires.</p>
+        <div style="display:flex;justify-content:flex-end">
+            <button class="btn-action" onclick="closeChallengeModal()">Close</button>
         </div>
     </div>
 </div>
