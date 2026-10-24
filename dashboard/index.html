@@ -901,6 +901,7 @@
 const API = 'https://mcp.cryptovault.co.uk';
 let account = null;
 let escrowData = [];
+let enterpriseWallets = [];
 
 async function init() {
     const params = new URLSearchParams(location.search);
@@ -990,23 +991,94 @@ function getVerdict(e) {
 }
 
 function renderStats(escrows) {
-    document.getElementById('stat-total').textContent = escrows.length;
-    document.getElementById('stat-pass').textContent = escrows.filter(e => getVerdict(e) === 'PASS').length;
-    document.getElementById('stat-fail').textContent = escrows.filter(e => getVerdict(e) === 'FAIL').length;
-    document.getElementById('stat-locked').textContent = escrows.filter(e => e.status === 'LOCKED').length;
+    const fmtXrp = n => n > 0 ? n.toFixed(1) + ' XRP' : '0';
+    if (currentRole === 'seller') {
+        const pending  = escrows.filter(e => e.status === 'LOCKED').reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+        const earned   = escrows.filter(e => e.status === 'RELEASED').reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+        const lost     = escrows.filter(e => ['CANCELLED','ABANDONED'].includes(e.status)).reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+        const inChallenge = escrows.filter(e => ['PASS_CHALLENGE_WINDOW','CHALLENGED'].includes(e.status)).length;
+        document.getElementById('stat-label-1').textContent = 'Pending (locked)';
+        document.getElementById('stat-label-2').textContent = 'Earned';
+        document.getElementById('stat-label-3').textContent = 'Lost (cancelled)';
+        document.getElementById('stat-label-4').textContent = 'In challenge';
+        document.getElementById('stat-total').textContent = fmtXrp(pending);
+        document.getElementById('stat-pass').textContent  = fmtXrp(earned);
+        document.getElementById('stat-fail').textContent  = fmtXrp(lost);
+        document.getElementById('stat-locked').textContent = inChallenge;
+    } else {
+        const locked   = escrows.filter(e => e.status === 'LOCKED').reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+        const released = escrows.filter(e => e.status === 'RELEASED').reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+        const refunded = escrows.filter(e => ['CANCELLED','ABANDONED'].includes(e.status)).length;
+        const fees     = (escrows.length * 0.10).toFixed(2);
+        document.getElementById('stat-label-1').textContent = 'Locked';
+        document.getElementById('stat-label-2').textContent = 'Released';
+        document.getElementById('stat-label-3').textContent = 'Cancelled';
+        document.getElementById('stat-label-4').textContent = 'Fees paid';
+        document.getElementById('stat-total').textContent = fmtXrp(locked);
+        document.getElementById('stat-pass').textContent  = fmtXrp(released);
+        document.getElementById('stat-fail').textContent  = refunded;
+        document.getElementById('stat-locked').textContent = `$${fees}`;
+    }
+}
+
+function renderIncomingRequests(escrows) {
+    const section = document.getElementById('incoming-requests-section');
+    if (!section) return;
+    if (currentRole !== 'buyer' && currentRole !== 'all') { section.style.display = 'none'; return; }
+    const incoming = escrows.filter(e => e.initiated_by === 'seller' && e.status === 'AWAITING_FUNDING');
+    if (!incoming.length) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    section.innerHTML = `
+        <div class="incoming-requests">
+            <div class="incoming-requests-title">Incoming deal requests (${incoming.length})</div>
+            ${incoming.map(e => `
+            <div class="incoming-request-row">
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(e.task_description || e.project_label || e.escrow_id)}</div>
+                    <div style="font-size:.75rem;color:var(--text-muted)">From: <span class="mono">${escapeHtml(shortAddr(e.worker_address))}</span> · ${escapeHtml((e.amount||'?') + ' ' + (e.currency||'XRP'))}</div>
+                </div>
+                ${e.pay_url ? `<a href="${escapeHtml(e.pay_url)}" target="_blank" class="btn-primary" style="font-size:.75rem;padding:.35rem .8rem;text-decoration:none;flex-shrink:0">Fund escrow</a>` : ''}
+                <button class="btn-action" onclick="openDetail('${escapeHtml(e.escrow_id)}')">View</button>
+            </div>`).join('')}
+        </div>`;
+    lucide.createIcons();
 }
 
 function statusPill(e) {
-    // Prefer AI verdict for completed escrows; fall back to lifecycle status
     const verdict = typeof e === 'object' ? getVerdict(e) : null;
     const status  = typeof e === 'object' ? e.status : e;
-    if (verdict === 'PASS') return `<span class="status-pill pill-pass">PASS</span>`;
+    if (status === 'RELEASED' && verdict !== 'FAIL') return `<span class="status-pill pill-pass">Released</span>`;
     if (verdict === 'FAIL') return `<span class="status-pill pill-fail">FAIL</span>`;
-    const map = { RELEASED: 'pill-pass', LOCKED: 'pill-locked', CANCELLED: 'pill-fail', ABANDONED: 'pill-fail', PENDING: 'pill-pending', PASS_AWAITING_NFT: 'pill-pending', PASS_CHALLENGE_WINDOW: 'pill-pending', CHALLENGED: 'pill-pending', REMEDY: 'pill-fail', AWAITING_FUNDING: 'pill-locked' };
-    const cls = map[status] || 'pill-pending';
-    const labels = { PASS_AWAITING_NFT: 'Awaiting NFT', PENDING: 'Pending', ABANDONED: 'Abandoned', PASS_CHALLENGE_WINDOW: 'Passed — in review', CHALLENGED: 'Under challenge', REMEDY: 'Remedy available', AWAITING_FUNDING: 'Awaiting funding' };
+    const map = {
+        LOCKED:               'pill-locked',
+        RELEASING:            'pill-locked',
+        CANCELLED:            'pill-fail',
+        ABANDONED:            'pill-fail',
+        PENDING:              'pill-pending',
+        PASS_AWAITING_NFT:    'pill-pending',
+        PASS_CHALLENGE_WINDOW:'pill-pending',
+        CHALLENGED:           'pill-fail',
+        REMEDY:               'pill-pending',
+        CHALLENGE_UPHELD:     'pill-pending',
+        AWAITING_FUNDING:     'pill-pending',
+    };
+    const labels = {
+        LOCKED:               'Locked',
+        RELEASING:            'Releasing',
+        RELEASED:             'Released',
+        CANCELLED:            'Cancelled',
+        ABANDONED:            'Abandoned',
+        PENDING:              'Pending',
+        PASS_AWAITING_NFT:    'Awaiting NFT',
+        PASS_CHALLENGE_WINDOW:'In Review',
+        CHALLENGED:           'Challenged',
+        REMEDY:               'Remedy',
+        CHALLENGE_UPHELD:     'Remedy Available',
+        AWAITING_FUNDING:     'Awaiting Funding',
+    };
+    const cls   = map[status]    || 'pill-pending';
     const label = labels[status] || (status || '—');
-    return `<span class="status-pill ${cls}">${label}</span>`;
+    return `<span class="status-pill ${cls}">${escapeHtml(label)}</span>`;
 }
 
 function shortAddr(addr) {
@@ -1014,28 +1086,54 @@ function shortAddr(addr) {
     return addr.slice(0, 6) + '…' + addr.slice(-4);
 }
 
+function deadlineCountdown(ts) {
+    if (!ts) return '—';
+    const diff = new Date(ts) - Date.now();
+    if (diff <= 0) return '<span style="color:var(--red)">Expired</span>';
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const style = diff < 86400000 ? ' style="color:var(--red)"' : '';
+    return `<span${style}>${d > 0 ? d + 'd ' : ''}${h}h</span>`;
+}
+
 function renderEscrowTable(escrows) {
+    const emptyMsg = currentRole === 'seller'
+        ? 'No escrows as seller yet. Found work elsewhere? Use <strong>Request a deal</strong> to bring it here.'
+        : 'No escrows as buyer yet. Ready to hire? <button class="btn-action" style="font-size:.78rem" onclick="showPage(\'create\')">Create an escrow</button>';
     if (!escrows.length) {
-        document.getElementById('escrow-table-body').innerHTML = '<div class="empty">No escrows found for linked wallets.</div>';
+        document.getElementById('escrow-table-body').innerHTML = `<div class="empty">${emptyMsg}</div>`;
         document.getElementById('escrow-count').textContent = '';
         return;
     }
     document.getElementById('escrow-count').textContent = `${escrows.length} records`;
-    const rows = escrows.map(e => `
-        <tr onclick="openDetail('${e.escrow_id}')">
-            <td data-label="Project">${e.project_label || '<span style="color:var(--text-faint)">—</span>'}</td>
+    const showRole = currentRole === 'all';
+    const rows = escrows.map(e => {
+        const counterparty = e.role === 'buyer' ? e.worker_address : e.buyer_address;
+        const releaseModeLabel = !e.release_mode || e.release_mode === 'auto' ? 'auto' : e.release_mode.replace('challenge_window_hrs:','') + 'h win.';
+        const txLink = e.release_tx_hash
+            ? `<a href="https://livenet.xrpl.org/transactions/${escapeHtml(e.release_tx_hash)}" target="_blank" class="detail-link" style="font-size:.75rem" onclick="event.stopPropagation()"><i data-lucide="external-link"></i></a>`
+            : '—';
+        const rolePill = showRole
+            ? `<span style="font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:4px;background:${e.role==='buyer'?'var(--blue-dim)':'var(--green-dim)'};color:${e.role==='buyer'?'var(--blue)':'var(--green)'}">${escapeHtml(e.role)}</span> `
+            : '';
+        return `
+        <tr onclick="openDetail('${escapeHtml(e.escrow_id)}')">
+            ${showRole ? `<td data-label="Role">${rolePill}</td>` : ''}
+            <td data-label="Counterparty" class="mono" title="${escapeHtml(counterparty||'')}">${escapeHtml(shortAddr(counterparty))}</td>
             <td data-label="Status">${statusPill(e)}</td>
-            <td data-label="Amount" style="font-variant-numeric:tabular-nums">${e.amount ? e.amount.toFixed(2) : '—'} <span style="color:var(--text-faint);font-size:.75rem">${e.currency}</span></td>
-            <td data-label="Worker" class="mono">${shortAddr(e.worker_address)}</td>
-            <td data-label="Tx" class="mono">${e.escrow_tx_hash ? shortAddr(e.escrow_tx_hash) : '—'}</td>
-            <td data-label="Date" style="color:var(--text-muted);font-size:.78rem">${e.created_at ? new Date(e.created_at).toLocaleDateString() : '—'}</td>
-        </tr>
-    `).join('');
+            <td data-label="Amount" style="font-variant-numeric:tabular-nums">${e.amount != null ? Number(e.amount).toFixed(2) : '—'} <span style="color:var(--text-faint);font-size:.75rem">${escapeHtml(e.currency||'')}</span></td>
+            <td data-label="Attempts" style="font-variant-numeric:tabular-nums;color:var(--text-muted)">${e.attempts_used != null ? e.attempts_used + ' / ' + (e.max_submissions||3) : '—'}</td>
+            <td data-label="Deadline">${deadlineCountdown(e.cancel_after_ts)}</td>
+            <td data-label="Mode" style="color:var(--text-muted);font-size:.78rem">${escapeHtml(releaseModeLabel)}</td>
+            <td data-label="Payout">${txLink}</td>
+        </tr>`;
+    }).join('');
     document.getElementById('escrow-table-body').innerHTML = `
         <div style="overflow-x:auto">
         <table>
             <thead><tr>
-                <th>Project</th><th>Status</th><th>Amount</th><th>Worker</th><th>Tx Hash</th><th>Date</th>
+                ${showRole ? '<th>Role</th>' : ''}
+                <th>Counterparty</th><th>Status</th><th>Amount</th><th>Attempts</th><th>Deadline</th><th>Mode</th><th>Payout</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>
@@ -1051,111 +1149,160 @@ async function openDetail(escrowId) {
     try {
         const res = await fetch(`${API}/enterprise/audit/${escrowId}`, { credentials: 'include' });
         const e = await res.json();
-        const explorerLink = e.xrpl_explorer
-            ? `<a class="detail-link" href="${e.xrpl_explorer}" target="_blank"><i data-lucide="external-link"></i> View on XRPL Explorer</a>`
-            : '—';
-        // Build proof gates section
+
+        // Proof gates
         const gates = [];
-        if (e.required_nft_issuer) gates.push({ icon: 'badge-check', label: 'NFT gate', val: `Issuer: ${e.required_nft_issuer}` });
-        if (e.required_domain)     gates.push({ icon: 'globe',       label: 'Domain verification', val: e.required_domain });
-        if (e.required_vc_issuer_did) gates.push({ icon: 'shield',   label: 'W3C Verifiable Credential', val: e.required_vc_issuer_did });
-        if (e.nft_dvp)             gates.push({ icon: 'repeat',      label: 'NFT DvP', val: e.nft_dvp_status || 'required' });
+        if (e.required_nft_issuer) gates.push({ icon: 'badge-check', label: 'NFT gate', val: `Issuer: ${escapeHtml(e.required_nft_issuer)}` });
+        if (e.required_domain)     gates.push({ icon: 'globe',       label: 'Domain verification', val: escapeHtml(e.required_domain) });
+        if (e.required_vc_issuer_did) gates.push({ icon: 'shield',   label: 'W3C VC', val: escapeHtml(e.required_vc_issuer_did) });
+        if (e.nft_dvp)             gates.push({ icon: 'repeat',      label: 'NFT DvP', val: escapeHtml(e.nft_dvp_status || 'required') });
         const proofSection = gates.length ? `
             <div class="detail-section">
-                <span class="detail-section-label">Proof gates${e.proof_policy ? ' · policy: ' + e.proof_policy : ''}</span>
+                <span class="detail-section-label">Proof gates${e.proof_policy ? ' · policy: ' + escapeHtml(e.proof_policy) : ''}</span>
                 ${gates.map(g => `<div class="proof-gate"><i data-lucide="${g.icon}" class="proof-icon"></i><span style="color:var(--text-muted);width:150px;flex-shrink:0">${g.label}</span><span style="font-size:.78rem">${g.val}</span></div>`).join('')}
             </div>` : '';
 
-        // Parse AI verdict JSON if possible
+        // AI verdict
         let verdictHtml = '';
         if (e.ai_verdict) {
             try {
                 const v = JSON.parse(e.ai_verdict);
-                verdictHtml = `<div style="margin-bottom:.5rem;font-size:.83rem"><strong>Score: ${v.score ?? '—'}/100</strong> &nbsp;·&nbsp; ${v.summary || ''}</div><div class="detail-verdict">${v.details || e.ai_verdict}</div>`;
-            } catch { verdictHtml = `<div class="detail-verdict">${e.ai_verdict}</div>`; }
+                verdictHtml = `<div style="margin-bottom:.5rem;font-size:.83rem"><strong>Score: ${escapeHtml(String(v.score ?? '—'))}/100</strong> &nbsp;·&nbsp; ${escapeHtml(v.summary || '')}</div><div class="detail-verdict">${escapeHtml(v.details || e.ai_verdict)}</div>`;
+            } catch { verdictHtml = `<div class="detail-verdict">${escapeHtml(e.ai_verdict)}</div>`; }
         }
 
-        document.getElementById('detail-content').innerHTML = `
-            <div class="detail-title">${e.project_label || 'Escrow ' + e.escrow_id.slice(0,8)}</div>
-            ${statusPill(e)}
-            <div style="height:1rem"></div>
-            <div class="detail-actions">
-                ${e.xrpl_explorer ? `<a class="btn-action" href="${e.xrpl_explorer}" target="_blank"><i data-lucide="external-link"></i> XRPL Explorer</a>` : ''}
-                <button class="btn-action" onclick="emailReceipt('${e.escrow_id}')"><i data-lucide="mail"></i> Email receipt</button>
-                ${(e.status === 'LOCKED' && !e.escrow_tx_hash) || e.status === 'PENDING' ? `<button class="btn-action btn-danger" onclick="abandonVault('${e.escrow_id}')"><i data-lucide="trash-2"></i> Abandon</button>` : ''}
+        // Per-criterion results
+        const criteriaHtml = (e.evaluation_verdicts || []).length ? `
+            <div class="detail-section">
+                <span class="detail-section-label">Criterion results</span>
+                ${e.evaluation_verdicts.map(c => {
+                    const typeClass = c.type === 'evidence' ? 'type-evidence' : c.type === 'code' ? 'type-code' : 'type-judgment';
+                    const vColor = c.verdict==='PASS' ? 'var(--green)' : c.verdict==='FAIL' ? 'var(--red)' : 'var(--amber)';
+                    const vBg    = c.verdict==='PASS' ? 'var(--green-dim)' : c.verdict==='FAIL' ? 'var(--red-dim)' : 'var(--amber-dim)';
+                    return `<div style="margin-bottom:.6rem;padding:.6rem .8rem;border-radius:6px;background:var(--ground);border:1px solid var(--border)">
+                        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;flex-wrap:wrap">
+                            <span class="criterion-type-pill ${typeClass}">${escapeHtml(c.type||'judgment')}</span>
+                            <span style="font-size:.7rem;font-weight:700;padding:.1rem .4rem;border-radius:4px;background:${vBg};color:${vColor}">${escapeHtml(c.verdict||'—')}</span>
+                            <span style="font-size:.82rem;font-weight:600">${escapeHtml(c.criterion_id||'')}</span>
+                        </div>
+                        ${c.description ? `<div style="font-size:.79rem;color:var(--text-muted);margin-bottom:.2rem">${escapeHtml(c.description)}</div>` : ''}
+                        <div style="font-size:.8rem;color:var(--text-muted);line-height:1.5">${escapeHtml(c.reason || c.reasoning || '')}</div>
+                        ${c.evidence_quote ? `<div style="font-size:.75rem;color:var(--text-faint);margin-top:.3rem;padding:.3rem .5rem;background:var(--surface);border-radius:4px;font-family:monospace;white-space:pre-wrap">"${escapeHtml(String(c.evidence_quote).slice(0,300))}"</div>` : ''}
+                    </div>`;
+                }).join('')}
+            </div>` : '';
+
+        // Audit trail section
+        const auditTrail = (e.verdict_hash || e.models_used || e.prompt_version) ? `
+            <div class="audit-trail-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+                <span>Audit Trail</span>
+                <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--text-faint)"></i>
             </div>
+            <div style="display:none;padding-top:.5rem">
+                ${e.prompt_version ? `<div class="detail-row"><span class="detail-key">Prompt version</span><span class="detail-val mono">${escapeHtml(e.prompt_version)}</span></div>` : ''}
+                ${e.models_used && e.models_used.length ? `<div class="detail-row"><span class="detail-key">Models used</span><span class="detail-val">${escapeHtml(e.models_used.join(', '))}</span></div>` : ''}
+                ${e.verdict_hash ? `<div class="detail-row"><span class="detail-key">Verdict hash</span><span class="detail-val mono" style="font-size:.7rem;word-break:break-all">${escapeHtml(e.verdict_hash.slice(0,16))}…
+                    <button onclick="navigator.clipboard.writeText('${escapeHtml(e.verdict_hash)}');showToast('Copied')" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:.72rem;padding:0 .3rem">copy</button>
+                </span></div>` : ''}
+                ${e.release_tx_hash ? `<div class="detail-row"><span class="detail-key">EscrowFinish</span><span class="detail-val"><a class="detail-link" href="https://livenet.xrpl.org/transactions/${escapeHtml(e.release_tx_hash)}" target="_blank"><i data-lucide="external-link"></i> View memo on XRPL</a></span></div>` : ''}
+            </div>` : '';
+
+        // Seller: submit work panel
+        const isSellerView = e.role === 'seller';
+        const submitWorkHtml = isSellerView && ['LOCKED','REMEDY'].includes(e.status) ? `
+            <div class="submit-work-panel">
+                <h4>Submit work</h4>
+                <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem">Attempts used: ${e.attempts_used||0} / ${e.max_submissions||3}${e.status==='REMEDY'?' · <strong style="color:var(--amber)">Remedy attempt</strong>':''}</div>
+                <div class="form-group">
+                    <label class="form-label">Your deliverable *</label>
+                    <textarea class="form-input" id="sw-work-${escapeHtml(e.escrow_id)}" style="min-height:100px" placeholder="Paste your work, URL, or proof of delivery…"></textarea>
+                </div>
+                <div id="sw-result-${escapeHtml(e.escrow_id)}" style="font-size:.82rem;margin-bottom:.5rem;display:none"></div>
+                <button class="btn-primary" style="font-size:.82rem" onclick="submitWork('${escapeHtml(e.escrow_id)}')"><i data-lucide="send"></i> Submit for evaluation</button>
+            </div>` : '';
+
+        // Buyer: challenge button with fee note
+        const challengeWindowHtml = e.status === 'PASS_CHALLENGE_WINDOW' && e.challenge_deadline && e.role !== 'seller' ? `
+            <div class="detail-section" style="border-left:3px solid var(--amber);padding-left:.75rem">
+                <span class="detail-section-label">Challenge window open</span>
+                <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${escapeHtml(e.challenge_deadline)}">calculating…</span></div>
+                <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
+                <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Fee: <strong>0.5 XRP</strong> — refunded if upheld, paid to seller if rejected. AgentTrust keeps none of it.</p>
+                <button class="btn-action" style="margin-top:.3rem" onclick="openChallengeModal('${escapeHtml(e.escrow_id)}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>
+            </div>` : '';
+
+        document.getElementById('detail-content').innerHTML = `
+            <div class="detail-title">${escapeHtml(e.project_label || 'Escrow ' + (e.escrow_id||'').slice(0,8))}</div>
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+                ${statusPill(e)}
+                ${e.role ? `<span style="font-size:.7rem;font-weight:700;padding:.1rem .5rem;border-radius:4px;background:${e.role==='buyer'?'var(--blue-dim)':'var(--green-dim)'};color:${e.role==='buyer'?'var(--blue)':'var(--green)'}">${escapeHtml(e.role)}</span>` : ''}
+            </div>
+            <div class="detail-actions">
+                ${e.xrpl_explorer ? `<a class="btn-action" href="${escapeHtml(e.xrpl_explorer)}" target="_blank"><i data-lucide="external-link"></i> XRPL Explorer</a>` : ''}
+                <button class="btn-action" onclick="emailReceipt('${escapeHtml(e.escrow_id)}')"><i data-lucide="mail"></i> Email receipt</button>
+                ${(e.status === 'LOCKED' && !e.escrow_tx_hash) || e.status === 'PENDING' ? `<button class="btn-action btn-danger" onclick="abandonVault('${escapeHtml(e.escrow_id)}')"><i data-lucide="trash-2"></i> Abandon</button>` : ''}
+            </div>
+            ${submitWorkHtml}
             <div class="detail-section">
                 <span class="detail-section-label">Settlement</span>
-                <div class="detail-row"><span class="detail-key">Amount</span><span class="detail-val">${e.amount ? e.amount.toFixed(4) : '—'} ${e.currency}</span></div>
-                <div class="detail-row"><span class="detail-key">Buyer</span><span class="detail-val mono">${e.buyer_address || '—'}</span></div>
-                <div class="detail-row"><span class="detail-key">Worker</span><span class="detail-val mono">${e.worker_address || '—'}</span></div>
-                <div class="detail-row"><span class="detail-key">Escrow Tx</span><span class="detail-val mono">${e.escrow_tx_hash || '—'}</span></div>
-                <div class="detail-row"><span class="detail-key">Release Tx</span><span class="detail-val mono">${e.auto_finish_hash || '—'}</span></div>
+                <div class="detail-row"><span class="detail-key">Amount</span><span class="detail-val">${e.amount != null ? Number(e.amount).toFixed(4) : '—'} ${escapeHtml(e.currency||'')}</span></div>
+                <div class="detail-row"><span class="detail-key">Buyer</span><span class="detail-val mono">${escapeHtml(e.buyer_address||'—')}</span></div>
+                <div class="detail-row"><span class="detail-key">Worker</span><span class="detail-val mono">${escapeHtml(e.worker_address||'—')}</span></div>
+                <div class="detail-row"><span class="detail-key">Attempts</span><span class="detail-val">${e.attempts_used??'—'} / ${e.max_submissions??3}</span></div>
+                <div class="detail-row"><span class="detail-key">Release mode</span><span class="detail-val">${escapeHtml(e.release_mode||'auto')}</span></div>
+                <div class="detail-row"><span class="detail-key">Escrow Tx</span><span class="detail-val mono" style="font-size:.75rem">${escapeHtml(e.escrow_tx_hash||'—')}</span></div>
+                <div class="detail-row"><span class="detail-key">Release Tx</span><span class="detail-val mono" style="font-size:.75rem">${escapeHtml(e.auto_finish_hash||'—')}</span></div>
                 <div class="detail-row"><span class="detail-key">Created</span><span class="detail-val">${e.created_at ? new Date(e.created_at).toLocaleString() : '—'}</span></div>
                 ${e.cancel_after_ts ? `<div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.cancel_after_ts).toLocaleString()}</span></div>` : ''}
+                ${e.external_ref ? `<div class="detail-row"><span class="detail-key">External ref</span><span class="detail-val mono">${escapeHtml(e.external_ref)}</span></div>` : ''}
             </div>
             ${proofSection}
             ${e.task_description ? `
             <div class="detail-section">
                 <span class="detail-section-label">Task specification</span>
-                <div class="detail-verdict">${e.task_description}</div>
+                <div class="detail-verdict">${escapeHtml(e.task_description)}</div>
             </div>` : ''}
             ${e.worker_submission ? `
             <div class="detail-section">
                 <span class="detail-section-label">Worker submission</span>
-                <div class="detail-verdict">${e.worker_submission}</div>
+                <div class="detail-verdict">${escapeHtml(e.worker_submission)}</div>
             </div>` : ''}
             ${e.ai_verdict ? `
             <div class="detail-section">
-                <span class="detail-section-label">AI Verdict — ${e.model_used || 'AI'}</span>
+                <span class="detail-section-label">AI Verdict — ${escapeHtml(e.model_used || 'AI')}</span>
                 ${verdictHtml}
             </div>` : ''}
+            ${criteriaHtml}
             ${e.invoice_requirements ? `
             <div class="detail-section">
                 <span class="detail-section-label">Invoice requirements</span>
-                <div class="detail-verdict">${e.invoice_requirements}</div>
+                <div class="detail-verdict">${escapeHtml(typeof e.invoice_requirements === 'string' ? e.invoice_requirements : JSON.stringify(e.invoice_requirements, null, 2))}</div>
             </div>` : ''}
-            ${e.evaluation_verdicts && e.evaluation_verdicts.criteria_results ? `
-            <div class="detail-section">
-                <span class="detail-section-label">Criterion results</span>
-                ${e.evaluation_verdicts.criteria_results.map(c => `
-                <div style="margin-bottom:.6rem;padding:.6rem .8rem;border-radius:6px;background:var(--surface-2,var(--surface,var(--ground)));border:1px solid var(--border)">
-                    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem">
-                        <span style="font-size:.7rem;font-weight:700;padding:.1rem .4rem;border-radius:4px;background:${c.verdict==='PASS'?'#d1fae5':c.verdict==='FAIL'?'#fee2e2':'#fef3c7'};color:${c.verdict==='PASS'?'#059669':c.verdict==='FAIL'?'#dc2626':'#d97706'}">${c.verdict}</span>
-                        <span style="font-size:.82rem;font-weight:600">${c.criterion_id}</span>
-                        ${c.score != null ? `<span style="font-size:.75rem;color:var(--text-faint);margin-left:auto">${c.score}/100</span>` : ''}
-                    </div>
-                    <div style="font-size:.8rem;color:var(--text-muted,var(--text-faint));line-height:1.5">${c.reasoning || ''}</div>
-                    ${c.evidence_quote ? `<div style="font-size:.75rem;color:var(--text-faint);margin-top:.3rem;padding:.3rem .5rem;background:var(--ground);border-radius:4px;font-family:monospace;white-space:pre-wrap">"${c.evidence_quote}"</div>` : ''}
-                </div>`).join('')}
-            </div>` : ''}
+            ${challengeWindowHtml}
             ${e.status === 'REMEDY' ? `
-            <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem">
-                <div style="font-weight:700;color:#d97706;margin-bottom:.25rem">⚠ 1 remedy attempt available</div>
+            <div style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem">
+                <div style="font-weight:700;color:var(--amber);margin-bottom:.25rem">⚠ 1 remedy attempt available</div>
                 <div style="font-size:.83rem">The buyer challenged this verdict and the Pro model agreed. You have <strong>one more submission</strong> to fix the disputed criteria and earn release.</div>
-                ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div style="font-size:.8rem;margin-top:.4rem;color:var(--text-faint)">Disputed: <strong>${e.challenge_criteria_ids.join(', ')}</strong></div>` : ''}
+                ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div style="font-size:.8rem;margin-top:.4rem;color:var(--text-muted)">Disputed: <strong>${escapeHtml(e.challenge_criteria_ids.join(', '))}</strong></div>` : ''}
             </div>` : ''}
             ${e.status === 'CHALLENGED' ? `
-            <div class="detail-section" style="border-left:3px solid #ea580c;padding-left:.75rem">
+            <div class="detail-section" style="border-left:3px solid var(--red);padding-left:.75rem">
                 <span class="detail-section-label">Challenge in progress</span>
-                <div style="font-size:.83rem;color:var(--text-faint)">A Pro model review is underway. You'll receive an email when the outcome is decided.</div>
+                <div style="font-size:.83rem;color:var(--text-muted)">A Pro model review is underway. You'll receive an email when the outcome is decided.</div>
                 ${e.challenged_at ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Challenged at</span><span class="detail-val">${new Date(e.challenged_at).toLocaleString()}</span></div>` : ''}
-                ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div class="detail-row"><span class="detail-key">Disputed criteria</span><span class="detail-val">${e.challenge_criteria_ids.join(', ')}</span></div>` : ''}
-            </div>` : ''}
-            ${e.status === 'PASS_CHALLENGE_WINDOW' && e.challenge_deadline ? `
-            <div class="detail-section" style="border-left:3px solid #f59e0b;padding-left:.75rem">
-                <span class="detail-section-label">Challenge window</span>
-                <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${e.challenge_deadline}">calculating…</span></div>
-                <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
-                <button class="btn-action" style="margin-top:.6rem" onclick="openChallengeModal('${e.escrow_id}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>
+                ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div class="detail-row"><span class="detail-key">Disputed criteria</span><span class="detail-val">${escapeHtml(e.challenge_criteria_ids.join(', '))}</span></div>` : ''}
             </div>` : ''}
             ${e.status === 'AWAITING_FUNDING' ? `
-            <div class="detail-section" style="border-left:3px solid #2563eb;padding-left:.75rem">
+            <div class="detail-section" style="border-left:3px solid var(--blue);padding-left:.75rem">
                 <span class="detail-section-label">Awaiting buyer funding</span>
-                <div style="font-size:.83rem;color:var(--text-faint);margin-bottom:.5rem">Share the link below with the buyer to fund this escrow.</div>
-                ${e.pay_url ? `<div style="display:flex;gap:.4rem;align-items:center"><code style="font-size:.78rem;flex:1;padding:.3rem .5rem;background:var(--ground);border:1px solid var(--border);border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.pay_url}</code><button class="btn-action" onclick="navigator.clipboard.writeText('${e.pay_url}');showToast('Pay link copied')"><i data-lucide="copy"></i></button></div>` : ''}
+                <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.5rem">Share the pay link with the buyer to fund this escrow. Once funded, you can submit work.</div>
+                ${e.pay_url ? `<div style="display:flex;gap:.4rem;align-items:center">
+                    <code style="font-size:.78rem;flex:1;padding:.3rem .5rem;background:var(--ground);border:1px solid var(--border);border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(e.pay_url)}</code>
+                    <button class="btn-action" onclick="navigator.clipboard.writeText(${JSON.stringify(e.pay_url)});showToast('Pay link copied')"><i data-lucide="copy"></i></button>
+                </div>` : ''}
                 ${e.funding_deadline ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Funding deadline</span><span class="detail-val">${new Date(e.funding_deadline).toLocaleString()}</span></div>` : ''}
             </div>` : ''}
+            ${auditTrail}
         `;
         lucide.createIcons();
         startChallengeCountdown();
@@ -1181,6 +1328,7 @@ async function loadWallets() {
 }
 
 function renderWallets(wallets) {
+    enterpriseWallets = wallets.map(w => w.xrpl_address).filter(Boolean);
     if (!wallets.length) {
         document.getElementById('wallet-list').innerHTML = '<div class="empty">No wallets linked yet.</div>';
         return;
@@ -2078,14 +2226,25 @@ function exportCSV() {
     if (from) rows = rows.filter(e => e.created_at && e.created_at >= from);
     if (to)   rows = rows.filter(e => e.created_at && e.created_at.slice(0,10) <= to);
     if (!rows.length) { showToast('No records in that date range.'); return; }
-    const headers = ['Escrow ID','Project','Status','Amount','Currency','Buyer','Worker','Escrow Tx','Release Tx','Date'];
-    const csvRows = [headers, ...rows.map(e => [
-        e.escrow_id, e.project_label || '', e.status,
-        e.amount ? e.amount.toFixed(4) : '',
-        e.currency || '', e.buyer_address || '', e.worker_address || '',
-        e.escrow_tx_hash || '', e.auto_finish_hash || '',
-        e.created_at ? e.created_at.slice(0,10) : '',
-    ])].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+    const includeRole = currentRole === 'all';
+    const headers = ['Escrow ID','Project','Status','Amount','Currency','Buyer','Worker','Escrow Tx','Release Tx','Date', ...(includeRole ? ['Role'] : [])];
+    const csvRows = [headers, ...rows.map(e => {
+        const linkedAddrs = (enterpriseWallets || []);
+        let roleVal = '';
+        if (includeRole) {
+            const isBuyer = linkedAddrs.includes(e.buyer_address);
+            const isSeller = linkedAddrs.includes(e.worker_address);
+            roleVal = isBuyer && isSeller ? 'both' : isBuyer ? 'buyer' : isSeller ? 'seller' : '';
+        }
+        return [
+            e.escrow_id, e.project_label || '', e.status,
+            e.amount ? e.amount.toFixed(4) : '',
+            e.currency || '', e.buyer_address || '', e.worker_address || '',
+            e.escrow_tx_hash || '', e.auto_finish_hash || '',
+            e.created_at ? e.created_at.slice(0,10) : '',
+            ...(includeRole ? [roleVal] : []),
+        ];
+    })].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -2204,8 +2363,139 @@ async function submitChallenge() {
     } catch { showToast('Network error'); }
 }
 
+function submitWork(escrowId) {
+    const work = document.getElementById('submit-work-text').value.trim();
+    const tok = document.getElementById('submit-work-token').value.trim();
+    if (!work) { showToast('Please enter your work / proof of delivery.'); return; }
+    if (!tok) { showToast('Evaluate token required — ask the buyer to share it.'); return; }
+    const btn = document.getElementById('submit-work-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    fetch(`${API}/evaluate`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ escrow_id: escrowId, work, evaluate_token: tok })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false; btn.textContent = 'Submit Work';
+        if (data.verdict) {
+            showToast(`Verdict: ${data.verdict}`);
+            loadEscrows();
+            openDetail(escrowId);
+        } else {
+            showToast(data.detail || JSON.stringify(data));
+        }
+    })
+    .catch(err => { btn.disabled = false; btn.textContent = 'Submit Work'; showToast('Error: ' + err.message); });
+}
+
+function openRequestDealModal() {
+    document.getElementById('rd-criteria-list').innerHTML = '';
+    document.getElementById('rd-result').style.display = 'none';
+    ['rd-buyer-addr','rd-task','rd-amount','rd-external-ref','rd-external-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('rd-deadline').value = '';
+    document.getElementById('rd-release-mode').value = 'ai';
+    rdAddCriterion();
+    document.getElementById('request-deal-modal').style.display = 'flex';
+}
+
+function closeRequestDealModal() {
+    document.getElementById('request-deal-modal').style.display = 'none';
+}
+
+function rdAddCriterion() {
+    const list = document.getElementById('rd-criteria-list');
+    const row = document.createElement('div');
+    row.className = 'rd-criterion-row';
+    row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem';
+    row.innerHTML = `<select class="rd-crit-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem"><option value="judgment">Judgment</option><option value="evidence">Evidence</option><option value="code">Code gate</option></select><input class="rd-crit-desc" placeholder="e.g. Deliverable URL is publicly accessible" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem"><button type="button" onclick="this.closest('.rd-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>`;
+    list.appendChild(row);
+}
+
+function submitDealRequest() {
+    const buyerAddr = document.getElementById('rd-buyer-addr').value.trim();
+    const task = document.getElementById('rd-task').value.trim();
+    const amount = parseFloat(document.getElementById('rd-amount').value);
+    const deadlineVal = document.getElementById('rd-deadline').value;
+    const externalRef = document.getElementById('rd-external-ref').value.trim();
+    const externalUrl = document.getElementById('rd-external-url').value.trim();
+    const releaseMode = document.getElementById('rd-release-mode').value;
+    if (!task) { showToast('Task description is required.'); return; }
+    if (!amount || amount <= 0) { showToast('Amount must be a positive number.'); return; }
+    const criteria = [...document.querySelectorAll('#rd-criteria-list .rd-criterion-row')].map(row => ({
+        type: row.querySelector('.rd-crit-type').value,
+        description: row.querySelector('.rd-crit-desc').value.trim()
+    })).filter(c => c.description);
+    const body = { task, amount_xrp: amount, release_mode: releaseMode };
+    if (buyerAddr) body.buyer_address = buyerAddr;
+    if (deadlineVal) body.cancel_after = Math.floor(new Date(deadlineVal).getTime() / 1000);
+    if (externalRef) body.external_ref = externalRef;
+    if (externalUrl) body.external_url = externalUrl;
+    if (criteria.length) body.criteria = criteria;
+    const btn = document.getElementById('rd-submit-btn');
+    btn.disabled = true; btn.textContent = 'Requesting…';
+    fetch(`${API}/escrow/request`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false; btn.textContent = 'Send Request';
+        if (data.pay_url || data.escrow_id) {
+            const resultDiv = document.getElementById('rd-result');
+            resultDiv.style.display = 'block';
+            const payUrl = data.pay_url ? escapeHtml(data.pay_url) : '';
+            const workerUrl = data.worker_url ? escapeHtml(data.worker_url) : '';
+            resultDiv.innerHTML = `<p style="color:var(--green,#16a34a);font-weight:600">Deal request created!</p>${payUrl ? `<p style="font-size:.82rem;margin:.3rem 0">Buyer funding link:</p><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem"><code style="flex:1;font-size:.75rem;word-break:break-all;padding:.4rem .6rem;background:var(--ground);border-radius:6px">${payUrl}</code><button onclick="navigator.clipboard.writeText(${JSON.stringify(data.pay_url||'')})" style="padding:.3rem .7rem;background:var(--blue,#2563eb);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.78rem">Copy</button></div>` : ''}${workerUrl ? `<p style="font-size:.82rem;margin:.3rem 0">Worker confirmation link:</p><code style="font-size:.75rem;word-break:break-all;padding:.4rem .6rem;background:var(--ground);border-radius:6px;display:block">${workerUrl}</code>` : ''}`;
+            loadEscrows();
+        } else {
+            showToast(data.detail || JSON.stringify(data));
+        }
+    })
+    .catch(err => { btn.disabled = false; btn.textContent = 'Send Request'; showToast('Error: ' + err.message); });
+}
+
 init();
 </script>
+
+<!-- Request-a-deal modal -->
+<div id="request-deal-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:540px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h3 style="margin:0">Request a Deal</h3>
+            <button onclick="closeRequestDealModal()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:1.4rem;line-height:1">×</button>
+        </div>
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Buyer wallet address <span style="font-weight:400;color:var(--text-faint)">(optional — leave blank for open request)</span></label>
+        <input id="rd-buyer-addr" placeholder="rXXXXX…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;margin-bottom:.75rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Task description *</label>
+        <textarea id="rd-task" rows="3" placeholder="Describe the work you will deliver…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:.75rem"></textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Amount (XRP) *</label><input id="rd-amount" type="number" min="0.1" step="0.1" placeholder="10" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Deadline <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-deadline" type="datetime-local" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">External ref <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-external-ref" placeholder="e.g. GH-123" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+            <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">External URL <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-external-url" type="url" placeholder="https://…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
+        </div>
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Release mode</label>
+        <select id="rd-release-mode" style="width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;margin-bottom:.75rem">
+            <option value="ai">AI verdict</option>
+            <option value="buyer">Buyer approval</option>
+            <option value="consensus">Dual-model consensus</option>
+        </select>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+            <label style="font-size:.85rem;font-weight:600">Criteria</label>
+            <button onclick="rdAddCriterion()" style="padding:.25rem .7rem;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:.82rem">+ Add</button>
+        </div>
+        <div id="rd-criteria-list" style="margin-bottom:.75rem"></div>
+        <div id="rd-result" style="display:none;margin-bottom:.75rem;padding:.75rem;background:var(--ground);border-radius:8px;font-size:.85rem"></div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+            <button class="btn-action" onclick="closeRequestDealModal()">Cancel</button>
+            <button id="rd-submit-btn" class="btn-action" style="background:var(--blue,#2563eb);color:#fff;border-color:transparent" onclick="submitDealRequest()">Send Request</button>
+        </div>
+    </div>
+</div>
 
 <!-- Challenge modal -->
 <div id="challenge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
