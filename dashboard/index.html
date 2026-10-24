@@ -648,8 +648,23 @@
                         <textarea id="ce-task" style="min-height:120px" placeholder="Describe exactly what the worker must deliver for payment to release."></textarea>
                     </div>
 
+                    <!-- Criteria -->
+                    <div class="form-section-label">Acceptance criteria <span style="color:var(--text-faint);font-weight:400;text-transform:none;letter-spacing:0;font-size:.8rem">(optional)</span></div>
+                    <div id="ce-criteria-list">
+                        <div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem">
+                            <input class="ce-criterion-desc" placeholder="e.g. API returns HTTP 200 with JSON body" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
+                            <select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
+                                <option value="judgment">Judgment</option>
+                                <option value="evidence">Evidence</option>
+                                <option value="code">Code gate</option>
+                            </select>
+                            <button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-action" style="margin-top:.3rem;font-size:.75rem" onclick="ceAddCriterion()"><i data-lucide="plus"></i> Add criterion</button>
+
                     <!-- Reference links -->
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top:1rem">
                         <label>Reference URLs <span style="color:var(--text-faint);font-weight:400">(optional — up to 3, fetched and frozen at creation)</span></label>
                         <div id="ce-spec-links">
                             <input class="ce-spec-link" placeholder="https://…" style="width:100%;margin-bottom:.4rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">
@@ -698,6 +713,33 @@
                                 <option value="8">8 (+$0.25)</option>
                                 <option value="9">9 (+$0.30)</option>
                                 <option value="10">10 (+$0.35)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Release mode -->
+                    <div class="form-row" style="margin-top:.5rem">
+                        <div class="form-group">
+                            <label>Release mode</label>
+                            <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
+                                <option value="auto">Auto-release on PASS</option>
+                                <option value="challenge">Challenge window</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="ce-challenge-hours-group" style="display:none">
+                            <label>Challenge window</label>
+                            <select id="ce-challenge-hours">
+                                <option value="4">4 hours</option>
+                                <option value="8">8 hours</option>
+                                <option value="12">12 hours</option>
+                                <option value="24" selected>24 hours</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>AI verification</label>
+                            <select id="ce-ai-verification">
+                                <option value="false">Standard (Flash)</option>
+                                <option value="true">Dual-model (Flash + Pro, +$0.25)</option>
                             </select>
                         </div>
                     </div>
@@ -960,9 +1002,9 @@ function statusPill(e) {
     const status  = typeof e === 'object' ? e.status : e;
     if (verdict === 'PASS') return `<span class="status-pill pill-pass">PASS</span>`;
     if (verdict === 'FAIL') return `<span class="status-pill pill-fail">FAIL</span>`;
-    const map = { RELEASED: 'pill-pass', LOCKED: 'pill-locked', CANCELLED: 'pill-fail', ABANDONED: 'pill-fail', PENDING: 'pill-pending', PASS_AWAITING_NFT: 'pill-pending' };
+    const map = { RELEASED: 'pill-pass', LOCKED: 'pill-locked', CANCELLED: 'pill-fail', ABANDONED: 'pill-fail', PENDING: 'pill-pending', PASS_AWAITING_NFT: 'pill-pending', PASS_CHALLENGE_WINDOW: 'pill-pending', CHALLENGED: 'pill-pending', REMEDY: 'pill-fail', AWAITING_FUNDING: 'pill-locked' };
     const cls = map[status] || 'pill-pending';
-    const labels = { PASS_AWAITING_NFT: 'Awaiting NFT', PENDING: 'Pending', ABANDONED: 'Abandoned' };
+    const labels = { PASS_AWAITING_NFT: 'Awaiting NFT', PENDING: 'Pending', ABANDONED: 'Abandoned', PASS_CHALLENGE_WINDOW: 'Passed — in review', CHALLENGED: 'Under challenge', REMEDY: 'Remedy available', AWAITING_FUNDING: 'Awaiting funding' };
     const label = labels[status] || (status || '—');
     return `<span class="status-pill ${cls}">${label}</span>`;
 }
@@ -1073,8 +1115,50 @@ async function openDetail(escrowId) {
                 <span class="detail-section-label">Invoice requirements</span>
                 <div class="detail-verdict">${e.invoice_requirements}</div>
             </div>` : ''}
+            ${e.evaluation_verdicts && e.evaluation_verdicts.criteria_results ? `
+            <div class="detail-section">
+                <span class="detail-section-label">Criterion results</span>
+                ${e.evaluation_verdicts.criteria_results.map(c => `
+                <div style="margin-bottom:.6rem;padding:.6rem .8rem;border-radius:6px;background:var(--surface-2,var(--surface,var(--ground)));border:1px solid var(--border)">
+                    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem">
+                        <span style="font-size:.7rem;font-weight:700;padding:.1rem .4rem;border-radius:4px;background:${c.verdict==='PASS'?'#d1fae5':c.verdict==='FAIL'?'#fee2e2':'#fef3c7'};color:${c.verdict==='PASS'?'#059669':c.verdict==='FAIL'?'#dc2626':'#d97706'}">${c.verdict}</span>
+                        <span style="font-size:.82rem;font-weight:600">${c.criterion_id}</span>
+                        ${c.score != null ? `<span style="font-size:.75rem;color:var(--text-faint);margin-left:auto">${c.score}/100</span>` : ''}
+                    </div>
+                    <div style="font-size:.8rem;color:var(--text-muted,var(--text-faint));line-height:1.5">${c.reasoning || ''}</div>
+                    ${c.evidence_quote ? `<div style="font-size:.75rem;color:var(--text-faint);margin-top:.3rem;padding:.3rem .5rem;background:var(--ground);border-radius:4px;font-family:monospace;white-space:pre-wrap">"${c.evidence_quote}"</div>` : ''}
+                </div>`).join('')}
+            </div>` : ''}
+            ${e.status === 'REMEDY' ? `
+            <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem">
+                <div style="font-weight:700;color:#d97706;margin-bottom:.25rem">⚠ 1 remedy attempt available</div>
+                <div style="font-size:.83rem">The buyer challenged this verdict and the Pro model agreed. You have <strong>one more submission</strong> to fix the disputed criteria and earn release.</div>
+                ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div style="font-size:.8rem;margin-top:.4rem;color:var(--text-faint)">Disputed: <strong>${e.challenge_criteria_ids.join(', ')}</strong></div>` : ''}
+            </div>` : ''}
+            ${e.status === 'CHALLENGED' ? `
+            <div class="detail-section" style="border-left:3px solid #ea580c;padding-left:.75rem">
+                <span class="detail-section-label">Challenge in progress</span>
+                <div style="font-size:.83rem;color:var(--text-faint)">A Pro model review is underway. You'll receive an email when the outcome is decided.</div>
+                ${e.challenged_at ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Challenged at</span><span class="detail-val">${new Date(e.challenged_at).toLocaleString()}</span></div>` : ''}
+                ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div class="detail-row"><span class="detail-key">Disputed criteria</span><span class="detail-val">${e.challenge_criteria_ids.join(', ')}</span></div>` : ''}
+            </div>` : ''}
+            ${e.status === 'PASS_CHALLENGE_WINDOW' && e.challenge_deadline ? `
+            <div class="detail-section" style="border-left:3px solid #f59e0b;padding-left:.75rem">
+                <span class="detail-section-label">Challenge window</span>
+                <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${e.challenge_deadline}">calculating…</span></div>
+                <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
+                <button class="btn-action" style="margin-top:.6rem" onclick="openChallengeModal('${e.escrow_id}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>
+            </div>` : ''}
+            ${e.status === 'AWAITING_FUNDING' ? `
+            <div class="detail-section" style="border-left:3px solid #2563eb;padding-left:.75rem">
+                <span class="detail-section-label">Awaiting buyer funding</span>
+                <div style="font-size:.83rem;color:var(--text-faint);margin-bottom:.5rem">Share the link below with the buyer to fund this escrow.</div>
+                ${e.pay_url ? `<div style="display:flex;gap:.4rem;align-items:center"><code style="font-size:.78rem;flex:1;padding:.3rem .5rem;background:var(--ground);border:1px solid var(--border);border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.pay_url}</code><button class="btn-action" onclick="navigator.clipboard.writeText('${e.pay_url}');showToast('Pay link copied')"><i data-lucide="copy"></i></button></div>` : ''}
+                ${e.funding_deadline ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Funding deadline</span><span class="detail-val">${new Date(e.funding_deadline).toLocaleString()}</span></div>` : ''}
+            </div>` : ''}
         `;
         lucide.createIcons();
+        startChallengeCountdown();
     } catch {
         document.getElementById('detail-content').innerHTML = '<div class="empty">Failed to load detail.</div>';
     }
@@ -1864,6 +1948,27 @@ async function ceGenerateVault() {
             require_ai_audit:       document.getElementById('ce-ai-audit').checked,
             require_consensus:      document.getElementById('ce-consensus').checked || undefined,
             max_submissions:        maxSubs !== 3 ? maxSubs : undefined,
+            // Criteria
+            ...(() => {
+                const rows = document.querySelectorAll('.ce-criterion-row');
+                const criteria = [];
+                rows.forEach(r => {
+                    const desc = r.querySelector('.ce-criterion-desc').value.trim();
+                    const type = r.querySelector('.ce-criterion-type').value;
+                    if (desc) criteria.push({ description: desc, type });
+                });
+                return criteria.length ? { criteria } : {};
+            })(),
+            // Release mode
+            ...(() => {
+                const mode = document.getElementById('ce-release-mode').value;
+                if (mode === 'challenge') {
+                    const hrs = document.getElementById('ce-challenge-hours').value;
+                    return { release_mode: `challenge_window_hrs:${hrs}` };
+                }
+                return {};
+            })(),
+            require_consensus_vault: document.getElementById('ce-ai-verification').value === 'true' || undefined,
             invoice_requirements:   invoiceOn ? {
                 po_number:            document.getElementById('ce-inv-po').value.trim() || null,
                 supplier_name:        document.getElementById('ce-inv-supplier').value.trim() || null,
@@ -1955,6 +2060,11 @@ function ceReset() {
     document.getElementById('ce-sign-btn').style.display = '';
     document.getElementById('ce-fee-status').textContent = '';
     document.getElementById('ce-sign-status').textContent = '';
+    document.getElementById('ce-release-mode').value = 'auto';
+    document.getElementById('ce-challenge-hours-group').style.display = 'none';
+    document.getElementById('ce-ai-verification').value = 'false';
+    // Reset criteria to single empty row
+    document.getElementById('ce-criteria-list').innerHTML = `<div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem"><input class="ce-criterion-desc" placeholder="e.g. API returns HTTP 200 with JSON body" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem"><select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem"><option value="judgment">Judgment</option><option value="evidence">Evidence</option><option value="code">Code gate</option></select><button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button></div>`;
     // Reset spec links to single input
     const sl = document.getElementById('ce-spec-links');
     sl.innerHTML = '<input class="ce-spec-link" placeholder="https://…" style="width:100%;margin-bottom:.4rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">';
@@ -1992,7 +2102,131 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── Criteria helpers ──
+function ceAddCriterion() {
+    const row = document.createElement('div');
+    row.className = 'ce-criterion-row';
+    row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem';
+    row.innerHTML = `
+        <input class="ce-criterion-desc" placeholder="e.g. Deliverable URL is publicly accessible" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
+        <select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
+            <option value="judgment">Judgment</option>
+            <option value="evidence">Evidence</option>
+            <option value="code">Code gate</option>
+        </select>
+        <button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>`;
+    document.getElementById('ce-criteria-list').appendChild(row);
+}
+
+function ceToggleReleaseMode() {
+    const mode = document.getElementById('ce-release-mode').value;
+    document.getElementById('ce-challenge-hours-group').style.display = mode === 'challenge' ? '' : 'none';
+}
+
+// ── Challenge countdown ──
+function startChallengeCountdown() {
+    const el = document.getElementById('challenge-countdown');
+    if (!el) return;
+    const deadline = new Date(el.dataset.deadline);
+    const tick = () => {
+        const diff = deadline - Date.now();
+        if (diff <= 0) { el.textContent = 'Expired'; return; }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        el.textContent = `${h}h ${m}m ${s}s`;
+        setTimeout(tick, 1000);
+    };
+    tick();
+}
+
+// ── Challenge modal ──
+let _challengeEscrowId = null;
+
+async function openChallengeModal(escrowId) {
+    _challengeEscrowId = escrowId;
+    document.getElementById('challenge-modal').style.display = 'flex';
+    document.getElementById('challenge-reason').value = '';
+    document.getElementById('challenge-fee-hash').value = '';
+    try {
+        const [escrow, fees] = await Promise.all([
+            fetch(`${API}/escrow/${escrowId}`, { credentials: 'include' }).then(r => r.json()),
+            fetch(`${API}/fees`).then(r => r.json()).catch(() => ({}))
+        ]);
+        const fee = fees.challenge_fee_xrp || 0.5;
+        const platform = fees.platform_wallet || fees.xrp_address || '—';
+        document.getElementById('challenge-fee-display').textContent = `${fee} XRP`;
+        document.getElementById('challenge-fee-amount-display').textContent = `${fee} XRP`;
+        document.getElementById('challenge-platform-wallet').textContent = platform;
+        const list = document.getElementById('challenge-criteria-list');
+        const criteria = escrow.evaluation_verdicts?.criteria_results || [];
+        if (criteria.length) {
+            list.innerHTML = '<div style="font-size:.82rem;font-weight:600;margin-bottom:.5rem">Select criteria to dispute:</div>' +
+                criteria.map(c => `
+                    <label style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.4rem;cursor:pointer;font-size:.83rem">
+                        <input type="checkbox" name="challenge-criterion" value="${c.criterion_id}" style="margin-top:.15rem;width:auto">
+                        <span><strong>${c.criterion_id}</strong>${c.reasoning ? ' — ' + c.reasoning.slice(0,100) + '…' : ''}</span>
+                    </label>`).join('');
+        } else {
+            list.innerHTML = '<div style="font-size:.82rem;color:var(--text-faint)">No per-criterion results available. The full verdict will be reviewed.</div>';
+        }
+    } catch { /* use defaults */ }
+}
+
+function closeChallengeModal() {
+    document.getElementById('challenge-modal').style.display = 'none';
+    _challengeEscrowId = null;
+}
+
+async function submitChallenge() {
+    if (!_challengeEscrowId) return;
+    const checked = [...document.querySelectorAll('input[name="challenge-criterion"]:checked')].map(i => i.value);
+    const reason = document.getElementById('challenge-reason').value.trim();
+    const feeHash = document.getElementById('challenge-fee-hash').value.trim();
+    if (!reason) { showToast('Please enter a reason'); return; }
+    if (!feeHash) { showToast('Please enter the challenge fee tx hash'); return; }
+    try {
+        const body = { reason, fee_tx_hash: feeHash };
+        if (checked.length) body.criteria_ids = checked;
+        const res = await fetch(`${API}/escrow/${_challengeEscrowId}/challenge`, {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Challenge submitted — Pro review underway');
+            closeChallengeModal();
+            loadEscrows();
+        } else {
+            showToast(data.detail || data.error || 'Challenge failed');
+        }
+    } catch { showToast('Network error'); }
+}
+
 init();
 </script>
+
+<!-- Challenge modal -->
+<div id="challenge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <h3 style="margin:0 0 .5rem">Challenge verdict</h3>
+        <p style="font-size:.85rem;color:var(--text-faint);margin-bottom:1rem">Select the criteria you dispute and explain why. A challenge fee of <strong id="challenge-fee-display">0.5 XRP</strong> is required — refunded if the challenge is upheld.</p>
+        <div id="challenge-criteria-list" style="margin-bottom:1rem"></div>
+        <div style="margin-bottom:.75rem">
+            <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Reason for challenge *</label>
+            <textarea id="challenge-reason" style="min-height:80px;width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box" placeholder="Explain specifically why the work does not meet the criteria…"></textarea>
+        </div>
+        <div style="margin-bottom:1rem">
+            <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Challenge fee tx hash *</label>
+            <input id="challenge-fee-hash" placeholder="Paste transaction hash after paying fee" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">
+            <div style="font-size:.75rem;color:var(--text-faint);margin-top:.3rem">Send <strong id="challenge-fee-amount-display">0.5 XRP</strong> to <strong id="challenge-platform-wallet">—</strong>, then paste the transaction hash above.</div>
+        </div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+            <button class="btn-action" onclick="closeChallengeModal()">Cancel</button>
+            <button class="btn-action" style="background:var(--blue,#2563eb);color:#fff;border-color:transparent" onclick="submitChallenge()">Submit challenge</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
