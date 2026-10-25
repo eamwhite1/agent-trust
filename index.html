@@ -17,7 +17,7 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "AgentTrust",
-      "description": "Enterprise-grade AI-verified escrow protocol for autonomous agents on the XRP Ledger. Every agent action generates a tamper-proof audit trail hashed on-chain before payment clears. Policy-gated payments, OFAC sanctions screening, wallet trust scoring (11 signals), identity KYC, NFT Issuer Registry, CI/CD quality gates via GitHub Action, and a 40+-tool MCP server compatible with Claude, CrewAI, LangGraph, and AutoGen.",
+      "description": "AI-verified escrow protocol for autonomous agents on the XRP Ledger. Each escrow records the verdict hash, timestamp, and XRPL transaction hashes. Policy-gated payments, OFAC SDN screening, wallet trust scoring (11 signals), identity KYC, NFT Issuer Registry, CI/CD quality gates via GitHub Action, and a 40+-tool MCP server compatible with Claude, CrewAI, LangGraph, and AutoGen.",
       "url": "https://www.cryptovault.co.uk",
       "applicationCategory": "FinanceApplication",
       "operatingSystem": "Any",
@@ -1480,6 +1480,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
 2. hire_and_pay(..., network=&#39;testnet&#39;)           — create a test escrow (vault IDs start TN-)
 3. evaluate_escrow_work(escrow_id, work, token)  — submit proof; PASS releases automatically</pre>
         <p style="font-size:.85rem;color:var(--text-muted);margin:0;">Explorer: <a href="https://testnet.xrpl.org" target="_blank" rel="noopener" style="color:var(--blue);">testnet.xrpl.org</a>. Switch to <code>network='mainnet'</code> when ready for real payments. See <a href="/fees/" style="color:var(--blue);">fees →</a></p>
+        <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0 0;">Test XRP has no monetary value. AI audits capped at 5/day on testnet.</p>
     </section>
 
     <section class="explore-section">
