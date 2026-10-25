@@ -550,7 +550,7 @@ escrow_amount = data["escrow_amount"]  # ready for EscrowCreate</code></pre>
 
 escrow_tx = EscrowCreate(
     account      = YOUR_WALLET.address,
-    amount       = escrow_amount,      # string for XRP, dict for RLUSD
+    amount       = escrow_amount,      # string of drops for XRP
     destination  = "rSellerWalletXXX",
     condition    = condition,
 )
