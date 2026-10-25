@@ -125,11 +125,11 @@
     <!-- Step 2: sign fee escrow -->
     <div class="card" id="step-sign" style="display:none">
       <h2 style="font-size:1rem;margin-bottom:.75rem">Step 2 — Pay challenge fee</h2>
-      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">A ~$1 fee is held in an on-chain escrow to the referee. It is refunded if your challenge is upheld, or released to the referee if the original PASS stands.</p>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">A ~$1 fee is held in an on-chain escrow to the seller. It is refunded if your challenge succeeds (verdict overturned), or paid to the seller if the original PASS stands.</p>
       <div id="fee-details" style="margin-bottom:.75rem;padding:.75rem;background:var(--ground);border-radius:8px;font-size:.85rem"></div>
       <button class="btn btn-primary" id="btn-xaman" onclick="openXaman()">Open Xaman to pay →</button>
       <div class="status-msg status-info" id="status-sign"></div>
-      <p class="notice">⚠️ After paying, you have 15 minutes to submit your dispute below.</p>
+      <p class="notice">⚠️ The fee quote is valid for 30 minutes. You cannot start a challenge in the last 15 minutes of the window.</p>
     </div>
 
     <!-- Step 3: submit challenge -->
@@ -154,7 +154,9 @@ let quoteId = null;
 
 function show(id) {
   ['state-loading','state-expired','state-error','state-already-challenged','state-outcome','state-challenge-form']
-    .forEach(s => document.getElementById(s).style.display = s === id ? '' : 'none');
+    .forEach(s => { document.getElementById(s).style.display = 'none'; });
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'block';
 }
 
 function setStatus(id, msg, type) {
@@ -189,12 +191,22 @@ async function load() {
 
   const s = sessionData.status;
   if (s === 'CHALLENGED') { show('state-already-challenged'); return; }
-  if (s === 'CHALLENGE_PASS' || s === 'CHALLENGE_FAIL') {
-    const upheld = s === 'CHALLENGE_PASS';
-    document.getElementById('outcome-title').textContent = upheld ? 'Challenge upheld — FAIL' : 'Challenge rejected — PASS stands';
-    document.getElementById('outcome-body').textContent = upheld
-      ? 'The senior review found the work does not meet the criteria. The escrow has been cancelled and the challenge fee refunded to you.'
-      : 'The senior review confirmed the original PASS. Payment has been released to the seller and the challenge fee forwarded to the referee.';
+  const outcome = sessionData.challenge_outcome;
+  if (s === 'PASS_UPHELD' || s === 'PASS_OVERTURNED' || s === 'REVIEW_INCONCLUSIVE' || outcome) {
+    const oc = outcome || s;
+    if (oc === 'PASS_UPHELD') {
+      document.getElementById('outcome-title').textContent = 'Challenge rejected — PASS stands';
+      document.getElementById('outcome-body').textContent = 'The senior review confirmed the original PASS. Payment has been released to the seller. The challenge fee was paid to the seller.';
+    } else if (oc === 'PASS_OVERTURNED') {
+      document.getElementById('outcome-title').textContent = 'Challenge upheld — verdict overturned';
+      document.getElementById('outcome-body').textContent = 'The senior review found the work does not meet the criteria. The escrow has been cancelled and the challenge fee refunded to you.';
+    } else if (oc === 'REVIEW_INCONCLUSIVE') {
+      document.getElementById('outcome-title').textContent = 'Review inconclusive';
+      document.getElementById('outcome-body').textContent = 'The senior review could not reach a definitive verdict. Payment has been released to the seller and the challenge fee refunded to you.';
+    } else {
+      document.getElementById('outcome-title').textContent = 'Challenge outcome';
+      document.getElementById('outcome-body').textContent = `Status: ${oc}`;
+    }
     show('state-outcome');
     return;
   }
@@ -256,13 +268,36 @@ async function openXaman() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
     const xp = data.xaman_payload || data;
-    const nextUrl = xp.next?.always || xp.nextUrl || xp.refs?.qr_png;
-    if (nextUrl) window.open(nextUrl, '_blank');
-    setStatus('status-sign', '✅ Xaman opened. Sign the fee EscrowCreate, then enter the tx hash below.', 'ok');
-    document.getElementById('step-submit').style.display = '';
+    const deeplink = xp.next?.always || xp.nextUrl;
+    const qrPng = xp.refs?.qr_png;
+    const uuid = xp.uuid;
+    if (qrPng) {
+      const qrDiv = document.createElement('div');
+      qrDiv.id = 'xaman-qr';
+      qrDiv.style.cssText = 'text-align:center;margin:.75rem 0';
+      qrDiv.innerHTML = `<img src="${qrPng}" alt="Xaman QR code" style="width:180px;height:180px;border-radius:8px"><p style="font-size:.78rem;color:var(--text-muted);margin:.4rem 0 0">Scan with Xaman or <a href="${deeplink||'#'}" target="_blank" rel="noopener">open on mobile</a></p>`;
+      document.getElementById('btn-xaman').insertAdjacentElement('beforebegin', qrDiv);
+    } else if (deeplink) {
+      window.open(deeplink, '_blank');
+    }
+    setStatus('status-sign', '✅ Sign the fee EscrowCreate in Xaman, then enter the tx hash below.', 'ok');
+    document.getElementById('step-submit').style.display = 'block';
+    if (uuid) pollXaman(uuid);
   } catch(e) {
     btn.disabled = false;
     setStatus('status-sign', '❌ ' + e.message, 'err');
+  }
+}
+
+async function pollXaman(uuid) {
+  for (let i = 0; i < 40; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    try {
+      const res = await fetch(`${API}/challenge/session?token=${encodeURIComponent(token)}`);
+      if (!res.ok) break;
+      const d = await res.json();
+      if (d.status === 'CHALLENGED' || d.challenge_outcome) { show('state-already-challenged'); return; }
+    } catch(e) { break; }
   }
 }
 

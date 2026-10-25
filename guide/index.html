@@ -142,13 +142,14 @@
     <div class="step">
         <div class="step-num">2</div>
         <div>
-            <p class="step-title">Lock payment in testnet escrow</p>
-            <p class="step-body">Pass <code>network='testnet'</code> and your testnet wallet address. No audit fee is charged. Returns a ready-to-sign <code>EscrowCreate</code> transaction.</p>
-            <pre>hire_and_pay(
+            <p class="step-title">Create the escrow vault</p>
+            <p class="step-body">Pass <code>network='testnet'</code>, your testnet wallet, and <code>buyer_email</code> (needed for challenge-window notifications). No audit fee is charged. Returns a vault ID and unsigned <code>EscrowCreate</code> transaction.</p>
+            <pre>create_escrow_vault(
     task="Summarise this document in 200 words",
     buyer_address="&lt;your testnet address&gt;",
     amount_xrp=1.0,
     worker_address="&lt;worker testnet address&gt;",
+    buyer_email="you@example.com",
     network="testnet"
 )</pre>
         </div>
@@ -174,10 +175,11 @@
 
     <h2>Try the challenge window</h2>
     <p>Test the full buyer-challenge flow by adding <code>release_mode</code> to step 2:</p>
-    <pre>hire_and_pay(
+    <pre>create_escrow_vault(
     …,
     network="testnet",
     release_mode="challenge_window_hrs:1",
+    buyer_email="you@example.com",
     cancel_after_hrs=4
 )</pre>
     <p>After a PASS the escrow is held for 1 hour. During that time the buyer can challenge for a Gemini Pro re-review. On testnet there is no real fee. <a href="/challenges/">How challenges work →</a></p>

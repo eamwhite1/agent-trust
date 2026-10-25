@@ -771,14 +771,14 @@
                     <!-- Release mode -->
                     <div class="form-row" style="margin-top:.5rem">
                         <div class="form-group">
-                            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Delayed release holds funds for N hours after PASS before auto-releasing. During the window, the buyer can challenge the verdict.">?</span></label>
+                            <label>Release mode <span class="field-hint" data-tip="Instant on PASS releases payment to the seller immediately when the AI audit returns PASS. Challenge window holds funds for N hours — during that time the buyer can pay ~$1 to request a Gemini Pro re-review.">?</span></label>
                             <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
-                                <option value="auto">Auto-release on PASS</option>
-                                <option value="challenge_window">Delayed release (N h)</option>
+                                <option value="auto">Instant on PASS</option>
+                                <option value="challenge_window">Challenge window (N h)</option>
                             </select>
                         </div>
                         <div class="form-group" id="ce-challenge-hours-group" style="display:none">
-                            <label>Delay duration <span class="field-hint" data-tip="How long funds are held after PASS before auto-releasing. The buyer can challenge the verdict during this window.">?</span></label>
+                            <label>Window duration <span class="field-hint" data-tip="How long funds are held after PASS. During this window the buyer can challenge the verdict for ~$1 in XRP.">?</span></label>
                             <select id="ce-challenge-hours">
                                 <option value="1">1 hour</option>
                                 <option value="4">4 hours</option>
@@ -1975,7 +1975,7 @@ function renderTemplates() {
                     ${t.required_domain ? `<span class="template-pill">Domain: ${escapeHtml(t.required_domain)}</span>` : ''}
                     ${t.required_vc_issuer_did ? `<span class="template-pill">VC required</span>` : ''}
                     ${!t.require_ai_audit ? `<span class="template-pill">No AI audit</span>` : t.require_consensus ? `<span class="template-pill" style="background:var(--green-dim);color:var(--green)">Dual-model</span>` : `<span class="template-pill">AI audit</span>`}
-                    ${t.release_mode && t.release_mode !== 'auto' ? `<span class="template-pill" style="background:var(--amber-dim);color:var(--amber)">Delayed release</span>` : ''}
+                    ${t.release_mode && t.release_mode !== 'auto' ? `<span class="template-pill" style="background:var(--amber-dim);color:var(--amber)">Challenge window</span>` : ''}
                     ${t.max_submissions && t.max_submissions !== 3 ? `<span class="template-pill">${t.max_submissions} attempts</span>` : ''}
                 </div>
                 <div style="margin-top:.5rem;font-size:.72rem;color:var(--text-faint)">ID: <code style="font-family:monospace">${t.id}</code></div>
@@ -2026,8 +2026,8 @@ function openTemplateModal(templateId) {
         <div class="form-group">
             <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Challenge window gives the buyer time to dispute before funds release.">?</span></label>
             <select id="tmpl-release-mode" onchange="document.getElementById('tmpl-challenge-hours-row').style.display=this.value==='challenge_window'?'':'none'">
-                <option value="auto" ${(!t || !t.release_mode || t.release_mode==='auto') ? 'selected' : ''}>Auto-release on PASS</option>
-                <option value="challenge_window" ${t && t.release_mode && t.release_mode!=='auto' ? 'selected' : ''}>Challenge window</option>
+                <option value="auto" ${(!t || !t.release_mode || t.release_mode==='auto') ? 'selected' : ''}>Instant on PASS</option>
+                <option value="challenge_window" ${t && t.release_mode && t.release_mode!=='auto' ? 'selected' : ''}>Challenge window (N h)</option>
             </select>
         </div>
         <div id="tmpl-challenge-hours-row" style="${t && t.release_mode && t.release_mode!=='auto' ? '' : 'display:none'}">
