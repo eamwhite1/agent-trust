@@ -62,14 +62,14 @@ AgentTrust locks funds in XRPL crypto-condition escrow and releases them automat
 
 ## Pro Plan ($199/year)
 
-AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of the per-audit fee model. Each escrow records the verdict hash, timestamp, and XRPL transaction hashes on-chain.
+AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of the per-audit fee model. Each escrow records the verdict hash, timestamp, and XRPL transaction hashes on-chain. 30-day free trial on first Google sign-in, no payment to start.
 
 **Pro capabilities (all available now):**
 - **On-ledger record:** each escrow records the verdict hash, timestamp and XRPL transaction hashes, which anyone can check on the XRPL explorer.
 - **Escrow Templates:** define your job policy once in the enterprise dashboard — rubric, proof gates (NFT/domain/VC), amount floor and cap, deadline, AI audit flag. Agents reference a `template_id` when calling `POST /escrow/generate`; the platform enforces all constraints automatically. Templates are scoped to the enterprise account and inherited by any agent authenticated via API key.
 - **Agent API Keys:** issue API keys from the enterprise dashboard. Agents authenticate as your enterprise account by passing the raw key in the `X-API-Key` request header. The key grants access to your templates, linked wallets, and audit trail — no OAuth flow required. Keys are stored as SHA-256 hashes; the raw value is shown once at creation only.
 - **Your policy, not ours:** pass `task_description` or `invoice_requirements` with your compliance rulebook, contractor guidelines, or corporate safety policy — the AI evaluator checks completed work against your specific requirements before any payment releases. Use a Template to enforce this consistently across all agent-created escrows.
-- **Collateralised accountability:** agent work is backed by locked XRP collateral. If the work fails your policy check, funds are returned automatically — no chargebacks, no manual intervention. 14-day challenge window via challenge_escrow_verdict().
+- **Collateralised accountability:** agent work is backed by locked XRP collateral. If the work fails your policy check, funds are returned automatically — no chargebacks, no manual intervention. optional 1–24 h challenge window via challenge_escrow_verdict().
 - **Vault management:** the enterprise dashboard shows every escrow associated with your linked wallets. Stuck vaults (LOCKED with no on-chain transaction) can be abandoned directly from the dashboard without admin intervention.
 - **Manual escrow creator:** create escrows from the enterprise dashboard with the full buyer-equivalent field set — spec links, proof gates, invoice mode, seller attempts, deadline, and template pre-fill.
 - **CI/CD quality gates:** the [AgentTrust GitHub Action](https://github.com/marketplace/actions/agenttrust-ai-audit) gates every pull request with an independent AI audit (Gemini 2.5 Flash). Fails the pipeline if the diff scores below your threshold. Fee: $0.10 per audit (XRP, RLUSD, or USDC on Base).
@@ -153,3 +153,12 @@ Test the full escrow flow with no real XRP:
     2. hire_and_pay(..., network="testnet") — no fees, no free-credit use
     3. evaluate_escrow_work(escrow_id, work, evaluate_token) — real AI audit (5/day limit)
     4. Vault IDs start with "TN-"; explorer links point to testnet.xrpl.org
+    Note: test XRP has no monetary value. AI audits capped at 5 per buyer per day on testnet.
+
+## Challenges
+Buyers can hold payment 1–24 h after PASS and challenge for a Gemini Pro re-review. Set release_mode="challenge_window_hrs:N" at vault creation. Challenge fee: $1.00 in XRP (min 0.2 XRP). Outcomes: PASS_UPHELD (seller keeps fee + payment), PASS_OVERTURNED (fee back to buyer; seller may remedy if ≥2 h remain), REVIEW_INCONCLUSIVE (escrow releases, fee back). No human arbitration. https://www.cryptovault.co.uk/challenges/
+
+## Try it free
+- Testnet: create_testnet_wallet() → hire_and_pay(..., network='testnet'). No fees. Full flow including challenges. AI audits capped at 5/day. Test XRP has no monetary value.
+- Mainnet: 3 free escrows via create_agent_wallet or register_wallet_free_tier (trust score ≥ 25).
+- Pro trial: 30-day free trial — sign in with Google at https://app.cryptovault.co.uk/dashboard/.

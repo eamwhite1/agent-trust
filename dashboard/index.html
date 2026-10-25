@@ -354,6 +354,7 @@
             <li>Full audit trail across all linked wallets</li>
             <li>Create escrows manually with the full buyer field set</li>
         </ul>
+        <p style="font-size:.85rem;font-weight:600;color:var(--text);margin:0 0 .75rem;padding:.6rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;">Try it free for 30 days. $199/year after, paid in RLUSD.</p>
         <a href="https://mcp.cryptovault.co.uk/auth/google" class="btn-google">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -1378,7 +1379,7 @@ async function openDetail(escrowId) {
                 <div class="detail-row"><span class="detail-key">Buyer</span><span class="detail-val mono">${escapeHtml(e.buyer_address||'—')}</span></div>
                 <div class="detail-row"><span class="detail-key">Worker</span><span class="detail-val mono">${escapeHtml(e.worker_address||'—')}</span></div>
                 <div class="detail-row"><span class="detail-key">Attempts</span><span class="detail-val">${e.attempts_used??'—'} / ${e.max_submissions??3}</span></div>
-                <div class="detail-row"><span class="detail-key">Release mode</span><span class="detail-val">${escapeHtml(e.release_mode||'auto')}</span></div>
+                <div class="detail-row"><span class="detail-key">Release mode</span><span class="detail-val">${!e.release_mode||e.release_mode==='auto'?'Instant on PASS':e.release_mode.replace(/^challenge_window_hrs:(\d+)$/,'Challenge window: $1 h')}</span></div>
                 <div class="detail-row"><span class="detail-key">Escrow Tx</span><span class="detail-val mono" style="font-size:.75rem">${escapeHtml(e.escrow_tx_hash||'—')}</span></div>
                 <div class="detail-row"><span class="detail-key">Release Tx</span><span class="detail-val mono" style="font-size:.75rem">${escapeHtml(e.auto_finish_hash||'—')}</span></div>
                 <div class="detail-row"><span class="detail-key">Created</span><span class="detail-val">${e.created_at ? new Date(e.created_at).toLocaleString() : '—'}</span></div>
@@ -2917,7 +2918,8 @@ function openRequestDealModal() {
     document.getElementById('rd-result').style.display = 'none';
     ['rd-buyer-addr','rd-task','rd-amount','rd-external-ref','rd-external-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('rd-deadline').value = '';
-    document.getElementById('rd-release-mode').value = 'ai';
+    document.getElementById('rd-release-mode').value = 'auto';
+    const rcEl = document.getElementById('rd-require-consensus'); if (rcEl) rcEl.checked = false;
     rdAddCriterion();
     document.getElementById('request-deal-modal').style.display = 'flex';
 }
@@ -2949,9 +2951,16 @@ function submitDealRequest() {
         type: row.querySelector('.rd-crit-type').value,
         description: row.querySelector('.rd-crit-desc').value.trim()
     })).filter(c => c.description);
-    const body = { task, amount_xrp: amount, release_mode: releaseMode };
+    const requireConsensus = document.getElementById('rd-require-consensus')?.checked || false;
+    const sellerAddr = (enterpriseWallets && enterpriseWallets[0]) || '';
+    const body = { task, amount_xrp: amount, release_mode: releaseMode, seller_address: sellerAddr };
+    if (requireConsensus) body.require_consensus = true;
     if (buyerAddr) body.buyer_address = buyerAddr;
-    if (deadlineVal) body.cancel_after = Math.floor(new Date(deadlineVal).getTime() / 1000);
+    if (deadlineVal) {
+        const ms = new Date(deadlineVal).getTime();
+        const hrs = Math.max(1, Math.round((ms - Date.now()) / 3600000));
+        body.deadline_hours = hrs;
+    }
     if (externalRef) body.external_ref = externalRef;
     if (externalUrl) body.external_url = externalUrl;
     if (criteria.length) body.criteria = criteria;
@@ -3001,12 +3010,17 @@ init();
             <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">External ref <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-external-ref" placeholder="e.g. GH-123" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
             <div><label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">External URL <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label><input id="rd-external-url" type="url" placeholder="https://…" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem"></div>
         </div>
-        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Release mode</label>
-        <select id="rd-release-mode" style="width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;margin-bottom:.75rem">
-            <option value="ai">AI verdict</option>
-            <option value="buyer">Buyer approval</option>
-            <option value="consensus">Dual-model consensus</option>
+        <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.3rem">Release</label>
+        <select id="rd-release-mode" style="width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;margin-bottom:.3rem">
+            <option value="auto">Instant on PASS</option>
+            <option value="challenge_window_hrs:1">Challenge window: 1 h</option>
+            <option value="challenge_window_hrs:4">Challenge window: 4 h</option>
+            <option value="challenge_window_hrs:8">Challenge window: 8 h</option>
+            <option value="challenge_window_hrs:12">Challenge window: 12 h</option>
+            <option value="challenge_window_hrs:24">Challenge window: 24 h</option>
         </select>
+        <p style="font-size:.78rem;color:var(--text-muted);margin:0 0 .75rem;">Holds payment for N hours after a PASS. During that time you can challenge for $1.00 in XRP (min 0.2 XRP), paid in a separate escrow to the seller. If the challenge succeeds the fee comes back to you; if the PASS is upheld the seller keeps it.</p>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.75rem;cursor:pointer"><input type="checkbox" id="rd-require-consensus"> Dual-model consensus (Gemini Pro re-review on every verdict, +$0.25)</label>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
             <label style="font-size:.85rem;font-weight:600">Criteria</label>
             <button onclick="rdAddCriterion()" style="padding:.25rem .7rem;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:.82rem">+ Add</button>

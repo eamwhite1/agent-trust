@@ -510,6 +510,7 @@ async function initVault() {
             require_ai_audit:       _aiAuditOn,
             require_consensus:      _requireConsensus || undefined,
             max_submissions:        _maxSubmissions !== 3 ? _maxSubmissions : undefined,
+            release_mode:           (() => { const v = document.getElementById('release-mode-select')?.value; return (!v || v === 'auto') ? undefined : v; })(),
             invoice_requirements:   _invoiceModeOn ? {
                 po_number:            document.getElementById("inv-po-number")?.value.trim() || null,
                 supplier_name:        document.getElementById("inv-supplier-name")?.value.trim() || null,
@@ -661,6 +662,12 @@ function getCreationFeeUsd() {
 function onMaxSubsChange() {
     _maxSubmissions = parseInt(document.getElementById("max-submissions-select")?.value || "3", 10);
     _syncAiAuditUI();
+}
+
+function onReleaseModeChange() {
+    const v = document.getElementById('release-mode-select')?.value;
+    const hint = document.getElementById('release-mode-hint');
+    if (hint) hint.style.display = (!v || v === 'auto') ? 'none' : '';
 }
 
 function toggleProof(type) {
