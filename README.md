@@ -203,12 +203,32 @@ Then ask Claude: *"Set up an XRPL wallet for this project"* — it calls `get_wa
 
 ---
 
+## Try it Free on XRPL Testnet
+
+No fees, no real XRP required. Three steps:
+
+```python
+# 1. Get a funded testnet wallet instantly
+create_testnet_wallet()
+
+# 2. Create a test escrow (vault IDs start TN-)
+hire_and_pay(..., network='testnet')
+
+# 3. Submit proof — PASS releases automatically
+evaluate_escrow_work(escrow_id, work, evaluate_token)
+```
+
+Explorer: [testnet.xrpl.org](https://testnet.xrpl.org). Switch to `network='mainnet'` for real payments.
+
+---
+
 ## Fees
 
 | Fee | Amount | Paid to |
 |-----|--------|---------|
 | AI audit | $0.10 (flat) | Protocol wallet |
 | XRPL EscrowFinish | ~0.005 XRP | XRPL validators |
+| Testnet | Free | — |
 
 No percentage cuts. No hidden fees. Wallets with trust score ≥ 25 get 3 free audits.
 
