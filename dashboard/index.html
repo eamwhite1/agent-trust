@@ -1553,7 +1553,7 @@ function renderWallets(wallets) {
                 <button class="btn-sm" onclick="openFundModal('${w.xrpl_address}')" data-tip="Show funding options"><i data-lucide="arrow-down-to-line"></i> Fund</button>
                 ${w.privy_wallet_id ? `<button class="btn-sm" onclick="openWithdrawModal(${w.wallet_id}, '${w.xrpl_address}')" data-tip="Send XRP from this wallet"><i data-lucide="send"></i> Send</button>` : ''}
                 ${w.verified
-                    ? '<span class="verified-badge"><i data-lucide="check"></i> Verified</span>'
+                    ? '<span class="verified-badge" data-tip="Verified on-chain — adds +8 to wallet trust score"><i data-lucide="check"></i> Verified on-chain</span>'
                     : `<span class="unverified-badge">Unverified</span>
                        <button class="btn-sm" onclick="${w.privy_wallet_id ? `verifyPrivyWallet(${w.wallet_id})` : `showVerifyInstructions(${w.wallet_id})`}" data-tip="${w.privy_wallet_id ? 'Click to verify automatically — no manual steps needed' : 'Click to see verification instructions'}"><i data-lucide="shield"></i> Verify</button>`
                 }
@@ -2317,11 +2317,19 @@ async function lookupWorker() {
         const failCount = d.fail_count ?? d.escrows_failed ?? '—';
         const kycBadge = d.kyc_verified ? `<span style="font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:4px;background:var(--green-dim);color:var(--green);margin-left:.4rem">KYC ✓</span>` : '';
         const domainBadge = d.domain ? `<span style="font-size:.7rem;color:var(--text-muted);margin-left:.4rem">${escapeHtml(d.domain)}</span>` : '';
+        const sigs = d.signals || {};
+        const verifiedOnChain = sigs.wallet_sig_verified;
+        const verifyTxHash = sigs.verification_tx_hash;
+        const verifiedBadge = verifiedOnChain
+            ? `<span style="font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:4px;background:var(--green-dim);color:var(--green);margin-left:.4rem">
+                ✓ Verified on-chain (+8 trust)${verifyTxHash ? ` <a href="https://xrpl.org/transactions/${escapeHtml(verifyTxHash)}" target="_blank" rel="noopener" style="color:var(--green);text-decoration:underline">↗</a>` : ''}
+               </span>`
+            : '';
         panel.innerHTML = `
             <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
                 <div>
                     <span style="font-size:1.1rem;font-weight:700;color:${scoreColor}">${score !== null ? score : '—'}</span>
-                    <span style="font-size:.72rem;color:var(--text-muted)">/100 trust score</span>${kycBadge}${domainBadge}
+                    <span style="font-size:.72rem;color:var(--text-muted)">/100 trust score</span>${kycBadge}${domainBadge}${verifiedBadge}
                 </div>
                 <div style="display:flex;gap:1rem;font-size:.78rem;color:var(--text-muted)">
                     <span style="color:var(--green)">✓ ${passCount} passed</span>
