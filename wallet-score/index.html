@@ -471,7 +471,8 @@ canvas#gauge {
       <canvas id="gauge" width="260" height="150"></canvas>
       <div class="gauge-score" id="score-num">—</div>
       <div><span class="gauge-label" id="score-label">—</span></div>
-      <div style="margin-top:1rem;"><span class="wallet-pill" id="wallet-display">—</span></div>
+      <div id="score-raw" style="margin-top:.4rem;font-size:.75rem;color:var(--faint);"></div>
+      <div style="margin-top:.6rem;"><span class="wallet-pill" id="wallet-display">—</span></div>
       <div id="verified-badge" style="display:none;margin-top:.9rem;"></div>
     </div>
 
@@ -606,6 +607,14 @@ function render(addr, data) {
   // Score number
   document.getElementById("score-num").textContent = score;
   document.getElementById("wallet-display").textContent = addr.slice(0,8) + "…" + addr.slice(-6);
+  const rawScore = data.score ?? null;
+  const maxScore = data.max_score ?? null;
+  const rawEl = document.getElementById("score-raw");
+  if (rawScore !== null && maxScore !== null) {
+    rawEl.textContent = `${rawScore} / ${maxScore} points`;
+  } else {
+    rawEl.textContent = "";
+  }
 
   // Label
   const labelEl = document.getElementById("score-label");
