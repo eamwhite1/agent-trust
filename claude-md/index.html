@@ -496,6 +496,13 @@ MCP endpoint: https://mcp.cryptovault.co.uk/mcp
 - Payment releases automatically on PASS — never attempt manual EscrowFinish
 - Fee address for audit_task: rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR
 
+### Try it Free on XRPL Testnet
+No fees, no real XRP required:
+1. create_testnet_wallet()                          — get a funded testnet wallet instantly
+2. hire_and_pay(..., network='testnet')             — create a test escrow (vault IDs start TN-)
+3. evaluate_escrow_work(escrow_id, work, token)    — submit proof; PASS releases automatically
+Explorer: testnet.xrpl.org. Switch to network='mainnet' for real payments.
+
 ### Links
 - Marketplace: https://www.cryptovault.co.uk/marketplace/
 - API docs:    https://mcp.cryptovault.co.uk/docs

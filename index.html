@@ -1472,6 +1472,16 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
         </div>
     </section>
 
+    <!-- Testnet callout -->
+    <section style="margin:2.5rem 0;background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(16,185,129,.04));border:1px solid rgba(59,130,246,.2);border-radius:18px;padding:2rem 2.5rem;">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem;">Try it Free</div>
+        <h3 style="font-size:1.15rem;font-weight:800;margin:0 0 .75rem;letter-spacing:-.02em;">Test on XRPL Testnet — no fees, no real XRP</h3>
+        <pre style="background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.08);border-radius:10px;padding:1rem 1.2rem;font-size:.82rem;line-height:1.7;overflow-x:auto;margin:0 0 1rem;">1. create_testnet_wallet()                        — get a funded testnet wallet instantly
+2. hire_and_pay(..., network=&#39;testnet&#39;)           — create a test escrow (vault IDs start TN-)
+3. evaluate_escrow_work(escrow_id, work, token)  — submit proof; PASS releases automatically</pre>
+        <p style="font-size:.85rem;color:var(--text-muted);margin:0;">Explorer: <a href="https://testnet.xrpl.org" target="_blank" rel="noopener" style="color:var(--blue);">testnet.xrpl.org</a>. Switch to <code>network='mainnet'</code> when ready for real payments. See <a href="/fees/" style="color:var(--blue);">fees →</a></p>
+    </section>
+
     <section class="explore-section">
         <div class="explore-grid">
             <a href="/how-it-works/" class="use-case" style="text-decoration:none;color:inherit;display:block;">
