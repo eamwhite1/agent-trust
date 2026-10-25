@@ -767,14 +767,14 @@
                     <!-- Release mode -->
                     <div class="form-row" style="margin-top:.5rem">
                         <div class="form-group">
-                            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Delayed release holds funds for N hours after PASS before auto-releasing. Disputes coming soon.">?</span></label>
+                            <label>Release mode <span class="field-hint" data-tip="Auto-release pays the seller immediately on PASS. Delayed release holds funds for N hours after PASS before auto-releasing. During the window, the buyer can challenge the verdict.">?</span></label>
                             <select id="ce-release-mode" onchange="ceToggleReleaseMode()">
                                 <option value="auto">Auto-release on PASS</option>
                                 <option value="challenge_window">Delayed release (N h)</option>
                             </select>
                         </div>
                         <div class="form-group" id="ce-challenge-hours-group" style="display:none">
-                            <label>Delay duration <span class="field-hint" data-tip="How long funds are held after PASS before auto-releasing. Disputes coming soon.">?</span></label>
+                            <label>Delay duration <span class="field-hint" data-tip="How long funds are held after PASS before auto-releasing. The buyer can challenge the verdict during this window.">?</span></label>
                             <select id="ce-challenge-hours">
                                 <option value="4">4 hours</option>
                                 <option value="8">8 hours</option>
@@ -1349,7 +1349,7 @@ async function openDetail(escrowId) {
                 <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${escapeHtml(e.challenge_deadline)}">calculating…</span></div>
                 <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
                 <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Believe the AI verdict was incorrect? Challenge it — a senior Pro model will re-review. Fee: ~$1.00 USD in XRP (refundable if upheld).</p>
-                <button class="btn-action" style="margin-top:.3rem" onclick="openChallengeModal('${escapeHtml(e.escrow_id)}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>
+                ${(new Date(e.challenge_deadline) - new Date()) >= 15 * 60 * 1000 ? `<button class="btn-action" style="margin-top:.3rem" onclick="openChallengeModal('${escapeHtml(e.escrow_id)}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>` : `<span style="font-size:.78rem;color:var(--text-muted);display:block;margin-top:.3rem">Challenge window closes in &lt;15 min — too late to challenge</span>`}
             </div>` : '';
 
         document.getElementById('detail-content').innerHTML = `
@@ -1439,8 +1439,9 @@ async function openDetail(escrowId) {
                 ${e.challenge_fee_drops ? `<div class="detail-row"><span class="detail-key">Amount</span><span class="detail-val">${(e.challenge_fee_drops/1e6).toFixed(4)} XRP</span></div>` : ''}
                 ${e.challenge_fee_state === 'REFUNDABLE' && e.challenge_fee_cancel_after && new Date(e.challenge_fee_cancel_after) <= new Date() ? `
                 <div style="margin-top:.5rem">
-                    <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem">The CancelAfter window has passed — you can reclaim your challenge fee by cancelling the escrow from your wallet.</div>
-                    <span style="font-size:.78rem;padding:.2rem .5rem;border-radius:4px;background:var(--amber-dim);color:var(--amber);font-weight:600">Reclaim fee: submit EscrowCancel from your wallet for this fee escrow</span>
+                    <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem">The CancelAfter window has passed — reclaim your challenge fee via Xaman.</div>
+                    <button class="btn-action" style="margin-top:.3rem" onclick="reclaimChallengeFee('${escapeHtml(e.escrow_id)}')"><i data-lucide="rotate-ccw"></i> Reclaim fee via Xaman</button>
+                    <div id="reclaim-status-${escapeHtml(e.escrow_id)}" style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem"></div>
                 </div>` : ''}
             </div>` : ''}
             ${e.status === 'AWAITING_FUNDING' ? `
@@ -2750,6 +2751,78 @@ async function submitChallenge() {
     } catch { showToast('Network error'); btn.disabled = false; btn.textContent = 'Submit challenge'; }
 }
 
+let _challengeXamanTimer = null;
+async function signChallengeFeeXaman() {
+    if (!_challengeEscrowId || !_challengeQuoteId) return;
+    const btn = document.getElementById('challenge-xaman-btn');
+    const status = document.getElementById('challenge-xaman-status');
+    btn.disabled = true; status.textContent = 'Requesting Xaman payload…';
+    try {
+        const res = await fetch(`${API}/xumm/challenge-fee-payload`, {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ escrow_id: _challengeEscrowId, quote_id: _challengeQuoteId })
+        });
+        const data = await res.json();
+        if (!data.nextUrl) throw new Error(data.detail || data.error || 'Xaman did not return a sign URL');
+        window.open(data.nextUrl, '_blank');
+        status.textContent = 'Xaman opened — sign the fee escrow, then return here.';
+        const uuid = data.uuid;
+        _challengeXamanTimer = setInterval(async () => {
+            try {
+                const pr = await fetch(`${API}/xumm/payload/${uuid}`, { credentials: 'include' });
+                const pd = await pr.json();
+                if (pd.signed && pd.tx_hash) {
+                    clearInterval(_challengeXamanTimer);
+                    document.getElementById('challenge-fee-hash').value = pd.tx_hash;
+                    status.textContent = '✓ Signed — hash filled in. Click Submit challenge.';
+                    btn.disabled = false;
+                } else if (pd.rejected) {
+                    clearInterval(_challengeXamanTimer);
+                    status.textContent = 'Signing rejected in Xaman.';
+                    btn.disabled = false;
+                }
+            } catch { /* poll silently */ }
+        }, 3000);
+    } catch(e) {
+        status.textContent = 'Error: ' + e.message;
+        btn.disabled = false;
+    }
+}
+
+async function reclaimChallengeFee(escrowId) {
+    const statusEl = document.getElementById('reclaim-status-' + escrowId);
+    if (statusEl) statusEl.textContent = 'Requesting Xaman payload…';
+    try {
+        const res = await fetch(`${API}/xumm/challenge-fee-cancel-payload`, {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ escrow_id: escrowId })
+        });
+        const data = await res.json();
+        if (!data.nextUrl) throw new Error(data.detail || data.error || 'Xaman did not return a sign URL');
+        window.open(data.nextUrl, '_blank');
+        if (statusEl) statusEl.textContent = 'Xaman opened — sign the EscrowCancel to reclaim your fee.';
+        const uuid = data.uuid;
+        const timer = setInterval(async () => {
+            try {
+                const pr = await fetch(`${API}/xumm/payload/${uuid}`, { credentials: 'include' });
+                const pd = await pr.json();
+                if (pd.signed) {
+                    clearInterval(timer);
+                    if (statusEl) statusEl.textContent = '✓ EscrowCancel submitted. Your fee will be returned.';
+                    setTimeout(loadEscrows, 4000);
+                } else if (pd.rejected) {
+                    clearInterval(timer);
+                    if (statusEl) statusEl.textContent = 'Signing cancelled.';
+                }
+            } catch { /* poll silently */ }
+        }, 3000);
+    } catch(e) {
+        if (statusEl) statusEl.textContent = 'Error: ' + e.message;
+    }
+}
+
 function submitWork(escrowId) {
     const work = document.getElementById('submit-work-text').value.trim();
     const tok = document.getElementById('submit-work-token').value.trim();
@@ -2914,6 +2987,10 @@ init();
             <div style="margin-bottom:.75rem">
                 <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:.3rem">Signed tx hash (64-char XRPL tx hash)</label>
                 <input id="challenge-fee-hash" type="text" maxlength="64" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.83rem;box-sizing:border-box;font-family:monospace" placeholder="Enter the 64-char tx hash after submitting…">
+            </div>
+            <div style="margin-bottom:.75rem">
+                <button class="btn-primary" id="challenge-xaman-btn" onclick="signChallengeFeeXaman()" style="width:100%;justify-content:center;margin-bottom:.4rem"><i data-lucide="zap"></i> Sign fee escrow in Xaman</button>
+                <div id="challenge-xaman-status" style="font-size:.78rem;color:var(--text-muted)"></div>
             </div>
             <div style="display:flex;gap:.5rem">
                 <button class="btn-action" onclick="backToChallengeStep1()" style="flex:1">← Back</button>
