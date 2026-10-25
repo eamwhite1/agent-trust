@@ -301,6 +301,43 @@
 
         /* Toast: full-width at bottom */
         .toast { right: 1rem; left: 1rem; text-align: center; }
+
+        /* Create escrow page */
+        .main { padding: 1rem 1rem 5rem; }
+        .page-header { margin-bottom: 1.25rem; }
+        .page-header h1 { font-size: 1.4rem; }
+        .sub-card { padding: 1rem; max-width: 100% !important; }
+
+        /* Step indicator: shrink text */
+        #create-steps { gap: 0; }
+        .create-step { font-size: .7rem; padding: .4rem .5rem; gap: .3rem; }
+        .create-step-num { width: 18px; height: 18px; font-size: .62rem; }
+
+        /* Criteria / proof rows: wrap */
+        #ce-ai-tier-row label, #tmpl-ai-tier-row label { font-size: .82rem; }
+
+        /* Inline checkbox rows: left-align */
+        .form-group[style*="display:flex"] { justify-content: flex-start !important; }
+
+        /* Fee summary cards */
+        .payment-box { font-size: .78rem; padding: .75rem 1rem; }
+
+        /* Modals: full-width, no side gaps */
+        [style*="max-width:480px"], [style*="max-width:440px"], [style*="max-width:560px"],
+        [style*="max-width:520px"], [style*="max-width:600px"] { max-width: 100% !important; margin: 0 !important; border-radius: 16px 16px 0 0; }
+
+        /* Challenge / audit modal overlays */
+        [style*="position:fixed"][style*="inset:0"][style*="align-items:center"] { align-items: flex-end !important; padding: 0 !important; }
+
+        /* Template cards: stack */
+        #templates-grid { grid-template-columns: 1fr !important; }
+
+        /* Audit trail table on create page */
+        .criteria-list { font-size: .8rem; }
+
+        /* API key rows */
+        .apikey-row { flex-wrap: wrap; gap: .5rem; }
+        .apikey-row .btn-sm { width: 100%; justify-content: center; }
     }
 </style>
 </head>
@@ -830,7 +867,7 @@
                     <input type="hidden" id="ce-ai-verification" value="false">
 
                     <!-- Invoice mode -->
-                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem">
+                    <div class="form-group" style="display:flex;align-items:center;gap:.6rem;justify-content:flex-start">
                         <input type="checkbox" id="ce-invoice-on" onchange="ceToggleInvoice()" style="width:auto">
                         <label for="ce-invoice-on" style="margin:0;cursor:pointer;font-weight:600">Require invoice — seller must submit a matching invoice alongside proof of work</label>
                     </div>
