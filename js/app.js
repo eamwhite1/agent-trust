@@ -668,6 +668,12 @@ function onReleaseModeChange() {
     const v = document.getElementById('release-mode-select')?.value;
     const hint = document.getElementById('release-mode-hint');
     if (hint) hint.style.display = (!v || v === 'auto') ? 'none' : '';
+    const emailHint = document.getElementById('buyer-email-challenge-hint');
+    if (emailHint) {
+        const isChallenge = v && v !== 'auto';
+        const hasEmail = !!(document.getElementById('buyer-email')?.value.trim());
+        emailHint.style.display = (isChallenge && !hasEmail) ? '' : 'none';
+    }
 }
 
 function toggleProof(type) {

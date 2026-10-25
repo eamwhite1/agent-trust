@@ -31,7 +31,7 @@
       "name": "How long does a challenge review take?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Typically under 2 minutes. Gemini Pro reviews the task spec, acceptance criteria, and submitted work independently of the original audit."
+        "text": "Typically a few minutes. Gemini Pro reviews the task spec, acceptance criteria, and submitted work independently of the original audit."
       }
     },
     {
@@ -181,14 +181,14 @@
             <div class="step-num">3</div>
             <div class="step-body">
                 <div class="step-title">Challenge during the window (optional)</div>
-                <div class="step-desc">As the buyer, call <code>prepare_challenge_escrow</code> to get a quote and sign the challenge escrow. The fee is ~$1.00 USD in XRP (min 0.2 XRP) held in a separate XRPL escrow with a 24 h CancelAfter. You cannot challenge in the last 15 minutes of the window.</div>
+                <div class="step-desc">As the buyer, you'll receive an email with a private challenge link when the verdict arrives (add your email when creating the escrow). Click the link to open the challenge form — select the criteria you dispute, pay the ~$1 fee via Xaman, and submit. You cannot challenge in the last 15 minutes of the window.</div>
             </div>
         </div>
         <div class="step">
             <div class="step-num">4</div>
             <div class="step-body">
                 <div class="step-title">Gemini Pro re-reviews independently</div>
-                <div class="step-desc">Call <code>challenge_escrow_verdict</code>. Gemini Pro reviews the same spec, criteria, and submission — independently of the original audit. The result is final and recorded on-chain.</div>
+                <div class="step-desc">Gemini Pro reviews the same spec, criteria, and submission — independently of the original audit. The result is recorded as a verdict hash memo on the XRPL transaction.</div>
             </div>
         </div>
     </div>
@@ -241,7 +241,7 @@
     </details>
     <details>
         <summary>How long does a challenge review take?</summary>
-        <div class="faq-answer">Typically under 2 minutes. Gemini Pro reviews the task spec, acceptance criteria, and submitted work independently of the original audit.</div>
+        <div class="faq-answer">Typically a few minutes. Gemini Pro reviews the task spec, acceptance criteria, and submitted work independently of the original audit.</div>
     </details>
     <details>
         <summary>Can the seller challenge the verdict?</summary>

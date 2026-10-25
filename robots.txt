@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /challenge/
 
 # AI/LLM crawlers
 User-agent: GPTBot
