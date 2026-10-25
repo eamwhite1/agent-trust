@@ -65,7 +65,7 @@ AgentTrust locks funds in XRPL crypto-condition escrow and releases them automat
 AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of the per-audit fee model. Each escrow records the verdict hash, timestamp, and XRPL transaction hashes on-chain.
 
 **Pro capabilities (all available now):**
-- **Tamper-proof audit trail:** every escrow verdict (PASS/FAIL), timestamp, and transaction hash is permanently recorded on the XRPL. Immutable, independently verifiable, no AgentTrust involvement needed to read it.
+- **On-ledger record:** each escrow records the verdict hash, timestamp and XRPL transaction hashes, which anyone can check on the XRPL explorer.
 - **Escrow Templates:** define your job policy once in the enterprise dashboard — rubric, proof gates (NFT/domain/VC), amount floor and cap, deadline, AI audit flag. Agents reference a `template_id` when calling `POST /escrow/generate`; the platform enforces all constraints automatically. Templates are scoped to the enterprise account and inherited by any agent authenticated via API key.
 - **Agent API Keys:** issue API keys from the enterprise dashboard. Agents authenticate as your enterprise account by passing the raw key in the `X-API-Key` request header. The key grants access to your templates, linked wallets, and audit trail — no OAuth flow required. Keys are stored as SHA-256 hashes; the raw value is shown once at creation only.
 - **Your policy, not ours:** pass `task_description` or `invoice_requirements` with your compliance rulebook, contractor guidelines, or corporate safety policy — the AI evaluator checks completed work against your specific requirements before any payment releases. Use a Template to enforce this consistently across all agent-created escrows.
@@ -150,7 +150,6 @@ Before locking funds, call `assess_counterparty_and_job(worker_address, job_type
 Test the full escrow flow with no real XRP:
 
     1. Create a testnet wallet: create_testnet_wallet()
-    2. Post a job with network="testnet"
-    3. hire_and_pay(..., network="testnet") — no fees, no free-credit use
-    4. evaluate_escrow_work(escrow_id, work, evaluate_token) — real AI audit (5/day limit)
-    5. Vault IDs start with "TN-"; explorer links point to testnet.xrpl.org
+    2. hire_and_pay(..., network="testnet") — no fees, no free-credit use
+    3. evaluate_escrow_work(escrow_id, work, evaluate_token) — real AI audit (5/day limit)
+    4. Vault IDs start with "TN-"; explorer links point to testnet.xrpl.org
