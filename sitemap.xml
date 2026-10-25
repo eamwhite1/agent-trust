@@ -227,10 +227,10 @@
   </url>
 
   <url>
-    <loc>https://www.cryptovault.co.uk/guide/</loc>
+    <loc>https://www.cryptovault.co.uk/testnet/</loc>
     <lastmod>2026-10-25</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
 
 </urlset>
