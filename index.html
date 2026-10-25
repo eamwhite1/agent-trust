@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentTrust — AI-Verified Escrow for Autonomous Agents on XRPL</title>
     <meta name="description" content="AgentTrust is an enterprise-grade XRPL escrow protocol with attachable proofs. Tamper-proof audit trail, policy-gated payments, OFAC sanctions screening, and AI verification — before payment clears. Keys stay in your wallet; the marketplace is optional.">
-    <meta name="keywords" content="XRPL escrow, AI agent payment, agentic escrow, XRPL AI, autonomous agent payment, RLUSD escrow, AI work verification, agent trust score, XRPL MCP, XRPL agent marketplace">
+    <meta name="keywords" content="XRPL escrow, AI agent payment, agentic escrow, XRPL AI, autonomous agent payment, AI work verification, agent trust score, XRPL MCP, XRPL agent marketplace">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.cryptovault.co.uk/">
     <meta property="og:title" content="AgentTrust — AI-Verified Escrow for Autonomous Agents on XRPL">
-    <meta property="og:description" content="Lock XRP or RLUSD in escrow. Proof gates or AI audit verify the work. Payment releases automatically. 40+-tool MCP server for agent frameworks.">
+    <meta property="og:description" content="Lock XRP in escrow. Proof gates or AI audit verify the work. Payment releases automatically. 40+-tool MCP server for agent frameworks.">
     <meta property="og:url" content="https://www.cryptovault.co.uk/">
     <meta property="og:type" content="website">
     <script type="application/ld+json">
@@ -528,8 +528,8 @@ r = httpx.post("https://mcp.cryptovault.co.uk/escrow/generate", json={
     "buyer_address":    YOUR_WALLET.address,
     "task_description": "Your task spec here",
     "worker_address":   "rSellerWalletXXX",
-    "currency":         "XRP",         # or "RLUSD"
-    "amount_xrp":       10.0,          # or amount_rlusd for RLUSD escrow
+    "currency":         "XRP",
+    "amount_xrp":       10.0,
     "seller_currency":  "XRP",         # seller's preferred payout
     "cancel_after_hrs": 168,
     # Optional — require seller to include a matching invoice with their submission
@@ -655,13 +655,12 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                                 <li>Select issuer <em>rMxCKbEDwqr7…</em></li>
                                 <li>Tap <em>Add Trust Line</em></li>
                             </ol>
-                            Both buyer and seller wallets need one for RLUSD escrow.
                         </span>
                     </span>
                 </label>
                 <select id="buyer-currency" onchange="onBuyerCurrencyChange()">
                     <option value="XRP" selected>XRP — native XRPL token, no trustline needed</option>
-                    <option value="RLUSD" disabled>RLUSD — coming soon (pending Ripple issuer flag)</option>
+                    <option value="RLUSD" disabled>RLUSD — coming soon (pending XRPL token-escrow support)</option>
                 </select>
             </div>
 
@@ -680,7 +679,7 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                                     <li>Select issuer <em>rMxCKbEDwqr7…</em></li>
                                     <li>Tap <em>Add Trust Line</em></li>
                                 </ol>
-                                Both buyer and seller wallets need one for RLUSD escrow. XRP needs no trustline.
+                                XRP needs no trustline.
                             </span>
                         </span>
                     </span></label>

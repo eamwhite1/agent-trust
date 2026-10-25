@@ -552,19 +552,6 @@ canvas#gauge {
 <script>
 const API = "https://mcp.cryptovault.co.uk";
 
-const SIGNALS = [
-  { key: "account_age",         label: "Account age",         max: 20, tip: "Older wallets score higher — up to 20 pts earned at 2 pts per month of age." },
-  { key: "balance",             label: "XRP balance",         max: 15, tip: "Higher XRP reserves indicate a more established wallet. Up to 15 pts at 3 pts per 10 XRP held." },
-  { key: "on_chain_activity",   label: "On-chain activity",   max: 15, tip: "Measured by owner count — the number of objects this wallet owns on the ledger (trust lines, offers, escrows). Up to 15 pts." },
-  { key: "domain_verified",     label: "Domain verified",     max: 10, tip: "10 pts if the wallet has a Domain field set on-chain, linking it to a verifiable web domain via xrp-ledger.toml." },
-  { key: "wallet_sig_verified", label: "Ownership proof",     max: 8,  tip: "8 pts if the wallet holder has submitted an on-chain AccountSet transaction proving cryptographic control of this address via AgentTrust." },
-  { key: "sanctions_clear",     label: "Sanctions clear",     max: 7,  tip: "7 pts if the wallet is clear on all six sanctions lists checked by AnChain.ai BEI (OFAC, UN, UK, EU, Canada, Australia). A sanctioned wallet scores 0 overall." },
-  { key: "entity_reputation",   label: "Entity reputation",   max: 8,  tip: "Up to 8 pts from XRPScan's verified entity registry. 5 pts for a known verified entity (exchange, market maker etc.). 1 pt each for advanced account security: master key disabled, require destination tag, deposit auth." },
-  { key: "nfts_held",           label: "NFTs held",           max: 5,  tip: "1 pt per NFT held on this wallet, up to 5 pts. Indicates on-chain participation in the XRP ecosystem." },
-  { key: "escrow_completion",   label: "Escrow completion",   max: 20, tip: "Up to 20 pts based on this wallet's AgentTrust escrow history — how many escrows were completed vs. failed or expired." },
-  { key: "peer_rating",         label: "Peer rating",         max: 15, tip: "Up to 15 pts from star ratings left by counterparties after completed AgentTrust escrows. Reflects real-world trustworthiness in transactions." },
-  { key: "kyc_verified", label: "Identity KYC", max: 10, tip: "10 pts if the wallet operator has completed Didit identity verification — a real-identity check (passport/ID). Human-only signal; AI agent wallets cannot hold this. Unlocks escrows up to $10,000." },
-];
 
 // Pre-fill from URL param
 const urlAddr = new URLSearchParams(location.search).get("address");
@@ -641,20 +628,31 @@ function render(addr, data) {
   // Gauge
   drawGauge(score);
 
-  // Signal rows
+  // Signal rows — rendered from signals_list (dynamic, server-driven)
   const rows = document.getElementById("signal-rows");
   rows.innerHTML = "";
-  SIGNALS.forEach(sig => {
-    const pts = breakdown[sig.key] ?? 0;
-    const pct = sig.max > 0 ? (pts / sig.max) * 100 : 0;
+  const signalsList = data.signals_list ?? [];
+  signalsList.forEach(sig => {
     const row = document.createElement("div");
-    row.className = "signal-row";
-    row.innerHTML = `
-      <div class="signal-name">${sig.label}</div>
-      <div class="signal-track"><div class="signal-fill" data-pct="${pct}" style="background:${barColor(pts,sig.max)}"></div></div>
-      <div class="signal-pts">${pts}<span style="color:var(--faint);font-size:.65rem;">/${sig.max}</span></div>
-      ${sig.tip ? `<span class="signal-tip">${sig.tip}</span>` : ''}
-    `;
+    if (sig.max_points === 0) {
+      // Info-only signal: render as chip
+      row.className = "signal-row signal-chip";
+      row.innerHTML = `
+        <div class="signal-name">${sig.label}</div>
+        <div class="signal-chip-value">${sig.value ?? "—"}</div>
+        ${sig.explanation ? `<span class="signal-tip">${sig.explanation}</span>` : ''}
+      `;
+    } else {
+      const pts = sig.points ?? 0;
+      const pct = (pts / sig.max_points) * 100;
+      row.className = "signal-row";
+      row.innerHTML = `
+        <div class="signal-name">${sig.label}</div>
+        <div class="signal-track"><div class="signal-fill" data-pct="${pct}" style="background:${barColor(pts,sig.max_points)}"></div></div>
+        <div class="signal-pts">${pts}<span style="color:var(--faint);font-size:.65rem;">/${sig.max_points}</span></div>
+        ${sig.explanation ? `<span class="signal-tip">${sig.explanation}</span>` : ''}
+      `;
+    }
     rows.appendChild(row);
   });
 
@@ -676,7 +674,6 @@ function render(addr, data) {
   const items = [
     { label: "Account age",      value: signals.age_days != null ? signals.age_days + " days" : "—" },
     { label: "XRP balance",      value: signals.balance_xrp != null ? signals.balance_xrp.toLocaleString() + " XRP" : "—" },
-    { label: "Owner count",      value: signals.owner_count ?? "—" },
     { label: "Domain set",       value: signals.has_domain ? "Yes" : "No", cls: signals.has_domain ? "positive" : "negative" },
     { label: "Ownership proof",  value: signals.wallet_sig_verified ? "Verified" : "Not verified", cls: signals.wallet_sig_verified ? "positive" : "" },
     { label: "Sanctions",        value: signals.sanctions_clear === false ? "⚠ Flagged" : signals.sanctions_clear ? "Clear" : "—", cls: signals.sanctions_clear === false ? "negative" : signals.sanctions_clear ? "positive" : "" },

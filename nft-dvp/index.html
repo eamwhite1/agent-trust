@@ -297,7 +297,7 @@ code { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
         </div>
         <div class="callout" style="margin-top:1rem;background:rgba(0,185,122,.07);border-color:rgba(0,185,122,.25);">
             <i data-lucide="zap" class="callout-icon" style="color:var(--green);"></i>
-            <p><strong>XLS-56 Atomic Settlement (live on mainnet).</strong> With <code>nft_dvp: true</code> on the escrow vault, the AI PASS verdict puts the vault into <code>PASS_AWAITING_NFT</code>. The buyer then calls <code>GET /escrow/{id}/batch-dvp-payload</code> (MCP: <code>get_batch_dvp_payload()</code>) to receive a pre-built <strong>XLS-56 Batch transaction</strong> — signing it once accepts the NFT and releases payment <em>in a single ledger close</em>. Both legs succeed or both revert: zero settlement gap.</p>
+            <p><strong>XLS-56 Atomic Settlement.</strong> <em style="color:var(--amber,#f59e0b);font-weight:600;">Beta — untested on mainnet.</em> With <code>nft_dvp: true</code> on the escrow vault, the AI PASS verdict puts the vault into <code>PASS_AWAITING_NFT</code>. The buyer then calls <code>GET /escrow/{id}/batch-dvp-payload</code> (MCP: <code>get_batch_dvp_payload()</code>) to receive a pre-built <strong>XLS-56 Batch transaction</strong> — signing it once accepts the NFT and releases payment <em>in a single ledger close</em>. Both legs succeed or both revert: zero settlement gap.</p>
         </div>
     </div>
 
