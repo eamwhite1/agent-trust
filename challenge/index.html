@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Challenge Verdict — AgentTrust</title>
+<style>
+  :root {
+    --bg: #f5f5f7; --surface: #fff; --border: #e0e0e6;
+    --text: #1a1a2e; --text-muted: #6b7280; --text-faint: #9ca3af;
+    --blue: #2563eb; --blue-dim: #eff6ff;
+    --green: #16a34a; --red: #dc2626; --amber: #d97706;
+    --ground: #f9f9fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f14; --surface: #18181f; --border: #2a2a38;
+      --text: #e8e8f0; --text-muted: #9ca3af; --text-faint: #6b7280;
+      --blue: #3b82f6; --blue-dim: #1e3a5f;
+      --green: #22c55e; --red: #f87171; --amber: #fbbf24;
+      --ground: #111118;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+  .page-wrap { max-width: 560px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  .logo { font-size: 1.05rem; font-weight: 700; color: var(--text); text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
+  .logo span { color: var(--blue); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: .5rem; }
+  .tag { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+  .tag-pass { background: #dcfce7; color: var(--green); }
+  .tag-pending { background: #fef9c3; color: var(--amber); }
+  .tag-challenged { background: #fee2e2; color: var(--red); }
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-muted); margin-bottom: .25rem; }
+  .field p, .field .val { font-size: .9rem; }
+  .field textarea { width: 100%; padding: .6rem .75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--ground); color: var(--text); font-size: .85rem; resize: vertical; font-family: inherit; }
+  .criteria-row { display: flex; align-items: center; gap: .5rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
+  .criteria-row:last-child { border-bottom: none; }
+  .criteria-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--blue); }
+  .criteria-row span { font-size: .85rem; flex: 1; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding: .6rem 1.25rem; border: none; border-radius: 8px; font-size: .9rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: var(--blue); color: #fff; width: 100%; }
+  .btn-secondary { background: var(--ground); color: var(--text); border: 1px solid var(--border); }
+  .status-msg { font-size: .83rem; margin-top: .6rem; min-height: 1.2em; }
+  .status-info { color: var(--text-muted); }
+  .status-ok { color: var(--green); }
+  .status-err { color: var(--red); }
+  .detail-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid var(--border); font-size: .85rem; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .key { color: var(--text-muted); }
+  .notice { font-size: .78rem; color: var(--text-muted); line-height: 1.5; margin-top: .5rem; }
+  a { color: var(--blue); }
+  #state-loading, #state-expired, #state-error, #state-already-challenged,
+  #state-outcome, #state-challenge-form { display: none; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <a class="logo" href="/">AgentTrust<span>.</span></a>
+
+  <!-- Loading -->
+  <div id="state-loading" class="card">
+    <p style="color:var(--text-muted)">Loading challenge details…</p>
+  </div>
+
+  <!-- Token expired / invalid -->
+  <div id="state-expired" class="card">
+    <h1>Link expired or invalid</h1>
+    <p style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem">This challenge link has expired or is not valid. Challenge links are single-use and expire after 48 hours.</p>
+    <p style="font-size:.85rem;margin-top:1rem">If your challenge window is still open, check your email for a fresh link, or contact <a href="mailto:support@cryptovault.co.uk">support@cryptovault.co.uk</a>.</p>
+  </div>
+
+  <!-- Generic error -->
+  <div id="state-error" class="card">
+    <h1>Something went wrong</h1>
+    <p id="error-detail" style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem"></p>
+  </div>
+
+  <!-- Already challenged -->
+  <div id="state-already-challenged" class="card">
+    <h1>Challenge submitted</h1>
+    <p style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem">A challenge has already been submitted for this escrow. A senior Pro model review is underway.</p>
+    <p style="font-size:.85rem;margin-top:1rem">Results will be emailed when the re-review completes.</p>
+  </div>
+
+  <!-- Final outcome -->
+  <div id="state-outcome" class="card">
+    <h1 id="outcome-title">Challenge outcome</h1>
+    <p id="outcome-body" style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem"></p>
+  </div>
+
+  <!-- Challenge form (main state) -->
+  <div id="state-challenge-form">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <h1>Challenge Verdict</h1>
+        <span class="tag tag-pass" id="verdict-tag">PASS</span>
+      </div>
+      <div class="detail-row"><span class="key">Escrow</span><span id="cf-escrow-id">—</span></div>
+      <div class="detail-row"><span class="key">Task</span><span id="cf-task" style="max-width:60%;text-align:right">—</span></div>
+      <div class="detail-row"><span class="key">Amount</span><span id="cf-amount">—</span></div>
+      <div class="detail-row"><span class="key">AI verdict</span><span id="cf-verdict">—</span></div>
+      <div class="detail-row"><span class="key">AI summary</span><span id="cf-summary" style="max-width:65%;text-align:right;font-size:.82rem">—</span></div>
+      <div class="detail-row"><span class="key">Challenge deadline</span><span id="cf-deadline" style="color:var(--amber)">—</span></div>
+    </div>
+
+    <!-- Step 1: select criteria + reason -->
+    <div class="card" id="step-select">
+      <h2 style="font-size:1rem;margin-bottom:.75rem">Step 1 — Select disputed criteria</h2>
+      <div id="criteria-list" style="margin-bottom:.75rem">
+        <p style="font-size:.85rem;color:var(--text-muted)">No specific criteria defined — challenge will cover the full verdict.</p>
+      </div>
+      <div class="field">
+        <label>Reason for challenge <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label>
+        <textarea id="challenge-reason" rows="3" placeholder="Explain why you believe the work does not meet the criteria…"></textarea>
+      </div>
+      <button class="btn btn-primary" id="btn-get-quote" onclick="getQuote()">Get fee quote →</button>
+      <div class="status-msg status-info" id="status-quote"></div>
+    </div>
+
+    <!-- Step 2: sign fee escrow -->
+    <div class="card" id="step-sign" style="display:none">
+      <h2 style="font-size:1rem;margin-bottom:.75rem">Step 2 — Pay challenge fee</h2>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">A ~$1 fee is held in an on-chain escrow to the referee. It is refunded if your challenge is upheld, or released to the referee if the original PASS stands.</p>
+      <div id="fee-details" style="margin-bottom:.75rem;padding:.75rem;background:var(--ground);border-radius:8px;font-size:.85rem"></div>
+      <button class="btn btn-primary" id="btn-xaman" onclick="openXaman()">Open Xaman to pay →</button>
+      <div class="status-msg status-info" id="status-sign"></div>
+      <p class="notice">⚠️ After paying, you have 15 minutes to submit your dispute below.</p>
+    </div>
+
+    <!-- Step 3: submit challenge -->
+    <div class="card" id="step-submit" style="display:none">
+      <h2 style="font-size:1rem;margin-bottom:.75rem">Step 3 — Submit challenge</h2>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">Enter the XRPL transaction hash from your fee payment.</p>
+      <div class="field">
+        <label>Fee transaction hash *</label>
+        <input id="fee-tx-hash" style="width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem" placeholder="64-character hex hash…">
+      </div>
+      <button class="btn btn-primary" id="btn-submit" onclick="submitChallenge()">Submit challenge →</button>
+      <div class="status-msg status-info" id="status-submit"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://mcp.cryptovault.co.uk';
+let token = null;
+let sessionData = null;
+let quoteId = null;
+
+function show(id) {
+  ['state-loading','state-expired','state-error','state-already-challenged','state-outcome','state-challenge-form']
+    .forEach(s => document.getElementById(s).style.display = s === id ? '' : 'none');
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'status-msg status-' + (type || 'info');
+}
+
+function fmtDeadline(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) + ' (your local time)';
+}
+
+async function load() {
+  show('state-loading');
+  const params = new URLSearchParams(location.search);
+  token = params.get('token');
+  if (!token) { show('state-expired'); return; }
+
+  try {
+    const res = await fetch(`${API}/challenge/session?token=${encodeURIComponent(token)}`);
+    if (res.status === 401) { show('state-expired'); return; }
+    if (!res.ok) { throw new Error(`HTTP ${res.status}`); }
+    sessionData = await res.json();
+  } catch(e) {
+    document.getElementById('error-detail').textContent = e.message;
+    show('state-error');
+    return;
+  }
+
+  const s = sessionData.status;
+  if (s === 'CHALLENGED') { show('state-already-challenged'); return; }
+  if (s === 'CHALLENGE_PASS' || s === 'CHALLENGE_FAIL') {
+    const upheld = s === 'CHALLENGE_PASS';
+    document.getElementById('outcome-title').textContent = upheld ? 'Challenge upheld — FAIL' : 'Challenge rejected — PASS stands';
+    document.getElementById('outcome-body').textContent = upheld
+      ? 'The senior review found the work does not meet the criteria. The escrow has been cancelled and the challenge fee refunded to you.'
+      : 'The senior review confirmed the original PASS. Payment has been released to the seller and the challenge fee forwarded to the referee.';
+    show('state-outcome');
+    return;
+  }
+  if (s !== 'PASS_CHALLENGE_WINDOW') {
+    document.getElementById('error-detail').textContent = `Unexpected escrow status: ${s}`;
+    show('state-error');
+    return;
+  }
+
+  // Populate card
+  document.getElementById('cf-escrow-id').textContent = sessionData.escrow_id || '—';
+  document.getElementById('cf-task').textContent = (sessionData.task_description || '—').slice(0, 120);
+  document.getElementById('cf-amount').textContent = sessionData.amount_xrp ? sessionData.amount_xrp + ' XRP' : '—';
+  document.getElementById('cf-verdict').textContent = sessionData.ai_verdict || 'PASS';
+  document.getElementById('cf-summary').textContent = sessionData.ai_summary || '—';
+  document.getElementById('cf-deadline').textContent = fmtDeadline(sessionData.challenge_deadline);
+  show('state-challenge-form');
+}
+
+async function getQuote() {
+  const btn = document.getElementById('btn-get-quote');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  setStatus('status-quote', '⏳ Getting fee quote…', 'info');
+  const selectedCriteria = [...document.querySelectorAll('#criteria-list input[type=checkbox]:checked')].map(el => el.value);
+  const reason = document.getElementById('challenge-reason').value.trim();
+
+  try {
+    const res = await fetch(`${API}/challenge/session/prepare?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challenger_address: sessionData.buyer_address, criteria_ids: selectedCriteria, reason })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+    quoteId = data.quote_id;
+    const feeXrp = data.fee_xrp ? parseFloat(data.fee_xrp).toFixed(4) + ' XRP' : '~$1.00';
+    document.getElementById('fee-details').innerHTML =
+      `<div style="display:flex;justify-content:space-between"><span>Challenge fee</span><strong>${feeXrp}</strong></div>` +
+      (data.expires_at ? `<div style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem">Quote valid until ${fmtDeadline(data.expires_at)}</div>` : '');
+    document.getElementById('step-select').style.display = 'none';
+    document.getElementById('step-sign').style.display = '';
+    setStatus('status-quote', '', 'info');
+  } catch(e) {
+    btn.disabled = false;
+    setStatus('status-quote', '❌ ' + e.message, 'err');
+  }
+}
+
+async function openXaman() {
+  const btn = document.getElementById('btn-xaman');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  setStatus('status-sign', '⏳ Connecting to Xaman…', 'info');
+  try {
+    const res = await fetch(`${API}/challenge/session/xaman?token=${encodeURIComponent(token)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+    const xp = data.xaman_payload || data;
+    const nextUrl = xp.next?.always || xp.nextUrl || xp.refs?.qr_png;
+    if (nextUrl) window.open(nextUrl, '_blank');
+    setStatus('status-sign', '✅ Xaman opened. Sign the fee EscrowCreate, then enter the tx hash below.', 'ok');
+    document.getElementById('step-submit').style.display = '';
+  } catch(e) {
+    btn.disabled = false;
+    setStatus('status-sign', '❌ ' + e.message, 'err');
+  }
+}
+
+async function submitChallenge() {
+  const btn = document.getElementById('btn-submit');
+  if (btn.disabled) return;
+  const feeTxHash = document.getElementById('fee-tx-hash').value.trim();
+  if (!feeTxHash || feeTxHash.length !== 64) {
+    setStatus('status-submit', '❌ Please enter the 64-character transaction hash.', 'err');
+    return;
+  }
+  btn.disabled = true;
+  setStatus('status-submit', '⏳ Submitting challenge…', 'info');
+  const selectedCriteria = [...document.querySelectorAll('#criteria-list input[type=checkbox]:checked')].map(el => el.value);
+  const reason = document.getElementById('challenge-reason').value.trim();
+  try {
+    const res = await fetch(`${API}/challenge/session/submit?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        challenger_address: sessionData.buyer_address,
+        fee_tx_hash: feeTxHash,
+        quote_id: quoteId,
+        criteria_ids: selectedCriteria,
+        reason
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
+    show('state-already-challenged');
+  } catch(e) {
+    btn.disabled = false;
+    setStatus('status-submit', '❌ ' + e.message, 'err');
+  }
+}
+
+load();
+</script>
+</body>
+</html>

@@ -780,11 +780,13 @@
                         <div class="form-group" id="ce-challenge-hours-group" style="display:none">
                             <label>Delay duration <span class="field-hint" data-tip="How long funds are held after PASS before auto-releasing. The buyer can challenge the verdict during this window.">?</span></label>
                             <select id="ce-challenge-hours">
+                                <option value="1">1 hour</option>
                                 <option value="4">4 hours</option>
                                 <option value="8">8 hours</option>
                                 <option value="12">12 hours</option>
                                 <option value="24" selected>24 hours</option>
                             </select>
+                            <p style="font-size:.75rem;color:var(--text-muted);margin:.3rem 0 0">Challenge fee: ~$1 in XRP, paid by the buyer. Refunded if upheld. <a href="/challenges/" style="color:var(--blue,#2563eb)">Learn more →</a></p>
                         </div>
                         <div class="form-group">
                             <label>Seller attempts <span class="field-hint" data-tip="How many times the seller can submit work before the escrow is cancelled. 3 are included; each extra slot costs $0.05 at creation.">?</span></label>
@@ -2031,11 +2033,13 @@ function openTemplateModal(templateId) {
         <div id="tmpl-challenge-hours-row" style="${t && t.release_mode && t.release_mode!=='auto' ? '' : 'display:none'}">
             <div class="form-group"><label>Challenge window duration</label>
                 <select id="tmpl-challenge-hours">
+                    <option value="1" ${t && t.release_mode==='challenge_window_hrs:1' ? 'selected' : ''}>1 hour</option>
                     <option value="4" ${t && t.release_mode==='challenge_window_hrs:4' ? 'selected' : ''}>4 hours</option>
                     <option value="8" ${t && t.release_mode==='challenge_window_hrs:8' ? 'selected' : ''}>8 hours</option>
                     <option value="12" ${t && t.release_mode==='challenge_window_hrs:12' ? 'selected' : ''}>12 hours</option>
-                    <option value="24" ${(!t || t.release_mode!=='challenge_window_hrs:4' && t.release_mode!=='challenge_window_hrs:8' && t.release_mode!=='challenge_window_hrs:12') ? 'selected' : ''}>24 hours</option>
+                    <option value="24" ${(!t || !['challenge_window_hrs:1','challenge_window_hrs:4','challenge_window_hrs:8','challenge_window_hrs:12'].includes(t.release_mode)) ? 'selected' : ''}>24 hours</option>
                 </select>
+                <p style="font-size:.75rem;color:var(--text-muted);margin:.3rem 0 0">Challenge fee: ~$1 in XRP, paid by the buyer. <a href="/challenges/" style="color:var(--blue,#2563eb)">Learn more →</a></p>
             </div>
         </div>
         <div class="form-group">
@@ -2963,8 +2967,10 @@ function submitDealRequest() {
     }
     if (externalRef) body.external_ref = externalRef;
     if (externalUrl) body.external_url = externalUrl;
+    if (!sellerAddr) { showToast('No linked wallet found. Connect a wallet in Settings first.'); return; }
     if (criteria.length) body.criteria = criteria;
     const btn = document.getElementById('rd-submit-btn');
+    if (btn.disabled) return;
     btn.disabled = true; btn.textContent = 'Requesting…';
     fetch(`${API}/escrow/request`, {
         method: 'POST', credentials: 'include',
@@ -2973,7 +2979,6 @@ function submitDealRequest() {
     })
     .then(r => r.json())
     .then(data => {
-        btn.disabled = false; btn.textContent = 'Send Request';
         if (data.pay_url || data.escrow_id) {
             const resultDiv = document.getElementById('rd-result');
             resultDiv.style.display = 'block';
@@ -2982,6 +2987,7 @@ function submitDealRequest() {
             resultDiv.innerHTML = `<p style="color:var(--green,#16a34a);font-weight:600">Deal request created!</p>${payUrl ? `<p style="font-size:.82rem;margin:.3rem 0">Buyer funding link:</p><div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem"><code style="flex:1;font-size:.75rem;word-break:break-all;padding:.4rem .6rem;background:var(--ground);border-radius:6px">${payUrl}</code><button onclick="navigator.clipboard.writeText(${JSON.stringify(data.pay_url||'')})" style="padding:.3rem .7rem;background:var(--blue,#2563eb);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.78rem">Copy</button></div>` : ''}${workerUrl ? `<p style="font-size:.82rem;margin:.3rem 0">Worker confirmation link:</p><code style="font-size:.75rem;word-break:break-all;padding:.4rem .6rem;background:var(--ground);border-radius:6px;display:block">${workerUrl}</code>` : ''}`;
             loadEscrows();
         } else {
+            btn.disabled = false; btn.textContent = 'Send Request';
             showToast(data.detail || JSON.stringify(data));
         }
     })
@@ -3019,8 +3025,8 @@ init();
             <option value="challenge_window_hrs:12">Challenge window: 12 h</option>
             <option value="challenge_window_hrs:24">Challenge window: 24 h</option>
         </select>
-        <p style="font-size:.78rem;color:var(--text-muted);margin:0 0 .75rem;">Holds payment for N hours after a PASS. During that time you can challenge for $1.00 in XRP (min 0.2 XRP), paid in a separate escrow to the seller. If the challenge succeeds the fee comes back to you; if the PASS is upheld the seller keeps it.</p>
-        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.75rem;cursor:pointer"><input type="checkbox" id="rd-require-consensus"> Dual-model consensus (Gemini Pro re-review on every verdict, +$0.25)</label>
+        <p style="font-size:.78rem;color:var(--text-muted);margin:0 0 .75rem;">Holds payment for N hours after a PASS so the buyer can review. If they challenge, a senior Pro model re-reviews for a ~$1 fee held in a separate escrow. Fee is refunded to the buyer if the challenge succeeds. See <a href="/challenges/" style="color:var(--blue,#2563eb)">how challenges work →</a></p>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.75rem;cursor:pointer"><input type="checkbox" id="rd-require-consensus"> Dual-model consensus — two AI models must agree before PASS (+$0.25 vault fee)</label>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
             <label style="font-size:.85rem;font-weight:600">Criteria</label>
             <button onclick="rdAddCriterion()" style="padding:.25rem .7rem;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:.82rem">+ Add</button>

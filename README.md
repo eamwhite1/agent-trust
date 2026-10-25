@@ -222,6 +222,12 @@ Explorer: [testnet.xrpl.org](https://testnet.xrpl.org). Switch to `network='main
 
 ---
 
+## Challenge a PASS Verdict
+
+Set `release_mode="challenge_window_hrs:N"` (N=1–24) when creating an escrow. After a PASS, payment is held for N hours. During that window the buyer can pay ~$1 in XRP for a Gemini Pro re-review. See [/challenges/](https://www.cryptovault.co.uk/challenges/).
+
+---
+
 ## Fees
 
 | Fee | Amount | Paid to |
