@@ -1100,7 +1100,7 @@ function renderChallengesAgainstMe(escrows) {
     if (!section) return;
     if (currentRole !== 'seller' && currentRole !== 'all') { section.style.display = 'none'; return; }
     const challenged = escrows.filter(e =>
-        ['CHALLENGED','REMEDY','CHALLENGE_UPHELD'].includes(e.status) &&
+        ['CHALLENGED','REMEDY'].includes(e.status) &&
         (currentRole === 'all' ? e.role === 'seller' : true)
     );
     if (!challenged.length) { section.style.display = 'none'; return; }
@@ -1109,7 +1109,7 @@ function renderChallengesAgainstMe(escrows) {
         <div class="incoming-requests" style="border-color:var(--amber);background:var(--amber-dim)">
             <div class="incoming-requests-title" style="color:var(--amber)">⚠ Challenges against you (${challenged.length})</div>
             ${challenged.map(e => {
-                const statusLabel = e.status === 'CHALLENGED' ? 'Under review' : e.status === 'REMEDY' ? 'Remedy available' : 'Challenge upheld';
+                const statusLabel = e.status === 'CHALLENGED' ? 'Under review' : 'Remedy available';
                 const statusColor = e.status === 'CHALLENGED' ? 'var(--red)' : 'var(--amber)';
                 const deadlineStr = e.challenge_deadline ? `Deadline: ${new Date(e.challenge_deadline).toLocaleDateString()}` : '';
                 return `<div class="incoming-request-row">
@@ -1140,7 +1140,7 @@ function statusPill(e) {
         PASS_CHALLENGE_WINDOW:'pill-pending',
         CHALLENGED:           'pill-fail',
         REMEDY:               'pill-pending',
-        CHALLENGE_UPHELD:     'pill-pending',
+        AWAITING_CANCEL:      'pill-locked',
         AWAITING_FUNDING:     'pill-pending',
         RELEASE_FAILED:       'pill-fail',
     };
@@ -1152,10 +1152,10 @@ function statusPill(e) {
         ABANDONED:            'Abandoned',
         PENDING:              'Pending',
         PASS_AWAITING_NFT:    'Awaiting NFT',
-        PASS_CHALLENGE_WINDOW:'In Review',
-        CHALLENGED:           'Challenged',
-        REMEDY:               'Remedy',
-        CHALLENGE_UPHELD:     'Remedy Available',
+        PASS_CHALLENGE_WINDOW:'Challenge Window',
+        CHALLENGED:           'Under Review',
+        REMEDY:               'Remedy Available',
+        AWAITING_CANCEL:      'Awaiting Cancel',
         AWAITING_FUNDING:     'Awaiting Funding',
         RELEASE_FAILED:       'Release Failed',
     };
@@ -1305,14 +1305,14 @@ async function openDetail(escrowId) {
                 <button class="btn-primary" style="font-size:.82rem" onclick="submitWork('${escapeHtml(e.escrow_id)}')"><i data-lucide="send"></i> Submit for evaluation</button>
             </div>` : '';
 
-        // Buyer: challenge button with fee note
+        // Buyer: challenge button
         const challengeWindowHtml = e.status === 'PASS_CHALLENGE_WINDOW' && e.challenge_deadline && e.role !== 'seller' ? `
             <div class="detail-section" style="border-left:3px solid var(--amber);padding-left:.75rem">
                 <span class="detail-section-label">Challenge window open</span>
                 <div class="detail-row"><span class="detail-key">Time remaining</span><span class="detail-val" id="challenge-countdown" data-deadline="${escapeHtml(e.challenge_deadline)}">calculating…</span></div>
                 <div class="detail-row"><span class="detail-key">Deadline</span><span class="detail-val">${new Date(e.challenge_deadline).toLocaleString()}</span></div>
-                <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Disputes coming soon — funds will auto-release when the timer ends.</p>
-                <button class="btn-action" style="margin-top:.3rem;opacity:.5;cursor:not-allowed" disabled title="Disputes coming soon"><i data-lucide="alert-triangle"></i> Challenge this verdict <span style="font-size:.72rem;font-weight:400">(coming soon)</span></button>
+                <p style="font-size:.8rem;color:var(--text-muted);margin:.5rem 0">Believe the AI verdict was incorrect? Challenge it — a senior Pro model will re-review. Fee: ~$1.00 USD in XRP (refundable if upheld).</p>
+                <button class="btn-action" style="margin-top:.3rem" onclick="openChallengeModal('${escapeHtml(e.escrow_id)}')"><i data-lucide="alert-triangle"></i> Challenge this verdict</button>
             </div>` : '';
 
         document.getElementById('detail-content').innerHTML = `
@@ -1380,6 +1380,31 @@ async function openDetail(escrowId) {
                 <div style="font-size:.83rem;color:var(--text-muted)">A Pro model review is underway. You'll receive an email when the outcome is decided.</div>
                 ${e.challenged_at ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Challenged at</span><span class="detail-val">${new Date(e.challenged_at).toLocaleString()}</span></div>` : ''}
                 ${e.challenge_criteria_ids && e.challenge_criteria_ids.length ? `<div class="detail-row"><span class="detail-key">Disputed criteria</span><span class="detail-val">${escapeHtml(e.challenge_criteria_ids.join(', '))}</span></div>` : ''}
+            </div>` : ''}
+            ${e.challenge_outcome ? `
+            <div class="detail-section" style="border-left:3px solid ${e.challenge_outcome==='PASS_UPHELD'?'var(--green)':e.challenge_outcome==='PASS_OVERTURNED'?'var(--red)':'var(--amber)'};padding-left:.75rem">
+                <span class="detail-section-label">Challenge outcome</span>
+                <div class="detail-row"><span class="detail-key">Outcome</span><span class="detail-val">
+                    <span style="font-weight:700;color:${e.challenge_outcome==='PASS_UPHELD'?'var(--green)':e.challenge_outcome==='PASS_OVERTURNED'?'var(--red)':'var(--amber)'}">${
+                        e.challenge_outcome==='PASS_UPHELD'?'Verdict upheld (challenge rejected)':
+                        e.challenge_outcome==='PASS_OVERTURNED'?'Challenge upheld (verdict overturned)':
+                        'Review inconclusive'
+                    }</span>
+                </span></div>
+                ${e.challenge_reviewed_at ? `<div class="detail-row"><span class="detail-key">Reviewed at</span><span class="detail-val">${new Date(e.challenge_reviewed_at).toLocaleString()}</span></div>` : ''}
+            </div>` : ''}
+            ${e.challenge_fee_state ? `
+            <div class="detail-section" style="font-size:.82rem">
+                <span class="detail-section-label">Challenge fee</span>
+                <div class="detail-row"><span class="detail-key">Fee state</span><span class="detail-val">
+                    <span style="font-weight:600;color:${e.challenge_fee_state==='FINISHED'?'var(--green)':e.challenge_fee_state==='REFUNDABLE'?'var(--amber)':e.challenge_fee_state==='CANCELLED'?'var(--text-muted)':'var(--text)'}">${escapeHtml(e.challenge_fee_state)}</span>
+                </span></div>
+                ${e.challenge_fee_drops ? `<div class="detail-row"><span class="detail-key">Amount</span><span class="detail-val">${(e.challenge_fee_drops/1e6).toFixed(4)} XRP</span></div>` : ''}
+                ${e.challenge_fee_state === 'REFUNDABLE' && e.challenge_fee_cancel_after && new Date(e.challenge_fee_cancel_after) <= new Date() ? `
+                <div style="margin-top:.5rem">
+                    <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.3rem">The CancelAfter window has passed — you can reclaim your challenge fee by cancelling the escrow from your wallet.</div>
+                    <span style="font-size:.78rem;padding:.2rem .5rem;border-radius:4px;background:var(--amber-dim);color:var(--amber);font-weight:600">Reclaim fee: submit EscrowCancel from your wallet for this fee escrow</span>
+                </div>` : ''}
             </div>` : ''}
             ${e.status === 'AWAITING_FUNDING' ? `
             <div class="detail-section" style="border-left:3px solid var(--blue);padding-left:.75rem">
@@ -2584,32 +2609,32 @@ function startChallengeCountdown() {
 // ── Challenge modal ──
 let _challengeEscrowId = null;
 
+let _challengeQuoteId = null;
+let _challengerAddress = null;
+
 async function openChallengeModal(escrowId) {
     _challengeEscrowId = escrowId;
+    _challengeQuoteId = null;
     document.getElementById('challenge-modal').style.display = 'flex';
     document.getElementById('challenge-reason').value = '';
     document.getElementById('challenge-fee-hash').value = '';
+    document.getElementById('challenge-step-1').style.display = '';
+    document.getElementById('challenge-step-2').style.display = 'none';
+
     try {
-        const [escrow, fees] = await Promise.all([
-            fetch(`${API}/escrow/${escrowId}`, { credentials: 'include' }).then(r => r.json()),
-            fetch(`${API}/fees`).then(r => r.json()).catch(() => ({}))
-        ]);
-        const fee = fees.challenge_fee_xrp || 0.5;
-        const platform = fees.platform_wallet || fees.xrp_address || '—';
-        document.getElementById('challenge-fee-display').textContent = `${fee} XRP`;
-        document.getElementById('challenge-fee-amount-display').textContent = `${fee} XRP`;
-        document.getElementById('challenge-platform-wallet').textContent = platform;
+        const escrow = await fetch(`${API}/escrow/${escrowId}`, { credentials: 'include' }).then(r => r.json());
+        _challengerAddress = escrow.buyer_address || null;
         const list = document.getElementById('challenge-criteria-list');
         const criteria = escrow.evaluation_verdicts?.criteria_results || [];
         if (criteria.length) {
-            list.innerHTML = '<div style="font-size:.82rem;font-weight:600;margin-bottom:.5rem">Select criteria to dispute:</div>' +
+            list.innerHTML = '<div style="font-size:.82rem;font-weight:600;margin-bottom:.5rem">Select criteria to dispute (optional):</div>' +
                 criteria.map(c => `
                     <label style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.4rem;cursor:pointer;font-size:.83rem">
-                        <input type="checkbox" name="challenge-criterion" value="${c.criterion_id}" style="margin-top:.15rem;width:auto">
-                        <span><strong>${c.criterion_id}</strong>${c.reasoning ? ' — ' + c.reasoning.slice(0,100) + '…' : ''}</span>
+                        <input type="checkbox" name="challenge-criterion" value="${escapeHtml(c.criterion_id)}" style="margin-top:.15rem;width:auto">
+                        <span><strong>${escapeHtml(c.criterion_id)}</strong>${c.reasoning ? ' — ' + c.reasoning.slice(0,100) + '…' : ''}</span>
                     </label>`).join('');
         } else {
-            list.innerHTML = '<div style="font-size:.82rem;color:var(--text-faint)">No per-criterion results available. The full verdict will be reviewed.</div>';
+            list.innerHTML = '<div style="font-size:.82rem;color:var(--text-faint)">No per-criterion results — the full verdict will be reviewed.</div>';
         }
     } catch { /* use defaults */ }
 }
@@ -2617,32 +2642,75 @@ async function openChallengeModal(escrowId) {
 function closeChallengeModal() {
     document.getElementById('challenge-modal').style.display = 'none';
     _challengeEscrowId = null;
+    _challengeQuoteId = null;
+}
+
+function backToChallengeStep1() {
+    document.getElementById('challenge-step-1').style.display = '';
+    document.getElementById('challenge-step-2').style.display = 'none';
+}
+
+async function getChallengeQuote() {
+    if (!_challengeEscrowId) return;
+    const btn = document.getElementById('challenge-get-quote-btn');
+    btn.disabled = true; btn.textContent = 'Getting quote…';
+    try {
+        const addr = _challengerAddress || prompt('Enter your buyer XRPL address (r…):');
+        if (!addr) { btn.disabled = false; btn.textContent = 'Get fee quote'; return; }
+        _challengerAddress = addr;
+        const res = await fetch(`${API}/escrow/${_challengeEscrowId}/challenge/prepare`, {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ challenger_address: addr })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.detail || 'Could not get quote');
+            btn.disabled = false; btn.textContent = 'Get fee quote';
+            return;
+        }
+        _challengeQuoteId = data.quote_id;
+        document.getElementById('challenge-fee-display').textContent = `${data.fee_xrp} XRP (~$1.00 USD)`;
+        document.getElementById('challenge-unsigned-tx').textContent = JSON.stringify(data.unsigned_tx, null, 2);
+        document.getElementById('challenge-step-1').style.display = 'none';
+        document.getElementById('challenge-step-2').style.display = '';
+    } catch (e) {
+        showToast('Network error');
+        btn.disabled = false; btn.textContent = 'Get fee quote';
+    }
 }
 
 async function submitChallenge() {
-    if (!_challengeEscrowId) return;
+    if (!_challengeEscrowId || !_challengeQuoteId) return;
+    const btn = document.getElementById('challenge-submit-btn');
+    const feeHash = document.getElementById('challenge-fee-hash').value.trim().toUpperCase();
+    if (!feeHash || feeHash.length !== 64) { showToast('Enter a valid 64-char tx hash'); return; }
     const checked = [...document.querySelectorAll('input[name="challenge-criterion"]:checked')].map(i => i.value);
     const reason = document.getElementById('challenge-reason').value.trim();
-    const feeHash = document.getElementById('challenge-fee-hash').value.trim();
-    if (!reason) { showToast('Please enter a reason'); return; }
-    if (!feeHash) { showToast('Please enter the challenge fee tx hash'); return; }
+    btn.disabled = true; btn.textContent = 'Submitting…';
     try {
-        const body = { reason, fee_tx_hash: feeHash };
+        const body = {
+            quote_id:           _challengeQuoteId,
+            fee_tx_hash:        feeHash,
+            challenger_address: _challengerAddress,
+        };
         if (checked.length) body.criteria_ids = checked;
+        if (reason) body.reason = reason;
         const res = await fetch(`${API}/escrow/${_challengeEscrowId}/challenge`, {
             method: 'POST', credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
         const data = await res.json();
+        btn.disabled = false; btn.textContent = 'Submit challenge';
         if (res.ok) {
-            showToast('Challenge submitted — Pro review underway');
+            showToast('Challenge accepted — Pro review underway');
             closeChallengeModal();
             loadEscrows();
         } else {
-            showToast(data.detail || data.error || 'Challenge failed');
+            showToast(data.detail || data.message || 'Challenge failed');
         }
-    } catch { showToast('Network error'); }
+    } catch { showToast('Network error'); btn.disabled = false; btn.textContent = 'Submit challenge'; }
 }
 
 function submitWork(escrowId) {
@@ -2781,11 +2849,39 @@ init();
 
 <!-- Challenge modal -->
 <div id="challenge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-        <h3 style="margin:0 0 .5rem">Disputes coming soon</h3>
-        <p style="font-size:.85rem;color:var(--text-faint);margin-bottom:1.25rem">Challenge window disputes are not yet available. No fee is required — do not send any payment. The delayed release window will auto-release funds to the seller once the timer expires.</p>
-        <div style="display:flex;justify-content:flex-end">
-            <button class="btn-action" onclick="closeChallengeModal()">Close</button>
+    <div style="background:var(--surface,var(--ground));border-radius:12px;padding:1.5rem;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h3 style="margin:0">Challenge Verdict</h3>
+            <button onclick="closeChallengeModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem">✕</button>
+        </div>
+        <!-- Step 1: Get quote -->
+        <div id="challenge-step-1">
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem">
+                A senior Pro model will independently re-review the disputed criteria.
+                A refundable fee of <strong>~$1.00 USD in XRP</strong> is held as an on-chain escrow to the worker — returned if your challenge is upheld.
+            </p>
+            <div id="challenge-criteria-list" style="margin-bottom:.75rem"></div>
+            <div style="margin-bottom:.75rem">
+                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:.3rem">Reason for challenge (optional)</label>
+                <textarea id="challenge-reason" rows="3" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.83rem;resize:vertical;box-sizing:border-box" placeholder="Explain why you believe the work does not satisfy the criteria…"></textarea>
+            </div>
+            <button class="btn-action" id="challenge-get-quote-btn" onclick="getChallengeQuote()" style="width:100%;justify-content:center">Get fee quote</button>
+        </div>
+        <!-- Step 2: Sign and submit fee EscrowCreate -->
+        <div id="challenge-step-2" style="display:none">
+            <div style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:8px;padding:.75rem;margin-bottom:.75rem;font-size:.83rem">
+                <strong>Step 2:</strong> Sign and submit the EscrowCreate transaction to XRPL from your wallet.
+                <div style="margin-top:.4rem">Fee: <strong id="challenge-fee-display">—</strong> (destination: worker address)</div>
+            </div>
+            <div id="challenge-unsigned-tx" style="background:var(--ground);border:1px solid var(--border);border-radius:6px;padding:.5rem;font-family:monospace;font-size:.7rem;overflow:auto;max-height:120px;margin-bottom:.75rem;white-space:pre-wrap"></div>
+            <div style="margin-bottom:.75rem">
+                <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:.3rem">Signed tx hash (64-char XRPL tx hash)</label>
+                <input id="challenge-fee-hash" type="text" maxlength="64" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.83rem;box-sizing:border-box;font-family:monospace" placeholder="Enter the 64-char tx hash after submitting…">
+            </div>
+            <div style="display:flex;gap:.5rem">
+                <button class="btn-action" onclick="backToChallengeStep1()" style="flex:1">← Back</button>
+                <button class="btn-action" id="challenge-submit-btn" onclick="submitChallenge()" style="flex:1;justify-content:center">Submit challenge</button>
+            </div>
         </div>
     </div>
 </div>
