@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Escrow Status — AgentTrust</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #fafafa;
+    --text: #0d0d12;
+    --text-muted: #5a5a68;
+    --blue: #0066ff;
+    --green: #00b97a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --border: rgba(0,0,0,.08);
+    --surface: #fff;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #0d0d12; --text: #f0f0f5; --text-muted: #8888a0;
+        --border: rgba(255,255,255,.08); --surface: #16161e;
+    }
+}
+:root[data-theme="dark"] {
+    --bg: #0d0d12; --text: #f0f0f5; --text-muted: #8888a0;
+    --border: rgba(255,255,255,.08); --surface: #16161e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
+.wrap { max-width: 680px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back { display: inline-block; margin-bottom: 2rem; font-size: .85rem; font-weight: 600; }
+h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 .4rem; letter-spacing: -.02em; }
+.mono { font-family: "IBM Plex Mono", monospace; font-size: .82rem; color: var(--text-muted); word-break: break-all; }
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin: 1.5rem 0;
+}
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; }
+.row:last-child { border-bottom: none; }
+.row-label { color: var(--text-muted); flex-shrink: 0; }
+.row-val { text-align: right; word-break: break-all; font-family: "IBM Plex Mono", monospace; font-size: .82rem; }
+.badge {
+    display: inline-flex; align-items: center; gap: .35rem;
+    font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    padding: .2em .6em; border-radius: 5px; vertical-align: middle;
+}
+.badge-pass   { background: rgba(0,185,122,.12); color: var(--green); border: 1px solid rgba(0,185,122,.25); }
+.badge-fail   { background: rgba(220,38,38,.08);  color: var(--red);   border: 1px solid rgba(220,38,38,.2); }
+.badge-pend   { background: rgba(217,119,6,.08);  color: var(--amber); border: 1px solid rgba(217,119,6,.2); }
+.badge-info   { background: rgba(0,102,255,.08);  color: var(--blue);  border: 1px solid rgba(0,102,255,.18); }
+.badge-net    { background: rgba(0,185,122,.07);  color: var(--green); border: 1px solid rgba(0,185,122,.2); }
+.status-row { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.status-label { font-size: 1.05rem; font-weight: 700; }
+.task-box { background: rgba(0,0,0,.03); border-radius: 8px; padding: .75rem 1rem; font-size: .88rem; color: var(--text-muted); margin-top: .75rem; font-style: italic; white-space: pre-wrap; word-break: break-word; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .task-box { background: rgba(255,255,255,.04); } }
+:root[data-theme="dark"] .task-box { background: rgba(255,255,255,.04); }
+.callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.25rem 0; font-size: .88rem; line-height: 1.6; }
+.callout-warn { background: rgba(217,119,6,.06); border: 1px solid rgba(217,119,6,.2); }
+.callout-info { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.18); }
+.countdown { font-family: "IBM Plex Mono", monospace; font-size: .95rem; font-weight: 600; color: var(--amber); }
+.lookup { margin-top: 2.5rem; }
+.lookup label { display: block; font-size: .88rem; font-weight: 600; margin-bottom: .5rem; }
+.lookup-row { display: flex; gap: .75rem; }
+.lookup input {
+    flex: 1; padding: .55rem .85rem; border-radius: 8px;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+    font-family: "IBM Plex Mono", monospace; font-size: .85rem; outline: none;
+}
+.lookup input:focus { border-color: var(--blue); }
+.lookup button {
+    padding: .55rem 1.1rem; border-radius: 8px; border: none; cursor: pointer;
+    background: var(--blue); color: #fff; font-size: .875rem; font-weight: 600; white-space: nowrap;
+}
+#error-msg { margin-top: 1rem; font-size: .88rem; color: var(--red); display: none; }
+#loading { display: none; margin-top: 2rem; color: var(--text-muted); font-size: .9rem; }
+#result { display: none; }
+@media (max-width: 480px) { h1 { font-size: 1.3rem; } .wrap { padding: 2.5rem 1rem 4rem; } .lookup-row { flex-direction: column; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <a href="/" class="back">← AgentTrust</a>
+
+    <h1 id="page-title">Escrow Status</h1>
+    <p id="page-sub" style="color:var(--text-muted);margin:0 0 1.5rem;font-size:.95rem;">Look up the status of an AgentTrust escrow.</p>
+
+    <div id="loading">Looking up escrow…</div>
+    <div id="error-msg"></div>
+    <div id="result"></div>
+
+    <div class="lookup" id="lookup-box">
+        <label for="eid-input">Escrow ID</label>
+        <div class="lookup-row">
+            <input id="eid-input" type="text" placeholder="e.g. AT-abc123 or TN-abc123" autocomplete="off" spellcheck="false">
+            <button onclick="lookup()">Look up →</button>
+        </div>
+        <div id="lookup-error" style="margin-top:.6rem;font-size:.85rem;color:var(--red);display:none;"></div>
+    </div>
+</div>
+
+<script>
+const API = 'https://mcp.cryptovault.co.uk';
+
+function statusBadge(status) {
+    const s = (status || '').toUpperCase();
+    if (s === 'PASS' || s === 'PASS_UPHELD')     return `<span class="badge badge-pass">&#10003; ${s === 'PASS' ? 'PASS' : 'PASS — UPHELD'}</span>`;
+    if (s === 'FAIL' || s === 'PASS_OVERTURNED') return `<span class="badge badge-fail">&#10007; ${s === 'FAIL' ? 'FAIL' : 'OVERTURNED'}</span>`;
+    if (s === 'REVIEW_INCONCLUSIVE')             return `<span class="badge badge-info">&#9679; INCONCLUSIVE</span>`;
+    if (s === 'CHALLENGED')                       return `<span class="badge badge-pend">&#8635; CHALLENGED</span>`;
+    if (s === 'PASS_CHALLENGE_WINDOW')            return `<span class="badge badge-pend">&#8987; CHALLENGE WINDOW</span>`;
+    if (s === 'PENDING')                          return `<span class="badge badge-pend">&#8987; PENDING</span>`;
+    if (s === 'CANCELLED' || s === 'EXPIRED')     return `<span class="badge badge-fail">${s}</span>`;
+    return `<span class="badge badge-info">${s}</span>`;
+}
+
+function netBadge(network) {
+    if (!network) return '';
+    return network.toLowerCase() === 'testnet'
+        ? `<span class="badge badge-info" style="font-size:.65rem">TESTNET</span>`
+        : `<span class="badge badge-net" style="font-size:.65rem">MAINNET</span>`;
+}
+
+function explorerUrl(txHash, network) {
+    if (!txHash) return null;
+    const base = (network || '').toLowerCase() === 'testnet'
+        ? 'https://testnet.xrpl.org/transactions/'
+        : 'https://livenet.xrpl.org/transactions/';
+    return base + txHash;
+}
+
+function shortAddr(a) {
+    if (!a || a.length < 10) return a || '—';
+    return a.slice(0, 6) + '…' + a.slice(-4);
+}
+
+function row(label, val) {
+    return `<div class="row"><span class="row-label">${label}</span><span class="row-val">${val || '—'}</span></div>`;
+}
+
+let countdownTimer = null;
+function startCountdown(deadline, el) {
+    if (countdownTimer) clearInterval(countdownTimer);
+    function tick() {
+        const diff = new Date(deadline) - Date.now();
+        if (diff <= 0) { el.textContent = 'Window closed'; clearInterval(countdownTimer); return; }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        el.textContent = `${h}h ${m}m ${s}s remaining`;
+    }
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+}
+
+function renderResult(data) {
+    const d = data.escrow || data;
+    const status = (d.status || '').toUpperCase();
+    let html = `<div class="card">`;
+    html += `<div class="status-row">
+        ${statusBadge(status)}
+        ${netBadge(d.network)}
+        <span class="status-label"></span>
+    </div>`;
+    html += `<p class="mono">${d.escrow_id || ''}</p>`;
+    if (d.task) html += `<div class="task-box">${escHtml(d.task)}</div>`;
+
+    html += `<div style="margin-top:1.25rem">`;
+    html += row('Amount', d.amount_xrp ? d.amount_xrp + ' XRP' : null);
+    if (d.buyer_address)  html += row('Buyer',  `<a href="https://${(d.network||'').toLowerCase()==='testnet'?'testnet.':'livenet.'}xrpl.org/accounts/${d.buyer_address}" target="_blank" rel="noopener" title="${d.buyer_address}">${shortAddr(d.buyer_address)}</a>`);
+    if (d.worker_address) html += row('Worker', `<a href="https://${(d.network||'').toLowerCase()==='testnet'?'testnet.':'livenet.'}xrpl.org/accounts/${d.worker_address}" target="_blank" rel="noopener" title="${d.worker_address}">${shortAddr(d.worker_address)}</a>`);
+    if (d.created_at)     html += row('Created', new Date(d.created_at).toLocaleString());
+    if (d.finished_at)    html += row('Settled', new Date(d.finished_at).toLocaleString());
+    html += `</div>`;
+
+    const finishTx = d.finish_tx_hash || d.tx_hash;
+    const cancelTx = d.cancel_tx_hash;
+    if (finishTx) {
+        const url = explorerUrl(finishTx, d.network);
+        html += `<div style="margin-top:1rem;font-size:.85rem">
+            <a href="${url}" target="_blank" rel="noopener">View release transaction →</a>
+        </div>`;
+    } else if (cancelTx) {
+        const url = explorerUrl(cancelTx, d.network);
+        html += `<div style="margin-top:1rem;font-size:.85rem">
+            <a href="${url}" target="_blank" rel="noopener">View cancellation transaction →</a>
+        </div>`;
+    }
+    html += `</div>`;
+
+    if (status === 'PASS_CHALLENGE_WINDOW' && d.challenge_window_deadline) {
+        html += `<div class="callout callout-warn">
+            <strong>Challenge window open.</strong>
+            The buyer may challenge this result before the window closes.
+            <div class="countdown" id="cdown" style="margin-top:.35rem"></div>
+        </div>`;
+    }
+    if (status === 'CHALLENGED') {
+        html += `<div class="callout callout-info">
+            <strong>Challenge in progress.</strong>
+            A second-opinion audit is running. The outcome will be emailed when ready.
+        </div>`;
+    }
+
+    document.getElementById('result').innerHTML = html;
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('page-title').textContent = 'Escrow ' + (d.escrow_id || '');
+    document.getElementById('page-sub').style.display = 'none';
+    document.getElementById('lookup-box').style.display = 'none';
+
+    if (status === 'PASS_CHALLENGE_WINDOW' && d.challenge_window_deadline) {
+        startCountdown(d.challenge_window_deadline, document.getElementById('cdown'));
+    }
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function lookup(id) {
+    const input = document.getElementById('eid-input');
+    const errEl = document.getElementById('lookup-error');
+    if (!id) id = (input ? input.value.trim() : '');
+    if (!id) { errEl.textContent = 'Please enter an escrow ID.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+    try {
+        const res = await fetch(`${API}/escrow/${encodeURIComponent(id)}`);
+        document.getElementById('loading').style.display = 'none';
+        if (res.status === 404) {
+            document.getElementById('result').innerHTML = `<div class="callout callout-warn"><strong>Escrow not found.</strong> Check the ID and try again.</div>`;
+            document.getElementById('result').style.display = 'block';
+            if (input) { input.value = id; document.getElementById('lookup-box').style.display = 'block'; }
+            return;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        renderResult(data);
+    } catch(e) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').innerHTML = `<div class="callout callout-warn"><strong>Could not load escrow.</strong> ${escHtml(e.message)}</div>`;
+        document.getElementById('result').style.display = 'block';
+    }
+}
+
+(function init() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id') || params.get('escrow') || params.get('vault');
+    if (id) {
+        document.getElementById('lookup-box').style.display = 'none';
+        lookup(id);
+    }
+    const input = document.getElementById('eid-input');
+    if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') lookup(); });
+})();
+</script>
+</body>
+</html>

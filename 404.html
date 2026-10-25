@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Page Not Found — AgentTrust</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #fafafa; --text: #0d0d12; --text-muted: #5a5a68;
+    --blue: #0066ff; --border: rgba(0,0,0,.08); --surface: #fff;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#0d0d12;--text:#f0f0f5;--text-muted:#8888a0;--border:rgba(255,255,255,.08);--surface:#16161e; }
+}
+:root[data-theme="dark"] { --bg:#0d0d12;--text:#f0f0f5;--text-muted:#8888a0;--border:rgba(255,255,255,.08);--surface:#16161e; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
+.wrap { max-width: 620px; margin: 0 auto; padding: 5rem 1.5rem 6rem; text-align: center; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.code { font-size: 4rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; margin: 0 0 .5rem; opacity: .12; }
+h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .5rem; }
+.sub { color: var(--text-muted); font-size: .95rem; margin: 0 0 2.5rem; }
+nav { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; font-size: .88rem; margin-bottom: 3rem; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.lookup-head { font-size: .88rem; font-weight: 600; margin-bottom: .6rem; color: var(--text-muted); }
+.lookup-row { display: flex; gap: .75rem; max-width: 420px; margin: 0 auto; }
+.lookup-row input {
+    flex: 1; padding: .55rem .85rem; border-radius: 8px;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+    font-family: "IBM Plex Mono", monospace; font-size: .85rem; outline: none;
+}
+.lookup-row input:focus { border-color: var(--blue); }
+.lookup-row button {
+    padding: .55rem 1.1rem; border-radius: 8px; border: none; cursor: pointer;
+    background: var(--blue); color: #fff; font-size: .875rem; font-weight: 600; white-space: nowrap;
+}
+@media (max-width: 480px) { .lookup-row { flex-direction: column; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="code">404</div>
+    <h1>Page not found</h1>
+    <p class="sub">The link may have moved or expired.</p>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/how-it-works/">How it works</a>
+        <a href="/fees/">Fees</a>
+        <a href="/guide/">Testnet guide</a>
+        <a href="https://app.cryptovault.co.uk/dashboard/" target="_blank" rel="noopener">Dashboard →</a>
+    </nav>
+
+    <hr class="divider">
+
+    <p class="lookup-head">Looking for an escrow? Enter its ID below.</p>
+    <div class="lookup-row">
+        <input id="eid" type="text" placeholder="AT-… or TN-…" autocomplete="off" spellcheck="false">
+        <button onclick="go()">Look up →</button>
+    </div>
+</div>
+<script>
+function go() {
+    var id = document.getElementById('eid').value.trim();
+    if (id) location.href = '/escrow/?id=' + encodeURIComponent(id);
+}
+document.getElementById('eid').addEventListener('keydown', function(e) { if (e.key === 'Enter') go(); });
+</script>
+</body>
+</html>
