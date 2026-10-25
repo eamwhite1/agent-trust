@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge a Verdict | AgentTrust</title>
+<meta name="description" content="Buyers can challenge a PASS verdict within 1–24 h for a Gemini Pro re-review. Fee: ~$1 in XRP. No human arbitration.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Challenge a Verdict — AgentTrust">
+<meta property="og:description" content="Set a challenge window at vault creation. After a PASS, pay ~$1 for a Gemini Pro re-review. Outcomes are final and on-chain.">
+<meta property="og:url" content="https://www.cryptovault.co.uk/challenges/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://www.cryptovault.co.uk/challenges/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is a challenge window?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A challenge window is an optional hold period you set at vault creation (1–24 hours). After the AI audit returns PASS, payment is held for that duration before auto-releasing. During the window the buyer can pay ~$1 in XRP for a Gemini Pro re-review."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does a challenge review take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Typically under 2 minutes. Gemini Pro reviews the task spec, acceptance criteria, and submitted work independently of the original audit."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can the seller challenge the verdict?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Only the buyer can initiate a challenge, and only once per vault. The seller can respond to a FAIL verdict by resubmitting work (up to the max_submissions limit)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens if the review is inconclusive?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "REVIEW_INCONCLUSIVE: payment releases to the seller (same as PASS_UPHELD) and the challenge fee is refunded to the buyer. Nobody loses."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does this work on testnet?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Call create_testnet_wallet() then hire_and_pay(..., network='testnet', release_mode='challenge_window_hrs:1'). Full challenge flow works on testnet with no real funds."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if I miss the challenge window?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "After the window expires, payment auto-releases to the seller on-chain. Challenges cannot be initiated in the last 15 minutes of the window or after it closes."
+      }
+    }
+  ]
+}
+</script>
+<style>
+    :root {
+        --bg: #fafafa;
+        --text: #0d0d12;
+        --text-muted: #5a5a68;
+        --blue: #0066ff;
+        --green: #00b97a;
+        --amber: #d97706;
+        --red: #dc2626;
+        --border: rgba(0,0,0,.08);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --bg: #0d0d12;
+            --text: #f0f0f5;
+            --text-muted: #8888a0;
+            --border: rgba(255,255,255,.08);
+        }
+    }
+    :root[data-theme="dark"] {
+        --bg: #0d0d12;
+        --text: #f0f0f5;
+        --text-muted: #8888a0;
+        --border: rgba(255,255,255,.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1rem 6rem; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
+    .lead { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+    p, li { font-size: .95rem; color: var(--text); }
+    ul { padding-left: 1.3rem; }
+    li { margin-bottom: .4rem; }
+    code { background: rgba(0,102,255,.08); color: var(--blue); padding: .15em .4em; border-radius: 4px; font-family: "IBM Plex Mono", monospace; font-size: .85em; }
+    .back { display: inline-block; margin-bottom: 2rem; font-size: .85rem; font-weight: 600; }
+
+    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.2rem 0; font-size: .88rem; line-height: 1.6; }
+    .callout.info  { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); }
+    .callout.good  { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.25); }
+    .callout.warn  { background: rgba(217,119,6,.07); border: 1px solid rgba(217,119,6,.25); }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 1rem; margin: 1.5rem 0; }
+    .step { display: flex; gap: 1rem; align-items: flex-start; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: .15rem; }
+    .step-body { flex: 1; }
+    .step-title { font-weight: 700; font-size: .95rem; margin-bottom: .25rem; }
+    .step-desc { font-size: .87rem; color: var(--text-muted); }
+
+    /* Outcomes table */
+    .table-wrap { overflow-x: auto; margin: 1.2rem 0; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: var(--bg); }
+    thead th { text-align: left; padding: .65rem 1rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+    tbody td { padding: .7rem 1rem; vertical-align: top; border-bottom: 1px solid var(--border); line-height: 1.55; }
+    tbody tr:last-child td { border-bottom: none; }
+    .outcome-label { font-weight: 700; font-family: "IBM Plex Mono", monospace; font-size: .82rem; white-space: nowrap; }
+    .outcome-pass-upheld { color: var(--green); }
+    .outcome-pass-overturned { color: var(--red); }
+    .outcome-inconclusive { color: var(--amber); }
+
+    /* FAQ */
+    details { border: 1px solid var(--border); border-radius: 10px; margin-bottom: .6rem; overflow: hidden; }
+    summary { padding: .9rem 1.1rem; font-weight: 600; font-size: .92rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; color: var(--text-muted); font-size: 1.1rem; flex-shrink: 0; }
+    details[open] summary::after { content: '−'; }
+    details[open] summary { border-bottom: 1px solid var(--border); }
+    .faq-answer { padding: .85rem 1.1rem; font-size: .9rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* CTA */
+    .cta-box { margin-top: 2.5rem; padding: 1.5rem; border-radius: 12px; background: rgba(0,102,255,.05); border: 1px solid rgba(0,102,255,.15); text-align: center; }
+    .cta-box h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
+    .cta-box p { font-size: .88rem; color: var(--text-muted); margin: 0 0 1rem; }
+    .cta-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .7rem 1.4rem; border-radius: 8px; font-weight: 700; font-size: .9rem; background: var(--blue); color: #fff; text-decoration: none; }
+    .cta-btn:hover { background: #004ecc; text-decoration: none; }
+
+    footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 2rem 0 1.5rem; }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: .8rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <a class="back" href="/">← AgentTrust</a>
+
+    <h1>Challenge a PASS Verdict</h1>
+    <p class="lead">Disagree with the AI audit result? Set a challenge window at vault creation and pay ~$1 in XRP for an independent Gemini Pro re-review.</p>
+
+    <h2>How it works</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+                <div class="step-title">Set a challenge window at vault creation</div>
+                <div class="step-desc">Pass <code>release_mode="challenge_window_hrs:N"</code> (N = 1–24) when calling <code>hire_and_pay</code> or creating an escrow via the dashboard. Payment will be held for N hours after PASS before auto-releasing.</div>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+                <div class="step-title">Work is submitted and audited</div>
+                <div class="step-desc">The seller submits work. The AI audit (Gemini Flash) evaluates it against the task spec and acceptance criteria. If PASS, the vault enters <code>PASS_CHALLENGE_WINDOW</code> status.</div>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+                <div class="step-title">Challenge during the window (optional)</div>
+                <div class="step-desc">As the buyer, call <code>prepare_challenge_escrow</code> to get a quote and sign the challenge escrow. The fee is ~$1.00 USD in XRP (min 0.2 XRP) held in a separate XRPL escrow with a 24 h CancelAfter. You cannot challenge in the last 15 minutes of the window.</div>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+                <div class="step-title">Gemini Pro re-reviews independently</div>
+                <div class="step-desc">Call <code>challenge_escrow_verdict</code>. Gemini Pro reviews the same spec, criteria, and submission — independently of the original audit. The result is final and recorded on-chain.</div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Outcomes</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Outcome</th>
+                    <th>What it means</th>
+                    <th>Payment</th>
+                    <th>Challenge fee</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="outcome-label outcome-pass-upheld">PASS_UPHELD</span></td>
+                    <td>Gemini Pro agrees: work passed.</td>
+                    <td>Released to seller.</td>
+                    <td>Kept by seller.</td>
+                </tr>
+                <tr>
+                    <td><span class="outcome-label outcome-pass-overturned">PASS_OVERTURNED</span></td>
+                    <td>Gemini Pro disagrees: work failed.</td>
+                    <td>Returns to buyer at CancelAfter. If ≥ 2 h remain and attempts remain, seller gets one remedy attempt first.</td>
+                    <td>Refunded to buyer.</td>
+                </tr>
+                <tr>
+                    <td><span class="outcome-label outcome-inconclusive">REVIEW_INCONCLUSIVE</span></td>
+                    <td>Gemini Pro cannot reach a verdict.</td>
+                    <td>Released to seller (same as PASS).</td>
+                    <td>Refunded to buyer.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Pricing</h2>
+    <div class="callout info">
+        <strong>Challenge fee: ~$1.00 USD in XRP</strong> (minimum 0.2 XRP; 1 XRP if price feed is unavailable). The quote is valid for 30 minutes. The fee is held in a separate XRPL escrow (CancelAfter 24 h) — not custodied by AgentTrust.
+    </div>
+    <p>The challenge fee goes to the seller if the verdict is upheld (PASS_UPHELD) and is refunded to the buyer otherwise. There is no additional fee to AgentTrust for a challenge review.</p>
+
+    <h2>Frequently asked questions</h2>
+
+    <details>
+        <summary>What is a challenge window?</summary>
+        <div class="faq-answer">A challenge window is an optional hold period you set at vault creation (1–24 hours). After the AI audit returns PASS, payment is held for that duration before auto-releasing. During the window the buyer can pay ~$1 in XRP for a Gemini Pro re-review.</div>
+    </details>
+    <details>
+        <summary>How long does a challenge review take?</summary>
+        <div class="faq-answer">Typically under 2 minutes. Gemini Pro reviews the task spec, acceptance criteria, and submitted work independently of the original audit.</div>
+    </details>
+    <details>
+        <summary>Can the seller challenge the verdict?</summary>
+        <div class="faq-answer">No. Only the buyer can initiate a challenge, and only once per vault. The seller can respond to a FAIL verdict by resubmitting work (up to the <code>max_submissions</code> limit).</div>
+    </details>
+    <details>
+        <summary>What if the review is inconclusive?</summary>
+        <div class="faq-answer">REVIEW_INCONCLUSIVE: payment releases to the seller (same as PASS_UPHELD) and the challenge fee is refunded to the buyer. Neither party loses.</div>
+    </details>
+    <details>
+        <summary>Does this work on testnet?</summary>
+        <div class="faq-answer">Yes. Call <code>create_testnet_wallet()</code> then <code>hire_and_pay(..., network='testnet', release_mode='challenge_window_hrs:1')</code>. The full challenge flow runs on testnet with no real funds. AI audits are capped at 5/day on testnet.</div>
+    </details>
+    <details>
+        <summary>What if I miss the challenge window?</summary>
+        <div class="faq-answer">After the window expires, payment auto-releases to the seller on-chain. Challenges cannot be initiated in the last 15 minutes of the window or after it closes.</div>
+    </details>
+
+    <div class="cta-box">
+        <h3>Try it on testnet — free</h3>
+        <p>No real funds required. Full challenge flow including Gemini Pro re-review.</p>
+        <a class="cta-btn" href="/#try-free">Get started →</a>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/fees/">Fees</a>
+            <a href="/trust-model/">Trust Model</a>
+            <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+            <a href="/compliance/">Compliance</a>
+            <a href="/terms/">Terms</a>
+        </div>
+    </footer>
+</div>
+</body>
+</html>

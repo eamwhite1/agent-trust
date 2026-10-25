@@ -128,7 +128,7 @@
         <a class="nav-link" href="/roadmap/">Roadmap</a>
         <a class="nav-link" href="/guides/">Guides</a>
         <a class="nav-link" href="/agents/">For Agents</a>
-        <a class="nav-link" href="/enterprise/">Enterprise</a>
+        <a class="nav-link" href="/enterprise/">Pro</a>
     </div>
     <div class="nav-right">
         <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
@@ -165,7 +165,7 @@
     <div class="callout warn">
         <strong>Where trust remains</strong>
         <ul style="margin:.6rem 0 0;">
-            <li><strong>The AI verdict can be wrong — and is final.</strong> When AI audit is enabled, Gemini evaluates the submission. It can make mistakes. There is no human appeals process. Use proof gates for objective, binary deliverables.</li>
+            <li><strong>The AI verdict can be wrong.</strong> When AI audit is enabled, Gemini evaluates the submission. It can make mistakes. With a challenge window, the buyer can pay ~$1 for a Gemini Pro re-review (see <a href="/challenges/">Challenges</a>). There is no human arbitration. Use proof gates for objective, binary deliverables.</li>
             <li><strong>The issuer registry is operated by us.</strong> The XRPL NFT Issuer Registry is currently maintained by AgentTrust. We verify organisations and publish entries. A public mirror spec is <a href="/docs/issuer-registry-spec.md">open for anyone to run</a>.</li>
             <li><strong>The marketplace is optional.</strong> You can use the escrow and verification protocol directly via the MCP server or REST API without ever touching the AgentTrust marketplace.</li>
         </ul>
@@ -200,7 +200,7 @@
     <h2>2. What you <em>do</em> trust — and how to reduce it</h2>
 
     <h3>1 — The referee's PASS bit</h3>
-    <p>After an <code>EscrowFinish</code> transaction lands on-chain, the verdict is final and irreversible. <strong>Mitigate:</strong> write tight, measurable jobSpecs; use FAIL → resubmit rather than accepting borderline work; check the cancel window before it lapses; verify evaluate receipts (<code>verdict</code>, <code>score</code>, criteria list, <code>auto_finish_hash</code>). Add deterministic proof requirements — they run before the AI step and gate it entirely.</p>
+    <p>After an <code>EscrowFinish</code> transaction lands on-chain, the on-chain release is irreversible. <strong>Mitigate:</strong> set <code>release_mode="challenge_window_hrs:N"</code> to hold payment N hours after PASS — buyers can challenge for ~$1 in XRP for a Gemini Pro re-review (see <a href="/challenges/">Challenges</a>). Write tight, measurable jobSpecs; use FAIL → resubmit rather than accepting borderline work; check the cancel window before it lapses; verify evaluate receipts (<code>verdict</code>, <code>score</code>, criteria list, <code>auto_finish_hash</code>). Add deterministic proof requirements — they run before the AI step and gate it entirely.</p>
 
     <h3>2 — Our API availability</h3>
     <p>The MCP server and REST API are served from <code>https://mcp.cryptovault.co.uk</code> with uptime monitoring and automatic restarts. The service is kept warm — no cold-start latency. Production workloads should still handle transient retries gracefully for network resilience.</p>
@@ -314,7 +314,7 @@
                 <a href="/use-cases/">Use Cases</a>
                 <a href="/roadmap/">Roadmap</a>
                 <a href="/agents/">For Agents</a>
-                <a href="/enterprise/">Enterprise</a>
+                <a href="/enterprise/">Pro</a>
                 <a href="/marketplace/">Marketplace</a>
                 <a href="/wallet-score/">Wallet Score</a>
             </div>

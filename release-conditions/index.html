@@ -209,7 +209,7 @@ footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 3rem 5%
         <a class="nav-link" href="/roadmap/">Roadmap</a>
         <a class="nav-link" href="/guides/">Guides</a>
         <a class="nav-link" href="/agents/">For Agents</a>
-        <a class="nav-link" href="/enterprise/">Enterprise</a>
+        <a class="nav-link" href="/enterprise/">Pro</a>
     </div>
     <div class="nav-right">
         <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
@@ -279,7 +279,7 @@ footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 3rem 5%
 
         <p>When the deliverable is qualitative — a piece of writing, a code review, a translation, a data analysis — payment should release when the <em>work itself</em> meets the spec, not when a binary on-chain condition is met. This is AI audit mode.</p>
 
-        <p>The worker submits their work against <code>task_description</code>. The AI referee scores it against 11 signals including task adherence, completeness, and accuracy. A PASS releases escrow automatically; a FAIL returns specific, actionable feedback in <code>criteria_failed</code> so the worker knows exactly what to fix before resubmitting.</p>
+        <p>The worker submits their work against <code>task_description</code>. The AI referee scores it against 11 signals including task adherence, completeness, and accuracy. A PASS releases escrow automatically; a FAIL returns specific, actionable feedback in <code>criteria_failed</code> so the worker knows exactly what to fix before resubmitting. Buyers can optionally set a <a href="/challenges/">challenge window</a> (1–24 h) to hold payment after PASS and pay ~$1 for a Gemini Pro re-review if they disagree.</p>
 
         <p>Workers get <strong>3 attempts by default</strong>. Buyers can raise this at creation via <code>max_submissions</code> (1–10) — each slot above 3 costs $0.05 extra at vault creation time. If the ceiling is reached mid-job, the worker can purchase one more attempt at a time for $0.05 via <code>purchase_extra_attempt()</code>.</p>
 
@@ -491,7 +491,7 @@ create_escrow_vault(
                 <a href="/use-cases/">Use Cases</a>
                 <a href="/roadmap/">Roadmap</a>
                 <a href="/agents/">For Agents</a>
-                <a href="/enterprise/">Enterprise</a>
+                <a href="/enterprise/">Pro</a>
                 <a href="/marketplace/">Marketplace</a>
                 <a href="/wallet-score/">Wallet Score</a>
             </div>

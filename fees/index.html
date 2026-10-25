@@ -140,7 +140,7 @@
         </ul>
 
         <h2>Free Tier</h2>
-        <div class="callout good">3 free audits for wallets with trust score ≥ 25. No XRP fee required — just omit <code>fee_hash</code>.</div>
+        <div class="callout good">3 free escrows for wallets created via <code>create_agent_wallet()</code>, or any wallet with trust score ≥ 25 via <code>register_wallet_free_tier()</code>. No XRP fee required — just omit <code>fee_hash</code>.</div>
 
         <h2>Escrow Limits</h2>
         <div class="cap-grid">
@@ -153,6 +153,12 @@
         <div class="callout good" style="display:block;">
             <strong>$199 / year</strong> — AgentTrust Pro includes escrow templates, agent API keys, and full audit dashboard.
             <p style="margin-top:.75rem;font-size:.85rem;">Per-audit fees ($0.10) still apply on top of the subscription. <a href="/enterprise/">Learn more →</a></p>
+            <p style="margin-top:.5rem;font-size:.85rem;"><strong>Try it free for 30 days</strong> — <a href="https://app.cryptovault.co.uk/dashboard/">sign in with Google at the Pro Dashboard</a>. No payment to start.</p>
+        </div>
+
+        <h2>Challenge Fee</h2>
+        <div class="callout good">
+            <strong>$1.00 in XRP</strong> (min 0.2 XRP; 1 XRP if price feed down) — for a Gemini Pro re-review of a PASS verdict. Paid as a separate XRPL escrow (buyer → seller, CancelAfter 24 h). Quote valid 30 min. <a href="/challenges/">Learn more →</a>
         </div>
 
         <h2>Testnet</h2>
@@ -166,6 +172,7 @@
     <footer>
         <div class="footer-links">
             <a href="/">Home</a>
+            <a href="/challenges/">Challenges</a>
             <a href="/trust-model/">Trust Model</a>
             <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
             <a href="/compliance/">Compliance</a>
@@ -302,7 +309,7 @@ async function load() {
         root.insertAdjacentHTML("beforeend", `<h2>Free Tier</h2>`);
         const freeCallout = el("div", { class: "callout good" });
         freeCallout.innerHTML =
-            `<strong>${ft.free_audits} free audits</strong> for wallets with trust score ≥ ${ft.min_trust_score} — omit <code>fee_hash</code>.<br>` +
+            `<strong>${ft.free_audits} free escrows</strong> for wallets created via <code>create_agent_wallet()</code>, or any wallet with trust score ≥ ${ft.min_trust_score} via <code>register_wallet_free_tier()</code> — omit <code>fee_hash</code>.<br>` +
             `<span style="font-size:.85rem;color:var(--text-muted);">Check your score: <a href="/wallet-score/">${ft.check_score}</a></span>`;
         root.append(freeCallout);
 
@@ -348,6 +355,7 @@ async function load() {
                     <li>Manual escrow creator with the full buyer-equivalent field set</li>
                 </ul>
                 <p style="margin-top:.75rem;font-size:.85rem;">Per-audit fees ($0.10) still apply on top of the subscription. <a href="/enterprise/">Learn more →</a></p>
+                <p style="margin-top:.5rem;font-size:.85rem;"><strong>Try it free for 30 days</strong> — <a href="https://app.cryptovault.co.uk/dashboard/">sign in with Google</a>. No payment to start.</p>
             </div>
         `);
 
