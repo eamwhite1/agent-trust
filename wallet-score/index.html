@@ -253,7 +253,7 @@ canvas#gauge {
 }
 .signal-row {
   display: grid;
-  grid-template-columns: 160px 1fr 36px;
+  grid-template-columns: 200px 1fr 36px;
   align-items: center;
   gap: .75rem;
   padding: .55rem 0;
@@ -371,7 +371,7 @@ canvas#gauge {
 
 /* ── Responsive ── */
 @media (max-width: 520px) {
-  .signal-row { grid-template-columns: 120px 1fr 30px; gap: .5rem; }
+  .signal-row { grid-template-columns: 150px 1fr 30px; gap: .5rem; }
   .search-row { flex-direction: column; }
   .search-btn { width: 100%; }
 }
@@ -631,7 +631,18 @@ function render(addr, data) {
   // Signal rows — rendered from signals_list (dynamic, server-driven)
   const rows = document.getElementById("signal-rows");
   rows.innerHTML = "";
-  const signalsList = data.signals_list ?? [];
+  // Sort: most-likely-to-score first, harder/info-only last
+  const SIGNAL_ORDER = [
+    "Wallet age", "Balance", "Sanctions clear", "Wallet signature verified",
+    "Activity (90 days)", "Escrow history", "Peer ratings", "NFTs",
+    "XRPScan entity + security flags", "Domain verified", "Identity (KYC)",
+    "Ledger objects owned",
+  ];
+  const signalsList = [...(data.signals_list ?? [])].sort((a, b) => {
+    const ai = SIGNAL_ORDER.indexOf(a.label);
+    const bi = SIGNAL_ORDER.indexOf(b.label);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
   signalsList.forEach(sig => {
     const row = document.createElement("div");
     if (sig.max_points === 0) {
