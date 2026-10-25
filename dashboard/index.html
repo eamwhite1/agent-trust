@@ -1455,6 +1455,25 @@ async function openDetail(escrowId) {
                 ${e.funding_deadline ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Funding deadline</span><span class="detail-val">${new Date(e.funding_deadline).toLocaleString()}</span></div>` : ''}
             </div>` : ''}
             ${auditTrail}
+            ${e.status === 'RELEASED' ? (() => {
+                const isRater = e.role === 'buyer' || e.role === 'seller';
+                const raterAddr = e.role === 'buyer' ? e.buyer_address : e.worker_address;
+                const ratedAddr = e.role === 'buyer' ? e.worker_address : e.buyer_address;
+                const ratedLabel = e.role === 'buyer' ? 'worker' : 'buyer';
+                if (!isRater || !ratedAddr) return '';
+                return `<div class="detail-section" id="rating-section-${escapeHtml(e.escrow_id)}" style="border-left:3px solid var(--amber);padding-left:.75rem">
+                    <span class="detail-section-label">Rate the ${escapeHtml(ratedLabel)}</span>
+                    <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem">How did <code style="font-size:.78rem">${escapeHtml(ratedAddr)}</code> perform?</div>
+                    <div style="display:flex;gap:.4rem;margin-bottom:.5rem" id="stars-${escapeHtml(e.escrow_id)}">
+                        ${[1,2,3,4,5].map(n => `<span data-v="${n}" data-eid="${escapeHtml(e.escrow_id)}" data-rated="${escapeHtml(ratedAddr)}" data-rater="${escapeHtml(raterAddr||'')}" data-role="${escapeHtml(e.role)}"
+                            style="font-size:1.8rem;cursor:pointer;color:var(--border);transition:color .15s"
+                            onmouseenter="dashHoverStar(this,${n},'${escapeHtml(e.escrow_id)}')"
+                            onmouseleave="dashUnhoverStar('${escapeHtml(e.escrow_id)}')"
+                            onclick="dashPickStar(this,${n},'${escapeHtml(e.escrow_id)}','${escapeHtml(ratedAddr)}','${escapeHtml(e.role)}')">★</span>`).join('')}
+                    </div>
+                    <div id="rating-msg-${escapeHtml(e.escrow_id)}" style="font-size:.8rem;color:var(--text-muted)"></div>
+                </div>`;
+            })() : ''}
         `;
         lucide.createIcons();
         startChallengeCountdown();
@@ -2795,6 +2814,39 @@ async function signChallengeFeeXaman() {
     } catch(e) {
         status.textContent = 'Error: ' + e.message;
         btn.disabled = false;
+    }
+}
+
+function dashHoverStar(el, n, eid) {
+    document.querySelectorAll(`#stars-${eid} span`).forEach(s => {
+        s.style.color = +s.dataset.v <= n ? 'var(--amber)' : 'var(--border)';
+    });
+}
+function dashUnhoverStar(eid) {
+    const picked = parseInt(document.getElementById('stars-' + eid)?.dataset.picked || '0');
+    document.querySelectorAll(`#stars-${eid} span`).forEach(s => {
+        s.style.color = +s.dataset.v <= picked ? 'var(--amber)' : 'var(--border)';
+    });
+}
+async function dashPickStar(el, n, eid, ratedAddr, role) {
+    const starsEl = document.getElementById('stars-' + eid);
+    if (!starsEl || starsEl.dataset.submitted) return;
+    starsEl.dataset.picked = n;
+    dashHoverStar(el, n, eid);
+    const msgEl = document.getElementById('rating-msg-' + eid);
+    if (msgEl) msgEl.textContent = 'Submitting…';
+    try {
+        const params = new URLSearchParams({ rated_address: ratedAddr, rating: n, rater_role: role });
+        const res = await fetch(`${API}/wallet/${encodeURIComponent(ratedAddr)}/rate?${params}`, {
+            method: 'POST', credentials: 'include'
+        });
+        const data = await res.json();
+        if (!res.ok) { if (msgEl) { msgEl.textContent = data.detail || 'Error.'; msgEl.style.color = 'var(--red)'; } return; }
+        starsEl.dataset.submitted = '1';
+        if (msgEl) { msgEl.textContent = 'Rating saved — thank you!'; msgEl.style.color = 'var(--green)'; }
+        document.querySelectorAll(`#stars-${eid} span`).forEach(s => { s.style.cursor = 'default'; });
+    } catch {
+        if (msgEl) { msgEl.textContent = 'Network error.'; msgEl.style.color = 'var(--red)'; }
     }
 }
 
