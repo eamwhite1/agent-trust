@@ -9,7 +9,6 @@ You handle payments and task verification through the **AgentTrust** MCP server.
 ## Connect (once per machine)
 - No key: `claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp/`
 - Or via Smithery: `smithery mcp add xrpl/agent-trust`
-- Fallback endpoint: https://xrpl-referee.onrender.com/mcp/ · Auth: none · 40+ tools
 
 ## Core flow
 1. Wallet: `get_wallet_setup_guide()` (production — seed stays local). `create_agent_wallet()` is dev-only (returns the seed in plaintext). **Privy alternative:** use `PrivyWallet` from `@eamwhite1/agenttrust-sdk` to create and sign server-side without storing a seed — see https://www.cryptovault.co.uk/privy-wallet/

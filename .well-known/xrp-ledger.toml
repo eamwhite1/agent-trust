@@ -1,0 +1,17 @@
+[METADATA]
+modified = "2026-10-25"
+expires = "2027-10-25"
+domain = "www.cryptovault.co.uk"
+
+[[ACCOUNTS]]
+address = "rmcSrkpZ2i2kuvtCPeTVetee9SixP4djR"
+desc = "AgentTrust protocol fee collection wallet"
+
+[[ACCOUNTS]]
+address = "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"
+desc = "RLUSD issuer (Ripple) — referenced by AgentTrust for trustline checks"
+
+[PRINCIPALS]
+[[PRINCIPALS.OWNER]]
+name = "Boxclever Media Ltd"
+email = "hello@cryptovault.co.uk"
