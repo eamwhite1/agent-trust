@@ -1588,6 +1588,12 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
 </footer>
 
 <script>
+// Redirect ?escrow= and ?vault= params to /escrow/ status page
+(function() {
+    var p = new URLSearchParams(location.search);
+    var id = p.get('escrow') || p.get('vault');
+    if (id) location.replace('/escrow/?id=' + encodeURIComponent(id));
+})();
 // Details chevron rotation
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("details").forEach(d => {
