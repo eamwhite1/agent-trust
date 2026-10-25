@@ -144,3 +144,13 @@ Before locking funds, call `assess_counterparty_and_job(worker_address, job_type
 - [GitHub — backend](https://github.com/eamwhite1/xrpl-referee)
 - [GitHub — frontend](https://github.com/eamwhite1/agent-trust)
 - License: MIT
+
+## Try it free on Testnet
+
+Test the full escrow flow with no real XRP:
+
+    1. Create a testnet wallet: create_testnet_wallet()
+    2. Post a job with network="testnet"
+    3. hire_and_pay(..., network="testnet") — no fees, no free-credit use
+    4. evaluate_escrow_work(escrow_id, work, evaluate_token) — real AI audit (5/day limit)
+    5. Vault IDs start with "TN-"; explorer links point to testnet.xrpl.org
