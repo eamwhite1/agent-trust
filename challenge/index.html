@@ -70,7 +70,7 @@
   <!-- Token expired / invalid -->
   <div id="state-expired" class="card">
     <h1>Link expired or invalid</h1>
-    <p style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem">This challenge link has expired or is not valid. Challenge links are single-use and expire after 48 hours.</p>
+    <p style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem">This challenge link has expired or is not valid. Links expire 48 hours after the verdict.</p>
     <p style="font-size:.85rem;margin-top:1rem">If your challenge window is still open, check your email for a fresh link, or contact <a href="mailto:support@cryptovault.co.uk">support@cryptovault.co.uk</a>.</p>
   </div>
 
@@ -91,6 +91,14 @@
   <div id="state-outcome" class="card">
     <h1 id="outcome-title">Challenge outcome</h1>
     <p id="outcome-body" style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem"></p>
+    <div id="outcome-explorer" style="margin-top:1rem;font-size:.85rem;display:none"></div>
+  </div>
+
+  <!-- Challenged in-progress -->
+  <div id="state-challenged" class="card" style="display:none">
+    <h1>Challenge in progress</h1>
+    <p style="font-size:.9rem;color:var(--text-muted);margin-top:.5rem">A Gemini Pro re-review is underway. This page will update automatically.</p>
+    <p style="font-size:.8rem;color:var(--text-faint);margin-top:.75rem">Checking for result…</p>
   </div>
 
   <!-- Challenge form (main state) -->
@@ -104,8 +112,19 @@
       <div class="detail-row"><span class="key">Task</span><span id="cf-task" style="max-width:60%;text-align:right">—</span></div>
       <div class="detail-row"><span class="key">Amount</span><span id="cf-amount">—</span></div>
       <div class="detail-row"><span class="key">AI verdict</span><span id="cf-verdict">—</span></div>
-      <div class="detail-row"><span class="key">AI summary</span><span id="cf-summary" style="max-width:65%;text-align:right;font-size:.82rem">—</span></div>
+      <div class="detail-row"><span class="key">Score</span><span id="cf-score">—</span></div>
+      <div class="detail-row"><span class="key">Summary</span><span id="cf-summary" style="max-width:65%;text-align:right;font-size:.82rem">—</span></div>
       <div class="detail-row"><span class="key">Challenge deadline</span><span id="cf-deadline" style="color:var(--amber)">—</span></div>
+    </div>
+
+    <!-- Verdict breakdown -->
+    <div class="card" id="verdict-breakdown" style="display:none">
+      <h2 style="font-size:1rem;margin-bottom:.75rem">Audit criteria</h2>
+      <div id="criteria-breakdown"></div>
+      <div id="submission-excerpt-block" style="display:none;margin-top:1rem">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">What was submitted</div>
+        <div id="submission-excerpt" style="font-size:.82rem;color:var(--text-muted);background:var(--ground);border-radius:6px;padding:.65rem .85rem;white-space:pre-wrap;word-break:break-word;max-height:160px;overflow:auto"></div>
+      </div>
     </div>
 
     <!-- Step 1: select criteria + reason -->
@@ -151,10 +170,14 @@ const API = 'https://mcp.cryptovault.co.uk';
 let token = null;
 let sessionData = null;
 let quoteId = null;
+let outcomePoller = null;
+let xamanPoller = null;
+
+const ALL_STATES = ['state-loading','state-expired','state-error','state-already-challenged',
+                    'state-challenged','state-outcome','state-challenge-form'];
 
 function show(id) {
-  ['state-loading','state-expired','state-error','state-already-challenged','state-outcome','state-challenge-form']
-    .forEach(s => { document.getElementById(s).style.display = 'none'; });
+  ALL_STATES.forEach(s => { const el = document.getElementById(s); if (el) el.style.display = 'none'; });
   const el = document.getElementById(id);
   if (el) el.style.display = 'block';
 }
@@ -166,10 +189,118 @@ function setStatus(id, msg, type) {
   el.className = 'status-msg status-' + (type || 'info');
 }
 
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function fmtDeadline(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) + ' (your local time)';
+}
+
+function explorerUrl(network, txHash) {
+  if (!txHash) return null;
+  const base = (network||'').toLowerCase() === 'testnet'
+    ? 'https://testnet.xrpl.org/transactions/' : 'https://livenet.xrpl.org/transactions/';
+  return base + txHash;
+}
+
+function renderOutcome(s) {
+  const oc = s.challenge_outcome || s.status;
+  let title, body;
+  if (oc === 'PASS_UPHELD') {
+    title = 'Challenge rejected — PASS stands';
+    body = 'The Gemini Pro re-review confirmed the original PASS verdict. Payment has been released to the seller. The challenge fee was paid to the seller.';
+  } else if (oc === 'PASS_OVERTURNED') {
+    if (s.status === 'REMEDY') {
+      title = 'Challenge upheld';
+      body = 'The challenge was upheld: the seller has 1 remedy attempt. Your fee is being refunded.';
+    } else {
+      title = 'Challenge upheld';
+      body = 'Challenge upheld: escrow returns to you at CancelAfter. Fee refunded.';
+    }
+  } else if (oc === 'REVIEW_INCONCLUSIVE') {
+    title = 'Review inconclusive';
+    body = 'The re-review could not reach a definitive verdict. Payment has been released to the seller and the challenge fee refunded to you.';
+  } else {
+    title = 'Challenge outcome';
+    body = `Status: ${oc}`;
+  }
+  document.getElementById('outcome-title').textContent = title;
+  document.getElementById('outcome-body').textContent = body;
+  // Explorer links
+  const links = [];
+  if (s.explorer_links) {
+    const xl = s.explorer_links;
+    if (xl.release) links.push(`<a href="${escHtml(xl.release)}" target="_blank" rel="noopener">View release transaction →</a>`);
+    if (xl.fee_finish_or_cancel) links.push(`<a href="${escHtml(xl.fee_finish_or_cancel)}" target="_blank" rel="noopener">View fee settlement →</a>`);
+    if (xl.cancel) links.push(`<a href="${escHtml(xl.cancel)}" target="_blank" rel="noopener">View cancellation →</a>`);
+  }
+  const explorerEl = document.getElementById('outcome-explorer');
+  if (links.length) {
+    explorerEl.innerHTML = links.join(' &nbsp;·&nbsp; ');
+    explorerEl.style.display = 'block';
+  }
+  show('state-outcome');
+}
+
+function renderVerdictBreakdown(s) {
+  const criteria = s.criteria || [];
+  if (!criteria.length && !s.submission_excerpt) return;
+  const bd = document.getElementById('criteria-breakdown');
+  if (criteria.length) {
+    let rows = criteria.map(c => {
+      const passed = (c.result||'').toUpperCase() === 'PASS';
+      const icon = passed ? '✓' : '✗';
+      const color = passed ? 'var(--green)' : 'var(--red)';
+      return `<div style="padding:.55rem 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+          <span style="color:${color};font-weight:700;font-size:.85rem">${icon}</span>
+          <span style="font-size:.85rem;font-weight:600">${escHtml(c.description||c.id||'')}</span>
+        </div>
+        ${c.reasoning ? `<div style="font-size:.78rem;color:var(--text-muted);margin-left:1.35rem">${escHtml(c.reasoning)}</div>` : ''}
+      </div>`;
+    }).join('');
+    bd.innerHTML = rows;
+  }
+  if (s.submission_excerpt) {
+    document.getElementById('submission-excerpt').textContent = s.submission_excerpt;
+    document.getElementById('submission-excerpt-block').style.display = 'block';
+  }
+  document.getElementById('verdict-breakdown').style.display = 'block';
+}
+
+function buildCriteriaCheckboxes(criteria) {
+  const list = document.getElementById('criteria-list');
+  if (!criteria || !criteria.length) return;
+  list.innerHTML = '';
+  criteria.forEach(c => {
+    const id = c.id || c.criterion_id || '';
+    const desc = c.description || id;
+    const passed = (c.result||'').toUpperCase() === 'PASS';
+    const row = document.createElement('div');
+    row.className = 'criteria-row';
+    row.innerHTML = `<input type="checkbox" id="crit-${escHtml(id)}" value="${escHtml(id)}" ${passed ? '' : 'checked'}>
+      <label for="crit-${escHtml(id)}" style="font-size:.85rem;flex:1;cursor:pointer">${escHtml(desc)}</label>
+      <span style="font-size:.75rem;font-weight:600;color:${passed?'var(--green)':'var(--red)'}">${passed?'PASS':'FAIL'}</span>`;
+    list.appendChild(row);
+  });
+}
+
+async function pollOutcome() {
+  if (outcomePoller) clearInterval(outcomePoller);
+  outcomePoller = setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/challenge/session?token=${encodeURIComponent(token)}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      if (d.challenge_outcome || (d.status && !['CHALLENGED','PASS_CHALLENGE_WINDOW'].includes(d.status))) {
+        clearInterval(outcomePoller);
+        renderOutcome(d);
+      }
+    } catch(e) {}
+  }, 15000);
 }
 
 async function load() {
@@ -180,7 +311,7 @@ async function load() {
 
   try {
     const res = await fetch(`${API}/challenge/session?token=${encodeURIComponent(token)}`);
-    if (res.status === 401) { show('state-expired'); return; }
+    if (res.status === 401 || res.status === 403) { show('state-expired'); return; }
     if (!res.ok) { throw new Error(`HTTP ${res.status}`); }
     sessionData = await res.json();
   } catch(e) {
@@ -189,40 +320,49 @@ async function load() {
     return;
   }
 
-  const s = sessionData.status;
-  if (s === 'CHALLENGED') { show('state-already-challenged'); return; }
-  const outcome = sessionData.challenge_outcome;
-  if (s === 'PASS_UPHELD' || s === 'PASS_OVERTURNED' || s === 'REVIEW_INCONCLUSIVE' || outcome) {
-    const oc = outcome || s;
-    if (oc === 'PASS_UPHELD') {
-      document.getElementById('outcome-title').textContent = 'Challenge rejected — PASS stands';
-      document.getElementById('outcome-body').textContent = 'The senior review confirmed the original PASS. Payment has been released to the seller. The challenge fee was paid to the seller.';
-    } else if (oc === 'PASS_OVERTURNED') {
-      document.getElementById('outcome-title').textContent = 'Challenge upheld — verdict overturned';
-      document.getElementById('outcome-body').textContent = 'The senior review found the work does not meet the criteria. The escrow has been cancelled and the challenge fee refunded to you.';
-    } else if (oc === 'REVIEW_INCONCLUSIVE') {
-      document.getElementById('outcome-title').textContent = 'Review inconclusive';
-      document.getElementById('outcome-body').textContent = 'The senior review could not reach a definitive verdict. Payment has been released to the seller and the challenge fee refunded to you.';
-    } else {
-      document.getElementById('outcome-title').textContent = 'Challenge outcome';
-      document.getElementById('outcome-body').textContent = `Status: ${oc}`;
-    }
-    show('state-outcome');
+  const s = sessionData;
+  // Already has an outcome
+  if (s.challenge_outcome || s.status === 'PASS_UPHELD' || s.status === 'PASS_OVERTURNED' || s.status === 'REVIEW_INCONCLUSIVE') {
+    renderOutcome(s);
     return;
   }
-  if (s !== 'PASS_CHALLENGE_WINDOW') {
-    document.getElementById('error-detail').textContent = `Unexpected escrow status: ${s}`;
+  // Challenge in progress
+  if (s.status === 'CHALLENGED') {
+    show('state-challenged');
+    pollOutcome();
+    return;
+  }
+  if (s.status !== 'PASS_CHALLENGE_WINDOW') {
+    document.getElementById('error-detail').textContent = `Unexpected escrow status: ${s.status}`;
     show('state-error');
     return;
   }
 
-  // Populate card
-  document.getElementById('cf-escrow-id').textContent = sessionData.escrow_id || '—';
-  document.getElementById('cf-task').textContent = (sessionData.task_description || '—').slice(0, 120);
-  document.getElementById('cf-amount').textContent = sessionData.amount_xrp ? sessionData.amount_xrp + ' XRP' : '—';
-  document.getElementById('cf-verdict').textContent = sessionData.ai_verdict || 'PASS';
-  document.getElementById('cf-summary').textContent = sessionData.ai_summary || '—';
-  document.getElementById('cf-deadline').textContent = fmtDeadline(sessionData.challenge_deadline);
+  // Parse verdict
+  let verdictLabel = s.ai_verdict || 'PASS';
+  let score = s.score || (s.ai_verdict_object && s.ai_verdict_object.score);
+  let summary = s.ai_summary || (s.ai_verdict_object && s.ai_verdict_object.summary) || '';
+  if (score != null) verdictLabel = `PASS — score ${score}/100`;
+
+  // Populate details card
+  document.getElementById('cf-escrow-id').textContent = s.escrow_id || '—';
+  document.getElementById('cf-task').textContent = (s.task_description || '—').slice(0, 120);
+  document.getElementById('cf-amount').textContent = s.amount_xrp ? s.amount_xrp + ' XRP' : '—';
+  document.getElementById('cf-verdict').textContent = 'PASS';
+  document.getElementById('cf-score').textContent = score != null ? `${score}/100` : '—';
+  document.getElementById('cf-summary').textContent = summary || '—';
+  document.getElementById('cf-deadline').textContent = fmtDeadline(s.challenge_deadline);
+
+  // Render breakdown
+  renderVerdictBreakdown(s);
+  buildCriteriaCheckboxes(s.criteria || []);
+
+  if (!s.can_challenge) {
+    document.getElementById('btn-get-quote').disabled = true;
+    document.getElementById('btn-get-quote').title = 'Challenge window has closed';
+    setStatus('status-quote', 'The challenge window has closed — less than 15 minutes remaining.', 'err');
+  }
+
   show('state-challenge-form');
 }
 
@@ -268,19 +408,27 @@ async function openXaman() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
     const xp = data.xaman_payload || data;
+    const qrPng = xp.refs?.qr_png || xp.qr;
     const deeplink = xp.next?.always || xp.nextUrl;
-    const qrPng = xp.refs?.qr_png;
     const uuid = xp.uuid;
+
+    // Remove any previous QR
+    const prev = document.getElementById('xaman-qr');
+    if (prev) prev.remove();
+
+    const qrDiv = document.createElement('div');
+    qrDiv.id = 'xaman-qr';
+    qrDiv.style.cssText = 'text-align:center;margin:.75rem 0';
     if (qrPng) {
-      const qrDiv = document.createElement('div');
-      qrDiv.id = 'xaman-qr';
-      qrDiv.style.cssText = 'text-align:center;margin:.75rem 0';
-      qrDiv.innerHTML = `<img src="${qrPng}" alt="Xaman QR code" style="width:180px;height:180px;border-radius:8px"><p style="font-size:.78rem;color:var(--text-muted);margin:.4rem 0 0">Scan with Xaman or <a href="${deeplink||'#'}" target="_blank" rel="noopener">open on mobile</a></p>`;
-      document.getElementById('btn-xaman').insertAdjacentElement('beforebegin', qrDiv);
-    } else if (deeplink) {
-      window.open(deeplink, '_blank');
+      qrDiv.innerHTML = `<img src="${qrPng}" alt="Xaman QR code" style="width:180px;height:180px;border-radius:8px;display:block;margin:0 auto .5rem">`;
     }
-    setStatus('status-sign', '✅ Sign the fee EscrowCreate in Xaman, then enter the tx hash below.', 'ok');
+    if (deeplink) {
+      qrDiv.innerHTML += `<a href="${escHtml(deeplink)}" target="_blank" rel="noopener" style="display:inline-block;padding:.5rem 1rem;background:var(--blue);color:#fff;border-radius:7px;font-size:.85rem;font-weight:600;text-decoration:none">Open in Xaman →</a>`;
+    }
+    qrDiv.innerHTML += `<p style="font-size:.75rem;color:var(--text-muted);margin:.5rem 0 0">After signing, the hash will fill in automatically below.</p>`;
+    document.getElementById('btn-xaman').insertAdjacentElement('beforebegin', qrDiv);
+
+    setStatus('status-sign', '✅ Scan the QR or tap "Open in Xaman". The hash will auto-fill when signed.', 'ok');
     document.getElementById('step-submit').style.display = 'block';
     if (uuid) pollXaman(uuid);
   } catch(e) {
@@ -290,15 +438,23 @@ async function openXaman() {
 }
 
 async function pollXaman(uuid) {
-  for (let i = 0; i < 40; i++) {
-    await new Promise(r => setTimeout(r, 5000));
+  if (xamanPoller) clearInterval(xamanPoller);
+  xamanPoller = setInterval(async () => {
     try {
-      const res = await fetch(`${API}/challenge/session?token=${encodeURIComponent(token)}`);
-      if (!res.ok) break;
+      const res = await fetch(`${API}/xumm/payload/${encodeURIComponent(uuid)}`);
+      if (!res.ok) return;
       const d = await res.json();
-      if (d.status === 'CHALLENGED' || d.challenge_outcome) { show('state-already-challenged'); return; }
-    } catch(e) { break; }
-  }
+      const txHash = d.response?.txid || d.txid;
+      if (txHash && txHash.length === 64) {
+        clearInterval(xamanPoller);
+        const hashInput = document.getElementById('fee-tx-hash');
+        if (hashInput) {
+          hashInput.value = txHash;
+          setStatus('status-submit', '✅ Transaction hash filled in. Click "Submit challenge" to continue.', 'ok');
+        }
+      }
+    } catch(e) {}
+  }, 3000);
 }
 
 async function submitChallenge() {
@@ -327,7 +483,8 @@ async function submitChallenge() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
-    show('state-already-challenged');
+    show('state-challenged');
+    pollOutcome();
   } catch(e) {
     btn.disabled = false;
     setStatus('status-submit', '❌ ' + e.message, 'err');
