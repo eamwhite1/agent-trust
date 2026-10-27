@@ -240,30 +240,35 @@ class AgentTrust {
    * @param {string} options.workerAddress     - Worker's XRPL wallet address
    * @param {string} options.escrowId          - Unique escrow ID (e.g. "ESC-A1B2C3D4")
    * @param {string} options.feeHash           - XRPL/Base tx hash of $0.10 protocol fee payment
+   * @param {string} [options.network]         - "testnet" for free XRPL testnet (no real XRP). See createTestnetWallet().
    * @param {string} [options.delegateAddress] - XLS-75: hot agent address that signs on buyer's behalf
    * @param {number} [options.cancelAfterHrs]  - Hours until buyer can cancel (default 168)
    * @param {string} [options.callbackUrl]     - Webhook URL for vault state changes
-   * @param {string} [options.metadata]        - JSON string of reference IDs echoed in webhooks
+   * @param {object|string} [options.metadata] - Object or JSON string of reference IDs echoed in webhooks
    * @returns {Promise<{tx_dict: object, escrow_id: string, evaluate_token: string}>}
    */
-  async hireAndPay({ task, buyerAddress, amountXrp, workerAddress, escrowId, feeHash, delegateAddress, cancelAfterHrs = 168, callbackUrl, metadata }) {
+  async hireAndPay({ task, buyerAddress, amountXrp, workerAddress, escrowId, feeHash, network, delegateAddress, cancelAfterHrs = 168, callbackUrl, metadata }) {
     if (!task) throw new AgentTrustError('task is required');
     if (!buyerAddress) throw new AgentTrustError('buyerAddress is required');
     if (!amountXrp) throw new AgentTrustError('amountXrp is required');
     if (!workerAddress) throw new AgentTrustError('workerAddress is required');
-    if (!escrowId) throw new AgentTrustError('escrowId is required');
-    if (!feeHash) throw new AgentTrustError('feeHash is required');
+    if (network !== 'testnet') {
+      if (!escrowId) throw new AgentTrustError('escrowId is required');
+      if (!feeHash) throw new AgentTrustError('feeHash is required');
+    }
+    const metadataValue = metadata && typeof metadata === 'object' ? metadata : metadata;
     return this._post('/escrow/prepare', {
       task_description: task,
       buyer_address: buyerAddress,
       amount_xrp: amountXrp,
       worker_address: workerAddress,
-      escrow_id: escrowId,
-      fee_hash: feeHash,
+      ...(escrowId && { escrow_id: escrowId }),
+      ...(feeHash && { fee_hash: feeHash }),
+      ...(network && { network }),
       cancel_after_hrs: cancelAfterHrs,
       ...(delegateAddress && { delegate_address: delegateAddress }),
       ...(callbackUrl && { callback_url: callbackUrl }),
-      ...(metadata && { metadata }),
+      ...(metadataValue !== undefined && { metadata: metadataValue }),
     });
   }
 
@@ -353,6 +358,35 @@ class AgentTrust {
   async getBatchDvpPayload(escrowId) {
     if (!escrowId) throw new AgentTrustError('escrowId is required');
     return this._get(`/escrow/${escrowId}/batch-dvp-payload`);
+  }
+
+  // ── Testnet ────────────────────────────────────────────────────────────────
+
+  /**
+   * Create a free XRPL testnet wallet funded with 100 test XRP.
+   * No real XRP needed — safe for development and demos.
+   * The returned seed is shown ONCE — store it securely, never log it.
+   *
+   * @returns {Promise<{address: string, seed: string, balance_xrp: number, next_step: string}>}
+   */
+  async createTestnetWallet() {
+    return this._post('/testnet/wallet', {});
+  }
+
+  /**
+   * Run a complete escrow flow on testnet (create → audit → release) in one call.
+   * No fee required. Returns the escrow_id and evaluate_token for use in submitWork().
+   *
+   * @param {object} [options]
+   * @param {string} [options.task]    - Custom task description (optional)
+   * @param {string} [options.work]    - Custom deliverable (optional)
+   * @returns {Promise<{escrow_id: string, evaluate_token: string, verdict: string, summary: string, next_call: string}>}
+   */
+  async tryTestnetDemo({ task, work } = {}) {
+    return this._post('/testnet/demo', {
+      ...(task && { task }),
+      ...(work && { work }),
+    });
   }
 
   // ── Trust & compliance ─────────────────────────────────────────────────────
