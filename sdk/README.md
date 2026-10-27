@@ -10,6 +10,39 @@ npm install @eamwhite1/agenttrust-sdk
 
 ---
 
+## Testnet in 60 seconds
+
+No real XRP needed — try the full escrow flow on testnet for free.
+
+```js
+const { AgentTrust } = require('@eamwhite1/agenttrust-sdk');
+const at = new AgentTrust();
+
+// 1. Get a free testnet wallet (100 test XRP, no signup)
+const wallet = await at.createTestnetWallet();
+console.log(wallet.address); // rXXX...
+// Store wallet.seed securely — shown only once
+
+// 2. Run a complete demo flow (create → audit → release) in one call
+const demo = await at.tryTestnetDemo();
+console.log(demo.verdict);        // 'PASS'
+console.log(demo.escrow_id);      // 'TN-...'
+console.log(demo.evaluate_token); // share with worker to submit work
+
+// 3. Or use hireAndPay with network: 'testnet' (no escrowId/feeHash needed)
+const { tx_dict, escrow_id, evaluate_token } = await at.hireAndPay({
+  task:          'Summarise in 3 bullet points.',
+  buyerAddress:  wallet.address,
+  amountXrp:     1.0,
+  workerAddress: 'rWorkerTestnetAddress',
+  network:       'testnet',
+});
+```
+
+Full testnet guide: https://www.cryptovault.co.uk/testnet/
+
+---
+
 ## Quickstart
 
 ```js

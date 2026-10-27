@@ -68,12 +68,34 @@ export interface HireAndPayOptions {
   buyerAddress: string;
   amountXrp: number;
   workerAddress: string;
-  escrowId: string;
-  feeHash: string;
+  escrowId?: string;
+  feeHash?: string;
+  /** "testnet" skips escrowId/feeHash requirements and uses XRPL testnet */
+  network?: 'testnet';
   delegateAddress?: string;
   cancelAfterHrs?: number;
   callbackUrl?: string;
-  metadata?: string;
+  metadata?: object | string;
+}
+
+export interface TestnetWalletResult {
+  address: string;
+  seed: string;
+  balance_xrp: number;
+  next_step: string;
+}
+
+export interface TestnetDemoOptions {
+  task?: string;
+  work?: string;
+}
+
+export interface TestnetDemoResult {
+  escrow_id: string;
+  evaluate_token: string;
+  verdict: string;
+  summary: string;
+  next_call: string;
 }
 
 export interface HireAndPayResult {
@@ -148,6 +170,9 @@ export declare class AgentTrust {
   submitWork(options: SubmitWorkOptions): Promise<AuditResult>;
   getEscrow(escrowId: string): Promise<unknown>;
   getBatchDvpPayload(escrowId: string): Promise<{ batch_tx: Record<string, unknown> }>;
+
+  createTestnetWallet(): Promise<TestnetWalletResult>;
+  tryTestnetDemo(options?: TestnetDemoOptions): Promise<TestnetDemoResult>;
 
   getTrustScore(address: string): Promise<TrustScore>;
   checkSanctions(address: string): Promise<{ sanctioned: boolean }>;
