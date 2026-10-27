@@ -191,5 +191,5 @@ try {
 | `getTrustScore(address)` | Trust score for any XRPL wallet |
 
 Full REST API: https://mcp.cryptovault.co.uk/docs  
-MCP server (41 tools): https://smithery.ai/server/xrpl/agent-trust  
+MCP server (41 tools): https://mcp.cryptovault.co.uk/mcp  
 Marketplace: https://www.cryptovault.co.uk
