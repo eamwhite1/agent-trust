@@ -461,6 +461,15 @@ async function initVault() {
     }
     // workerEmail is optional — agents use the receipt code directly; humans get an email if provided
 
+    const releaseModeVal = document.getElementById('release-mode-select')?.value || '';
+    if (releaseModeVal.startsWith('challenge_window_hrs:')) {
+        const cwHrs = parseInt(releaseModeVal.split(':')[1]) || 1;
+        if ((cwHrs + 1) > cancelHrs) {
+            showStatus("init-status", "❌ The challenge window must end at least 1 hour before the escrow deadline.", "error");
+            return;
+        }
+    }
+
     const receiptCode = generateReceiptCode();
     if (btn) btn.disabled = true;
     showStatus("init-status", "⏳ Verifying fee and creating vault...", "info");

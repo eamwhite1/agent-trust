@@ -972,6 +972,7 @@ const API = 'https://mcp.cryptovault.co.uk';
 let account = null;
 let escrowData = [];
 let enterpriseWallets = [];
+let enterpriseWalletObjects = [];
 let currentRole = (() => { try { return localStorage.getItem('at_role_filter') || 'buyer'; } catch { return 'buyer'; } })();
 
 function escapeHtml(s) {
@@ -1555,6 +1556,7 @@ async function toggleSellerProfile(enabled) {
 
 function renderWallets(wallets) {
     enterpriseWallets = wallets.map(w => w.xrpl_address).filter(Boolean);
+    enterpriseWalletObjects = wallets;
     if (!wallets.length) {
         document.getElementById('wallet-list').innerHTML = '<div class="empty">No wallets linked yet.</div>';
         return;
@@ -2100,6 +2102,14 @@ async function saveTemplate() {
         max_submissions: parseInt(document.getElementById('tmpl-max-subs').value) || 3,
     };
     if (!body.name) { showToast('Name is required.'); return; }
+    if (document.getElementById('tmpl-release-mode').value === 'challenge_window') {
+        const cwHrs = parseInt(document.getElementById('tmpl-challenge-hours').value) || 1;
+        const deadlineHrs = parseInt(document.getElementById('tmpl-deadline').value) || 0;
+        if (deadlineHrs > 0 && (cwHrs + 1) > deadlineHrs) {
+            showToast('The challenge window must end at least 1 hour before the escrow deadline.');
+            return;
+        }
+    }
     try {
         const url = editingTemplateId
             ? `${API}/enterprise/templates/${editingTemplateId}`
@@ -2432,6 +2442,16 @@ async function ceGenerateVault() {
     const specLinks   = [...document.querySelectorAll('.ce-spec-link')].map(i => i.value.trim()).filter(Boolean);
     const maxSubs     = parseInt(document.getElementById('ce-max-subs').value);
     const invoiceOn   = document.getElementById('ce-invoice-on').checked;
+
+    const ceModeRaw = document.getElementById('ce-release-mode').value;
+    if (ceModeRaw === 'challenge_window') {
+        const cwHrs = parseInt(document.getElementById('ce-challenge-hours').value) || 1;
+        const deadlineHrs = parseInt(document.getElementById('ce-deadline').value) || 168;
+        if ((cwHrs + 1) > deadlineHrs) {
+            showToast('The challenge window must end at least 1 hour before the escrow deadline.');
+            return;
+        }
+    }
 
     try {
         const body = {
@@ -2951,12 +2971,24 @@ function submitDealRequest() {
     const releaseMode = document.getElementById('rd-release-mode').value;
     if (!task) { showToast('Task description is required.'); return; }
     if (!amount || amount <= 0) { showToast('Amount must be a positive number.'); return; }
+    if (releaseMode && releaseMode.startsWith('challenge_window_hrs:')) {
+        const cwHrs = parseInt(releaseMode.split(':')[1]) || 1;
+        if (deadlineVal) {
+            const deadlineHrs = Math.round((new Date(deadlineVal).getTime() - Date.now()) / 3600000);
+            if ((cwHrs + 1) > deadlineHrs) {
+                showToast('The challenge window must end at least 1 hour before the escrow deadline.');
+                return;
+            }
+        }
+    }
     const criteria = [...document.querySelectorAll('#rd-criteria-list .rd-criterion-row')].map(row => ({
         type: row.querySelector('.rd-crit-type').value,
         description: row.querySelector('.rd-crit-desc').value.trim()
     })).filter(c => c.description);
     const requireConsensus = document.getElementById('rd-require-consensus')?.checked || false;
-    const sellerAddr = (enterpriseWallets && enterpriseWallets[0]) || '';
+    const verifiedWallet = enterpriseWalletObjects.find(w => w.verified && w.xrpl_address);
+    const sellerAddr = verifiedWallet ? verifiedWallet.xrpl_address : '';
+    if (!sellerAddr) { showToast('Verify a linked wallet first (Settings → Wallets)'); return; }
     const body = { task, amount_xrp: amount, release_mode: releaseMode, seller_address: sellerAddr };
     if (requireConsensus) body.require_consensus = true;
     if (buyerAddr) body.buyer_address = buyerAddr;
@@ -2967,7 +2999,6 @@ function submitDealRequest() {
     }
     if (externalRef) body.external_ref = externalRef;
     if (externalUrl) body.external_url = externalUrl;
-    if (!sellerAddr) { showToast('No linked wallet found. Connect a wallet in Settings first.'); return; }
     if (criteria.length) body.criteria = criteria;
     const btn = document.getElementById('rd-submit-btn');
     if (btn.disabled) return;

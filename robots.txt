@@ -5,24 +5,31 @@ Disallow: /challenge/
 # AI/LLM crawlers
 User-agent: GPTBot
 Allow: /
+Disallow: /challenge/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /challenge/
 
 User-agent: anthropic-ai
 Allow: /
+Disallow: /challenge/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /challenge/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /challenge/
 
 User-agent: YouBot
 Allow: /
+Disallow: /challenge/
 
 User-agent: SmitheryBot
 Allow: /
+Disallow: /challenge/
 
 Sitemap: https://www.cryptovault.co.uk/sitemap.xml
 
