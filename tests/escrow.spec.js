@@ -5,7 +5,7 @@ const BASE = process.env.BASE_URL || 'https://www.cryptovault.co.uk';
 
 test('escrow lookup page loads', async ({ page }) => {
   await page.goto(`${BASE}/escrow/`);
-  await expect(page.locator('input[placeholder*="escrow"]').or(page.locator('input[placeholder*="ID"]'))).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#eid-input')).toBeVisible({ timeout: 10000 });
 });
 
 test('testnet page loads with step 1', async ({ page }) => {
