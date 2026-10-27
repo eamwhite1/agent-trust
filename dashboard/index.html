@@ -235,6 +235,26 @@
     .payment-box { background: var(--ground); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; font-size: .83rem; line-height: 1.8; }
     .payment-box strong { color: var(--text); }
     .payment-box .mono { display: block; margin-top: .35rem; word-break: break-all; }
+    .btn-xaman { display: inline-flex; align-items: center; gap: .45rem; background: var(--blue); color: #fff; font-size: .85rem; font-weight: 700; padding: .62rem 1.25rem; border-radius: 8px; border: none; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+    .btn-xaman:hover { opacity: .88; }
+    .btn-xaman svg { width: 14px; height: 14px; }
+    /* Xaman payment modal */
+    .xaman-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .xaman-modal { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 2rem 1.75rem 1.75rem; max-width: 340px; width: 100%; text-align: center; position: relative; box-shadow: 0 24px 64px rgba(0,0,0,.3); }
+    .xaman-modal h3 { font-size: 1.1rem; font-weight: 800; color: var(--text); margin: 0 0 .15rem; }
+    .xaman-modal .xaman-subtitle { font-size: .78rem; color: var(--text-muted); margin-bottom: 1.1rem; }
+    .xaman-currency-row { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.1rem; }
+    .xaman-currency-btn { flex: 1; max-width: 100px; padding: .4rem .6rem; border-radius: 8px; border: 1.5px solid var(--border); background: none; font-size: .8rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all .15s; }
+    .xaman-currency-btn.active { border-color: var(--blue); background: var(--blue-dim, rgba(59,130,246,.1)); color: var(--blue); }
+    .xaman-modal .xaman-amount { font-size: 1.55rem; font-weight: 800; color: var(--blue); margin-bottom: .2rem; }
+    .xaman-modal .xaman-rate { font-size: .76rem; color: var(--text-muted); margin-bottom: 1.1rem; }
+    .xaman-modal .xaman-qr-wrap { display: flex; justify-content: center; margin-bottom: .9rem; }
+    .xaman-modal img.xaman-qr { width: 180px; height: 180px; border-radius: 8px; border: 1px solid var(--border); }
+    .xaman-modal .xaman-deeplink { display: flex; align-items: center; justify-content: center; gap: .4rem; font-size: .83rem; font-weight: 700; background: var(--blue); color: #fff; padding: .55rem 1.25rem; border-radius: 8px; text-decoration: none; margin-bottom: .9rem; }
+    .xaman-modal .xaman-status { font-size: .8rem; color: var(--text-muted); min-height: 1.4em; margin-bottom: .5rem; }
+    .xaman-modal .xaman-hint { font-size: .7rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+    .xaman-modal .xaman-close { position: absolute; top: .75rem; right: .85rem; background: none; border: none; font-size: 1.1rem; line-height: 1; cursor: pointer; color: var(--text-muted); padding: .2rem .35rem; border-radius: 4px; }
+    .xaman-modal .xaman-close:hover { color: var(--text); }
 
     /* ── Login screen ── */
     #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--ground); }
@@ -639,13 +659,20 @@
         <div class="page" id="page-subscription">
             <div class="page-header">
                 <h1>Subscription</h1>
-                <p>AgentTrust Pro — $199/year, billed in RLUSD on XRPL.</p>
+                <p>AgentTrust Pro — $199/year, billed in XRP or RLUSD on XRPL.</p>
             </div>
             <div class="sub-card" id="sub-status-card">
                 <div class="empty"><span class="spinner"></span></div>
             </div>
             <div class="sub-card">
-                <h3>How to pay</h3>
+                <h3>Pay with Xaman</h3>
+                <p style="font-size:.85rem;color:var(--text-muted);line-height:1.7;margin-bottom:1rem">
+                    Pay in XRP or RLUSD directly from your Xaman wallet. Scan the QR code or open in the app — payment confirms instantly on-chain.
+                </p>
+                <button class="btn-xaman" onclick="openDashXamanModal()"><i data-lucide="zap"></i> Buy Pro with Xaman</button>
+            </div>
+            <div class="sub-card">
+                <h3>Manual payment</h3>
                 <div class="payment-box" id="payment-details">
                     <span class="spinner"></span>
                 </div>
@@ -653,10 +680,31 @@
             <div class="sub-card">
                 <h3>Receipts</h3>
                 <p style="font-size:.85rem;color:var(--text-muted);line-height:1.7">
-                    Every RLUSD payment lands permanently on the XRP Ledger. Your transaction hash is your receipt —
+                    Every payment lands permanently on the XRP Ledger. Your transaction hash is your receipt —
                     independently verifiable by anyone, no third party needed.
                     Renewal confirmation emails are sent to your account email with a direct XRPL Explorer link.
                 </p>
+            </div>
+        </div>
+
+        <!-- Xaman subscription modal -->
+        <div class="xaman-modal-backdrop" id="dash-xaman-modal" style="display:none;" role="dialog" aria-modal="true" aria-label="Buy Pro with Xaman">
+            <div class="xaman-modal">
+                <button class="xaman-close" onclick="closeDashXamanModal()" aria-label="Close">×</button>
+                <h3>Buy Pro with Xaman</h3>
+                <p class="xaman-subtitle">AgentTrust Pro — $199/year</p>
+                <div class="xaman-currency-row">
+                    <button class="xaman-currency-btn active" id="dash-cur-xrp" onclick="dashSelectCurrency('XRP')">XRP</button>
+                    <button class="xaman-currency-btn" id="dash-cur-rlusd" onclick="dashSelectCurrency('RLUSD')">RLUSD</button>
+                </div>
+                <div class="xaman-amount" id="dash-xaman-amount"></div>
+                <div class="xaman-rate" id="dash-xaman-rate">Loading live rate…</div>
+                <div class="xaman-qr-wrap">
+                    <img class="xaman-qr" id="dash-xaman-qr" src="" alt="Scan with Xaman" style="display:none;">
+                </div>
+                <a class="xaman-deeplink" id="dash-xaman-deeplink" href="#" target="_blank" style="display:none;"><i data-lucide="smartphone"></i> Open in Xaman</a>
+                <div class="xaman-status" id="dash-xaman-status">Generating payment request…</div>
+                <p class="xaman-hint">Scan with Xaman on mobile, or tap Open in Xaman. Payment activates your annual Pro subscription.</p>
             </div>
         </div>
 
@@ -3113,5 +3161,92 @@ init();
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    const API = 'https://mcp.cryptovault.co.uk';
+    let _pollTimer = null;
+    let _currency = 'XRP';
+
+    window.dashSelectCurrency = function(cur) {
+        _currency = cur;
+        document.getElementById('dash-cur-xrp').classList.toggle('active', cur === 'XRP');
+        document.getElementById('dash-cur-rlusd').classList.toggle('active', cur === 'RLUSD');
+    };
+
+    window.openDashXamanModal = async function() {
+        const modal = document.getElementById('dash-xaman-modal');
+        const statusEl = document.getElementById('dash-xaman-status');
+        const rateEl = document.getElementById('dash-xaman-rate');
+        const amountEl = document.getElementById('dash-xaman-amount');
+        const qrEl = document.getElementById('dash-xaman-qr');
+        const dlEl = document.getElementById('dash-xaman-deeplink');
+
+        modal.style.display = 'flex';
+        statusEl.textContent = 'Generating payment request…';
+        rateEl.textContent = '';
+        amountEl.textContent = '';
+        qrEl.style.display = 'none';
+        dlEl.style.display = 'none';
+        lucide.createIcons();
+
+        try {
+            const res = await fetch(`${API}/subscribe/xaman`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({currency: _currency})
+            });
+            if (res.status === 401) { statusEl.textContent = 'Please sign in first.'; return; }
+            if (!res.ok) { statusEl.textContent = 'Could not create payment — please try again.'; return; }
+            const data = await res.json();
+
+            if (_currency === 'RLUSD') {
+                amountEl.textContent = '199 RLUSD';
+                rateEl.textContent = 'Stablecoin · 1 RLUSD ≈ $1.00 USD · Annual subscription';
+            } else {
+                amountEl.textContent = `${data.amount_xrp} XRP`;
+                rateEl.textContent = data.xrp_price_usd
+                    ? `1 XRP = $${Number(data.xrp_price_usd).toFixed(4)} · Annual subscription`
+                    : 'Annual subscription';
+            }
+
+            if (data.qr_png) { qrEl.src = data.qr_png; qrEl.style.display = 'block'; }
+            if (data.deeplink) { dlEl.href = data.deeplink; dlEl.style.display = 'flex'; lucide.createIcons(); }
+            statusEl.textContent = 'Waiting for payment…';
+            _pollTimer = setInterval(async () => {
+                try {
+                    const r = await fetch(`${API}/subscribe/xaman/${data.uuid}`, {credentials: 'include'});
+                    if (!r.ok) return;
+                    const d = await r.json();
+                    const s = document.getElementById('dash-xaman-status');
+                    if (d.status === 'confirmed') {
+                        clearInterval(_pollTimer);
+                        s.textContent = '✅ Payment confirmed — your Pro subscription is active!';
+                        setTimeout(() => { closeDashXamanModal(); location.reload(); }, 2500);
+                    } else if (d.status === 'expired') {
+                        clearInterval(_pollTimer);
+                        s.textContent = 'QR expired — please click the button again to retry.';
+                    } else if (d.status === 'amount_mismatch') {
+                        clearInterval(_pollTimer);
+                        s.textContent = 'Amount mismatch — please contact support.';
+                    }
+                } catch (_) {}
+            }, 3000);
+        } catch (e) {
+            statusEl.textContent = 'Network error — please try again.';
+        }
+    };
+
+    window.closeDashXamanModal = function() {
+        clearInterval(_pollTimer);
+        document.getElementById('dash-xaman-modal').style.display = 'none';
+    };
+
+    document.getElementById('dash-xaman-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeDashXamanModal();
+    });
+})();
+</script>
 </body>
 </html>
