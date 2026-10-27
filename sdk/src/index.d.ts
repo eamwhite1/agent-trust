@@ -93,9 +93,13 @@ export interface TestnetDemoOptions {
 export interface TestnetDemoResult {
   escrow_id: string;
   evaluate_token: string;
-  verdict: string;
+  verdict: 'PASS' | 'FAIL' | 'UNKNOWN';
+  score: number | null;
   summary: string;
+  release_tx: string | null;
   next_call: string;
+  escrow_tx: string;
+  network: 'testnet';
 }
 
 export interface HireAndPayResult {
