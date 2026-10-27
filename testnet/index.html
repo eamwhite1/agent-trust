@@ -204,7 +204,7 @@
                     <pre>create_testnet_wallet()</pre>
                     <button class="copy-btn" onclick="navigator.clipboard.writeText('create_testnet_wallet()')">Copy</button>
                 </div>
-                <p style="margin-top:.5rem;">Returns: <span class="inline-code">address</span>, <span class="inline-code">seed</span>, <span class="inline-code">public_key</span>. The faucet tops up the account with test XRP immediately.</p>
+                <p style="margin-top:.5rem;">Returns: <span class="inline-code">address</span>, <span class="inline-code">seed</span>, <span class="inline-code">balance_xrp</span>, and a <span class="inline-code">next_step</span> prompt. The faucet funds the account with test XRP immediately — save the seed.</p>
             </div>
         </div>
 
@@ -213,20 +213,19 @@
                 <div class="step-num">2</div>
                 <div>
                     <div class="step-title">Create the escrow and lock payment</div>
-                    <div class="step-desc">Pass <span class="inline-code">network='testnet'</span> and your testnet wallet. No audit fee is charged. Returns a vault ID and an unsigned <span class="inline-code">EscrowCreate</span> transaction ready to sign.</div>
+                    <div class="step-desc">Pass <span class="inline-code">network="testnet"</span> — no audit fee, no real XRP deducted. Returns a vault ID, a signed-transaction payload, and an <span class="inline-code">evaluate_token</span>.</div>
                 </div>
             </div>
             <div class="step-body">
                 <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
-<pre>create_escrow_vault(
+<pre>hire_and_pay(
     task="Summarise this document in 200 words",
     buyer_address="&lt;your testnet address&gt;",
     amount_xrp=1.0,
     worker_address="&lt;worker testnet address&gt;",
-    buyer_email="you@example.com",
     network="testnet"
 )</pre>
-                <p style="margin-top:.5rem;"><span class="inline-code">buyer_email</span> is needed for challenge-window notifications. The response includes the vault ID and an <span class="inline-code">evaluate_token</span> — share the token with the worker before they submit proof.</p>
+                <p style="margin-top:.5rem;">The response includes the vault ID and an <span class="inline-code">evaluate_token</span> — share the token with the worker before they submit proof. Sign and submit the returned transaction blob with <span class="inline-code">submit_escrow_transaction()</span>.</p>
             </div>
         </div>
 
@@ -321,6 +320,20 @@
         <a href="/claude-md/" class="resource-link">
             <i data-lucide="file-text"></i> Agent Setup
         </a>
+    </div>
+
+    <!-- One-call demo -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Shortcut</span>
+            <h2>Run a full demo in one call</h2>
+            <p style="margin-bottom:1.25rem">No wallet required. <span class="inline-code">try_testnet_demo()</span> creates two throwaway wallets, posts a task, locks payment, runs the AI audit, and returns the full result — all test XRP, zero cost.</p>
+            <div class="code-wrap">
+                <pre>try_testnet_demo()</pre>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('try_testnet_demo()')">Copy</button>
+            </div>
+            <p style="margin-top:.75rem;font-size:.85rem;color:var(--muted)">Takes ~10 seconds. Returns escrow_id, verdict, release_tx_hash and explorer link.</p>
+        </div>
     </div>
 
     <!-- CTA -->

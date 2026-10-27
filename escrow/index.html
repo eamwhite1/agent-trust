@@ -181,7 +181,7 @@ function renderResult(data) {
     if (d.finished_at)    html += row('Settled', new Date(d.finished_at).toLocaleString());
     html += `</div>`;
 
-    const finishTx = d.finish_tx_hash || d.tx_hash;
+    const finishTx = d.release_tx_hash || d.finish_tx_hash || d.tx_hash;
     const cancelTx = d.cancel_tx_hash;
     if (finishTx) {
         const url = explorerUrl(finishTx, d.network);
