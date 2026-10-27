@@ -223,6 +223,19 @@
     .cta-email { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; font-weight: 600; color: var(--blue); }
     .cta-email svg { width: 16px; height: 16px; }
 
+    /* Xaman modal */
+    .xaman-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .xaman-modal { background: var(--surface); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 2rem; max-width: 380px; width: 100%; text-align: center; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+    .xaman-modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--text); margin-bottom: .4rem; }
+    .xaman-modal .xaman-rate { font-size: .8rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+    .xaman-modal .xaman-amount { font-size: 1.6rem; font-weight: 800; color: var(--blue); margin-bottom: 1.25rem; }
+    .xaman-modal img.xaman-qr { width: 200px; height: 200px; border-radius: 10px; margin-bottom: 1rem; }
+    .xaman-modal .xaman-deeplink { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 700; background: var(--blue); color: #fff; padding: .6rem 1.4rem; border-radius: 40px; text-decoration: none; margin-bottom: 1.25rem; }
+    .xaman-modal .xaman-status { font-size: .82rem; color: var(--text-muted); min-height: 1.4em; margin-bottom: .5rem; }
+    .xaman-modal .xaman-close { position: absolute; top: .85rem; right: 1rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); line-height: 1; padding: .25rem; }
+    .btn-xaman { display: inline-flex; align-items: center; gap: .5rem; background: #1b5e20; color: #fff; font-size: .9rem; font-weight: 700; padding: .75rem 1.75rem; border-radius: 40px; border: none; cursor: pointer; transition: opacity .18s, transform .15s; text-decoration: none; }
+    .btn-xaman:hover { opacity: .88; transform: translateY(-1px); }
+
     /* Footer */
     footer { margin-top: 2rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { border-color: rgba(255,255,255,.07); } }
@@ -397,12 +410,29 @@
         </div>
     </section>
 
+    <!-- Xaman modal -->
+    <div class="xaman-modal-backdrop" id="xaman-modal" style="display:none;" role="dialog" aria-modal="true" aria-label="Pay with Xaman">
+        <div class="xaman-modal">
+            <button class="xaman-close" onclick="closeXamanModal()" aria-label="Close">×</button>
+            <h3>Pay with Xaman</h3>
+            <div class="xaman-rate" id="xaman-rate">Loading live rate…</div>
+            <div class="xaman-amount" id="xaman-amount"></div>
+            <div id="xaman-qr-wrap">
+                <img class="xaman-qr" id="xaman-qr" src="" alt="Scan with Xaman" style="display:none;">
+            </div>
+            <a class="xaman-deeplink" id="xaman-deeplink" href="#" target="_blank" style="display:none;"><i data-lucide="smartphone"></i> Open in Xaman</a>
+            <div class="xaman-status" id="xaman-status">Generating QR code…</div>
+            <p style="font-size:.75rem;color:var(--text-muted);margin:0;">Scan the QR with Xaman on mobile, or tap Open in Xaman. Payment confirms your annual Pro subscription.</p>
+        </div>
+    </div>
+
     <!-- CTA -->
     <section class="cta-section">
         <h2>Ready to put your agent workflows<br>on a compliance footing?</h2>
         <p>The Pro dashboard is live — create escrow templates, issue agent API keys, manage vaults, and view the full audit trail. $199/year after a 30-day free trial — no payment to start.</p>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
             <a href="https://app.cryptovault.co.uk/dashboard/" class="btn-primary"><i data-lucide="zap"></i> Try it free for 30 days</a>
+            <button class="btn-xaman" onclick="startXamanPayment()"><i data-lucide="zap"></i> Pay with Xaman (XRP)</button>
             <a href="/trust-model/" class="btn-ghost">Read the trust model <i data-lucide="arrow-right"></i></a>
         </div>
 
