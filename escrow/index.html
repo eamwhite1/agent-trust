@@ -179,8 +179,16 @@ function renderResult(data) {
     if (d.worker_address) html += row('Worker', `<a href="https://${(d.network||'').toLowerCase()==='testnet'?'testnet.':'livenet.'}xrpl.org/accounts/${d.worker_address}" target="_blank" rel="noopener" title="${d.worker_address}">${shortAddr(d.worker_address)}</a>`);
     if (d.created_at)     html += row('Created', new Date(d.created_at).toLocaleString());
     if (d.released_at)    html += row('Settled', new Date(d.released_at).toLocaleString());
-    if (d.verdict)        html += row('Verdict', statusBadge(d.verdict));
-    if (d.score_100 != null) html += row('Score', d.score_100 + ' / 100');
+    const _verdict = d.verdict || d.ai_verdict_summary;
+    const _score   = d.score != null ? d.score : (d.score_100 != null ? d.score_100 : null);
+    const _attRem  = d.attempts_remaining;
+    if (_verdict)       html += row('Verdict', statusBadge(_verdict));
+    if (_score != null) html += row('Score', _score + ' / 100');
+    if (_attRem != null) html += row('Attempts remaining', _attRem);
+    if (d.escrow_tx_hash) {
+        const etxUrl = explorerUrl(d.escrow_tx_hash, d.network);
+        html += row('Escrow tx', `<a href="${etxUrl}" target="_blank" rel="noopener">${d.escrow_tx_hash.slice(0,12)}…</a>`);
+    }
     if (d.release_mode)   html += row('Release mode', d.release_mode.replace(/_/g,' '));
     if (d.challenge_outcome) html += row('Challenge outcome', statusBadge(d.challenge_outcome));
     html += `</div>`;
