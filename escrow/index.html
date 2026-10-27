@@ -171,14 +171,18 @@ function renderResult(data) {
         <span class="status-label"></span>
     </div>`;
     html += `<p class="mono">${d.escrow_id || ''}</p>`;
-    if (d.task) html += `<div class="task-box">${escHtml(d.task)}</div>`;
+    if (d.task_description) html += `<div class="task-box">${escHtml(d.task_description)}</div>`;
 
     html += `<div style="margin-top:1.25rem">`;
     html += row('Amount', d.amount_xrp ? d.amount_xrp + ' XRP' : null);
     if (d.buyer_address)  html += row('Buyer',  `<a href="https://${(d.network||'').toLowerCase()==='testnet'?'testnet.':'livenet.'}xrpl.org/accounts/${d.buyer_address}" target="_blank" rel="noopener" title="${d.buyer_address}">${shortAddr(d.buyer_address)}</a>`);
     if (d.worker_address) html += row('Worker', `<a href="https://${(d.network||'').toLowerCase()==='testnet'?'testnet.':'livenet.'}xrpl.org/accounts/${d.worker_address}" target="_blank" rel="noopener" title="${d.worker_address}">${shortAddr(d.worker_address)}</a>`);
     if (d.created_at)     html += row('Created', new Date(d.created_at).toLocaleString());
-    if (d.finished_at)    html += row('Settled', new Date(d.finished_at).toLocaleString());
+    if (d.released_at)    html += row('Settled', new Date(d.released_at).toLocaleString());
+    if (d.verdict)        html += row('Verdict', statusBadge(d.verdict));
+    if (d.score_100 != null) html += row('Score', d.score_100 + ' / 100');
+    if (d.release_mode)   html += row('Release mode', d.release_mode.replace(/_/g,' '));
+    if (d.challenge_outcome) html += row('Challenge outcome', statusBadge(d.challenge_outcome));
     html += `</div>`;
 
     const finishTx = d.release_tx_hash || d.finish_tx_hash || d.tx_hash;
@@ -196,7 +200,7 @@ function renderResult(data) {
     }
     html += `</div>`;
 
-    if (status === 'PASS_CHALLENGE_WINDOW' && d.challenge_window_deadline) {
+    if (status === 'PASS_CHALLENGE_WINDOW' && d.challenge_deadline) {
         html += `<div class="callout callout-warn">
             <strong>Challenge window open.</strong>
             The buyer may challenge this result before the window closes.
@@ -216,8 +220,8 @@ function renderResult(data) {
     document.getElementById('page-sub').style.display = 'none';
     document.getElementById('lookup-box').style.display = 'none';
 
-    if (status === 'PASS_CHALLENGE_WINDOW' && d.challenge_window_deadline) {
-        startCountdown(d.challenge_window_deadline, document.getElementById('cdown'));
+    if (status === 'PASS_CHALLENGE_WINDOW' && d.challenge_deadline) {
+        startCountdown(d.challenge_deadline, document.getElementById('cdown'));
     }
 }
 

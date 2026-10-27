@@ -7,12 +7,12 @@
 <meta name="description" content="Buyers can challenge a PASS verdict within 1–24 h for a Gemini Pro re-review. Fee: ~$1 in XRP. No human arbitration.">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="Challenge a Verdict — AgentTrust">
-<meta property="og:description" content="Set a challenge window at vault creation. After a PASS, pay ~$1 for a Gemini Pro re-review. Outcomes are final and on-chain.">
+<meta property="og:description" content="Set a challenge window at vault creation. After a PASS, pay ~$1 for a Gemini Pro re-review. The challenge result is written on-chain in the release memo.">
 <meta property="og:url" content="https://www.cryptovault.co.uk/challenges/">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://www.cryptovault.co.uk/challenges/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -152,9 +152,47 @@
     .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: .8rem; }
     .footer-links a { color: var(--text-muted); text-decoration: none; }
     .footer-links a:hover { color: var(--blue); }
+
+    /* ── Nav ── */
+    site-nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.6); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(0,0,0,.06); }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) site-nav { background: rgba(13,13,18,.7); border-bottom-color: rgba(255,255,255,.07); } }
+    :root[data-theme="dark"] site-nav { background: rgba(13,13,18,.7); border-bottom-color: rgba(255,255,255,.07); }
+    .site-nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.45rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .site-nav-logo span { color: var(--blue); }
+    .site-nav-menu { display: flex; align-items: center; gap: 22px; flex: 1; justify-content: center; }
+    .site-nav-link { font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .site-nav-link:hover { color: var(--blue); text-decoration: none; }
+    .site-nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .site-nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); font-size: 1.4rem; padding: 4px 8px; min-width: 40px; min-height: 40px; }
+    @media (max-width: 680px) {
+        site-nav { flex-wrap: wrap; }
+        .site-nav-menu { display: none; width: 100%; flex-direction: column; align-items: flex-start; gap: 12px; padding: 1rem 0 .5rem; }
+        .site-nav-menu.open { display: flex; }
+        .site-nav-toggle { display: flex; align-items: center; justify-content: center; }
+    }
+    .site-badge-live { display: flex; align-items: center; gap: 7px; padding: 4px 12px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(0,0,0,.1); text-decoration: none; }
+    .site-ping { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
 </style>
 </head>
 <body>
+<site-nav>
+    <a class="site-nav-logo" href="/">AgentTrust<span>.</span></a>
+    <div class="site-nav-menu" id="site-nav-menu">
+        <a class="site-nav-link" href="/how-it-works/">How it Works</a>
+        <a class="site-nav-link" href="/use-cases/">Use Cases</a>
+        <a class="site-nav-link" href="/roadmap/">Roadmap</a>
+        <a class="site-nav-link" href="/guides/">Guides</a>
+        <a class="site-nav-link" href="/agents/">For Agents</a>
+        <a class="site-nav-link" href="/enterprise/">Pro</a>
+    </div>
+    <div class="site-nav-right">
+        <a class="site-badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
+            <span class="site-ping"></span> Live on XRPL
+        </a>
+        <button class="site-nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('site-nav-menu').classList.toggle('open')">&#9776;</button>
+    </div>
+</site-nav>
 <div class="wrap">
     <a class="back" href="/">← AgentTrust</a>
 
