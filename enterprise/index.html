@@ -490,5 +490,79 @@
 <script>
     lucide.createIcons();
 </script>
+<script>
+(function() {
+    const API = 'https://mcp.cryptovault.co.uk';
+    let _pollTimer = null;
+    let _currentUuid = null;
+
+    window.startXamanPayment = async function() {
+        const modal = document.getElementById('xaman-modal');
+        const statusEl = document.getElementById('xaman-status');
+        const rateEl = document.getElementById('xaman-rate');
+        const amountEl = document.getElementById('xaman-amount');
+        const qrEl = document.getElementById('xaman-qr');
+        const dlEl = document.getElementById('xaman-deeplink');
+
+        modal.style.display = 'flex';
+        statusEl.textContent = 'Generating QR code…';
+        rateEl.textContent = 'Loading live rate…';
+        amountEl.textContent = '';
+        qrEl.style.display = 'none';
+        dlEl.style.display = 'none';
+        lucide.createIcons();
+
+        try {
+            const res = await fetch(`${API}/subscribe/xaman`, {method: 'POST', credentials: 'include'});
+            if (res.status === 401) { statusEl.textContent = 'Please sign in to your Pro account first.'; return; }
+            if (!res.ok) { statusEl.textContent = 'Could not create payment — please try again.'; return; }
+            const data = await res.json();
+            _currentUuid = data.uuid;
+            rateEl.textContent = `1 XRP = $${data.xrp_price_usd?.toFixed(4) ?? '…'} · Annual subscription`;
+            amountEl.textContent = `${data.amount_xrp} XRP`;
+            if (data.qr_png) { qrEl.src = data.qr_png; qrEl.style.display = 'block'; }
+            if (data.deeplink) { dlEl.href = data.deeplink; dlEl.style.display = 'inline-flex'; lucide.createIcons(); }
+            statusEl.textContent = 'Scan with Xaman or tap Open in Xaman…';
+            _startPolling(data.uuid);
+        } catch (e) {
+            statusEl.textContent = 'Network error — please try again.';
+        }
+    };
+
+    function _startPolling(uuid) {
+        clearInterval(_pollTimer);
+        _pollTimer = setInterval(async () => {
+            if (!uuid) return;
+            try {
+                const res = await fetch(`${API}/subscribe/xaman/${uuid}`, {credentials: 'include'});
+                if (!res.ok) return;
+                const data = await res.json();
+                const statusEl = document.getElementById('xaman-status');
+                if (data.status === 'confirmed') {
+                    clearInterval(_pollTimer);
+                    statusEl.textContent = '✅ Payment confirmed — your Pro subscription is active!';
+                    setTimeout(() => { closeXamanModal(); location.reload(); }, 2500);
+                } else if (data.status === 'expired') {
+                    clearInterval(_pollTimer);
+                    statusEl.textContent = 'QR expired — please start again.';
+                } else if (data.status === 'amount_mismatch') {
+                    clearInterval(_pollTimer);
+                    statusEl.textContent = 'Amount mismatch — please contact support.';
+                }
+            } catch (_) {}
+        }, 3000);
+    }
+
+    window.closeXamanModal = function() {
+        clearInterval(_pollTimer);
+        _currentUuid = null;
+        document.getElementById('xaman-modal').style.display = 'none';
+    };
+
+    document.getElementById('xaman-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeXamanModal();
+    });
+})();
+</script>
 </body>
 </html>
