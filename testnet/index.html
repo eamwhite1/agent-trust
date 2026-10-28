@@ -104,6 +104,9 @@
     .step-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
     .step-desc { font-size: .83rem; color: var(--text-muted); line-height: 1.55; }
     .step-body { padding: 0 1.75rem 1.5rem; }
+    .tab-bar-sm { display: flex; gap: 4px; margin-bottom: .75rem; }
+    .tab-sm { padding: 5px 14px; border-radius: 8px; border: 1px solid rgba(0,0,0,.12); background: transparent; font-family: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; color: var(--text-muted); }
+    .tab-sm.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 
     .resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; margin-bottom: 2rem; }
     .resource-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
@@ -187,24 +190,43 @@
         <p><strong>Testnet XRP has no monetary value.</strong> AI audits are capped at 5 per buyer per day on testnet. Explorer links point to <a href="https://testnet.xrpl.org" target="_blank" rel="noopener" style="color:var(--blue)">testnet.xrpl.org</a>. Testnet vault IDs (<span class="inline-code">TN-</span>) only work on testnet — mainnet and testnet wallets are fully separate.</p>
     </div>
 
+    <!-- No-code banner -->
+    <div class="callout callout-amber" style="margin-bottom:1.5rem">
+        <i data-lucide="mouse-pointer-click"></i>
+        <p><strong>Not a developer?</strong> <a href="/try/" style="color:var(--blue);font-weight:600">Try it in your browser</a> — no code, no wallet, just click through the full flow with test money.</p>
+    </div>
+
     <!-- Steps -->
-    <span class="section-label" style="display:block;margin-bottom:1rem">The three steps</span>
+    <span class="section-label" style="display:block;margin-bottom:1rem">The five steps</span>
     <div class="steps">
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">0</div>
+                <div>
+                    <div class="step-title">Shortcut: run the whole flow in one call</div>
+                    <div class="step-desc">No wallet needed. Creates two throwaway wallets, locks payment, runs the AI audit, and returns both explorer links.</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>try_testnet_demo()</pre>
+                <p style="margin-top:.5rem;">Returns <span class="inline-code">escrow_id</span>, <span class="inline-code">verdict</span>, <span class="inline-code">release_tx_hash</span> and testnet explorer links. Takes ~30 s.</p>
+            </div>
+        </div>
 
         <div class="step">
             <div class="step-header">
                 <div class="step-num">1</div>
                 <div>
-                    <div class="step-title">Get a funded testnet wallet</div>
-                    <div class="step-desc">One call creates an XRPL testnet wallet and loads it with test XRP via the faucet. Keep the seed — you'll need it to sign transactions.</div>
+                    <div class="step-title">Get funded testnet wallets</div>
+                    <div class="step-desc">Call twice — once for the buyer, once for the worker. Each is funded with test XRP from the XRPL faucet immediately.</div>
                 </div>
             </div>
             <div class="step-body">
-                <div class="code-wrap">
-                    <pre>create_testnet_wallet()</pre>
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText('create_testnet_wallet()')">Copy</button>
-                </div>
-                <p style="margin-top:.5rem;">Returns: <span class="inline-code">address</span>, <span class="inline-code">seed</span>, <span class="inline-code">balance_xrp</span>, and a <span class="inline-code">next_step</span> prompt. The faucet funds the account with test XRP immediately — save the seed.</p>
+                <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>create_testnet_wallet()   # call twice: one for buyer, one for worker</pre>
+                <p style="margin-top:.5rem;">Returns: <span class="inline-code">address</span>, <span class="inline-code">seed</span>, <span class="inline-code">balance_xrp</span>. Keep the seed — you’ll need it to sign the EscrowCreate.</p>
             </div>
         </div>
 
@@ -212,20 +234,25 @@
             <div class="step-header">
                 <div class="step-num">2</div>
                 <div>
-                    <div class="step-title">Create the escrow and lock payment</div>
-                    <div class="step-desc">Pass <span class="inline-code">network="testnet"</span> — no audit fee, no real XRP deducted. Returns a vault ID, a signed-transaction payload, and an <span class="inline-code">evaluate_token</span>.</div>
+                    <div class="step-title">Lock payment in escrow</div>
+                    <div class="step-desc">Pass <span class="inline-code">network="testnet"</span> — no audit fee, no real XRP deducted. Returns a vault ID, an <strong>unsigned EscrowCreate to sign</strong>, and an <span class="inline-code">evaluate_token</span>.</div>
                 </div>
             </div>
             <div class="step-body">
                 <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
 <pre>hire_and_pay(
-    task="Summarise this document in 200 words",
-    buyer_address="&lt;your testnet address&gt;",
+    task="Reply with exactly: HELLO AGENT",
+    buyer_address="&lt;buyer testnet address&gt;",
     amount_xrp=1.0,
     worker_address="&lt;worker testnet address&gt;",
-    network="testnet"
+    network="testnet",
+    criteria=[{
+        "id": "c1",
+        "type": "code",
+        "gate": "exact_match",
+        "expected_value": "HELLO AGENT"
+    }]
 )</pre>
-                <p style="margin-top:.5rem;">The response includes the vault ID and an <span class="inline-code">evaluate_token</span> — share the token with the worker before they submit proof. Sign and submit the returned transaction blob with <span class="inline-code">submit_escrow_transaction()</span>.</p>
             </div>
         </div>
 
@@ -233,18 +260,56 @@
             <div class="step-header">
                 <div class="step-num">3</div>
                 <div>
+                    <div class="step-title">Sign and submit the EscrowCreate</div>
+                    <div class="step-desc">Sign the unsigned transaction returned by step 2, then submit it. Sign before the <span class="inline-code">LastLedgerSequence</span> expires (~4–5 min).</div>
+                </div>
+            </div>
+            <div class="step-body">
+                <div class="tab-bar-sm" id="sign-tabs">
+                    <button class="tab-sm active" onclick="showTab('py')">Python</button>
+                    <button class="tab-sm" onclick="showTab('js')">JavaScript</button>
+                </div>
+                <div id="tab-py">
+                    <div class="code-label">Python sign + submit <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>from xrpl.transaction import sign
+from xrpl.models.transactions import EscrowCreate
+from xrpl.wallet import Wallet
+
+wallet = Wallet.from_seed("&lt;buyer seed&gt;")
+blob = sign(EscrowCreate.from_xrpl(tx_dict), wallet).blob()
+</pre>
+                    <div class="code-label" style="margin-top:.75rem">Then submit <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>submit_escrow_transaction(escrow_id="TN-xxxx", tx_blob=blob)</pre>
+                </div>
+                <div id="tab-js" style="display:none">
+                    <div class="code-label">JavaScript sign + submit <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>import { Wallet } from 'xrpl';
+const wallet = Wallet.fromSeed('&lt;buyer seed&gt;');
+const { tx_blob } = wallet.sign(tx_dict);
+</pre>
+                    <div class="code-label" style="margin-top:.75rem">Then submit <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>submit_escrow_transaction(escrow_id="TN-xxxx", tx_blob=tx_blob)</pre>
+                </div>
+                <p style="margin-top:.75rem;font-size:.83rem;color:var(--text-muted)">Returns <span class="inline-code">status: "confirmed"</span> once the transaction validates on-ledger.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-header">
+                <div class="step-num">4</div>
+                <div>
                     <div class="step-title">Submit proof — payment releases on PASS</div>
-                    <div class="step-desc">The AI audits the submitted work against the task. On PASS, the escrow releases to the worker automatically on-ledger.</div>
+                    <div class="step-desc">The referee checks the submitted work against the task. On PASS, the escrow releases automatically on-ledger.</div>
                 </div>
             </div>
             <div class="step-body">
                 <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
 <pre>evaluate_escrow_work(
     escrow_id="TN-xxxx",
-    work="Here is the 200-word summary …",
+    work="HELLO AGENT",
     evaluate_token="&lt;token from step 2&gt;"
 )</pre>
-                <p style="margin-top:.5rem;">On FAIL, read <span class="inline-code">criteria_failed</span> in the response for actionable feedback and resubmit. Workers get 3 attempts by default.</p>
+                <p style="margin-top:.5rem;">On FAIL, read <span class="inline-code">criteria_failed</span> for actionable feedback and resubmit. Workers get 3 attempts by default.</p>
             </div>
         </div>
 
@@ -255,12 +320,27 @@
         <div class="card-pad">
             <span class="section-label">Connect an MCP client</span>
             <h2>Works with any MCP-compatible tool</h2>
-            <p style="margin-bottom:1.25rem">Point Claude Desktop, Cursor, CrewAI, LangGraph, or any MCP-compatible client at the AgentTrust server:</p>
+            <p style="margin-bottom:1.25rem">Point any MCP-compatible client at the AgentTrust server:</p>
             <div class="code-wrap">
                 <pre>https://mcp.cryptovault.co.uk/mcp</pre>
                 <button class="copy-btn" onclick="navigator.clipboard.writeText('https://mcp.cryptovault.co.uk/mcp')">Copy</button>
             </div>
-            <p>Full configuration snippets and the complete tool list are in the <a href="/claude-md/" style="color:var(--blue)">agent setup guide</a>.</p>
+            <p style="margin-top:.75rem;margin-bottom:1rem">Quick-start snippets:</p>
+            <div class="code-label">Claude Code <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp</pre>
+            <div class="code-label" style="margin-top:.75rem">Claude Desktop (claude_desktop_config.json) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>{ "mcpServers": { "agenttrust": { "url": "https://mcp.cryptovault.co.uk/mcp" } } }</pre>
+            <div class="code-label" style="margin-top:.75rem">Cursor (settings.json) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>{ "mcp": { "servers": { "agenttrust": { "url": "https://mcp.cryptovault.co.uk/mcp", "type": "http" } } } }</pre>
+            <div class="code-label" style="margin-top:.75rem">LangGraph (Python) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>from langchain_mcp_adapters.client import MultiServerMCPClient
+async with MultiServerMCPClient({
+    "agenttrust": {"url": "https://mcp.cryptovault.co.uk/mcp", "transport": "streamable_http"}
+}) as client:
+    tools = client.get_tools()</pre>
+            <div class="code-label" style="margin-top:.75rem">CrewAI (Python) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
+<pre>from crewai_tools import MCPServerAdapter
+agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "transport": "streamable-http"})</pre>
         </div>
     </div>
 
@@ -271,16 +351,16 @@
             <h2>Try the challenge window</h2>
             <p style="margin-bottom:1.25rem">Add <span class="inline-code">release_mode</span> and <span class="inline-code">cancel_after_hrs</span> to step 2. After a PASS the payment is held for the window duration, giving the buyer time to challenge for a Gemini Pro re-review — at no cost on testnet.</p>
             <div class="code-label">With challenge window <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
-<pre>create_escrow_vault(
+<pre>hire_and_pay(
     task="…",
-    buyer_address="&lt;your testnet address&gt;",
-    amount_xrp=1.0,
+    buyer_address="&lt;buyer testnet address&gt;",
+    amount_xrp=1,
     worker_address="&lt;worker testnet address&gt;",
-    buyer_email="you@example.com",
     network="testnet",
     release_mode="challenge_window_hrs:1",
     cancel_after_hrs=4
-)</pre>
+)
+# Note: buyer_email is a REST-only field (pass to POST /escrow/generate directly)</pre>
             <p style="margin-top:.75rem">After a PASS, the buyer receives a private challenge link by email. The window can be 1–24 hours; <span class="inline-code">cancel_after_hrs</span> must be at least <span class="inline-code">N+1</span>. <a href="/challenges/" style="color:var(--blue)">How challenges work →</a></p>
         </div>
     </div>
@@ -332,7 +412,13 @@
                 <pre>try_testnet_demo()</pre>
                 <button class="copy-btn" onclick="navigator.clipboard.writeText('try_testnet_demo()')">Copy</button>
             </div>
-            <p style="margin-top:.75rem;font-size:.85rem;color:var(--muted)">Takes ~10 seconds. Returns escrow_id, verdict, release_tx_hash and explorer link.</p>
+            <p style="margin-top:.75rem;font-size:.85rem;color:var(--muted)">Takes ~30 seconds. Returns escrow_id, verdict, release_tx_hash and explorer links for both the escrow and the release.</p>
+            <div style="margin-top:1rem">
+                <button id="demo-btn" onclick="runDemo()" style="display:inline-flex;align-items:center;gap:8px;padding:.65rem 1.2rem;border-radius:12px;border:none;background:var(--green);color:#fff;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer">
+                    <i data-lucide="play" style="width:14px;height:14px"></i> Run a testnet demo
+                </button>
+            </div>
+            <div id="demo-result" style="display:none;margin-top:.75rem;font-size:.85rem"></div>
         </div>
     </div>
 
@@ -371,6 +457,8 @@
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
+                <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="/try/">Try it in your browser</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
@@ -395,6 +483,39 @@
 
 <script>
     lucide.createIcons();
+    async function runDemo() {
+        const btn = document.getElementById('demo-btn');
+        const result = document.getElementById('demo-result');
+        btn.disabled = true;
+        btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Running…';
+        try {
+            const res = await fetch('https://mcp.cryptovault.co.uk/testnet/demo', {method:'POST'});
+            if (!res.ok) throw new Error('HTTP '+res.status);
+            const d = await res.json();
+            const eid = d.escrow_id || '';
+            const verdict = d.verdict || '';
+            const escrowUrl = d.escrow_explorer_url || d.escrow_tx_url || '';
+            const releaseUrl = d.release_explorer_url || (d.release_tx_hash ? 'https://testnet.xrpl.org/transactions/'+d.release_tx_hash : '');
+            result.innerHTML = `<strong>${eid}</strong> — Verdict: <strong style="color:${verdict==='PASS'?'var(--green)':'var(--red)'}">${verdict}</strong>
+                ${escrowUrl ? `&nbsp; <a href="${escrowUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Escrow tx →</a>` : ''}
+                ${releaseUrl ? `&nbsp; <a href="${releaseUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Release tx →</a>` : ''}`;
+            result.style.display = 'block';
+        } catch(e) {
+            result.innerHTML = '<span style="color:red">Demo failed — please try again.</span>';
+            result.style.display = 'block';
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="play" style="width:14px;height:14px"></i> Run again';
+        lucide.createIcons();
+    }
+    function showTab(id) {
+        ['py','js'].forEach(t => {
+            document.getElementById('tab-'+t).style.display = t===id ? '' : 'none';
+        });
+        document.querySelectorAll('.tab-sm').forEach((b,i) => {
+            b.classList.toggle('active', ['py','js'][i]===id);
+        });
+    }
     function copyBlock(btn) {
         const pre = btn.closest('.code-label').nextElementSibling;
         navigator.clipboard.writeText(pre.textContent);

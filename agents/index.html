@@ -437,6 +437,21 @@
 </div>
 
 <div class="container">
+    <!-- Testnet banner -->
+    <div style="background:rgba(0,185,122,.07);border:1px solid rgba(0,185,122,.25);border-radius:14px;padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px">
+            <strong>Free testnet sandbox</strong> — no real XRP needed.
+            <a href="/testnet/" style="color:var(--blue);font-weight:600;margin-left:.4rem">Testnet guide</a> &nbsp;·&nbsp;
+            <a href="/try/" style="color:var(--blue);font-weight:600">Try it in your browser</a>
+        </div>
+        <button id="demo-btn" onclick="runDemo()" style="padding:.55rem 1.1rem;border-radius:10px;border:none;background:var(--green);color:#fff;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+            <i data-lucide="play" style="width:14px;height:14px"></i> Run a testnet demo
+        </button>
+    </div>
+    <div id="demo-result" style="display:none;background:rgba(255,255,255,.7);border:1px solid rgba(0,185,122,.25);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;font-size:.88rem"></div>
+</div>
+
+<div class="container" style="padding-top:0">
     <!-- ════════════════════════════════════════════════════════════
          AGENTIC AI MARKETPLACE CTA
     ════════════════════════════════════════════════════════════ -->
@@ -553,6 +568,8 @@
             </div>
             <div class="footer-col">
                 <h4>Developers</h4>
+                <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="/try/">Try it in your browser</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
@@ -585,6 +602,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 lucide.createIcons();
+async function runDemo() {
+    const btn = document.getElementById('demo-btn');
+    const result = document.getElementById('demo-result');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Running demo…';
+    result.style.display = 'none';
+    try {
+        const res = await fetch('https://mcp.cryptovault.co.uk/testnet/demo', {method:'POST'});
+        if (!res.ok) throw new Error('HTTP '+res.status);
+        const d = await res.json();
+        const eid = d.escrow_id || '';
+        const verdict = d.verdict || '';
+        const escrowUrl = d.escrow_explorer_url || d.escrow_tx_url || '';
+        const releaseUrl = d.release_explorer_url || (d.release_tx_hash ? 'https://testnet.xrpl.org/transactions/'+d.release_tx_hash : '');
+        result.innerHTML = `<strong>${eid}</strong> &nbsp;·&nbsp; Verdict: <strong style="color:${verdict==='PASS'?'var(--green)':'var(--red)'}">${verdict}</strong>
+            ${escrowUrl ? `&nbsp;·&nbsp; <a href="${escrowUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Escrow tx →</a>` : ''}
+            ${releaseUrl ? `&nbsp;·&nbsp; <a href="${releaseUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Release tx →</a>` : ''}`;
+        result.style.display = 'block';
+    } catch(e) {
+        result.innerHTML = '<span style="color:var(--red)">Demo failed — please try again.</span>';
+        result.style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="play" style="width:14px;height:14px"></i> Run again';
+    lucide.createIcons();
+}
 </script>
 
 </body>

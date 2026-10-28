@@ -661,7 +661,7 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                 </label>
                 <select id="buyer-currency" onchange="onBuyerCurrencyChange()">
                     <option value="XRP" selected>XRP — native XRPL token, no trustline needed</option>
-                    <option value="RLUSD" disabled>RLUSD — coming soon (pending XRPL token-escrow support)</option>
+                    <option value="RLUSD" disabled>RLUSD — coming soon (activates when RLUSD issuer enables XLS-85 trust-line locking)</option>
                 </select>
             </div>
 
@@ -1566,6 +1566,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
             <div class="footer-col">
                 <h4>Developers</h4>
                 <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="/try/">Try it in your browser</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
