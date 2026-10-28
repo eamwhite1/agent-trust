@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Try AgentTrust — Test Money Demo</title>
+<meta name="description" content="See how AgentTrust pays for work — with test money. No wallet, no real XRP. Watch escrow lock, AI verify, and payment release in real-time on XRPL Testnet.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Try AgentTrust — Test Money Demo">
+<meta property="og:description" content="See how AgentTrust pays for work — with test money. No wallet, no real XRP needed.">
+<meta property="og:url" content="https://www.cryptovault.co.uk/try/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://www.cryptovault.co.uk/try/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+    :root {
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --green-dim:    rgba(0,185,122,.08);
+        --green-border: rgba(0,185,122,.2);
+        --amber:        #D97706;
+        --red:          #E5373D;
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
+
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,185,122,.1) 0%, rgba(0,102,255,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-back { margin-left: auto; font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .nav-back:hover { color: var(--blue); }
+
+    .container { max-width: 740px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+    .page-header { text-align: center; margin-bottom: 2.5rem; }
+    .page-header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -.03em; line-height: 1.15; margin-bottom: .75rem; }
+    .page-header p { font-size: 1.05rem; color: var(--text-muted); max-width: 500px; margin: 0 auto; }
+
+    .test-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(0,185,122,.1); border: 1px solid rgba(0,185,122,.3);
+        color: var(--green); border-radius: 40px; padding: 4px 12px;
+        font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+        margin-bottom: 1.25rem;
+    }
+    .test-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+    /* Step cards */
+    .step {
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: opacity .3s;
+    }
+    .step.locked { opacity: .5; pointer-events: none; }
+    .step-header { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem 1.75rem 1rem; }
+    .step-num {
+        width: 34px; height: 34px; border-radius: 50%;
+        background: var(--blue); color: #fff;
+        font-size: .8rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .step.done .step-num { background: var(--green); }
+    .step-title { font-size: 1rem; font-weight: 700; margin-bottom: .2rem; }
+    .step-desc { font-size: .84rem; color: var(--text-muted); line-height: 1.55; }
+    .step-body { padding: 0 1.75rem 1.5rem; }
+
+    .step-status { font-size: .8rem; color: var(--text-muted); margin-top: .75rem; display: flex; align-items: center; gap: .5rem; }
+    .step-status.ok { color: var(--green); }
+    .step-status.err { color: var(--red); }
+    .step-status.running { color: var(--blue); }
+
+    .spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: .7rem 1.4rem; border-radius: var(--radius-md);
+        font-family: inherit; font-size: .9rem; font-weight: 600;
+        cursor: pointer; border: none; text-decoration: none;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 4px 18px rgba(0,102,255,.3); }
+    .btn-primary:hover { box-shadow: 0 6px 24px rgba(0,102,255,.38); }
+    .btn-secondary { background: rgba(255,255,255,.6); color: var(--text); border: 1px solid var(--glass-border); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn[disabled] { opacity: .5; cursor: default; pointer-events: none; }
+
+    .explorer-link { font-size: .83rem; color: var(--blue); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: .5rem; }
+    .explorer-link:hover { text-decoration: underline; }
+
+    textarea {
+        width: 100%; padding: .65rem .85rem; border-radius: var(--radius-sm);
+        border: 1.5px solid rgba(0,0,0,.12); background: rgba(255,255,255,.7);
+        font-family: inherit; font-size: .9rem; resize: vertical;
+        min-height: 80px; color: var(--text); outline: none;
+        transition: border-color .2s;
+    }
+    textarea:focus { border-color: var(--blue); }
+
+    .toggle-row { display: flex; align-items: center; gap: .6rem; margin-top: .75rem; font-size: .85rem; color: var(--text-muted); }
+    .toggle-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--blue); }
+
+    /* Verdict card */
+    .verdict-card {
+        border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-top: 1rem;
+        border: 1.5px solid;
+    }
+    .verdict-pass { background: rgba(0,185,122,.07); border-color: rgba(0,185,122,.3); }
+    .verdict-fail { background: rgba(229,55,61,.06); border-color: rgba(229,55,61,.25); }
+    .verdict-label { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; }
+    .verdict-pass .verdict-label { color: var(--green); }
+    .verdict-fail .verdict-label { color: var(--red); }
+    .verdict-score { font-size: .82rem; color: var(--text-muted); margin-bottom: .75rem; }
+    .verdict-summary { font-size: .9rem; margin-bottom: 1rem; }
+    .criteria-row { display: flex; gap: .75rem; padding: .5rem 0; border-top: 1px solid rgba(0,0,0,.06); font-size: .83rem; }
+    .criteria-result-pass { color: var(--green); font-weight: 600; flex-shrink: 0; }
+    .criteria-result-fail { color: var(--red); font-weight: 600; flex-shrink: 0; }
+    .criteria-reasoning { color: var(--text-muted); font-size: .78rem; margin-top: 2px; }
+
+    /* Timeline */
+    .timeline { margin-top: 1.5rem; }
+    .timeline h3 { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: .75rem; }
+    .tl-item { display: flex; gap: .75rem; padding: .4rem 0; font-size: .83rem; align-items: flex-start; }
+    .tl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; margin-top: 5px; }
+    .tl-dot.green { background: var(--green); }
+    .tl-time { color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+    .tl-label { flex: 1; }
+
+    /* CTA */
+    .cta-card { background: var(--blue); color: #fff; border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; margin-top: 2.5rem; }
+    .cta-card h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; letter-spacing: -.02em; margin-bottom: .6rem; }
+    .cta-card p { opacity: .85; margin-bottom: 1.5rem; font-size: .92rem; line-height: 1.65; }
+    .cta-row { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+    .cta-row .btn-white { background: #fff; color: var(--blue); }
+    .cta-row .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.5); }
+
+    /* Error banner */
+    .error-banner { background: rgba(229,55,61,.08); border: 1px solid rgba(229,55,61,.25); border-radius: var(--radius-sm); padding: .75rem 1rem; font-size: .85rem; color: var(--red); margin-top: .75rem; display: none; }
+    .error-banner.visible { display: block; }
+
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+    .footer-bottom a { color: var(--blue); text-decoration: none; }
+    @media (max-width: 680px) { .footer-inner { flex-direction: column; gap: 2rem; } .footer-brand { flex: none; } .footer-cols { gap: 1.5rem; } }
+
+    @media (max-width: 480px) {
+        .step-header { padding: 1.25rem 1.25rem .75rem; }
+        .step-body { padding: 0 1.25rem 1.25rem; }
+        .container { padding: 2rem 1rem 5rem; }
+    }
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a href="/" class="logo">AgentTrust<span>.</span></a>
+    <a href="/" class="nav-back"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Home</a>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <div class="test-badge"><span class="test-dot"></span> TEST MONEY · not real · XRPL Testnet</div>
+        <h1>See how AgentTrust pays for work — with test money.</h1>
+        <p>No wallet needed. No real XRP. Watch the XRP Ledger lock funds, verify work, and release payment automatically.</p>
+    </div>
+
+    <!-- Step 1: Create wallets -->
+    <div class="step" id="step-1">
+        <div class="step-header">
+            <div class="step-num" id="num-1">1</div>
+            <div>
+                <div class="step-title">Create two free test wallets</div>
+                <div class="step-desc">One wallet for the buyer (the one paying), one for the worker (the one doing the job). We fill the buyer's with free test XRP.</div>
+            </div>
+        </div>
+        <div class="step-body">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <button class="btn btn-primary" id="btn-1" onclick="step1()">
+                <i data-lucide="wallet" style="width:16px;height:16px"></i> Create test wallets
+            </button>
+            <div id="status-1" class="step-status"></div>
+            <div id="links-1"></div>
+            <div id="err-1" class="error-banner"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Lock escrow -->
+    <div class="step locked" id="step-2">
+        <div class="step-header">
+            <div class="step-num" id="num-2">2</div>
+            <div>
+                <div class="step-title">Lock 5 test XRP in escrow</div>
+                <div class="step-desc">The money leaves the buyer's wallet and is held by the XRP Ledger itself — not by us, and not by the worker — until the work is checked.</div>
+            </div>
+        </div>
+        <div class="step-body">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <button class="btn btn-primary" id="btn-2" onclick="step2()">
+                <i data-lucide="lock" style="width:16px;height:16px"></i> Lock 5 test XRP
+            </button>
+            <div id="status-2" class="step-status"></div>
+            <div id="links-2"></div>
+            <div id="err-2" class="error-banner"></div>
+        </div>
+    </div>
+
+    <!-- Step 3: Submit work -->
+    <div class="step locked" id="step-3">
+        <div class="step-header">
+            <div class="step-num" id="num-3">3</div>
+            <div>
+                <div class="step-title">Worker sends the work</div>
+                <div class="step-desc">The task is: <strong>Reply with exactly: HELLO AGENT</strong>. Change it to see what happens when work fails.</div>
+            </div>
+        </div>
+        <div class="step-body">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <textarea id="work-input" rows="3" maxlength="500" placeholder="HELLO AGENT">HELLO AGENT</textarea>
+            <p style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem">Hint: change it to anything else to see what happens when work fails.</p>
+            <div class="toggle-row">
+                <input type="checkbox" id="use-ai">
+                <label for="use-ai">Also ask the AI referee (adds ~10 s)</label>
+            </div>
+            <div style="margin-top:1rem">
+                <button class="btn btn-primary" id="btn-3" onclick="step3()">
+                    <i data-lucide="send" style="width:16px;height:16px"></i> Check the work
+                </button>
+            </div>
+            <div id="status-3" class="step-status"></div>
+            <div id="err-3" class="error-banner"></div>
+        </div>
+    </div>
+
+    <!-- Step 4: Result -->
+    <div class="step locked" id="step-4">
+        <div class="step-header">
+            <div class="step-num" id="num-4">4</div>
+            <div>
+                <div class="step-title">Check the work</div>
+                <div class="step-desc">The referee checks the submission against the task requirements.</div>
+            </div>
+        </div>
+        <div class="step-body">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <div id="verdict-card"></div>
+            <div id="retry-row" style="display:none;margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;"></div>
+        </div>
+    </div>
+
+    <!-- Step 5: Payment -->
+    <div class="step locked" id="step-5">
+        <div class="step-header">
+            <div class="step-num" id="num-5">5</div>
+            <div id="step-5-title">
+                <div class="step-title">Payment released</div>
+                <div class="step-desc">The worker got paid automatically — nobody had to press 'pay'.</div>
+            </div>
+        </div>
+        <div class="step-body">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <div id="step5-content"></div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline" id="timeline" style="display:none">
+        <h3>On-ledger events</h3>
+        <div id="tl-items"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-card" id="cta" style="display:none">
+        <h2>Do it for real on XRPL mainnet</h2>
+        <p>Try Pro free for 30 days — no payment needed to start. The same flow, with real XRP and real work.</p>
+        <div class="cta-row">
+            <a href="/enterprise/" class="btn btn-white">Try Pro free for 30 days</a>
+            <a href="/testnet/" class="btn btn-outline">Developers: same flow in 5 calls →</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/enterprise/">Pro</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="/try/">Try it in your browser</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
+</footer>
+
+<script>
+lucide.createIcons();
+
+const API = 'https://mcp.cryptovault.co.uk';
+let sid = null;
+let escrowId = null;
+let attemptsRemaining = 3;
+const tlItems = [];
+
+function setStatus(n, type, msg) {
+    const el = document.getElementById('status-' + n);
+    if (!el) return;
+    el.className = 'step-status ' + type;
+    if (type === 'running') el.innerHTML = `<span class="spinner"></span> ${msg}`;
+    else if (type === 'ok') el.innerHTML = `<i data-lucide="check-circle" style="width:14px;height:14px"></i> ${msg}`;
+    else if (type === 'err') el.innerHTML = `<i data-lucide="x-circle" style="width:14px;height:14px"></i> ${msg}`;
+    else el.innerHTML = msg;
+    lucide.createIcons();
+}
+
+function showErr(n, msg) {
+    const el = document.getElementById('err-' + n);
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('visible');
+}
+function hideErr(n) {
+    const el = document.getElementById('err-' + n);
+    if (el) el.classList.remove('visible');
+}
+
+function unlock(n) {
+    const el = document.getElementById('step-' + n);
+    if (el) el.classList.remove('locked');
+}
+
+function markDone(n) {
+    const num = document.getElementById('num-' + n);
+    const step = document.getElementById('step-' + n);
+    if (num) num.innerHTML = '<i data-lucide="check" style="width:16px;height:16px"></i>';
+    if (step) step.classList.add('done');
+    lucide.createIcons();
+}
+
+function disableBtn(n) {
+    const b = document.getElementById('btn-' + n);
+    if (b) b.disabled = true;
+}
+
+function addTimeline(label, explorerUrl, green) {
+    const now = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+    tlItems.push({label, explorerUrl, now, green});
+    renderTimeline();
+    document.getElementById('timeline').style.display = 'block';
+}
+
+function renderTimeline() {
+    const el = document.getElementById('tl-items');
+    el.innerHTML = tlItems.map(t =>
+        `<div class="tl-item">
+            <div class="tl-dot${t.green?' green':''}"></div>
+            <span class="tl-time">${t.now}</span>
+            <span class="tl-label">${t.label}${t.explorerUrl
+                ? ` <a href="${t.explorerUrl}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:11px;height:11px"></i> testnet.xrpl.org</a>`
+                : ''}</span>
+        </div>`
+    ).join('');
+    lucide.createIcons();
+}
+
+function explorerTxUrl(hash) {
+    return `https://testnet.xrpl.org/transactions/${hash}`;
+}
+
+async function step1() {
+    disableBtn(1);
+    hideErr(1);
+    setStatus(1, 'running', 'Creating wallets and funding from testnet faucet…');
+    try {
+        const res = await fetch(`${API}/testnet/try/start`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
+        if (res.status === 429) { showErr(1, 'The sandbox is busy — try again in a minute.'); setStatus(1, '', ''); document.getElementById('btn-1').disabled = false; return; }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        sid = d.session_id;
+        setStatus(1, 'ok', 'Two test wallets created and funded with test XRP.');
+        const links1 = document.getElementById('links-1');
+        links1.innerHTML = `
+            <p style="font-size:.82rem;color:var(--text-muted);margin-top:.6rem">
+                Buyer: <code style="font-size:.78rem">${d.buyer_address}</code>
+                <a href="${d.buyer_explorer_url||'https://testnet.xrpl.org/accounts/'+d.buyer_address}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:11px;height:11px"></i></a>
+                &nbsp;·&nbsp; Worker: <code style="font-size:.78rem">${d.worker_address}</code>
+                <a href="${d.worker_explorer_url||'https://testnet.xrpl.org/accounts/'+d.worker_address}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:11px;height:11px"></i></a>
+            </p>`;
+        lucide.createIcons();
+        addTimeline('Buyer wallet funded', d.buyer_explorer_url, true);
+        addTimeline('Worker wallet funded', d.worker_explorer_url, true);
+        markDone(1);
+        unlock(2);
+    } catch(e) {
+        showErr(1, 'Network error — please retry.');
+        setStatus(1, '', '');
+        document.getElementById('btn-1').disabled = false;
+    }
+}
+
+async function step2() {
+    if (!sid) return;
+    disableBtn(2);
+    hideErr(2);
+    setStatus(2, 'running', 'Signing and submitting EscrowCreate to XRPL Testnet…');
+    try {
+        const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/lock`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
+        if (res.status === 429) { showErr(2, 'The sandbox is busy — try again in a minute.'); setStatus(2, '', ''); document.getElementById('btn-2').disabled = false; return; }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        escrowId = d.escrow_id;
+        const txUrl = d.escrow_explorer_url || (d.escrow_tx_hash ? explorerTxUrl(d.escrow_tx_hash) : null);
+        setStatus(2, 'ok', `5 test XRP locked in escrow ${d.escrow_id}`);
+        const links2 = document.getElementById('links-2');
+        links2.innerHTML = txUrl
+            ? `<a href="${txUrl}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:12px;height:12px"></i> View escrow on testnet.xrpl.org</a>`
+            : '';
+        lucide.createIcons();
+        addTimeline(`EscrowCreate locked (${d.escrow_id})`, txUrl, true);
+        markDone(2);
+        unlock(3);
+    } catch(e) {
+        showErr(2, 'Network error — please retry.');
+        setStatus(2, '', '');
+        document.getElementById('btn-2').disabled = false;
+    }
+}
+
+async function step3() {
+    if (!sid || !escrowId) return;
+    const work = document.getElementById('work-input').value.trim();
+    if (!work) { showErr(3, 'Please enter some work to submit.'); return; }
+    const useAi = document.getElementById('use-ai').checked;
+    disableBtn(3);
+    hideErr(3);
+    setStatus(3, 'running', 'Checking work against task criteria' + (useAi ? ' (AI referee running…)' : '…'));
+    try {
+        const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({work, use_ai: useAi})
+        });
+        if (res.status === 429) { showErr(3, 'The sandbox is busy — try again in a minute.'); setStatus(3, '', ''); document.getElementById('btn-3').disabled = false; return; }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        attemptsRemaining = d.attempts_remaining ?? (attemptsRemaining - 1);
+        setStatus(3, d.verdict === 'PASS' ? 'ok' : 'err', d.verdict === 'PASS' ? 'Work accepted!' : 'Work rejected.');
+        renderVerdict(d);
+        markDone(3);
+        unlock(4);
+    } catch(e) {
+        showErr(3, 'Network error — please retry.');
+        setStatus(3, '', '');
+        document.getElementById('btn-3').disabled = false;
+    }
+}
+
+function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderVerdict(d) {
+    const pass = d.verdict === 'PASS';
+    const score = d.score != null ? d.score : null;
+    const criteria = Array.isArray(d.criteria) ? d.criteria : [];
+
+    let html = `<div class="verdict-card ${pass ? 'verdict-pass' : 'verdict-fail'}">
+        <div class="verdict-label">
+            <i data-lucide="${pass ? 'check-circle' : 'x-circle'}" style="width:20px;height:20px"></i>
+            ${pass ? 'PASS' : 'FAIL'}
+        </div>`;
+    if (score != null) html += `<div class="verdict-score">Score: ${score} / 100</div>`;
+    if (d.summary) html += `<div class="verdict-summary">${escHtml(d.summary)}</div>`;
+    criteria.forEach(c => {
+        const ok = (c.verdict||c.result||'').toUpperCase() === 'PASS';
+        html += `<div class="criteria-row">
+            <span class="${ok ? 'criteria-result-pass' : 'criteria-result-fail'}">${ok ? '✓' : '✗'}</span>
+            <div>
+                <div>${escHtml(c.description||'')}</div>
+                ${c.reasoning ? `<div class="criteria-reasoning">${escHtml(c.reasoning)}</div>` : ''}
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+
+    document.getElementById('verdict-card').innerHTML = html;
+    lucide.createIcons();
+
+    const retryRow = document.getElementById('retry-row');
+    retryRow.style.display = 'flex';
+    retryRow.innerHTML = '';
+
+    if (pass) {
+        showStep5Pass(d);
+        document.getElementById('cta').style.display = 'block';
+    } else {
+        if (attemptsRemaining > 0) {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-primary';
+            btn.innerHTML = `<i data-lucide="rotate-ccw" style="width:15px;height:15px"></i> Try again (${attemptsRemaining} attempt${attemptsRemaining===1?'':'s'} left)`;
+            btn.onclick = () => { document.getElementById('btn-3').disabled = false; unlock(3); retryRow.style.display = 'none'; };
+            retryRow.appendChild(btn);
+            lucide.createIcons();
+        }
+        const refundBtn = document.createElement('button');
+        refundBtn.className = 'btn btn-danger';
+        refundBtn.innerHTML = `<i data-lucide="undo-2" style="width:15px;height:15px"></i> Give up and refund the buyer`;
+        refundBtn.onclick = () => { startRefund(refundBtn); };
+        retryRow.appendChild(refundBtn);
+        lucide.createIcons();
+    }
+
+    addTimeline(`Verdict: ${d.verdict}${score!=null?' ('+score+'/100)':''}`, null, pass);
+}
+
+function showStep5Pass(d) {
+    const step5 = document.getElementById('step-5');
+    step5.classList.remove('locked');
+    step5.querySelector('.step-title').textContent = 'Payment released!';
+    step5.querySelector('.step-desc').textContent = "The worker got paid automatically — nobody had to press 'pay'.";
+
+    const content = document.getElementById('step5-content');
+    let html = `<p style="color:var(--green);font-weight:600;margin-bottom:.75rem">🎉 Payment released to the worker automatically on PASS.</p>`;
+
+    const releaseHash = d.release_tx_hash;
+    const releaseUrl = d.release_explorer_url || (releaseHash ? explorerTxUrl(releaseHash) : null);
+    if (releaseUrl) {
+        html += `<a href="${releaseUrl}" target="_blank" rel="noopener" class="explorer-link" id="release-link"><i data-lucide="external-link" style="width:12px;height:12px"></i> View release transaction on testnet.xrpl.org</a>`;
+        addTimeline('EscrowFinish — payment released', releaseUrl, true);
+    } else if (d.release_status === 'pending') {
+        html += `<p style="font-size:.85rem;color:var(--text-muted)" id="release-pending">Release pending — checking...</p>`;
+        pollRelease(d.poll_url || `${API}/escrow/${escrowId}`);
+    }
+    content.innerHTML = html;
+    lucide.createIcons();
+    markDone(5);
+}
+
+async function pollRelease(pollUrl) {
+    for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 2500));
+        try {
+            const res = await fetch(pollUrl);
+            if (!res.ok) continue;
+            const d = await res.json();
+            const escrow = d.escrow || d;
+            const hash = escrow.release_tx_hash || escrow.finish_tx_hash;
+            if (hash) {
+                const url = explorerTxUrl(hash);
+                const el = document.getElementById('release-pending');
+                if (el) el.outerHTML = `<a href="${url}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:12px;height:12px"></i> View release transaction on testnet.xrpl.org</a>`;
+                lucide.createIcons();
+                addTimeline('EscrowFinish — payment released', url, true);
+                return;
+            }
+        } catch(e) {}
+    }
+}
+
+async function startRefund(btn) {
+    if (!sid) return;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Waiting for refund window…`;
+
+    const step5 = document.getElementById('step-5');
+    step5.classList.remove('locked');
+    const title5 = step5.querySelector('.step-title');
+    const desc5 = step5.querySelector('.step-desc');
+    if (title5) title5.textContent = 'Refund in progress';
+    if (desc5) desc5.textContent = 'Escrows on XRPL can only be refunded after their deadline — this one is 10 minutes.';
+
+    const content = document.getElementById('step5-content');
+    content.innerHTML = `<p style="font-size:.85rem;color:var(--text-muted)" id="refund-status">Waiting for the 10-minute cancel window to open…</p>`;
+
+    addTimeline('Refund requested', null, false);
+
+    for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 15000));
+        try {
+            const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}`);
+            if (!res.ok) continue;
+            const d = await res.json();
+            if (d.cancel_tx_hash) {
+                const url = explorerTxUrl(d.cancel_tx_hash);
+                document.getElementById('refund-status').outerHTML =
+                    `<p style="color:var(--green);font-weight:600;margin-bottom:.5rem">Refund complete.</p>
+                     <a href="${url}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:12px;height:12px"></i> View cancellation on testnet.xrpl.org</a>`;
+                lucide.createIcons();
+                addTimeline('EscrowCancel — buyer refunded', url, true);
+                markDone(5);
+                document.getElementById('cta').style.display = 'block';
+                return;
+            }
+            if (d.refund_ready_at) {
+                const mins = Math.max(0, Math.ceil((new Date(d.refund_ready_at) - Date.now()) / 60000));
+                const el = document.getElementById('refund-status');
+                if (el) el.textContent = `Cancel window opens in ~${mins} minute${mins===1?'':'s'}…`;
+            }
+        } catch(e) {}
+    }
+}
+</script>
+</body>
+</html>

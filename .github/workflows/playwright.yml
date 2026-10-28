@@ -10,13 +10,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Run Playwright tests
         run: npx playwright test tests/ --reporter=list
+        env:
+          BASE_URL: https://www.cryptovault.co.uk
+      - name: Run snippet checker
+        run: python3 scripts/check_snippets.py
+        continue-on-error: true

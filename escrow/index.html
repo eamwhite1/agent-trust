@@ -193,6 +193,29 @@ function renderResult(data) {
     if (d.challenge_outcome) html += row('Challenge outcome', statusBadge(d.challenge_outcome));
     html += `</div>`;
 
+    // Summary
+    const _summary = d.summary || d.ai_summary;
+    if (_summary) html += `<div style="margin-top:1rem;font-size:.88rem;color:var(--text-muted);font-style:italic;line-height:1.55">${escHtml(_summary)}</div>`;
+
+    // Criteria results
+    const criteriaResults = Array.isArray(d.criteria_results) ? d.criteria_results : [];
+    if (criteriaResults.length > 0) {
+        html += `<div style="margin-top:1.25rem;border-top:1px solid var(--border);padding-top:.75rem">
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.5rem">Criteria</div>`;
+        criteriaResults.forEach(c => {
+            const cv = (c.verdict||c.result||'').toUpperCase();
+            const ok = cv === 'PASS';
+            html += `<div style="display:flex;gap:.6rem;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.84rem;align-items:flex-start">
+                <span style="color:${ok?'var(--green)':'var(--red)'};font-weight:700;flex-shrink:0">${ok?'✓':'✗'}</span>
+                <div>
+                    <div>${escHtml(c.description||c.criterion_id||'')}</div>
+                    ${c.reasoning ? `<div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">${escHtml(c.reasoning)}</div>` : ''}
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
     const finishTx = d.release_tx_hash || d.finish_tx_hash || d.tx_hash;
     const cancelTx = d.cancel_tx_hash;
     if (finishTx) {
