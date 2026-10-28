@@ -3,9 +3,11 @@ const { test, expect } = require('@playwright/test');
 
 const TESTNET_TX_RE = /testnet\.xrpl\.org\/transactions\/[A-F0-9]{64}/i;
 const SEED_RE = /s[a-zA-Z0-9]{25,}/;
+const IS_LOCAL = (process.env.BASE_URL || '').includes('localhost');
 
 test.describe('/try/ interactive demo', () => {
   test('PASS path shows two testnet.xrpl.org links', async ({ page }) => {
+    test.skip(IS_LOCAL, 'Requires live backend API — CORS blocks localhost');
     await page.goto('/try/');
     await expect(page.locator('h1')).toBeVisible();
 
@@ -44,6 +46,7 @@ test.describe('/try/ interactive demo', () => {
   });
 
   test('FAIL path shows reasoning text', async ({ page }) => {
+    test.skip(IS_LOCAL, 'Requires live backend API — CORS blocks localhost');
     await page.goto('/try/');
 
     const startBtn = page.locator('#btn-start');

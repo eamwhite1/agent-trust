@@ -1,6 +1,8 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
+const IS_LOCAL = (process.env.BASE_URL || '').includes('localhost');
+
 const PAGES_WITH_FOOTER = [
   '/agents/',
   '/testnet/',
@@ -25,6 +27,7 @@ for (const path of PAGES_WITH_FOOTER) {
 }
 
 test('/agents/ demo button shows testnet.xrpl.org links on click', async ({ page }) => {
+  test.skip(IS_LOCAL, 'Requires live backend API — CORS blocks localhost');
   await page.goto('/agents/');
   const demoBtn = page.locator('button, a').filter({ hasText: /testnet demo/i }).first();
   await demoBtn.waitFor({ state: 'visible', timeout: 10000 });
