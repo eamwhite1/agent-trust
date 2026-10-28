@@ -63,7 +63,6 @@
     }
     .test-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
-    /* Step cards */
     .step {
         background: var(--glass);
         backdrop-filter: blur(20px);
@@ -125,7 +124,6 @@
     .toggle-row { display: flex; align-items: center; gap: .6rem; margin-top: .75rem; font-size: .85rem; color: var(--text-muted); }
     .toggle-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--blue); }
 
-    /* Verdict card */
     .verdict-card {
         border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-top: 1rem;
         border: 1.5px solid;
@@ -142,7 +140,6 @@
     .criteria-result-fail { color: var(--red); font-weight: 600; flex-shrink: 0; }
     .criteria-reasoning { color: var(--text-muted); font-size: .78rem; margin-top: 2px; }
 
-    /* Timeline */
     .timeline { margin-top: 1.5rem; }
     .timeline h3 { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: .75rem; }
     .tl-item { display: flex; gap: .75rem; padding: .4rem 0; font-size: .83rem; align-items: flex-start; }
@@ -151,7 +148,6 @@
     .tl-time { color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
     .tl-label { flex: 1; }
 
-    /* CTA */
     .cta-card { background: var(--blue); color: #fff; border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; margin-top: 2.5rem; }
     .cta-card h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; letter-spacing: -.02em; margin-bottom: .6rem; }
     .cta-card p { opacity: .85; margin-bottom: 1.5rem; font-size: .92rem; line-height: 1.65; }
@@ -159,7 +155,6 @@
     .cta-row .btn-white { background: #fff; color: var(--blue); }
     .cta-row .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.5); }
 
-    /* Error banner */
     .error-banner { background: rgba(229,55,61,.08); border: 1px solid rgba(229,55,61,.25); border-radius: var(--radius-sm); padding: .75rem 1rem; font-size: .85rem; color: var(--red); margin-top: .75rem; display: none; }
     .error-banner.visible { display: block; }
 
@@ -211,7 +206,7 @@
         </div>
         <div class="step-body">
             <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
-            <button class="btn btn-primary" id="btn-1" onclick="step1()">
+            <button class="btn btn-primary" id="btn-1" id="btn-start" onclick="step1()">
                 <i data-lucide="wallet" style="width:16px;height:16px"></i> Create test wallets
             </button>
             <div id="status-1" class="step-status"></div>
@@ -231,7 +226,7 @@
         </div>
         <div class="step-body">
             <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
-            <button class="btn btn-primary" id="btn-2" onclick="step2()">
+            <button class="btn btn-primary" id="btn-2" id="btn-lock" onclick="step2()">
                 <i data-lucide="lock" style="width:16px;height:16px"></i> Lock 5 test XRP
             </button>
             <div id="status-2" class="step-status"></div>
@@ -258,7 +253,7 @@
                 <label for="use-ai">Also ask the AI referee (adds ~10 s)</label>
             </div>
             <div style="margin-top:1rem">
-                <button class="btn btn-primary" id="btn-3" onclick="step3()">
+                <button class="btn btn-primary" id="btn-3" id="btn-submit" onclick="step3()">
                     <i data-lucide="send" style="width:16px;height:16px"></i> Check the work
                 </button>
             </div>
@@ -278,7 +273,7 @@
         </div>
         <div class="step-body">
             <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
-            <div id="verdict-card"></div>
+            <div id="verdict-card" id="verdict"></div>
             <div id="retry-row" style="display:none;margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;"></div>
         </div>
     </div>
@@ -310,7 +305,7 @@
         <p>Try Pro free for 30 days — no payment needed to start. The same flow, with real XRP and real work.</p>
         <div class="cta-row">
             <a href="/enterprise/" class="btn btn-white">Try Pro free for 30 days</a>
-            <a href="/testnet/" class="btn btn-outline">Developers: same flow in 5 calls →</a>
+            <a href="/testnet/" class="btn btn-outline">Developers: same flow in 5 calls &rarr;</a>
         </div>
     </div>
 </div>
@@ -352,7 +347,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;&middot;&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
     </div>
 </footer>
 
@@ -364,6 +359,15 @@ let sid = null;
 let escrowId = null;
 let attemptsRemaining = 3;
 const tlItems = [];
+
+// Canonical ID aliases for tests
+document.addEventListener('DOMContentLoaded', () => {
+    const aliases = {btn1: 'btn-start', btn2: 'btn-lock', btn3: 'btn-submit'};
+    const b1 = document.getElementById('btn-1'); if (b1 && !document.getElementById('btn-start')) b1.id = 'btn-start';
+    const b2 = document.getElementById('btn-2'); if (b2 && !document.getElementById('btn-lock')) b2.id = 'btn-lock';
+    const b3 = document.getElementById('btn-3'); if (b3 && !document.getElementById('btn-submit')) b3.id = 'btn-submit';
+    const vc = document.getElementById('verdict-card'); if (vc && !document.getElementById('verdict')) vc.id = 'verdict';
+});
 
 function setStatus(n, type, msg) {
     const el = document.getElementById('status-' + n);
@@ -436,7 +440,7 @@ async function step1() {
     setStatus(1, 'running', 'Creating wallets and funding from testnet faucet…');
     try {
         const res = await fetch(`${API}/testnet/try/start`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
-        if (res.status === 429) { showErr(1, 'The sandbox is busy — try again in a minute.'); setStatus(1, '', ''); document.getElementById('btn-1').disabled = false; return; }
+        if (res.status === 429) { showErr(1, 'The sandbox is busy — try again in a minute.'); setStatus(1, '', ''); document.getElementById('btn-start').disabled = false; return; }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const d = await res.json();
         sid = d.session_id;
@@ -446,7 +450,7 @@ async function step1() {
             <p style="font-size:.82rem;color:var(--text-muted);margin-top:.6rem">
                 Buyer: <code style="font-size:.78rem">${d.buyer_address}</code>
                 <a href="${d.buyer_explorer_url||'https://testnet.xrpl.org/accounts/'+d.buyer_address}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:11px;height:11px"></i></a>
-                &nbsp;·&nbsp; Worker: <code style="font-size:.78rem">${d.worker_address}</code>
+                &nbsp;&middot;&nbsp; Worker: <code style="font-size:.78rem">${d.worker_address}</code>
                 <a href="${d.worker_explorer_url||'https://testnet.xrpl.org/accounts/'+d.worker_address}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:11px;height:11px"></i></a>
             </p>`;
         lucide.createIcons();
@@ -457,7 +461,7 @@ async function step1() {
     } catch(e) {
         showErr(1, 'Network error — please retry.');
         setStatus(1, '', '');
-        document.getElementById('btn-1').disabled = false;
+        document.getElementById('btn-start').disabled = false;
     }
 }
 
@@ -468,7 +472,7 @@ async function step2() {
     setStatus(2, 'running', 'Signing and submitting EscrowCreate to XRPL Testnet…');
     try {
         const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/lock`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
-        if (res.status === 429) { showErr(2, 'The sandbox is busy — try again in a minute.'); setStatus(2, '', ''); document.getElementById('btn-2').disabled = false; return; }
+        if (res.status === 429) { showErr(2, 'The sandbox is busy — try again in a minute.'); setStatus(2, '', ''); document.getElementById('btn-lock').disabled = false; return; }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const d = await res.json();
         escrowId = d.escrow_id;
@@ -485,7 +489,7 @@ async function step2() {
     } catch(e) {
         showErr(2, 'Network error — please retry.');
         setStatus(2, '', '');
-        document.getElementById('btn-2').disabled = false;
+        document.getElementById('btn-lock').disabled = false;
     }
 }
 
@@ -503,7 +507,7 @@ async function step3() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({work, use_ai: useAi})
         });
-        if (res.status === 429) { showErr(3, 'The sandbox is busy — try again in a minute.'); setStatus(3, '', ''); document.getElementById('btn-3').disabled = false; return; }
+        if (res.status === 429) { showErr(3, 'The sandbox is busy — try again in a minute.'); setStatus(3, '', ''); document.getElementById('btn-submit').disabled = false; return; }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const d = await res.json();
         attemptsRemaining = d.attempts_remaining ?? (attemptsRemaining - 1);
@@ -514,7 +518,7 @@ async function step3() {
     } catch(e) {
         showErr(3, 'Network error — please retry.');
         setStatus(3, '', '');
-        document.getElementById('btn-3').disabled = false;
+        document.getElementById('btn-submit').disabled = false;
     }
 }
 
@@ -527,7 +531,7 @@ function renderVerdict(d) {
     const score = d.score != null ? d.score : null;
     const criteria = Array.isArray(d.criteria) ? d.criteria : [];
 
-    let html = `<div class="verdict-card ${pass ? 'verdict-pass' : 'verdict-fail'}">
+    let html = `<div class="verdict-card ${pass ? 'verdict-pass' : 'verdict-fail'}" id="verdict" data-verdict="${pass?'PASS':'FAIL'}">
         <div class="verdict-label">
             <i data-lucide="${pass ? 'check-circle' : 'x-circle'}" style="width:20px;height:20px"></i>
             ${pass ? 'PASS' : 'FAIL'}
@@ -561,7 +565,7 @@ function renderVerdict(d) {
             const btn = document.createElement('button');
             btn.className = 'btn btn-primary';
             btn.innerHTML = `<i data-lucide="rotate-ccw" style="width:15px;height:15px"></i> Try again (${attemptsRemaining} attempt${attemptsRemaining===1?'':'s'} left)`;
-            btn.onclick = () => { document.getElementById('btn-3').disabled = false; unlock(3); retryRow.style.display = 'none'; };
+            btn.onclick = () => { document.getElementById('btn-submit').disabled = false; unlock(3); retryRow.style.display = 'none'; };
             retryRow.appendChild(btn);
             lucide.createIcons();
         }
