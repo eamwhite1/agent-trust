@@ -61,7 +61,7 @@
         .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(0,185,122,.4); animation: pulse-dot 2s infinite; }
         @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(0,185,122,.4); } 70% { box-shadow: 0 0 0 6px rgba(0,185,122,0); } 100% { box-shadow: 0 0 0 0 rgba(0,185,122,0); } }
 
-        .container { max-width: 1160px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+        .container { max-width: 1160px; margin: 0 auto; padding: 0 1.5rem 6rem; }
 
         .hero { text-align: center; margin-bottom: 4.5rem; }
         .hero-eyebrow { display: inline-block; margin-bottom: 1.5rem; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
@@ -264,7 +264,7 @@
 
         /* ── USE CASES ── */
         .use-cases-title { font-family: 'DM Serif Display', serif; font-size: 2.4rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: 2.5rem; }
-        .use-cases { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin-bottom: 5rem; }
+        .use-cases { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin: 1.5rem 0 5rem; }
         .use-case { padding: 1.7rem; border-radius: 22px; transition: transform .3s, border-color .3s, background .3s; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); }
         .use-case:hover { transform: translateY(-5px); border-color: rgba(0,102,255,.3); background: rgba(255,255,255,.7); }
         .use-case-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--blue-dim); color: var(--blue); margin-bottom: .9rem; }
@@ -384,7 +384,7 @@
             details summary { font-size: .9rem; }
         }
     .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
-    .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 3rem; line-height: 1.7; }
+    .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 0; line-height: 1.7; }
     h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
     </style>
 

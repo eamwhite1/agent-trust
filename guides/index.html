@@ -54,7 +54,7 @@
         .nav-toggle { display: flex; }
     }
 
-    .page-wrap { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+    .page-wrap { max-width: 1160px; margin: 0 auto; padding: 0 1.5rem 6rem; }
 
     .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
     h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
@@ -136,11 +136,13 @@
     </div>
 </nav>
 
-<div class="page-wrap">
+<div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
     <span class="page-eyebrow"><i data-lucide="book-open"></i> Guides</span>
     <h1>Get up and running</h1>
     <p class="page-lead">Step-by-step setup guides for every way to integrate AgentTrust — from XRPL wallets and AI agent frameworks to CI/CD pipelines.</p>
+</div>
 
+<div class="page-wrap">
     <div class="guides-grid">
 
         <a href="/testnet/" class="guide-card">
