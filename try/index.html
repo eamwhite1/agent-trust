@@ -62,11 +62,12 @@
     @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
     .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
 
-    .container { max-width: 740px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+    .page-header { max-width: 960px; margin: 0 auto; padding: 3.5rem 5% 0; }
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin-bottom: 1.1rem; }
+    .page-header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 0; line-height: 1.7; }
 
-    .page-header { text-align: center; margin-bottom: 2rem; }
-    .page-header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -.03em; line-height: 1.15; margin-bottom: .75rem; }
-    .page-header p { font-size: 1.05rem; color: var(--text-muted); max-width: 560px; margin: 0 auto; }
+    .container { max-width: 740px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
 
     .test-badge {
         display: inline-flex; align-items: center; gap: 6px;
@@ -231,12 +232,13 @@
     </div>
 </nav>
 
+<div class="page-header">
+    <div class="page-eyebrow"><span class="test-dot"></span> Test money &middot; XRPL Testnet</div>
+    <h1>See escrow payment work — no wallet needed.</h1>
+    <p class="page-lead">No real XRP. Click through 5 steps and watch money lock on-chain, work get verified by AI, and payment release automatically.</p>
+</div>
+
 <div class="container">
-    <div class="page-header">
-        <div class="test-badge"><span class="test-dot"></span> TEST MONEY &middot; not real &middot; XRPL Testnet</div>
-        <h1>See how escrow payment works — with test money.</h1>
-        <p>No wallet needed. No real XRP. Click through the 5 steps below to see money locked on the blockchain, work verified by AI, and payment released automatically.</p>
-    </div>
 
     <!-- Visual flow diagram -->
     <div class="flow-diagram">
