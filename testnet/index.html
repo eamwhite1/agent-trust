@@ -140,6 +140,7 @@
     .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
     .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; transform: translate(-50%, -50%) scale(1); border-radius: 50%; background: rgba(34,197,94,.35); animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
     @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
 </style>
 </head>
@@ -487,10 +488,18 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
         const btn = document.getElementById('demo-btn');
         const result = document.getElementById('demo-result');
         btn.disabled = true;
-        btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Running…';
+        btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Running — takes ~30 s…';
+        result.style.display = 'none';
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 65000);
         try {
-            const res = await fetch('https://mcp.cryptovault.co.uk/testnet/demo', {method:'POST'});
-            if (!res.ok) throw new Error('HTTP '+res.status);
+            const res = await fetch('https://mcp.cryptovault.co.uk/testnet/demo', {method:'POST', signal: ctrl.signal});
+            clearTimeout(timer);
+            if (!res.ok) {
+                let msg = `Server error (${res.status})`;
+                try { const j = await res.json(); msg = j.detail?.reason || j.detail?.error || (typeof j.detail === 'string' ? j.detail : msg); } catch(e2) {}
+                throw new Error(msg);
+            }
             const d = await res.json();
             const eid = d.escrow_id || '';
             const verdict = d.verdict || '';
@@ -499,9 +508,12 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
             result.innerHTML = `<strong>${eid}</strong> — Verdict: <strong style="color:${verdict==='PASS'?'var(--green)':'var(--red)'}">${verdict}</strong>
                 ${escrowUrl ? `&nbsp; <a href="${escrowUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Escrow tx →</a>` : ''}
                 ${releaseUrl ? `&nbsp; <a href="${releaseUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Release tx →</a>` : ''}`;
+            result.style.color = '';
             result.style.display = 'block';
         } catch(e) {
-            result.innerHTML = '<span style="color:red">Demo failed — please try again.</span>';
+            clearTimeout(timer);
+            const msg = e.name === 'AbortError' ? 'Timed out — please try again.' : (e.message || 'Demo failed — please try again.');
+            result.innerHTML = `<span style="color:var(--red)">${msg}</span>`;
             result.style.display = 'block';
         }
         btn.disabled = false;

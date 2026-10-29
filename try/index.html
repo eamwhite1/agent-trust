@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Try AgentTrust — Test Money Demo</title>
+<title>Try AgentTrust</title>
 <meta name="description" content="See how AgentTrust pays for work — with test money. No wallet, no real XRP. Watch escrow lock, AI verify, and payment release in real-time on XRPL Testnet.">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="Try AgentTrust — Test Money Demo">
@@ -42,17 +42,31 @@
     .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,185,122,.1) 0%, rgba(0,102,255,.07) 55%, transparent 75%); filter: blur(90px); }
     .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
 
+    /* Nav */
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
     .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--blue); }
-    .nav-back { margin-left: auto; font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 6px; }
-    .nav-back:hover { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+    @media (max-width: 680px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+    }
+    .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+    .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; transform: translate(-50%, -50%) scale(1); border-radius: 50%; background: rgba(34,197,94,.35); animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
+    @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
+    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
 
     .container { max-width: 740px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
 
-    .page-header { text-align: center; margin-bottom: 2.5rem; }
+    .page-header { text-align: center; margin-bottom: 2rem; }
     .page-header h1 { font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -.03em; line-height: 1.15; margin-bottom: .75rem; }
-    .page-header p { font-size: 1.05rem; color: var(--text-muted); max-width: 500px; margin: 0 auto; }
+    .page-header p { font-size: 1.05rem; color: var(--text-muted); max-width: 560px; margin: 0 auto; }
 
     .test-badge {
         display: inline-flex; align-items: center; gap: 6px;
@@ -62,6 +76,19 @@
         margin-bottom: 1.25rem;
     }
     .test-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+    /* Flow diagram */
+    .flow-diagram { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2.5rem; flex-wrap: wrap; row-gap: .5rem; }
+    .flow-node { display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: .65rem .9rem; text-align: center; min-width: 96px; box-shadow: var(--shadow); }
+    .flow-node-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .flow-node-icon.blue { background: var(--blue-dim); color: var(--blue); }
+    .flow-node-icon.green { background: var(--green-dim); color: var(--green); }
+    .flow-node-label { font-size: .71rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .flow-arrow { color: var(--text-muted); font-size: 1.1rem; padding: 0 .25rem; flex-shrink: 0; line-height: 1; }
+    @media (max-width: 600px) {
+        .flow-diagram { flex-direction: column; align-items: flex-start; padding-left: 1rem; }
+        .flow-arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 2.3rem; padding: .15rem 0; }
+    }
 
     .step {
         background: var(--glass);
@@ -162,7 +189,7 @@
     .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
     .footer-brand { flex: 0 0 220px; }
     .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
-    .footer-dot { color: var(--blue); }
+    .footer-logo span { color: var(--blue); }
     .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
     .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
     .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
@@ -184,15 +211,59 @@
 <div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
 
 <nav>
-    <a href="/" class="logo">AgentTrust<span>.</span></a>
-    <a href="/" class="nav-back"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Home</a>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/enterprise/">Pro</a>
+    </div>
+    <div class="nav-right">
+        <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
+            <span class="ping-dot"></span> Live on XRPL
+        </a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
 </nav>
 
 <div class="container">
     <div class="page-header">
         <div class="test-badge"><span class="test-dot"></span> TEST MONEY &middot; not real &middot; XRPL Testnet</div>
-        <h1>See how AgentTrust pays for work — with test money.</h1>
-        <p>No wallet needed. No real XRP. Watch the XRP Ledger lock funds, verify work, and release payment automatically.</p>
+        <h1>See how escrow payment works — with test money.</h1>
+        <p>No wallet needed. No real XRP. Click through the 5 steps below to see money locked on the blockchain, work verified by AI, and payment released automatically.</p>
+    </div>
+
+    <!-- Visual flow diagram -->
+    <div class="flow-diagram">
+        <div class="flow-node">
+            <div class="flow-node-icon blue"><i data-lucide="wallet" style="width:16px;height:16px"></i></div>
+            <div class="flow-node-label">Buyer &amp;<br>Worker wallets</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node">
+            <div class="flow-node-icon blue"><i data-lucide="lock" style="width:16px;height:16px"></i></div>
+            <div class="flow-node-label">Funds locked<br>on XRP Ledger</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node">
+            <div class="flow-node-icon blue"><i data-lucide="send" style="width:16px;height:16px"></i></div>
+            <div class="flow-node-label">Worker submits<br>work</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node">
+            <div class="flow-node-icon blue"><i data-lucide="bot" style="width:16px;height:16px"></i></div>
+            <div class="flow-node-label">AI referee<br>checks</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node">
+            <div class="flow-node-icon green"><i data-lucide="circle-check" style="width:16px;height:16px"></i></div>
+            <div class="flow-node-label">Payment<br>released</div>
+        </div>
     </div>
 
     <!-- Step 1: Create wallets -->
@@ -201,11 +272,10 @@
             <div class="step-num" id="num-1">1</div>
             <div>
                 <div class="step-title">Create two free test wallets</div>
-                <div class="step-desc">One wallet for the buyer (the one paying), one for the worker (the one doing the job). We fill the buyer's with free test XRP.</div>
+                <div class="step-desc">We create two throwaway test wallets — one acts as the buyer, one as the worker — and top them up with free test XRP from the XRPL faucet. Nothing is stored; the wallets disappear when you close the tab.</div>
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <button class="btn btn-primary" id="btn-start" onclick="step1()">
                 <i data-lucide="wallet" style="width:16px;height:16px"></i> Create test wallets
             </button>
@@ -221,11 +291,10 @@
             <div class="step-num" id="num-2">2</div>
             <div>
                 <div class="step-title">Lock 5 test XRP in escrow</div>
-                <div class="step-desc">The money leaves the buyer's wallet and is held by the XRP Ledger itself — not by us, and not by the worker — until the work is checked.</div>
+                <div class="step-desc">The buyer's 5 test XRP moves into a 'crypto-condition' escrow held by the XRP Ledger itself — not by us, not by the worker. Neither party can touch it until the work is checked.</div>
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <button class="btn btn-primary" id="btn-lock" onclick="step2()">
                 <i data-lucide="lock" style="width:16px;height:16px"></i> Lock 5 test XRP
             </button>
@@ -240,12 +309,11 @@
         <div class="step-header">
             <div class="step-num" id="num-3">3</div>
             <div>
-                <div class="step-title">Worker sends the work</div>
-                <div class="step-desc">The task is: <strong>Reply with exactly: HELLO AGENT</strong>. Change it to see what happens when work fails.</div>
+                <div class="step-title">Worker submits the work</div>
+                <div class="step-desc">The task is: reply with exactly <strong>HELLO AGENT</strong>. Edit the box below to see what happens when work doesn't match.</div>
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <textarea id="work-input" rows="3" maxlength="500" placeholder="HELLO AGENT">HELLO AGENT</textarea>
             <p style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem">Hint: change it to anything else to see what happens when work fails.</p>
             <div class="toggle-row">
@@ -267,12 +335,11 @@
         <div class="step-header">
             <div class="step-num" id="num-4">4</div>
             <div>
-                <div class="step-title">Check the work</div>
-                <div class="step-desc">The referee checks the submission against the task requirements.</div>
+                <div class="step-title">The referee checks the work</div>
+                <div class="step-desc">Our AI referee reads the submission and checks it against the task criteria. A match is a PASS; anything else is a FAIL with feedback.</div>
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <div id="verdict"></div>
             <div id="retry-row" style="display:none;margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;"></div>
         </div>
@@ -283,12 +350,11 @@
         <div class="step-header">
             <div class="step-num" id="num-5">5</div>
             <div id="step-5-title">
-                <div class="step-title">Payment released</div>
-                <div class="step-desc">The worker got paid automatically — nobody had to press 'pay'.</div>
+                <div class="step-title">Payment released automatically</div>
+                <div class="step-desc">On PASS, the XRP Ledger releases the escrowed funds directly to the worker — no one pressed 'pay'. On FAIL, the buyer can reclaim after 10 minutes.</div>
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <div id="step5-content"></div>
         </div>
     </div>
@@ -313,7 +379,7 @@
 <footer>
     <div class="footer-inner">
         <div class="footer-brand">
-            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <span class="footer-logo">AgentTrust<span>.</span></span>
             <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
         <div class="footer-cols">
@@ -330,12 +396,11 @@
             <div class="footer-col">
                 <h4>Developers</h4>
                 <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="/challenges/">Challenges</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
-                <a href="/challenges/">Challenges</a>
                 <a href="/fees/">Fees &amp; Limits</a>
-                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
                 <a href="/audit/">Audit Report</a>
             </div>
             <div class="footer-col">
@@ -528,7 +593,7 @@ async function step3() {
 }
 
 function escHtml(s) {
-    return String(s||''). replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function renderVerdict(d) {
@@ -544,7 +609,7 @@ function renderVerdict(d) {
     if (score != null) html += `<div class="verdict-score">Score: ${score} / 100</div>`;
     if (d.summary) html += `<div class="verdict-summary">${escHtml(d.summary)}</div>`;
     criteria.forEach(c => {
-        const ok = (c.verdict||c.result||''). toUpperCase() === 'PASS';
+        const ok = (c.verdict||c.result||'').toUpperCase() === 'PASS';
         html += `<div class="criteria-row">
             <span class="${ok ? 'criteria-result-pass' : 'criteria-result-fail'}">${ok ? '✓' : '✗'}</span>
             <div>
