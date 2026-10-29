@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://www.cryptovault.co.uk/testnet/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -140,7 +140,6 @@
     .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
     .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; transform: translate(-50%, -50%) scale(1); border-radius: 50%; background: rgba(34,197,94,.35); animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
     @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
-    @keyframes spin { to { transform: rotate(360deg); } }
     .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
 </style>
 </head>
@@ -227,7 +226,7 @@
             <div class="step-body">
                 <div class="code-label">MCP tool call <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
 <pre>create_testnet_wallet()   # call twice: one for buyer, one for worker</pre>
-                <p style="margin-top:.5rem;">Returns: <span class="inline-code">address</span>, <span class="inline-code">seed</span>, <span class="inline-code">balance_xrp</span>. Keep the seed — you’ll need it to sign the EscrowCreate.</p>
+                <p style="margin-top:.5rem;">Returns: <span class="inline-code">address</span>, <span class="inline-code">seed</span>, <span class="inline-code">balance_xrp</span>. Keep the seed — you'll need it to sign the EscrowCreate.</p>
             </div>
         </div>
 
@@ -362,7 +361,7 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
     cancel_after_hrs=4
 )
 # Note: buyer_email is a REST-only field (pass to POST /escrow/generate directly)</pre>
-            <p style="margin-top:.75rem">After a PASS, the buyer receives a private challenge link by email. The window can be 1–24 hours; <span class="inline-code">cancel_after_hrs</span> must be at least <span class="inline-code">N+1</span>. <a href="/challenges/" style="color:var(--blue)">How challenges work →</a></p>
+            <p style="margin-top:.75rem">After a PASS, the buyer receives a private challenge link by email. The window can be 1–24 hours; <span class="inline-code">cancel_after_hrs</span> must be at least <span class="inline-code">N+1</span>. <a href="/challenges/" style="color:var(--blue)">How challenges work &rarr;</a></p>
         </div>
     </div>
 
@@ -372,7 +371,7 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
             <span class="section-label">When you're ready</span>
             <h2>Moving to mainnet</h2>
             <p style="margin-bottom:.75rem">Remove <span class="inline-code">network='testnet'</span> (or set <span class="inline-code">network='mainnet'</span>) and use a real XRPL wallet funded with real XRP.</p>
-            <p style="margin-bottom:.75rem">The first 3 escrows are free for wallets created with <span class="inline-code">create_agent_wallet()</span> or wallets with a trust score ≥ 25 registered via <span class="inline-code">register_wallet_free_tier()</span>. After that, the standard $0.10 audit fee applies.</p>
+            <p style="margin-bottom:.75rem">The first 3 escrows are free for wallets created with <span class="inline-code">create_agent_wallet()</span> or wallets with a trust score &ge; 25 registered via <span class="inline-code">register_wallet_free_tier()</span>. After that, the standard $0.10 audit fee applies.</p>
             <div class="callout callout-amber" style="margin-bottom:0">
                 <i data-lucide="alert-triangle"></i>
                 <p>Testnet vault IDs (<span class="inline-code">TN-</span>) only work on testnet. Mainnet and testnet wallets are fully separate — you cannot mix them.</p>
@@ -401,26 +400,6 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
         <a href="/claude-md/" class="resource-link">
             <i data-lucide="file-text"></i> Agent Setup
         </a>
-    </div>
-
-    <!-- One-call demo -->
-    <div class="card">
-        <div class="card-pad">
-            <span class="section-label">Shortcut</span>
-            <h2>Run a full demo in one call</h2>
-            <p style="margin-bottom:1.25rem">No wallet required. <span class="inline-code">try_testnet_demo()</span> creates two throwaway wallets, posts a task, locks payment, runs the AI audit, and returns the full result — all test XRP, zero cost.</p>
-            <div class="code-wrap">
-                <pre>try_testnet_demo()</pre>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('try_testnet_demo()')">Copy</button>
-            </div>
-            <p style="margin-top:.75rem;font-size:.85rem;color:var(--muted)">Takes ~30 seconds. Returns escrow_id, verdict, release_tx_hash and explorer links for both the escrow and the release.</p>
-            <div style="margin-top:1rem">
-                <button id="demo-btn" onclick="runDemo()" style="display:inline-flex;align-items:center;gap:8px;padding:.65rem 1.2rem;border-radius:12px;border:none;background:var(--green);color:#fff;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer">
-                    <i data-lucide="play" style="width:14px;height:14px"></i> Run a testnet demo
-                </button>
-            </div>
-            <div id="demo-result" style="display:none;margin-top:.75rem;font-size:.85rem"></div>
-        </div>
     </div>
 
     <!-- CTA -->
@@ -463,7 +442,6 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
-                <a href="/challenges/">Challenges</a>
                 <a href="/fees/">Fees &amp; Limits</a>
                 <a href="/audit/">Audit Report</a>
             </div>
@@ -478,48 +456,12 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
         </div>
     </div>
     <div class="footer-bottom">
-        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;&middot;&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
     </div>
 </footer>
 
 <script>
     lucide.createIcons();
-    async function runDemo() {
-        const btn = document.getElementById('demo-btn');
-        const result = document.getElementById('demo-result');
-        btn.disabled = true;
-        btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Running — takes ~30 s…';
-        result.style.display = 'none';
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 65000);
-        try {
-            const res = await fetch('https://mcp.cryptovault.co.uk/testnet/demo', {method:'POST', signal: ctrl.signal});
-            clearTimeout(timer);
-            if (!res.ok) {
-                let msg = `Server error (${res.status})`;
-                try { const j = await res.json(); msg = j.detail?.reason || j.detail?.error || (typeof j.detail === 'string' ? j.detail : msg); } catch(e2) {}
-                throw new Error(msg);
-            }
-            const d = await res.json();
-            const eid = d.escrow_id || '';
-            const verdict = d.verdict || '';
-            const escrowUrl = d.escrow_explorer_url || d.escrow_tx_url || '';
-            const releaseUrl = d.release_explorer_url || (d.release_tx_hash ? 'https://testnet.xrpl.org/transactions/'+d.release_tx_hash : '');
-            result.innerHTML = `<strong>${eid}</strong> — Verdict: <strong style="color:${verdict==='PASS'?'var(--green)':'var(--red)'}">${verdict}</strong>
-                ${escrowUrl ? `&nbsp; <a href="${escrowUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Escrow tx →</a>` : ''}
-                ${releaseUrl ? `&nbsp; <a href="${releaseUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Release tx →</a>` : ''}`;
-            result.style.color = '';
-            result.style.display = 'block';
-        } catch(e) {
-            clearTimeout(timer);
-            const msg = e.name === 'AbortError' ? 'Timed out — please try again.' : (e.message || 'Demo failed — please try again.');
-            result.innerHTML = `<span style="color:var(--red)">${msg}</span>`;
-            result.style.display = 'block';
-        }
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="play" style="width:14px;height:14px"></i> Run again';
-        lucide.createIcons();
-    }
     function showTab(id) {
         ['py','js'].forEach(t => {
             document.getElementById('tab-'+t).style.display = t===id ? '' : 'none';
