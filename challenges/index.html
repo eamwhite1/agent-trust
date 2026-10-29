@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Challenge a Verdict | AgentTrust</title>
-<meta name="description" content="Buyers can challenge a PASS verdict within 1–24 h for a Gemini Pro re-review. Fee: ~$1 in XRP. No human arbitration.">
+<title>Challenge a Verdict — AgentTrust</title>
+<meta name="description" content="Buyers can challenge a PASS verdict within 1–24 h for a Gemini Pro re-review. Fee: ~$1 in XRP. No human arbitration. Result written on-chain.">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="Challenge a Verdict — AgentTrust">
 <meta property="og:description" content="Set a challenge window at vault creation. After a PASS, pay ~$1 for a Gemini Pro re-review. The challenge result is written on-chain in the release memo.">
@@ -12,7 +12,8 @@
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://www.cryptovault.co.uk/challenges/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -70,208 +71,289 @@
 }
 </script>
 <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-        --bg: #fafafa;
-        --text: #0d0d12;
-        --text-muted: #5a5a68;
-        --blue: #0066ff;
-        --green: #00b97a;
-        --amber: #d97706;
-        --red: #dc2626;
-        --border: rgba(0,0,0,.08);
+        --blue:         #0066FF;
+        --blue-dim:     rgba(0,102,255,.08);
+        --blue-border:  rgba(0,102,255,.2);
+        --green:        #00B97A;
+        --green-dim:    rgba(0,185,122,.08);
+        --green-border: rgba(0,185,122,.2);
+        --amber:        #D97706;
+        --red:          #dc2626;
+        --text:         #0d0d12;
+        --text-muted:   #5c5c6e;
+        --glass:        rgba(255,255,255,0.52);
+        --glass-border: rgba(255,255,255,0.72);
+        --shadow:       0 8px 40px rgba(0,0,0,0.06);
+        --radius-lg:    24px;
+        --radius-md:    14px;
+        --radius-sm:    8px;
+        --code-bg:      rgba(13,13,18,.05);
+        --code-border:  rgba(13,13,18,.09);
     }
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-            --bg: #0d0d12;
-            --text: #f0f0f5;
-            --text-muted: #8888a0;
-            --border: rgba(255,255,255,.08);
-        }
-    }
-    :root[data-theme="dark"] {
-        --bg: #0d0d12;
-        --text: #f0f0f5;
-        --text-muted: #8888a0;
-        --border: rgba(255,255,255,.08);
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
-    .wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1rem 6rem; }
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    h1 { font-size: 2rem; font-weight: 700; margin-bottom: .25rem; }
-    .lead { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 2.5rem; }
-    h2 { font-size: 1.15rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
-    p, li { font-size: .95rem; color: var(--text); }
-    ul { padding-left: 1.3rem; }
-    li { margin-bottom: .4rem; }
-    code { background: rgba(0,102,255,.08); color: var(--blue); padding: .15em .4em; border-radius: 4px; font-family: "IBM Plex Mono", monospace; font-size: .85em; }
-    .back { display: inline-block; margin-bottom: 2rem; font-size: .85rem; font-weight: 600; }
 
-    .callout { border-radius: 10px; padding: 1rem 1.2rem; margin: 1.2rem 0; font-size: .88rem; line-height: 1.6; }
-    .callout.info  { background: rgba(0,102,255,.06); border: 1px solid rgba(0,102,255,.2); }
-    .callout.good  { background: rgba(0,185,122,.07); border: 1px solid rgba(0,185,122,.25); }
-    .callout.warn  { background: rgba(217,119,6,.07); border: 1px solid rgba(217,119,6,.25); }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
 
-    /* Steps */
-    .steps { display: flex; flex-direction: column; gap: 1rem; margin: 1.5rem 0; }
-    .step { display: flex; gap: 1rem; align-items: flex-start; }
-    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .78rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: .15rem; }
-    .step-body { flex: 1; }
-    .step-title { font-weight: 700; font-size: .95rem; margin-bottom: .25rem; }
-    .step-desc { font-size: .87rem; color: var(--text-muted); }
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
+    .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,185,122,.1) 0%, rgba(0,102,255,.07) 55%, transparent 75%); filter: blur(90px); }
+    .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
+
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
+    @media (max-width: 680px) {
+        nav { position: relative; flex-wrap: wrap; }
+        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
+        .nav-menu.open { display: flex; }
+        .nav-toggle { display: flex; }
+    }
+
+    .page-wrap { max-width: 1000px; margin: 0 auto; padding: 2rem 5% 6rem; }
+
+    .doc-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
+    .doc-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 650px; margin-bottom: 2rem; line-height: 1.7; }
+
+    .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
+    .card-pad { padding: 2rem; }
+    .section-label { font-size: .68rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .12em; display: block; margin-bottom: .6rem; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: 1.2rem; text-wrap: balance; }
+    h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+    p { font-size: .9rem; color: var(--text-muted); line-height: 1.65; }
+
+    pre { background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; overflow-x: auto; font-size: .8rem; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', monospace; margin: 1rem 0; }
+    .inline-code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: .82em; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: .1em .35em; }
+    .code-label { font-size: .7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; padding: .5rem 1.25rem; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: var(--radius-sm) var(--radius-sm) 0 0; display: flex; align-items: center; justify-content: space-between; }
+    .code-label + pre { border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); margin-top: 0; }
+
+    .callout { display: flex; gap: .85rem; padding: 1.1rem 1.25rem; border-radius: var(--radius-md); margin: 1.25rem 0; }
+    .callout-info { background: var(--blue-dim); border: 1px solid var(--blue-border); }
+    .callout-green { background: var(--green-dim); border: 1px solid var(--green-border); }
+    .callout-amber { background: rgba(217,119,6,.07); border: 1px solid rgba(217,119,6,.2); }
+    .callout svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+    .callout-info svg { color: var(--blue); }
+    .callout-green svg { color: var(--green); }
+    .callout-amber svg { color: var(--amber); }
+    .callout span, .callout p { font-size: .84rem; color: var(--text-muted); line-height: 1.6; }
+    .callout strong { color: var(--text); }
+
+    .steps { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem; }
+    .step { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+    .step-header { display: flex; align-items: flex-start; gap: 1.1rem; padding: 1.5rem 1.75rem 1rem; }
+    .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--blue); color: #fff; font-size: .82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
+    .step-desc { font-size: .83rem; color: var(--text-muted); line-height: 1.55; }
+    .step-body { padding: 0 1.75rem 1.5rem; }
 
     /* Outcomes table */
-    .table-wrap { overflow-x: auto; margin: 1.2rem 0; border-radius: 10px; border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; font-size: .88rem; background: var(--bg); }
-    thead th { text-align: left; padding: .65rem 1rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-    tbody td { padding: .7rem 1rem; vertical-align: top; border-bottom: 1px solid var(--border); line-height: 1.55; }
+    .table-wrap { overflow-x: auto; margin: 1.25rem 0; border-radius: var(--radius-md); border: 1px solid var(--glass-border); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    thead th { background: var(--code-bg); padding: .75rem 1rem; text-align: left; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); }
+    tbody td { padding: .85rem 1rem; border-bottom: 1px solid rgba(0,0,0,.05); color: var(--text-muted); vertical-align: top; line-height: 1.5; }
     tbody tr:last-child td { border-bottom: none; }
-    .outcome-label { font-weight: 700; font-family: "IBM Plex Mono", monospace; font-size: .82rem; white-space: nowrap; }
-    .outcome-pass-upheld { color: var(--green); }
-    .outcome-pass-overturned { color: var(--red); }
-    .outcome-inconclusive { color: var(--amber); }
+    tbody tr:hover td { background: rgba(255,255,255,.4); }
+    .outcome-label { display: inline-block; padding: .2rem .6rem; border-radius: 6px; font-size: .75rem; font-weight: 700; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .outcome-pass-upheld { background: var(--green-dim); color: #00734c; border: 1px solid var(--green-border); }
+    .outcome-pass-overturned { background: rgba(220,38,38,.08); color: #b91c1c; border: 1px solid rgba(220,38,38,.2); }
+    .outcome-inconclusive { background: rgba(217,119,6,.08); color: #92400e; border: 1px solid rgba(217,119,6,.2); }
 
     /* FAQ */
-    details { border: 1px solid var(--border); border-radius: 10px; margin-bottom: .6rem; overflow: hidden; }
-    summary { padding: .9rem 1.1rem; font-weight: 600; font-size: .92rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    details { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius-md); margin-bottom: .75rem; overflow: hidden; }
+    summary { padding: 1rem 1.25rem; font-size: .92rem; font-weight: 600; color: var(--text); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
     summary::-webkit-details-marker { display: none; }
-    summary::after { content: '+'; color: var(--text-muted); font-size: 1.1rem; flex-shrink: 0; }
+    summary::after { content: '+'; font-size: 1.1rem; font-weight: 400; color: var(--text-muted); flex-shrink: 0; transition: transform .2s; }
     details[open] summary::after { content: '−'; }
-    details[open] summary { border-bottom: 1px solid var(--border); }
-    .faq-answer { padding: .85rem 1.1rem; font-size: .9rem; color: var(--text-muted); line-height: 1.65; }
+    .faq-answer { padding: 0 1.25rem 1.1rem; font-size: .88rem; color: var(--text-muted); line-height: 1.65; }
+    .faq-answer code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: .82em; background: var(--code-bg); border: 1px solid var(--code-border); border-radius: 4px; padding: .1em .35em; }
 
-    /* CTA */
-    .cta-box { margin-top: 2.5rem; padding: 1.5rem; border-radius: 12px; background: rgba(0,102,255,.05); border: 1px solid rgba(0,102,255,.15); text-align: center; }
-    .cta-box h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
-    .cta-box p { font-size: .88rem; color: var(--text-muted); margin: 0 0 1rem; }
-    .cta-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .7rem 1.4rem; border-radius: 8px; font-weight: 700; font-size: .9rem; background: var(--blue); color: #fff; text-decoration: none; }
-    .cta-btn:hover { background: #004ecc; text-decoration: none; }
+    .resources { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; margin-bottom: 2rem; }
+    .resource-link { display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem; border-radius: var(--radius-md); background: var(--glass); border: 1px solid var(--glass-border); text-decoration: none; font-size: .82rem; font-weight: 600; color: var(--text); transition: transform .15s, border-color .15s; }
+    .resource-link:hover { transform: translateY(-2px); border-color: var(--blue-border); color: var(--blue); }
+    .resource-link svg { width: 14px; height: 14px; color: var(--blue); flex-shrink: 0; }
 
-    footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 2rem 0 1.5rem; }
-    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: .8rem; }
-    .footer-links a { color: var(--text-muted); text-decoration: none; }
-    .footer-links a:hover { color: var(--blue); }
+    .cta-card { background: linear-gradient(135deg, rgba(0,102,255,.07), rgba(0,185,122,.05)); border: 1px solid var(--blue-border); border-radius: var(--radius-lg); padding: 2rem; text-align: center; margin-bottom: 2rem; }
+    .cta-card h3 { font-size: 1.25rem; margin-bottom: .5rem; }
+    .cta-card p { margin-bottom: 1.25rem; }
+    .btn-primary { display: inline-flex; align-items: center; gap: .5rem; padding: .7rem 1.5rem; background: var(--blue); color: #fff; border-radius: 10px; font-size: .9rem; font-weight: 700; text-decoration: none; transition: transform .15s, box-shadow .15s; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,102,255,.25); }
+    .btn-secondary { display: inline-flex; align-items: center; gap: .5rem; padding: .65rem 1.25rem; background: var(--glass); color: var(--text); border: 1px solid var(--glass-border); border-radius: 10px; font-size: .88rem; font-weight: 600; text-decoration: none; transition: border-color .15s; }
+    .btn-secondary:hover { border-color: var(--blue-border); color: var(--blue); }
+    .btn-row { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
 
-    /* ── Nav ── */
-    site-nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.6); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(0,0,0,.06); }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) site-nav { background: rgba(13,13,18,.7); border-bottom-color: rgba(255,255,255,.07); } }
-    :root[data-theme="dark"] site-nav { background: rgba(13,13,18,.7); border-bottom-color: rgba(255,255,255,.07); }
-    .site-nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.45rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
-    .site-nav-logo span { color: var(--blue); }
-    .site-nav-menu { display: flex; align-items: center; gap: 22px; flex: 1; justify-content: center; }
-    .site-nav-link { font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
-    .site-nav-link:hover { color: var(--blue); text-decoration: none; }
-    .site-nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-    .site-nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); font-size: 1.4rem; padding: 4px 8px; min-width: 40px; min-height: 40px; }
-    @media (max-width: 680px) {
-        site-nav { flex-wrap: wrap; }
-        .site-nav-menu { display: none; width: 100%; flex-direction: column; align-items: flex-start; gap: 12px; padding: 1rem 0 .5rem; }
-        .site-nav-menu.open { display: flex; }
-        .site-nav-toggle { display: flex; align-items: center; justify-content: center; }
-    }
-    .site-badge-live { display: flex; align-items: center; gap: 7px; padding: 4px 12px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444; background: rgba(255,255,255,.55); border: 1px solid rgba(0,0,0,.1); text-decoration: none; }
-    .site-ping { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-logo span { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+    .footer-bottom a { color: var(--blue); text-decoration: none; }
+    @media (max-width: 680px) { .footer-inner { flex-direction: column; gap: 2rem; } .footer-brand { flex: none; } .footer-cols { gap: 1.5rem; } }
+
+    .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+    .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; transform: translate(-50%, -50%) scale(1); border-radius: 50%; background: rgba(34,197,94,.35); animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
+    @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
+    .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
 </style>
 </head>
 <body>
-<site-nav>
-    <a class="site-nav-logo" href="/">AgentTrust<span>.</span></a>
-    <div class="site-nav-menu" id="site-nav-menu">
-        <a class="site-nav-link" href="/how-it-works/">How it Works</a>
-        <a class="site-nav-link" href="/use-cases/">Use Cases</a>
-        <a class="site-nav-link" href="/roadmap/">Roadmap</a>
-        <a class="site-nav-link" href="/guides/">Guides</a>
-        <a class="site-nav-link" href="/agents/">For Agents</a>
-        <a class="site-nav-link" href="/enterprise/">Pro</a>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/enterprise/">Pro</a>
     </div>
-    <div class="site-nav-right">
-        <a class="site-badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
-            <span class="site-ping"></span> Live on XRPL
+    <div class="nav-right">
+        <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
+            <span class="ping-dot"></span> Live on XRPL
         </a>
-        <button class="site-nav-toggle" aria-label="Open menu"
-                onclick="document.getElementById('site-nav-menu').classList.toggle('open')">&#9776;</button>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            <i data-lucide="menu"></i>
+        </button>
     </div>
-</site-nav>
-<div class="wrap">
-    <a class="back" href="/">← AgentTrust</a>
+</nav>
 
+<div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
+    <div class="doc-eyebrow"><i data-lucide="shield-alert"></i> Challenge Window</div>
     <h1>Challenge a PASS Verdict</h1>
-    <p class="lead">Disagree with the AI audit result? Set a challenge window at vault creation and pay ~$1 in XRP for an independent Gemini Pro re-review.</p>
+    <p class="doc-lead">Disagree with the AI audit result? Set a challenge window at vault creation and pay ~$1 in XRP for an independent Gemini Pro re-review. The result is written on-chain.</p>
+</div>
 
-    <h2>How it works</h2>
+<div class="page-wrap">
+
+    <!-- How it works: steps -->
+    <span class="section-label" style="display:block;margin-bottom:1rem">How it works</span>
     <div class="steps">
+
         <div class="step">
-            <div class="step-num">1</div>
+            <div class="step-header">
+                <div class="step-num">1</div>
+                <div>
+                    <div class="step-title">Set a challenge window at vault creation</div>
+                    <div class="step-desc">Pass <span class="inline-code">release_mode="challenge_window_hrs:N"</span> (N = 1–24) when calling <span class="inline-code">hire_and_pay</span> or creating an escrow via the dashboard. Payment is held for N hours after PASS before auto-releasing.</div>
+                </div>
+            </div>
             <div class="step-body">
-                <div class="step-title">Set a challenge window at vault creation</div>
-                <div class="step-desc">Pass <code>release_mode="challenge_window_hrs:N"</code> (N = 1–24) when calling <code>hire_and_pay</code> or creating an escrow via the dashboard. Payment will be held for N hours after PASS before auto-releasing.</div>
+                <div class="code-label">MCP tool call</div>
+<pre>hire_and_pay(
+    task="Your task description",
+    buyer_address="&lt;buyer address&gt;",
+    amount_xrp=5.0,
+    worker_address="&lt;worker address&gt;",
+    release_mode="challenge_window_hrs:4",
+    cancel_after_hrs=8,
+    buyer_email="you@example.com"   # required to receive the challenge link
+)</pre>
             </div>
         </div>
+
         <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-body">
-                <div class="step-title">Work is submitted and audited</div>
-                <div class="step-desc">The seller submits work. The AI audit (Gemini Flash) evaluates it against the task spec and acceptance criteria. If PASS, the vault enters <code>PASS_CHALLENGE_WINDOW</code> status.</div>
+            <div class="step-header">
+                <div class="step-num">2</div>
+                <div>
+                    <div class="step-title">Work is submitted and audited</div>
+                    <div class="step-desc">The seller submits work. Gemini Flash evaluates it against the task spec and acceptance criteria. On PASS, the vault enters <span class="inline-code">PASS_CHALLENGE_WINDOW</span> status and the clock starts.</div>
+                </div>
             </div>
         </div>
+
         <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-body">
-                <div class="step-title">Challenge during the window (optional)</div>
-                <div class="step-desc">As the buyer, you'll receive an email with a private challenge link when the verdict arrives (add your email when creating the escrow). Click the link to open the challenge form — select the criteria you dispute, pay the ~$1 fee via Xaman, and submit. You cannot challenge in the last 15 minutes of the window.</div>
+            <div class="step-header">
+                <div class="step-num">3</div>
+                <div>
+                    <div class="step-title">Challenge during the window (optional)</div>
+                    <div class="step-desc">As the buyer, you receive an email with a private challenge link when the verdict arrives. Click it to open the challenge form — select the criteria you dispute, pay the ~$1 fee via Xaman, and submit. Challenges cannot be initiated in the last 15 minutes of the window.</div>
+                </div>
             </div>
         </div>
+
         <div class="step">
-            <div class="step-num">4</div>
-            <div class="step-body">
-                <div class="step-title">Gemini Pro re-reviews independently</div>
-                <div class="step-desc">Gemini Pro reviews the same spec, criteria, and submission — independently of the original audit. The result is recorded as a verdict hash memo on the XRPL transaction.</div>
+            <div class="step-header">
+                <div class="step-num">4</div>
+                <div>
+                    <div class="step-title">Gemini Pro re-reviews independently</div>
+                    <div class="step-desc">Gemini Pro reviews the same spec, criteria, and submission — independently of the original Gemini Flash audit. The result is recorded as a verdict hash memo on the XRPL release transaction.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Outcomes table -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Outcomes</span>
+            <h2>What happens after a challenge</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Outcome</th>
+                            <th>What it means</th>
+                            <th>Payment</th>
+                            <th>Challenge fee</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="outcome-label outcome-pass-upheld">PASS_UPHELD</span></td>
+                            <td>Gemini Pro agrees: work passed.</td>
+                            <td>Released to seller.</td>
+                            <td>Kept by seller.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="outcome-label outcome-pass-overturned">PASS_OVERTURNED</span></td>
+                            <td>Gemini Pro disagrees: work failed.</td>
+                            <td>Returns to buyer at CancelAfter. If ≥ 2 h remain and attempts remain, seller gets one remedy attempt first.</td>
+                            <td>Refunded to buyer.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="outcome-label outcome-inconclusive">REVIEW_INCONCLUSIVE</span></td>
+                            <td>Gemini Pro cannot reach a verdict.</td>
+                            <td>Released to seller (same as PASS).</td>
+                            <td>Refunded to buyer.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <h2>Outcomes</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Outcome</th>
-                    <th>What it means</th>
-                    <th>Payment</th>
-                    <th>Challenge fee</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><span class="outcome-label outcome-pass-upheld">PASS_UPHELD</span></td>
-                    <td>Gemini Pro agrees: work passed.</td>
-                    <td>Released to seller.</td>
-                    <td>Kept by seller.</td>
-                </tr>
-                <tr>
-                    <td><span class="outcome-label outcome-pass-overturned">PASS_OVERTURNED</span></td>
-                    <td>Gemini Pro disagrees: work failed.</td>
-                    <td>Returns to buyer at CancelAfter. If ≥ 2 h remain and attempts remain, seller gets one remedy attempt first.</td>
-                    <td>Refunded to buyer.</td>
-                </tr>
-                <tr>
-                    <td><span class="outcome-label outcome-inconclusive">REVIEW_INCONCLUSIVE</span></td>
-                    <td>Gemini Pro cannot reach a verdict.</td>
-                    <td>Released to seller (same as PASS).</td>
-                    <td>Refunded to buyer.</td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Pricing -->
+    <div class="card">
+        <div class="card-pad">
+            <span class="section-label">Pricing</span>
+            <h2>Challenge fee</h2>
+            <div class="callout callout-info" style="margin-top:0">
+                <i data-lucide="info"></i>
+                <p><strong>~$1.00 USD in XRP</strong> — minimum 0.2 XRP; 1 XRP if the price feed is unavailable. The quote is valid for 30 minutes.</p>
+            </div>
+            <p>The fee is held in a separate XRPL escrow (CancelAfter 24 h) — not custodied by AgentTrust. It goes to the seller on PASS_UPHELD and is refunded to the buyer otherwise. There is no additional AgentTrust fee for a challenge review.</p>
+        </div>
     </div>
 
-    <h2>Pricing</h2>
-    <div class="callout info">
-        <strong>Challenge fee: ~$1.00 USD in XRP</strong> (minimum 0.2 XRP; 1 XRP if price feed is unavailable). The quote is valid for 30 minutes. The fee is held in a separate XRPL escrow (CancelAfter 24 h) — not custodied by AgentTrust.
-    </div>
-    <p>The challenge fee goes to the seller if the verdict is upheld (PASS_UPHELD) and is refunded to the buyer otherwise. There is no additional fee to AgentTrust for a challenge review.</p>
-
-    <h2>Frequently asked questions</h2>
+    <!-- FAQ -->
+    <span class="section-label" style="display:block;margin-bottom:1rem">Frequently asked questions</span>
 
     <details>
         <summary>What is a challenge window?</summary>
@@ -298,24 +380,85 @@
         <div class="faq-answer">After the window expires, payment auto-releases to the seller on-chain. Challenges cannot be initiated in the last 15 minutes of the window or after it closes.</div>
     </details>
 
-    <div class="cta-box">
-        <h3>Try it on testnet — free</h3>
-        <p>No real funds required. Full challenge flow including Gemini Pro re-review.</p>
-        <a class="cta-btn" href="/#try-free">Get started →</a>
+    <!-- Useful links -->
+    <span class="section-label" style="display:block;margin-top:2rem;margin-bottom:.75rem">Related</span>
+    <div class="resources">
+        <a href="/testnet/" class="resource-link">
+            <i data-lucide="flask-conical"></i> Testnet sandbox
+        </a>
+        <a href="/guides/" class="resource-link">
+            <i data-lucide="book-open"></i> All Guides
+        </a>
+        <a href="/fees/" class="resource-link">
+            <i data-lucide="receipt"></i> Fees &amp; Limits
+        </a>
+        <a href="/how-it-works/" class="resource-link">
+            <i data-lucide="workflow"></i> How it Works
+        </a>
+        <a href="/trust-model/" class="resource-link">
+            <i data-lucide="shield"></i> Trust Model
+        </a>
     </div>
 
-    <footer>
-        <div class="footer-links">
-            <a href="/">Home</a>
-            <a href="/testnet/">Testnet sandbox (free)</a>
-            <a href="/challenges/">Challenges</a>
-            <a href="/fees/">Fees</a>
-            <a href="/trust-model/">Trust Model</a>
-            <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
-            <a href="/compliance/">Compliance</a>
-            <a href="/terms/">Terms</a>
+    <!-- CTA -->
+    <div class="cta-card">
+        <h3>Try it on testnet — free</h3>
+        <p>No real funds required. Full challenge flow including Gemini Pro re-review works on testnet.</p>
+        <div class="btn-row">
+            <a href="/testnet/" class="btn-primary">
+                <i data-lucide="flask-conical"></i> Testnet guide
+            </a>
+            <a href="/try/" class="btn-secondary">
+                <i data-lucide="play"></i> Browser walkthrough
+            </a>
         </div>
-    </footer>
+    </div>
+
 </div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span>.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
+        </div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/enterprise/">Pro</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="/audit/">Audit Report</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;&middot;&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
+</footer>
+
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>
