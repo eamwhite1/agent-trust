@@ -19,9 +19,9 @@ for (const path of PAGES_WITH_FOOTER) {
     await expect(link).toBeVisible();
   });
 
-  test(`${path} has /try/ footer link`, async ({ page }) => {
+  test(`${path} has /challenges/ footer link`, async ({ page }) => {
     await page.goto(path);
-    const link = page.locator(`a[href*="/try/"]`).last();
+    const link = page.locator(`a[href*="/challenges/"]`).last();
     await expect(link).toBeVisible();
   });
 }
