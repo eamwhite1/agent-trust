@@ -428,15 +428,36 @@ function explorerTxUrl(hash) {
     return `https://testnet.xrpl.org/transactions/${hash}`;
 }
 
+async function apiPost(url, body) {
+    let res;
+    try {
+        res = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: body || '{}'});
+    } catch(e) {
+        throw new Error('Could not reach the API — check your connection and retry.');
+    }
+    if (res.status === 429) throw Object.assign(new Error('The sandbox is busy — try again in a minute.'), {status: 429});
+    if (!res.ok) {
+        let msg = `Server error (${res.status})`;
+        try {
+            const j = await res.json();
+            const detail = j.detail;
+            if (detail?.reason) msg = detail.reason;
+            else if (detail?.error) msg = detail.error;
+            else if (typeof detail === 'string') msg = detail;
+        } catch(e2) {}
+        if (res.status === 502) msg = 'XRPL Testnet is busy — ' + msg + '. Please retry.';
+        else if (res.status === 404) msg = 'Session expired — please start over from step 1.';
+        throw Object.assign(new Error(msg), {status: res.status});
+    }
+    return res.json();
+}
+
 async function step1() {
     disableBtn(1);
     hideErr(1);
     setStatus(1, 'running', 'Creating wallets and funding from testnet faucet…');
     try {
-        const res = await fetch(`${API}/testnet/try/start`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
-        if (res.status === 429) { showErr(1, 'The sandbox is busy — try again in a minute.'); setStatus(1, '', ''); document.getElementById('btn-start').disabled = false; return; }
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const d = await res.json();
+        const d = await apiPost(`${API}/testnet/try/start`);
         sid = d.session_id;
         setStatus(1, 'ok', 'Two test wallets created and funded with test XRP.');
         const links1 = document.getElementById('links-1');
@@ -453,7 +474,7 @@ async function step1() {
         markDone(1);
         unlock(2);
     } catch(e) {
-        showErr(1, 'Network error — please retry.');
+        showErr(1, e.message || 'Failed — please retry.');
         setStatus(1, '', '');
         document.getElementById('btn-start').disabled = false;
     }
@@ -465,10 +486,7 @@ async function step2() {
     hideErr(2);
     setStatus(2, 'running', 'Signing and submitting EscrowCreate to XRPL Testnet…');
     try {
-        const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/lock`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
-        if (res.status === 429) { showErr(2, 'The sandbox is busy — try again in a minute.'); setStatus(2, '', ''); document.getElementById('btn-lock').disabled = false; return; }
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const d = await res.json();
+        const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/lock`);
         escrowId = d.escrow_id;
         const txUrl = d.escrow_explorer_url || (d.escrow_tx_hash ? explorerTxUrl(d.escrow_tx_hash) : null);
         setStatus(2, 'ok', `5 test XRP locked in escrow ${d.escrow_id}`);
@@ -481,7 +499,7 @@ async function step2() {
         markDone(2);
         unlock(3);
     } catch(e) {
-        showErr(2, 'Network error — please retry.');
+        showErr(2, e.message || 'Failed — please retry.');
         setStatus(2, '', '');
         document.getElementById('btn-lock').disabled = false;
     }
@@ -496,21 +514,14 @@ async function step3() {
     hideErr(3);
     setStatus(3, 'running', 'Checking work against task criteria' + (useAi ? ' (AI referee running…)' : '…'));
     try {
-        const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({work, use_ai: useAi})
-        });
-        if (res.status === 429) { showErr(3, 'The sandbox is busy — try again in a minute.'); setStatus(3, '', ''); document.getElementById('btn-submit').disabled = false; return; }
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const d = await res.json();
+        const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, JSON.stringify({work, use_ai: useAi}));
         attemptsRemaining = d.attempts_remaining ?? (attemptsRemaining - 1);
         setStatus(3, d.verdict === 'PASS' ? 'ok' : 'err', d.verdict === 'PASS' ? 'Work accepted!' : 'Work rejected.');
         renderVerdict(d);
         markDone(3);
         unlock(4);
     } catch(e) {
-        showErr(3, 'Network error — please retry.');
+        showErr(3, e.message || 'Failed — please retry.');
         setStatus(3, '', '');
         document.getElementById('btn-submit').disabled = false;
     }
