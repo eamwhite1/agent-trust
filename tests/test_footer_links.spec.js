@@ -8,7 +8,6 @@ const PAGES_WITH_FOOTER = [
   '/testnet/',
   '/claude-md/',
   '/how-it-works/',
-  '/marketplace/',
   '/guides/',
 ];
 
