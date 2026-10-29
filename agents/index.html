@@ -192,7 +192,6 @@
         .tooltip-wrap { display: inline-flex; align-items: center; }
         .tooltip-icon { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(0,102,255,.12); color: var(--blue); cursor: help; margin-left: 5px; flex-shrink: 0; font-size: .65rem; font-weight: 800; border: 1px solid rgba(0,102,255,.2); transition: background .2s; }
         .tooltip-icon:hover { background: rgba(0,102,255,.22); }
-        /* .tooltip-box content is copied into #global-tooltip on hover */
         .tooltip-box { display: none; }
         #global-tooltip { display: none; position: fixed; width: 260px; background: #0d0d12; color: rgba(255,255,255,.88); font-size: .78rem; font-weight: 400; line-height: 1.6; padding: .85rem 1rem; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.35); z-index: 99999; pointer-events: none; text-transform: none; letter-spacing: 0; white-space: normal; }
         #global-tooltip::after { content: ''; position: absolute; top: 100%; left: 20px; border: 6px solid transparent; border-top-color: #0d0d12; }
@@ -207,13 +206,9 @@
         .dev-block pre { font-size:.75rem; background:rgba(0,0,0,.05); border-radius:8px; padding:.9rem 1rem; overflow-x:auto; line-height:1.6; margin-bottom:1.2rem; }
         .dev-step-label { font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--blue); margin-bottom:.5rem; display:block; }
 
-        /* ════════════════════════════════════
-           COMPARE SECTION — glassmorphic cards
-        ════════════════════════════════════ */
         .compare-section { margin: 1rem 0 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: stretch; }
         .compare-side { padding: 3rem; border-radius: var(--radius-lg); background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: var(--shadow); position: relative; overflow: hidden; display: flex; flex-direction: column; }
         .compare-side::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
-        /* Subtle tint to differentiate the two panels */
         .compare-side.old::before { background: linear-gradient(135deg, rgba(229,55,61,.03) 0%, transparent 60%); }
         .compare-side.new::before { background: linear-gradient(135deg, rgba(0,102,255,.04) 0%, rgba(0,185,122,.03) 100%); }
         .compare-eyebrow { font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
@@ -236,7 +231,6 @@
         .compare-side.new .compare-stat-num { color: var(--blue); }
         .compare-stat-label { font-size: .85rem; color: var(--text-muted); line-height: 1.4; max-width: 160px; }
 
-        /* ── FLOW ── */
         .flow-section { margin: 1rem 0 4rem; }
         .flow-title { font-family: 'DM Serif Display', serif; font-size: 2.6rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: .8rem; }
         .flow-subtitle { text-align: center; color: var(--text-muted); font-size: 1rem; margin-bottom: 3.5rem; }
@@ -263,7 +257,6 @@
         .flow-arrow-head { fill: rgba(0,102,255,.5); }
         @keyframes dash-move { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -20; } }
 
-        /* ── USE CASES ── */
         .use-cases-title { font-family: 'DM Serif Display', serif; font-size: 2.4rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: 2.5rem; }
         .use-cases { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin-bottom: 5rem; }
         .use-case { padding: 1.7rem; border-radius: 22px; transition: transform .3s, border-color .3s, background .3s; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(12px); }
@@ -273,7 +266,6 @@
         .use-case h4 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; }
         .use-case p { font-size: .82rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* ── ROADMAP ── */
         .roadmap-section { margin: 1rem 0 4rem; }
         .roadmap-title { font-family: 'DM Serif Display', serif; font-size: 2.2rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: .5rem; }
         .roadmap-sub { text-align: center; color: var(--text-muted); font-size: .92rem; margin-bottom: 2.5rem; }
@@ -305,7 +297,6 @@
         .use-case-modal .example-box { background: rgba(0,102,255,.05); border: 1px solid rgba(0,102,255,.12); border-radius: 12px; padding: 1rem 1.2rem; font-size: .83rem; color: var(--text-muted); line-height: 1.6; }
         .use-case-modal .example-box strong { color: var(--blue); display: block; margin-bottom: .3rem; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
 
-        /* ── COLLECT PANEL ── */
         .collect-page { max-width: 680px; margin: 0 auto 4rem; }
         .collect-work { background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.7); border-radius: var(--radius-md); padding: 1.1rem 1.3rem; font-size: .88rem; line-height: 1.7; white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
         .expiry-warn { margin-top: 1rem; padding: .85rem 1rem; background: rgba(255,149,0,.07); border: 1px solid rgba(255,149,0,.22); border-radius: var(--radius-sm); font-size: .8rem; color: #7a4800; line-height: 1.55; }
@@ -345,43 +336,29 @@
             .card { padding: 1.4rem 1.2rem; border-radius: 20px; }
             .use-cases { grid-template-columns: 1fr; }
             .agentic-grid { grid-template-columns: 1fr !important; }
-            /* Prevent iOS zoom on input focus */
             input, textarea, select { font-size: 16px !important; }
-            /* Larger tap targets */
             .btn { font-size: 1rem; padding: 1.1rem 1rem; border-radius: 14px; min-height: 52px; }
-            /* Xaman button — full width, prominent on mobile */
             #pay-fee-btn { font-size: 1rem; padding: 1.1rem; gap: 10px; }
             #pay-fee-btn [data-lucide] { width: 20px; height: 20px; }
             #fee-btn-usd { display: block; font-size: .78rem; margin-top: 2px; }
-            /* Nav */
             nav { padding: .75rem 1rem; gap: 8px; flex-wrap: wrap; }
             nav > div { gap: 8px; flex-wrap: wrap; }
             .badge-live { font-size: .68rem; padding: 4px 10px; }
-            /* Hero */
             .hero { margin-bottom: 3rem; }
             .hero h1 { font-size: clamp(2.4rem, 10vw, 3.5rem); }
             .hero p { font-size: 1rem; }
-            /* Tab bar */
             .tab-bar { width: 100%; }
             .tab-btn { flex: 1; justify-content: center; padding: 10px 12px; font-size: .82rem; }
-            /* Flow diagram on mobile */
             .flow-diagram { padding: 1.5rem 1rem; gap: 4px; }
             .flow-icon-wrap { width: 48px; height: 48px; border-radius: 14px; }
             .flow-icon-wrap [data-lucide] { width: 20px; height: 20px; }
-            /* Compare section */
             .compare-heading { font-size: 1.6rem; }
-            /* Card title */
             h2.card-title { font-size: 1.6rem; }
-            /* Global tooltip narrower on mobile */
             #global-tooltip { width: 220px; }
-            /* Marketplace nav link — hide on small screens, accessed via direct URL */
             .nav-marketplace-link { display: none; }
-            /* Use-case modal — sheet from bottom on mobile */
             .use-case-modal-overlay { align-items: flex-end; padding: 0; }
             .use-case-modal { border-radius: 20px 20px 0 0; position: fixed; bottom: 0; left: 0; right: 0; max-width: 100%; padding: 1.5rem 1.2rem 2rem; max-height: 85vh; overflow-y: auto; }
-            /* DvP panel */
             .dvp-panel { padding: 1rem; }
-            /* Seller collapsible section headings */
             details summary { font-size: .9rem; }
         }
     .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
@@ -441,7 +418,7 @@
     <div style="background:rgba(0,185,122,.07);border:1px solid rgba(0,185,122,.25);border-radius:14px;padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <div style="flex:1;min-width:180px">
             <strong>Free testnet sandbox</strong> — no real XRP needed.
-            <a href="/testnet/" style="color:var(--blue);font-weight:600;margin-left:.4rem">Testnet guide</a> &nbsp;·&nbsp;
+            <a href="/testnet/" style="color:var(--blue);font-weight:600;margin-left:.4rem">Testnet guide</a> &nbsp;&middot;&nbsp;
             <a href="/try/" style="color:var(--blue);font-weight:600">Try it in your browser</a>
         </div>
         <button id="demo-btn" onclick="runDemo()" style="padding:.55rem 1.1rem;border-radius:10px;border:none;background:var(--green);color:#fff;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
@@ -452,12 +429,8 @@
 </div>
 
 <div class="container" style="padding-top:0">
-    <!-- ════════════════════════════════════════════════════════════
-         AGENTIC AI MARKETPLACE CTA
-    ════════════════════════════════════════════════════════════ -->
     <section style="margin:1rem 0 2rem;">
 
-        <!-- Quick-start flow -->
         <div style="background:rgba(0,102,255,.04);border:1px solid rgba(0,102,255,.12);border-radius:16px;padding:1.5rem 1.8rem;max-width:860px;margin:0 auto 2.5rem;">
             <div class="quickstart-grid">
                 <div>
@@ -569,10 +542,10 @@
             <div class="footer-col">
                 <h4>Developers</h4>
                 <a href="/testnet/">Testnet sandbox (free)</a>
-                <a href="/try/">Try it in your browser</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
+                <a href="/challenges/">Challenges</a>
                 <a href="/fees/">Fees &amp; Limits</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
                 <a href="/audit/">Audit Report</a>
@@ -588,7 +561,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;&middot;&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
     </div>
 </footer>
 
@@ -602,6 +575,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 lucide.createIcons();
+
 async function runDemo() {
     const btn = document.getElementById('demo-btn');
     const result = document.getElementById('demo-result');
@@ -609,19 +583,30 @@ async function runDemo() {
     btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite"></span> Running demo…';
     result.style.display = 'none';
     try {
-        const res = await fetch('https://mcp.cryptovault.co.uk/testnet/demo', {method:'POST'});
-        if (!res.ok) throw new Error('HTTP '+res.status);
-        const d = await res.json();
-        const eid = d.escrow_id || '';
-        const verdict = d.verdict || '';
-        const escrowUrl = d.escrow_explorer_url || d.escrow_tx_url || '';
-        const releaseUrl = d.release_explorer_url || (d.release_tx_hash ? 'https://testnet.xrpl.org/transactions/'+d.release_tx_hash : '');
-        result.innerHTML = `<strong>${eid}</strong> &nbsp;·&nbsp; Verdict: <strong style="color:${verdict==='PASS'?'var(--green)':'var(--red)'}">${verdict}</strong>
-            ${escrowUrl ? `&nbsp;·&nbsp; <a href="${escrowUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Escrow tx →</a>` : ''}
-            ${releaseUrl ? `&nbsp;·&nbsp; <a href="${releaseUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Release tx →</a>` : ''}`;
+        const API = 'https://mcp.cryptovault.co.uk';
+        // Step 1: create wallets
+        const r1 = await fetch(`${API}/testnet/try/start`, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+        if (!r1.ok) throw new Error('start failed: HTTP ' + r1.status);
+        const d1 = await r1.json();
+        const sid = d1.session_id;
+        // Step 2: lock escrow
+        const r2 = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/lock`, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+        if (!r2.ok) throw new Error('lock failed: HTTP ' + r2.status);
+        const d2 = await r2.json();
+        const escrowId = d2.escrow_id || '';
+        const escrowUrl = d2.escrow_explorer_url || (d2.escrow_tx_hash ? `https://testnet.xrpl.org/transactions/${d2.escrow_tx_hash}` : '');
+        // Step 3: submit work
+        const r3 = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({work:'HELLO AGENT', use_ai:false})});
+        if (!r3.ok) throw new Error('submit failed: HTTP ' + r3.status);
+        const d3 = await r3.json();
+        const verdict = d3.verdict || '';
+        const releaseUrl = d3.release_explorer_url || (d3.release_tx_hash ? `https://testnet.xrpl.org/transactions/${d3.release_tx_hash}` : '');
+        result.innerHTML = `<strong>${escrowId}</strong> &nbsp;&middot;&nbsp; Verdict: <strong style="color:${verdict==='PASS'?'var(--green)':'var(--red)'}">${verdict}</strong>`
+            + (escrowUrl ? ` &nbsp;&middot;&nbsp; <a href="${escrowUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Escrow tx →</a>` : '')
+            + (releaseUrl ? ` &nbsp;&middot;&nbsp; <a href="${releaseUrl}" target="_blank" rel="noopener" style="color:var(--blue)">Release tx →</a>` : '');
         result.style.display = 'block';
     } catch(e) {
-        result.innerHTML = '<span style="color:var(--red)">Demo failed — please try again.</span>';
+        result.innerHTML = `<span style="color:var(--red)">Demo failed — ${e.message}. Please try again.</span>`;
         result.style.display = 'block';
     }
     btn.disabled = false;
