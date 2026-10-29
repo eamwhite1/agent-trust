@@ -190,7 +190,7 @@
 
 <div class="container">
     <div class="page-header">
-        <div class="test-badge"><span class="test-dot"></span> TEST MONEY · not real · XRPL Testnet</div>
+        <div class="test-badge"><span class="test-dot"></span> TEST MONEY &middot; not real &middot; XRPL Testnet</div>
         <h1>See how AgentTrust pays for work — with test money.</h1>
         <p>No wallet needed. No real XRP. Watch the XRP Ledger lock funds, verify work, and release payment automatically.</p>
     </div>
@@ -205,8 +205,8 @@
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
-            <button class="btn btn-primary" id="btn-1" id="btn-start" onclick="step1()">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
+            <button class="btn btn-primary" id="btn-start" onclick="step1()">
                 <i data-lucide="wallet" style="width:16px;height:16px"></i> Create test wallets
             </button>
             <div id="status-1" class="step-status"></div>
@@ -225,8 +225,8 @@
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
-            <button class="btn btn-primary" id="btn-2" id="btn-lock" onclick="step2()">
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
+            <button class="btn btn-primary" id="btn-lock" onclick="step2()">
                 <i data-lucide="lock" style="width:16px;height:16px"></i> Lock 5 test XRP
             </button>
             <div id="status-2" class="step-status"></div>
@@ -245,7 +245,7 @@
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <textarea id="work-input" rows="3" maxlength="500" placeholder="HELLO AGENT">HELLO AGENT</textarea>
             <p style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem">Hint: change it to anything else to see what happens when work fails.</p>
             <div class="toggle-row">
@@ -253,7 +253,7 @@
                 <label for="use-ai">Also ask the AI referee (adds ~10 s)</label>
             </div>
             <div style="margin-top:1rem">
-                <button class="btn btn-primary" id="btn-3" id="btn-submit" onclick="step3()">
+                <button class="btn btn-primary" id="btn-submit" onclick="step3()">
                     <i data-lucide="send" style="width:16px;height:16px"></i> Check the work
                 </button>
             </div>
@@ -272,8 +272,8 @@
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
-            <div id="verdict-card" id="verdict"></div>
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
+            <div id="verdict"></div>
             <div id="retry-row" style="display:none;margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;"></div>
         </div>
     </div>
@@ -288,7 +288,7 @@
             </div>
         </div>
         <div class="step-body">
-            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY · not real · XRPL Testnet</div>
+            <div class="test-badge" style="font-size:.63rem;padding:3px 10px;margin-bottom:.75rem">TEST MONEY &middot; not real &middot; XRPL Testnet</div>
             <div id="step5-content"></div>
         </div>
     </div>
@@ -330,11 +330,13 @@
             <div class="footer-col">
                 <h4>Developers</h4>
                 <a href="/testnet/">Testnet sandbox (free)</a>
-                <a href="/try/">Try it in your browser</a>
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
                 <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
+                <a href="/challenges/">Challenges</a>
                 <a href="/fees/">Fees &amp; Limits</a>
+                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
+                <a href="/audit/">Audit Report</a>
             </div>
             <div class="footer-col">
                 <h4>Legal</h4>
@@ -360,14 +362,11 @@ let escrowId = null;
 let attemptsRemaining = 3;
 const tlItems = [];
 
-// Canonical ID aliases for tests
-document.addEventListener('DOMContentLoaded', () => {
-    const aliases = {btn1: 'btn-start', btn2: 'btn-lock', btn3: 'btn-submit'};
-    const b1 = document.getElementById('btn-1'); if (b1 && !document.getElementById('btn-start')) b1.id = 'btn-start';
-    const b2 = document.getElementById('btn-2'); if (b2 && !document.getElementById('btn-lock')) b2.id = 'btn-lock';
-    const b3 = document.getElementById('btn-3'); if (b3 && !document.getElementById('btn-submit')) b3.id = 'btn-submit';
-    const vc = document.getElementById('verdict-card'); if (vc && !document.getElementById('verdict')) vc.id = 'verdict';
-});
+const BTN_IDS = {1: 'btn-start', 2: 'btn-lock', 3: 'btn-submit'};
+function disableBtn(n) {
+    const b = document.getElementById(BTN_IDS[n]);
+    if (b) b.disabled = true;
+}
 
 function setStatus(n, type, msg) {
     const el = document.getElementById('status-' + n);
@@ -402,11 +401,6 @@ function markDone(n) {
     if (num) num.innerHTML = '<i data-lucide="check" style="width:16px;height:16px"></i>';
     if (step) step.classList.add('done');
     lucide.createIcons();
-}
-
-function disableBtn(n) {
-    const b = document.getElementById('btn-' + n);
-    if (b) b.disabled = true;
 }
 
 function addTimeline(label, explorerUrl, green) {
@@ -523,7 +517,7 @@ async function step3() {
 }
 
 function escHtml(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s||''). replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function renderVerdict(d) {
@@ -531,7 +525,7 @@ function renderVerdict(d) {
     const score = d.score != null ? d.score : null;
     const criteria = Array.isArray(d.criteria) ? d.criteria : [];
 
-    let html = `<div class="verdict-card ${pass ? 'verdict-pass' : 'verdict-fail'}" id="verdict" data-verdict="${pass?'PASS':'FAIL'}">
+    let html = `<div class="verdict-card ${pass ? 'verdict-pass' : 'verdict-fail'}" data-verdict="${pass?'PASS':'FAIL'}">
         <div class="verdict-label">
             <i data-lucide="${pass ? 'check-circle' : 'x-circle'}" style="width:20px;height:20px"></i>
             ${pass ? 'PASS' : 'FAIL'}
@@ -539,18 +533,18 @@ function renderVerdict(d) {
     if (score != null) html += `<div class="verdict-score">Score: ${score} / 100</div>`;
     if (d.summary) html += `<div class="verdict-summary">${escHtml(d.summary)}</div>`;
     criteria.forEach(c => {
-        const ok = (c.verdict||c.result||'').toUpperCase() === 'PASS';
+        const ok = (c.verdict||c.result||''). toUpperCase() === 'PASS';
         html += `<div class="criteria-row">
             <span class="${ok ? 'criteria-result-pass' : 'criteria-result-fail'}">${ok ? '✓' : '✗'}</span>
             <div>
-                <div>${escHtml(c.description||'')}</div>
+                <div>${escHtml(c.description||'')} </div>
                 ${c.reasoning ? `<div class="criteria-reasoning">${escHtml(c.reasoning)}</div>` : ''}
             </div>
         </div>`;
     });
     html += '</div>';
 
-    document.getElementById('verdict-card').innerHTML = html;
+    document.getElementById('verdict').innerHTML = html;
     lucide.createIcons();
 
     const retryRow = document.getElementById('retry-row');
