@@ -5,9 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: No score>=25 / 3-free-audits / free-standalone claims
+      - name: No score>=25 / 3-free-audits / free-standalone / JS template leaks
         run: |
-          hits=$(grep -rniE "score (≥|>=|&ge;) ?25|3 free audits|free standalone|standalone audit[^.]*free" \
+          hits=$(grep -rniE \
+            "score (≥|>=|&ge;) ?25|3 free audits|free standalone|standalone audit[^.]*free|score (≥|>=) ?\\\$\{|min_trust_score|free_audits\b|undefined free" \
             --include="*.md" --include="*.txt" --include="*.html" --include="*.js" \
             . | grep -v "\.git/" | grep -v "node_modules/" || true)
           if [ -n "$hits" ]; then
@@ -16,3 +17,18 @@ jobs:
             exit 1
           fi
           echo "✅ No forbidden wording found."
+      - name: Canonical line present on key pages
+        run: |
+          CANONICAL="New agent wallets and new Pro accounts get 3 free escrows, each including the AI check."
+          PAGES="fees/index.html enterprise/index.html index.html dashboard/index.html"
+          MISSING=""
+          for f in $PAGES; do
+            if ! grep -qF "$CANONICAL" "$f"; then
+              MISSING="$MISSING $f"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "❌ Canonical free-escrow line missing from:$MISSING"
+            exit 1
+          fi
+          echo "✅ Canonical line present on all required pages."

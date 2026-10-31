@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Try AgentTrust</title>
-<meta name="description" content="See how AgentTrust pays for work — with test money. No wallet, no real XRP. Watch escrow lock, AI verify, and payment release in real-time on XRPL Testnet.">
+<meta name="description" content="See how AgentTrust pays for work — with test money. No wallet, no real XRP. Watch escrow lock, work get checked automatically, and payment release in real-time on XRPL Testnet.">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="Try AgentTrust — Test Money Demo">
 <meta property="og:description" content="See how AgentTrust pays for work — with test money. No wallet, no real XRP needed.">
@@ -327,7 +327,7 @@
 <div class="page-header">
     <div class="page-eyebrow"><span class="test-dot"></span> Test money &middot; XRPL Testnet</div>
     <h1>See escrow payment work — no wallet needed.</h1>
-    <p class="page-lead">No real XRP. Click through 5 steps and watch money lock on-chain, work get verified by AI, and payment release automatically.</p>
+    <p class="page-lead">No real XRP. Click through 5 steps and watch money lock on-chain, work get checked automatically against the task, and payment release automatically.</p>
 </div>
 
 <div class="container">
@@ -415,7 +415,7 @@
             <div class="step-icon-wrap" id="num-4"><i data-lucide="bot" style="width:18px;height:18px"></i></div>
             <div>
                 <div class="step-title">The referee checks the work</div>
-                <div class="step-desc">Our AI referee reads the submission and checks it against the task criteria. A match is a PASS; anything else is a FAIL with feedback.</div>
+                <div class="step-desc">The automated gate checks the submission against the task criteria. A match is a PASS; anything else is a FAIL with feedback.</div>
             </div>
         </div>
         <div class="step-body">
@@ -787,43 +787,82 @@ async function pollRelease(pollUrl) {
 async function startRefund(btn) {
     if (!sid) return;
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Waiting for refund window…`;
+    btn.innerHTML = `<span class="spinner"></span> Requesting refund…`;
 
     const step5 = document.getElementById('step-5');
-    step5.classList.remove('locked');
-    const title5 = step5.querySelector('.step-title');
-    const desc5 = step5.querySelector('.step-desc');
+    if (step5) step5.classList.remove('locked');
+    const title5 = step5 && step5.querySelector('.step-title');
+    const desc5  = step5 && step5.querySelector('.step-desc');
     if (title5) title5.textContent = 'Refund in progress';
-    if (desc5) desc5.textContent = 'Escrows on XRPL can only be refunded after their deadline — this one is 10 minutes.';
+    if (desc5)  desc5.textContent  = 'Escrows on XRPL can only be refunded after their deadline — this one is 10 minutes.';
 
     const content = document.getElementById('step5-content');
-    content.innerHTML = `<p style="font-size:.85rem;color:var(--text-muted)" id="refund-status">Waiting for the 10-minute cancel window to open…</p>`;
+    content.innerHTML = `
+        <p style="font-size:.85rem;color:var(--text-muted)" id="refund-status">Requesting refund…</p>
+        <span id="refund-countdown" style="font-size:.82rem;color:var(--text-muted);display:block;margin-top:.3rem"></span>
+        <div id="refund-result" style="margin-top:.5rem"></div>`;
 
     addTimeline('Refund requested', null, false);
 
-    for (let i = 0; i < 40; i++) {
-        await new Promise(r => setTimeout(r, 15000));
+    let _countdownInterval = null;
+
+    function showRefundCountdown(readyAtMs) {
+        if (_countdownInterval) clearInterval(_countdownInterval);
+        _countdownInterval = setInterval(() => {
+            const remaining = Math.max(0, Math.ceil((readyAtMs - Date.now()) / 1000));
+            const el = document.getElementById('refund-countdown');
+            if (!el) { clearInterval(_countdownInterval); return; }
+            if (remaining <= 0) {
+                el.textContent = 'Refund window open — retrying…';
+                clearInterval(_countdownInterval);
+                return;
+            }
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            el.textContent = `Refund available in ${mins}m ${String(secs).padStart(2,'0')}s`;
+        }, 1000);
+    }
+
+    async function attemptRefund() {
         try {
-            const res = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}`);
-            if (!res.ok) continue;
-            const d = await res.json();
-            if (d.cancel_tx_hash) {
-                const url = explorerTxUrl(d.cancel_tx_hash);
-                document.getElementById('refund-status').outerHTML =
-                    `<p style="color:var(--green);font-weight:600;margin-bottom:.5rem">Refund complete.</p>
-                     <a href="${url}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:12px;height:12px"></i> View cancellation on testnet.xrpl.org</a>`;
-                lucide.createIcons();
+            const r = await fetch(`${API}/testnet/try/${encodeURIComponent(sid)}/refund`, { method: 'POST' });
+            if (r.ok) {
+                const d = await r.json();
+                if (_countdownInterval) clearInterval(_countdownInterval);
+                const url = d.cancel_explorer_url || (d.cancel_tx_hash ? explorerTxUrl(d.cancel_tx_hash) : null);
+                const statusEl = document.getElementById('refund-status');
+                if (statusEl) statusEl.innerHTML = '<span style="color:var(--green);font-weight:600">Refund complete.</span>';
+                const resultEl = document.getElementById('refund-result');
+                if (resultEl && url) {
+                    resultEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener" class="explorer-link"><i data-lucide="external-link" style="width:12px;height:12px"></i> View EscrowCancel on testnet.xrpl.org</a>`;
+                    lucide.createIcons();
+                }
                 addTimeline('EscrowCancel — buyer refunded', url, true);
                 markDone(5);
                 document.getElementById('cta').style.display = 'block';
-                return;
+                return true;
+            } else if (r.status === 425) {
+                const d = await r.json();
+                const readyAt = d.detail?.refund_ready_at || d.refund_ready_at;
+                const statusEl = document.getElementById('refund-status');
+                if (statusEl) statusEl.textContent = 'Waiting for the 10-minute cancel window to open…';
+                if (readyAt) showRefundCountdown(typeof readyAt === 'number' ? readyAt * 1000 : new Date(readyAt).getTime());
+                return false;
+            } else {
+                const txt = await r.text().catch(() => '');
+                const statusEl = document.getElementById('refund-status');
+                if (statusEl) statusEl.textContent = '❌ ' + txt.slice(0, 100);
+                return false;
             }
-            if (d.refund_ready_at) {
-                const mins = Math.max(0, Math.ceil((new Date(d.refund_ready_at) - Date.now()) / 60000));
-                const el = document.getElementById('refund-status');
-                if (el) el.textContent = `Cancel window opens in ~${mins} minute${mins===1?'':'s'}…`;
-            }
-        } catch(e) {}
+        } catch(e) { return false; }
+    }
+
+    const done = await attemptRefund();
+    if (!done) {
+        const poll = setInterval(async () => {
+            const success = await attemptRefund();
+            if (success) clearInterval(poll);
+        }, 15000);
     }
 }
 
