@@ -371,6 +371,7 @@ canvas#gauge {
 .example-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Responsive ── */
+@media (max-width: 720px) { .blob, .blob-2 { display: none; } }
 @media (max-width: 520px) {
   .signal-row { grid-template-columns: 150px 1fr 30px; gap: .5rem; }
   .search-row { flex-direction: column; }
