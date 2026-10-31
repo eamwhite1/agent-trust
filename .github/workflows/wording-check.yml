@@ -32,3 +32,32 @@ jobs:
             exit 1
           fi
           echo "✅ Canonical line present on all required pages."
+
+  fees-render-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install playwright
+      - name: Check /fees/ renders without undefined/NaN/score>=
+        run: |
+          node -e "
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ args: ['--no-sandbox'] });
+            const page = await browser.newPage();
+            await page.goto('https://www.cryptovault.co.uk/fees/');
+            await page.waitForTimeout(4000);
+            const text = await page.evaluate(() => document.body.innerText);
+            await browser.close();
+            const bad = ['undefined', 'NaN', 'score ≥'];
+            const found = bad.filter(s => text.includes(s));
+            if (found.length) {
+              console.error('FAIL: /fees/ contains forbidden text: ' + found.join(', '));
+              process.exit(1);
+            }
+            console.log('PASS: /fees/ renders correctly');
+          })().catch(e => { console.error(e); process.exit(1); });
+          "

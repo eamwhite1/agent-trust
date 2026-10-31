@@ -13,7 +13,7 @@ API = os.environ.get("AGENT_TRUST_API", "https://mcp.cryptovault.co.uk")
 PAGES = ["testnet", "try", "agents", "claude-md"]
 
 def get_tools():
-    """Fetch tool list via JSON-RPC POST to /mcp (MCP spec)."""
+    """Fetch tool list via JSON-RPC POST to /mcp (SSE response — parse data: lines)."""
     payload = json.dumps({
         "jsonrpc": "2.0", "id": 1,
         "method": "tools/list", "params": {}
@@ -21,12 +21,23 @@ def get_tools():
     req = urllib.request.Request(
         f"{API}/mcp",
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            data = json.loads(r.read())
+        with urllib.request.urlopen(req, timeout=30) as r:
+            raw = r.read().decode("utf-8", errors="replace")
+        # Parse SSE: take the last non-empty data: line
+        data_lines = [
+            line[len("data:"):].strip()
+            for line in raw.splitlines()
+            if line.startswith("data:")
+        ]
+        if not data_lines:
+            # Fallback: try treating whole body as JSON
+            data_lines = [raw.strip()]
+        last_data = data_lines[-1]
+        data = json.loads(last_data)
         tools_list = (data.get("result") or {}).get("tools") or []
         if not tools_list:
             print("ERROR: /mcp returned 0 tools — check server", file=sys.stderr)
