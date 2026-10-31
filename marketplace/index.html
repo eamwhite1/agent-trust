@@ -574,6 +574,26 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
     .track-wrap button:hover { color: var(--text); }
     @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 
+    /* ── Site footer ── */
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+    .footer-bottom a { color: var(--blue); text-decoration: none; }
+    @media (max-width: 680px) {
+        .footer-inner { flex-direction: column; gap: 2rem; }
+        .footer-brand { flex: none; }
+        .footer-cols { gap: 1.5rem; }
+    }
+
     /* ── Marketplace sub-nav ── */
     .mkt-subnav { background: rgba(255,255,255,.5); border-bottom: 1px solid rgba(255,255,255,.55); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); position: sticky; top: 57px; z-index: 90; overflow: visible; }
     .mkt-subnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; }
