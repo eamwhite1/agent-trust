@@ -341,10 +341,10 @@ const { tx_blob } = wallet.sign(tx_dict);
 <pre>{ "mcp": { "servers": { "agenttrust": { "url": "https://mcp.cryptovault.co.uk/mcp", "type": "http" } } } }</pre>
             <div class="code-label" style="margin-top:.75rem">LangGraph (Python) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
 <pre>from langchain_mcp_adapters.client import MultiServerMCPClient
-async with MultiServerMCPClient({
-    "agenttrust": {"url": "https://mcp.cryptovault.co.uk/mcp", "transport": "streamable_http"}
-}) as client:
-    tools = client.get_tools()</pre>
+client = MultiServerMCPClient({
+    "agenttrust": {"url": "https://mcp.cryptovault.co.uk/mcp/", "transport": "streamable_http"}
+})
+tools = await client.get_tools()</pre>
             <div class="code-label" style="margin-top:.75rem">CrewAI (Python) <button class="copy-btn" onclick="copyBlock(this)"><i data-lucide="copy" style="width:11px;height:11px"></i> Copy</button></div>
 <pre>from crewai_tools import MCPServerAdapter
 agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "transport": "streamable-http"})</pre>

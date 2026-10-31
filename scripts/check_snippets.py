@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 check_snippets.py — Extract MCP tool calls from site pages and validate them
-against the live tools/list inputSchema.
+against the live MCP server's tools/list (JSON-RPC POST to /mcp).
 
 Pages checked: /testnet/, /try/, /agents/, /claude-md/
 """
@@ -12,15 +12,29 @@ BASE = Path(__file__).parent.parent
 API = os.environ.get("AGENT_TRUST_API", "https://mcp.cryptovault.co.uk")
 PAGES = ["testnet", "try", "agents", "claude-md"]
 
-# Fetch live tools list
 def get_tools():
+    """Fetch tool list via JSON-RPC POST to /mcp (MCP spec)."""
+    payload = json.dumps({
+        "jsonrpc": "2.0", "id": 1,
+        "method": "tools/list", "params": {}
+    }).encode()
+    req = urllib.request.Request(
+        f"{API}/mcp",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
     try:
-        with urllib.request.urlopen(f"{API}/tools/list", timeout=15) as r:
+        with urllib.request.urlopen(req, timeout=15) as r:
             data = json.loads(r.read())
-        return {t["name"]: t for t in (data.get("tools") or [])}
+        tools_list = (data.get("result") or {}).get("tools") or []
+        if not tools_list:
+            print("ERROR: /mcp returned 0 tools — check server", file=sys.stderr)
+            sys.exit(1)
+        return {t["name"]: t for t in tools_list}
     except Exception as e:
-        print(f"WARN: could not fetch tools/list: {e}", file=sys.stderr)
-        return {}
+        print(f"ERROR: could not reach MCP server: {e}", file=sys.stderr)
+        sys.exit(1)
 
 # Extract tool calls from HTML (simple regex, handles most cases)
 CALL_RE = re.compile(r'\b([a-z][a-z0-9_]+)\s*\(([^)]*)\)', re.DOTALL)
@@ -59,10 +73,7 @@ def check_page(page_name, tools):
     return errors
 
 def main():
-    tools = get_tools()
-    if not tools:
-        print("WARN: no tools loaded, skipping validation")
-        sys.exit(0)
+    tools = get_tools()  # exits 1 if 0 tools returned
 
     print(f"Checking {len(PAGES)} pages against {len(tools)} tools...")
     all_errors = []
