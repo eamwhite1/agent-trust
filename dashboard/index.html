@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -374,7 +375,8 @@
             <li>Full audit trail across all linked wallets</li>
             <li>Create escrows manually with the full buyer field set</li>
         </ul>
-        <p style="font-size:.85rem;font-weight:600;color:var(--text);margin:0 0 .75rem;padding:.6rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;">Try it free for 30 days. $199/year after, paid in RLUSD.</p>
+        <p style="font-size:.85rem;font-weight:600;color:var(--text);margin:0 0 .4rem;padding:.6rem 1rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;">Try it free for 30 days. $199/year after, paid in RLUSD.</p>
+        <p style="font-size:.8rem;color:var(--text-muted);margin:0 0 .75rem;">New agent wallets and new Pro accounts get 3 free escrows, each including the AI check.</p>
         <a href="https://mcp.cryptovault.co.uk/auth/google" class="btn-google">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -734,6 +736,15 @@
                     </div>
                     <div id="ce-gates-summary" style="display:none;margin-bottom:1rem;padding:.75rem 1rem;background:var(--blue-dim);border-radius:8px;font-size:.8rem;color:var(--blue)"></div>
 
+                    <!-- Pay from wallet selector -->
+                    <div class="form-group" id="ce-buyer-wallet-group">
+                        <label>Pay from <span style="color:var(--text-faint);font-weight:400">(your wallet)</span></label>
+                        <select id="ce-buyer-wallet" onchange="ceOnBuyerWalletChange()">
+                            <option value="">— Select wallet —</option>
+                        </select>
+                        <div id="ce-buyer-wallet-hint" style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem"></div>
+                    </div>
+
                     <!-- Core job -->
                     <div class="form-section-label">Job details</div>
                     <div class="form-group">
@@ -958,12 +969,30 @@
 
                 <!-- Step 3: sign EscrowCreate -->
                 <div id="create-sign-step" style="display:none">
-                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem">Fee paid. Now sign the EscrowCreate transaction in Xaman to lock the funds.</p>
-                    <button class="btn-primary" id="ce-sign-btn" onclick="ceSign()" style="width:100%;justify-content:center"><i data-lucide="lock"></i> Open Xaman to sign EscrowCreate</button>
-                    <div id="ce-sign-status" style="margin-top:.75rem;font-size:.82rem;color:var(--text-muted)"></div>
+                    <!-- Privy lock flow (shown when buyer is a Privy wallet) -->
+                    <div id="ce-privy-lock-panel" style="display:none">
+                        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem">Vault created. Lock the XRP directly from your Privy wallet — no Xaman needed.</p>
+                        <button class="btn-primary" id="ce-privy-lock-btn" onclick="cePrivyLock()" style="width:100%;justify-content:center"><i data-lucide="lock"></i> Lock <span id="ce-privy-lock-amt"></span> XRP from your Privy wallet</button>
+                        <div id="ce-privy-lock-status" style="margin-top:.75rem;font-size:.82rem;color:var(--text-muted)"></div>
+                        <!-- Funding panel shown on 402 insufficient XRP -->
+                        <div id="ce-privy-fund-panel" style="display:none;margin-top:1rem;padding:1rem;background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:8px">
+                            <div style="font-weight:700;margin-bottom:.4rem;color:var(--blue)">Fund your wallet first</div>
+                            <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.6rem">This wallet needs <strong id="ce-fund-need">—</strong> XRP before the escrow can be locked.</div>
+                            <div style="font-family:monospace;font-size:.82rem;word-break:break-all;margin-bottom:.5rem" id="ce-fund-address"></div>
+                            <div id="ce-fund-qr" style="margin:.6rem 0"></div>
+                            <button class="btn-action" onclick="cePrivyLock()"><i data-lucide="refresh-cw"></i> Try again</button>
+                        </div>
+                    </div>
+                    <!-- Xaman flow (shown when buyer is a Xaman wallet or no wallet selected) -->
+                    <div id="ce-xaman-lock-panel">
+                        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.25rem">Fee paid. Now sign the EscrowCreate transaction in Xaman to lock the funds.</p>
+                        <button class="btn-primary" id="ce-sign-btn" onclick="ceSign()" style="width:100%;justify-content:center"><i data-lucide="lock"></i> Open Xaman to sign EscrowCreate</button>
+                        <div id="ce-sign-status" style="margin-top:.75rem;font-size:.82rem;color:var(--text-muted)"></div>
+                    </div>
                     <div id="ce-receipt" style="display:none;margin-top:1.25rem;padding:1rem;background:var(--ground);border:1px solid var(--border);border-radius:8px">
                         <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin-bottom:.5rem">Receipt Code</div>
                         <div style="font-family:monospace;font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:.08em" id="ce-receipt-code"></div>
+                        <div id="ce-explorer-link" style="margin-top:.5rem;font-size:.82rem"></div>
                         <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
                             <button class="btn-action" onclick="navigator.clipboard.writeText(document.getElementById('ce-receipt-code').textContent).then(()=>showToast('Copied!'))"><i data-lucide="copy"></i> Copy code</button>
                             <button class="btn-action" onclick="ceReset()"><i data-lucide="plus"></i> Create another</button>
@@ -1511,6 +1540,26 @@ async function openDetail(escrowId) {
                 ${e.funding_deadline ? `<div class="detail-row" style="margin-top:.5rem"><span class="detail-key">Funding deadline</span><span class="detail-val">${new Date(e.funding_deadline).toLocaleString()}</span></div>` : ''}
             </div>` : ''}
             ${auditTrail}
+            ${(() => {
+                // Privy refund section
+                const isBuyerPrivy = enterpriseWalletObjects.some(w => w.privy_wallet_id && w.xrpl_address === e.buyer_address);
+                const canRefund = isBuyerPrivy && ['LOCKED','FAILED','EXPIRED'].includes(e.status);
+                if (!canRefund) return '';
+                const now = Date.now();
+                const cancelAfter = e.cancel_after_ts ? new Date(e.cancel_after_ts).getTime() : 0;
+                if (cancelAfter && now < cancelAfter) {
+                    return `<div class="detail-section" style="border-left:3px solid var(--text-faint);padding-left:.75rem">
+                        <span class="detail-section-label">Refund</span>
+                        <div style="font-size:.83rem;color:var(--text-muted)">Refund available at <strong>${escapeHtml(new Date(e.cancel_after_ts).toLocaleString())}</strong>.</div>
+                    </div>`;
+                }
+                return `<div class="detail-section" style="border-left:3px solid var(--blue);padding-left:.75rem">
+                    <span class="detail-section-label">Refund</span>
+                    <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.5rem">The deadline has passed. Refund the escrow amount to your Privy wallet.</div>
+                    <button class="btn-action" id="privy-refund-btn-${escapeHtml(e.escrow_id)}" onclick="privyRefund('${escapeHtml(e.escrow_id)}')"><i data-lucide="rotate-ccw"></i> Refund to my wallet</button>
+                    <div id="privy-refund-status-${escapeHtml(e.escrow_id)}" style="font-size:.78rem;color:var(--text-muted);margin-top:.4rem"></div>
+                </div>`;
+            })()}
             ${e.status === 'RELEASED' ? (() => {
                 const isRater = e.role === 'buyer' || e.role === 'seller';
                 const raterAddr = e.role === 'buyer' ? e.buyer_address : e.worker_address;
@@ -1611,30 +1660,40 @@ function renderWallets(wallets) {
         return;
     }
     document.getElementById('wallet-list').innerHTML = wallets.map(w => `
-        <div class="wallet-card">
+        <div class="wallet-card" id="wcard-${w.wallet_id}">
             <div style="flex:1;min-width:0">
-                <div class="wallet-addr">${w.xrpl_address}</div>
+                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                    <div class="wallet-addr">${escapeHtml(w.xrpl_address)}</div>
+                    <button onclick="navigator.clipboard.writeText('${escapeHtml(w.xrpl_address)}');showToast('Address copied')" style="background:none;border:none;cursor:pointer;color:var(--blue);padding:0;display:inline-flex;align-items:center" title="Copy address"><i data-lucide="copy" style="width:13px;height:13px"></i></button>
+                </div>
                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.2rem">
-                    <div class="wallet-label">${w.label || 'No label'}</div>
+                    <div class="wallet-label">${escapeHtml(w.label || 'No label')}</div>
                     <div id="balance-${w.wallet_id}" style="font-size:.75rem;color:var(--text-faint)">—</div>
-                    <a id="trust-${w.wallet_id}" href="https://www.cryptovault.co.uk/wallet-score/?address=${w.xrpl_address}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
+                    <a id="trust-${w.wallet_id}" href="https://www.cryptovault.co.uk/wallet-score/?address=${encodeURIComponent(w.xrpl_address)}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
                 </div>
                 ${!w.verified && !w.privy_wallet_id && w.verify_challenge ? `
                 <div style="margin-top:.4rem;font-size:.72rem;color:var(--text-faint);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
                     <span>Challenge:</span>
-                    <code style="font-size:.7rem;background:var(--blue-dim);color:var(--blue);padding:.1rem .4rem;border-radius:4px;user-select:all">${w.verify_challenge}</code>
-                    <button onclick="navigator.clipboard.writeText('${w.verify_challenge}');showToast('Challenge copied')" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:.7rem;padding:0;font-weight:600">Copy</button>
+                    <code style="font-size:.7rem;background:var(--blue-dim);color:var(--blue);padding:.1rem .4rem;border-radius:4px;user-select:all">${escapeHtml(w.verify_challenge)}</code>
+                    <button onclick="navigator.clipboard.writeText('${escapeHtml(w.verify_challenge)}');showToast('Challenge copied')" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:.7rem;padding:0;font-weight:600">Copy</button>
+                </div>` : ''}
+                ${w.privy_wallet_id ? `
+                <div style="margin-top:.75rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start">
+                    <div id="privy-qr-${w.wallet_id}" style="flex-shrink:0"></div>
+                    <div style="font-size:.78rem;color:var(--text-muted);max-width:380px;line-height:1.55" id="privy-fund-hint-${w.wallet_id}">
+                        Loading funding info…
+                    </div>
                 </div>` : ''}
             </div>
             <div class="wallet-actions">
-                <button class="btn-sm" onclick="openFundModal('${w.xrpl_address}')" data-tip="Show funding options"><i data-lucide="arrow-down-to-line"></i> Fund</button>
-                ${w.privy_wallet_id ? `<button class="btn-sm" onclick="openWithdrawModal(${w.wallet_id}, '${w.xrpl_address}')" data-tip="Send XRP from this wallet"><i data-lucide="send"></i> Send</button>` : ''}
+                <button class="btn-sm" onclick="openFundModal('${escapeHtml(w.xrpl_address)}')" data-tip="Show funding options"><i data-lucide="arrow-down-to-line"></i> Fund</button>
+                ${w.privy_wallet_id ? `<button class="btn-sm" onclick="openWithdrawModal(${w.wallet_id}, '${escapeHtml(w.xrpl_address)}')" data-tip="Send XRP from this wallet"><i data-lucide="send"></i> Send</button>` : ''}
                 ${w.verified
                     ? '<span class="verified-badge" data-tip="Verified on-chain — adds +8 to wallet trust score"><i data-lucide="check"></i> Verified on-chain</span>'
                     : `<span class="unverified-badge">Unverified</span>
                        <button class="btn-sm" onclick="${w.privy_wallet_id ? `verifyPrivyWallet(${w.wallet_id})` : `showVerifyInstructions(${w.wallet_id})`}" data-tip="${w.privy_wallet_id ? 'Click to verify automatically — no manual steps needed' : 'Click to see verification instructions'}"><i data-lucide="shield"></i> Verify</button>`
                 }
-                <button class="btn-sm" onclick="openDelegateModal(${w.wallet_id}, '${w.xrpl_address}', ${!!w.privy_wallet_id})" data-tip="Grant XLS-75 delegation to an agent key"><i data-lucide="key"></i> Delegate</button>
+                <button class="btn-sm" onclick="openDelegateModal(${w.wallet_id}, '${escapeHtml(w.xrpl_address)}', ${!!w.privy_wallet_id})" data-tip="Grant XLS-75 delegation to an agent key"><i data-lucide="key"></i> Delegate</button>
                 <button class="btn-sm danger" onclick="removeWallet(${w.wallet_id})" data-tip="Remove wallet"><i data-lucide="trash-2"></i></button>
             </div>
             <div class="wallet-delegations" id="delegations-${w.wallet_id}">
@@ -1643,11 +1702,86 @@ function renderWallets(wallets) {
         </div>
     `).join('');
     lucide.createIcons();
+    // Clear any existing balance poll intervals
+    (window._walletPolls || []).forEach(id => clearInterval(id));
+    window._walletPolls = [];
     wallets.forEach(w => {
         loadDelegations(w.wallet_id);
         loadWalletBalance(w.wallet_id, w.xrpl_address);
         loadWalletScore(w.wallet_id, w.xrpl_address);
+        if (w.privy_wallet_id) {
+            renderPrivyWalletQR(w.wallet_id, w.xrpl_address);
+            loadPrivyWalletFunding(w.wallet_id, w.xrpl_address);
+            const poll = setInterval(() => {
+                if (!document.getElementById(`wcard-${w.wallet_id}`)) { clearInterval(poll); return; }
+                loadWalletBalance(w.wallet_id, w.xrpl_address);
+                loadPrivyWalletFunding(w.wallet_id, w.xrpl_address);
+            }, 10000);
+            window._walletPolls.push(poll);
+        }
     });
+    populateBuyerWalletSelector(wallets);
+}
+
+function renderPrivyWalletQR(walletId, address) {
+    const el = document.getElementById(`privy-qr-${walletId}`);
+    if (!el || !window.QRCode) return;
+    el.innerHTML = '';
+    try {
+        new QRCode(el, { text: address, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.M });
+    } catch(e) { el.style.display = 'none'; }
+}
+
+async function loadPrivyWalletFunding(walletId, address) {
+    const hint = document.getElementById(`privy-fund-hint-${walletId}`);
+    if (!hint) return;
+    try {
+        const res = await fetch(`${API}/enterprise/wallets/${walletId}/funding?amount_xrp=0.5`, { credentials: 'include' });
+        if (!res.ok) return;
+        const d = await res.json();
+        const bal = d.balance_xrp != null ? Number(d.balance_xrp).toFixed(4) + ' XRP' : null;
+        if (!d.activated) {
+            const need = d.need_xrp != null ? Number(d.need_xrp).toFixed(4) : '1.3';
+            hint.innerHTML = `<strong>Not activated.</strong> Fund with at least <strong>${escapeHtml(String(need))} XRP</strong> to lock your first escrow (1 XRP keeps the wallet open on the XRP Ledger, plus 0.2 XRP per open escrow, plus the escrow amount). You can withdraw anything you don't lock.`;
+        } else {
+            hint.innerHTML = `Balance: <strong>${escapeHtml(bal || '—')}</strong>. Fund with at least <strong>1.2 XRP + escrow amount</strong> per escrow. You can withdraw anything you don't lock.`;
+        }
+    } catch(e) {
+        hint.textContent = escapeHtml(address);
+    }
+}
+
+function populateBuyerWalletSelector(wallets) {
+    const sel = document.getElementById('ce-buyer-wallet');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Select wallet —</option>';
+    wallets.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w.xrpl_address;
+        opt.dataset.walletId = w.wallet_id;
+        opt.dataset.isPrivy = w.privy_wallet_id ? '1' : '0';
+        const label = w.privy_wallet_id ? 'Privy wallet (signs here)' : 'Xaman wallet (sign in Xaman)';
+        opt.textContent = `${label} — ${w.xrpl_address.slice(0,10)}…`;
+        sel.appendChild(opt);
+    });
+    // Auto-select first wallet
+    if (wallets.length === 1) { sel.value = wallets[0].xrpl_address; ceOnBuyerWalletChange(); }
+}
+
+function ceOnBuyerWalletChange() {
+    const sel = document.getElementById('ce-buyer-wallet');
+    if (!sel) return;
+    const opt = sel.options[sel.selectedIndex];
+    const addr = sel.value;
+    const isPrivy = opt && opt.dataset.isPrivy === '1';
+    ceState.buyerAddress = addr || null;
+    ceState.buyerIsPrivy = isPrivy;
+    const hint = document.getElementById('ce-buyer-wallet-hint');
+    if (hint) {
+        if (!addr) { hint.textContent = ''; }
+        else if (isPrivy) { hint.textContent = 'This wallet signs escrows server-side — no Xaman needed.'; hint.style.color = 'var(--green)'; }
+        else { hint.textContent = 'Xaman will open to sign the EscrowCreate.'; hint.style.color = 'var(--text-muted)'; }
+    }
 }
 
 async function loadWalletBalance(walletId, address) {
@@ -2427,9 +2561,11 @@ async function ceUseFreeEscrow() {
     const btn = document.getElementById('ce-pay-btn');
     btn.disabled = true;
     document.getElementById('ce-fee-status').textContent = 'Creating vault…';
-    // Pick first account wallet as buyer if not already set
-    if (!ceState.buyerAddress && enterpriseWallets.length) {
-        ceState.buyerAddress = enterpriseWallets[0];
+    // Use selected buyer wallet (from selector) or fall back to first wallet
+    if (!ceState.buyerAddress) {
+        const sel = document.getElementById('ce-buyer-wallet');
+        if (sel && sel.value) { ceState.buyerAddress = sel.value; ceOnBuyerWalletChange(); }
+        else if (enterpriseWallets.length) { ceState.buyerAddress = enterpriseWallets[0]; }
     }
     ceState.feeHash = null; // no fee
     try {
@@ -2448,6 +2584,61 @@ async function ceUseFreeEscrow() {
             document.getElementById('ce-fee-status').textContent = '❌ ' + (e.message || 'Error');
             btn.disabled = false;
         }
+    }
+}
+
+async function cePrivyLock() {
+    const btn = document.getElementById('ce-privy-lock-btn');
+    const status = document.getElementById('ce-privy-lock-status');
+    const fundPanel = document.getElementById('ce-privy-fund-panel');
+    if (!ceState.setupData) { if (status) status.textContent = 'No vault data — please go back and try again.'; return; }
+    if (btn) btn.disabled = true;
+    if (fundPanel) fundPanel.style.display = 'none';
+    if (status) status.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:.4rem"></span> Waiting for the XRP Ledger…';
+    try {
+        const res = await fetch(`${API}/enterprise/escrow/${encodeURIComponent(ceState.setupData.escrow_id)}/privy-lock`, {
+            method: 'POST', credentials: 'include',
+            headers: {'Content-Type':'application/json'},
+        });
+        const data = await res.json();
+        if (res.ok) {
+            if (status) status.textContent = '';
+            // Refresh account counter
+            try { account = await (await fetch(`${API}/enterprise/me`, { credentials: 'include' })).json(); } catch {}
+            // Show receipt
+            const receipt = document.getElementById('ce-receipt');
+            const receiptCode = document.getElementById('ce-receipt-code');
+            const explorerLink = document.getElementById('ce-explorer-link');
+            if (receipt) receipt.style.display = '';
+            if (receiptCode) receiptCode.textContent = ceState.setupData.escrow_id || '';
+            if (explorerLink && data.explorer_url) {
+                explorerLink.innerHTML = `<a href="${escapeHtml(data.explorer_url)}" target="_blank" rel="noopener" style="color:var(--blue)">View EscrowCreate on XRPL ↗</a>`;
+            }
+            if (btn) btn.style.display = 'none';
+        } else if (res.status === 402) {
+            // Wallet not funded
+            if (status) status.textContent = '';
+            if (fundPanel) fundPanel.style.display = '';
+            const need = data.fund_xrp || data.detail?.fund_xrp;
+            const addr = data.address || ceState.buyerAddress;
+            const needEl = document.getElementById('ce-fund-need');
+            const addrEl = document.getElementById('ce-fund-address');
+            const qrEl = document.getElementById('ce-fund-qr');
+            if (needEl && need) needEl.textContent = Number(need).toFixed(4);
+            if (addrEl && addr) addrEl.textContent = addr;
+            if (qrEl && addr && window.QRCode) {
+                qrEl.innerHTML = '';
+                try { new QRCode(qrEl, { text: addr, width: 100, height: 100, correctLevel: QRCode.CorrectLevel.M }); } catch {}
+            }
+            if (btn) btn.disabled = false;
+        } else {
+            const msg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail || data);
+            if (status) status.textContent = '❌ ' + msg.slice(0, 120);
+            if (btn) btn.disabled = false;
+        }
+    } catch(e) {
+        if (status) status.textContent = '❌ ' + (e.message || 'Network error');
+        if (btn) btn.disabled = false;
     }
 }
 
@@ -2635,7 +2826,20 @@ async function ceGenerateVault() {
             try { account = await (await fetch(`${API}/enterprise/me`, { credentials: 'include' })).json(); } catch {}
         }
         ceSetStep(3);
-        document.getElementById('ce-sign-status').textContent = 'Vault created. Click below to sign the EscrowCreate in Xaman.';
+        // Show appropriate sign panel
+        const privyPanel = document.getElementById('ce-privy-lock-panel');
+        const xamanPanel = document.getElementById('ce-xaman-lock-panel');
+        if (ceState.buyerIsPrivy && privyPanel && xamanPanel) {
+            privyPanel.style.display = '';
+            xamanPanel.style.display = 'none';
+            const amt = parseFloat(document.getElementById('ce-amount').value).toFixed(2);
+            const amtEl = document.getElementById('ce-privy-lock-amt');
+            if (amtEl) amtEl.textContent = amt;
+        } else {
+            if (privyPanel) privyPanel.style.display = 'none';
+            if (xamanPanel) xamanPanel.style.display = '';
+            document.getElementById('ce-sign-status').textContent = 'Vault created. Click below to sign the EscrowCreate in Xaman.';
+        }
     } catch(e) {
         if (e.status) throw e; // re-throw 402 etc. to ceUseFreeEscrow handler
         document.getElementById('ce-fee-status').textContent = '❌ ' + e.message;
@@ -2997,6 +3201,34 @@ async function dashPickStar(el, n, eid, ratedAddr, role) {
         document.querySelectorAll(`#stars-${eid} span`).forEach(s => { s.style.cursor = 'default'; });
     } catch {
         if (msgEl) { msgEl.textContent = 'Network error.'; msgEl.style.color = 'var(--red)'; }
+    }
+}
+
+async function privyRefund(escrowId) {
+    const btn = document.getElementById(`privy-refund-btn-${escrowId}`);
+    const status = document.getElementById(`privy-refund-status-${escrowId}`);
+    if (btn) btn.disabled = true;
+    if (status) status.innerHTML = '<span class="spinner" style="width:11px;height:11px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:.3rem"></span> Waiting for the XRP Ledger…';
+    try {
+        const res = await fetch(`${API}/enterprise/escrow/${encodeURIComponent(escrowId)}/privy-refund`, {
+            method: 'POST', credentials: 'include',
+            headers: {'Content-Type':'application/json'},
+        });
+        const data = await res.json();
+        if (res.ok) {
+            const explorerUrl = data.explorer_url || data.cancel_explorer_url;
+            if (status) status.innerHTML = `Refund complete. ${explorerUrl ? `<a href="${escapeHtml(explorerUrl)}" target="_blank" rel="noopener" style="color:var(--blue)">View EscrowCancel on XRPL ↗</a>` : ''}`;
+            if (btn) btn.style.display = 'none';
+            // Refresh escrow list
+            setTimeout(() => loadEscrows(), 1500);
+        } else {
+            const msg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail || data);
+            if (status) status.textContent = '❌ ' + msg.slice(0, 120);
+            if (btn) btn.disabled = false;
+        }
+    } catch(e) {
+        if (status) status.textContent = '❌ ' + (e.message || 'Network error');
+        if (btn) btn.disabled = false;
     }
 }
 

@@ -402,8 +402,8 @@ async function load() {
         root.insertAdjacentHTML("beforeend", `<h2>Free Tier</h2>`);
         const freeCallout = el("div", { class: "callout good" });
         freeCallout.innerHTML =
-            `<strong>${ft.free_audits} free escrows</strong> for wallets created via <code>create_agent_wallet()</code>, or any wallet with trust score ≥ ${ft.min_trust_score} via <code>register_wallet_free_tier()</code> — omit <code>fee_hash</code>.<br>` +
-            `<span style="font-size:.85rem;color:var(--text-muted);">Check your score: <a href="/wallet-score/">${ft.check_score}</a></span>`;
+            `<strong>${ft.rule || "New agent wallets and new Pro accounts get 3 free escrows, each including the AI check."}</strong><br>` +
+            `<span style="font-size:.85rem;color:var(--text-muted);">Standalone <code>audit_task</code> is always $0.10. Testnet is always free.</span>`;
         root.append(freeCallout);
 
         // Escrow limits
@@ -449,6 +449,7 @@ async function load() {
                 </ul>
                 <p style="margin-top:.75rem;font-size:.85rem;">Per-audit fees ($0.10) still apply on top of the subscription. <a href="/enterprise/">Learn more →</a></p>
                 <p style="margin-top:.5rem;font-size:.85rem;"><strong>Try it free for 30 days</strong> — <a href="https://app.cryptovault.co.uk/dashboard/">sign in with Google</a>. No payment to start.</p>
+                <p style="margin-top:.5rem;font-size:.85rem;">New agent wallets and new Pro accounts get 3 free escrows, each including the AI check.</p>
             </div>
         `);
 
