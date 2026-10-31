@@ -392,10 +392,6 @@
         <div class="step-body">
             <textarea id="work-input" rows="3" maxlength="500" placeholder="HELLO AGENT">HELLO AGENT</textarea>
             <p style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem">Hint: change it to anything else to see what happens when work fails.</p>
-            <div class="toggle-row">
-                <input type="checkbox" id="use-ai">
-                <label for="use-ai">Also ask the AI referee (adds ~10 s)</label>
-            </div>
             <div style="margin-top:1rem">
                 <button class="btn btn-primary" id="btn-submit" onclick="step3()">
                     <i data-lucide="send" style="width:16px;height:16px"></i> Check the work
@@ -663,12 +659,11 @@ async function step3() {
     if (!sid || !escrowId) return;
     const work = document.getElementById('work-input').value.trim();
     if (!work) { showErr(3, 'Please enter some work to submit.'); return; }
-    const useAi = document.getElementById('use-ai').checked;
     disableBtn(3);
     hideErr(3);
-    setStatus(3, 'running', 'Checking work against task criteria' + (useAi ? ' (AI referee running…)' : '…'));
+    setStatus(3, 'running', 'Checking work against task criteria…');
     try {
-        const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, JSON.stringify({work, use_ai: useAi}));
+        const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, JSON.stringify({work}));
         attemptsRemaining = d.attempts_remaining ?? (attemptsRemaining - 1);
         setStatus(3, d.verdict === 'PASS' ? 'ok' : 'err', d.verdict === 'PASS' ? 'Work accepted!' : 'Work rejected.');
         renderVerdict(d);
@@ -829,6 +824,8 @@ async function startRefund(btn) {
             if (r.ok) {
                 const d = await r.json();
                 if (_countdownInterval) clearInterval(_countdownInterval);
+                const cdEl = document.getElementById('refund-countdown');
+                if (cdEl) cdEl.textContent = '';
                 const url = d.cancel_explorer_url || (d.cancel_tx_hash ? explorerTxUrl(d.cancel_tx_hash) : null);
                 const statusEl = document.getElementById('refund-status');
                 if (statusEl) statusEl.innerHTML = '<span style="color:var(--green);font-weight:600">Refund complete.</span>';
