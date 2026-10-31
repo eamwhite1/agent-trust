@@ -2416,11 +2416,7 @@ async function loadFeePreview() {
             }
             if (feeDesc) feeDesc.style.display = 'none';
         } else {
-            banner.textContent = 'No free escrows left — $0.10 per escrow.';
-            banner.style.display = '';
-            banner.style.background = 'var(--amber-dim, rgba(245,158,11,.1))';
-            banner.style.borderColor = 'rgba(245,158,11,.25)';
-            banner.style.color = 'var(--amber, #d97706)';
+            banner.style.display = 'none';
         }
     } catch {
         box.innerHTML = 'Protocol fee: $0.10 · Consensus: +$0.25 · Extra attempts: +$0.05 each';
