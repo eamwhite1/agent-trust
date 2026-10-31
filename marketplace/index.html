@@ -11,33 +11,33 @@
 <meta property="og:url" content="https://www.cryptovault.co.uk/marketplace/">
 <meta property="og:type" content="website">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap&family=DM+Serif+Display:ital@0;1" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 :root {
-    --bg:         #080b10;
-    --surface:    #0d1117;
-    --surface-2:  #131920;
-    --surface-3:  #1a2230;
-    --border:     rgba(255,255,255,.07);
-    --border-2:   rgba(255,255,255,.12);
-    --text:       #e2e8f0;
-    --text-dim:   #64748b;
-    --text-muted: #334155;
-    --blue:       #3b82f6;
-    --blue-dim:   rgba(59,130,246,.12);
-    --blue-glow:  rgba(59,130,246,.25);
-    --green:      #10b981;
-    --green-dim:  rgba(16,185,129,.12);
-    --amber:      #f59e0b;
-    --amber-dim:  rgba(245,158,11,.1);
-    --red:        #ef4444;
-    --purple:     #a855f7;
-    --purple-dim: rgba(168,85,247,.1);
+    --bg:         transparent;
+    --surface:    rgba(255,255,255,0.75);
+    --surface-2:  rgba(255,255,255,0.92);
+    --surface-3:  #ffffff;
+    --border:     rgba(0,0,0,.08);
+    --border-2:   rgba(0,0,0,.13);
+    --text:       #0d0d12;
+    --text-dim:   #5c5c6e;
+    --text-muted: #9b9baf;
+    --blue:       #0066FF;
+    --blue-dim:   rgba(0,102,255,.08);
+    --blue-glow:  rgba(0,102,255,.2);
+    --green:      #00B97A;
+    --green-dim:  rgba(0,185,122,.1);
+    --amber:      #d97706;
+    --amber-dim:  rgba(217,119,6,.1);
+    --red:        #E5373D;
+    --purple:     #7c3aed;
+    --purple-dim: rgba(124,58,237,.1);
     --mono:       'IBM Plex Mono', monospace;
-    --sans:       'IBM Plex Sans', sans-serif;
-    --r:          8px;
-    --r-lg:       14px;
+    --sans:       'DM Sans', sans-serif;
+    --r:          10px;
+    --r-lg:       16px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,99 +51,30 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Scanline overlay */
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
-    pointer-events: none;
-    z-index: 9999;
-}
-
-/* Grid background */
-.bg-grid {
-    position: fixed;
-    inset: 0;
-    background-image:
-        linear-gradient(rgba(59,130,246,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59,130,246,.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    z-index: 0;
-}
-.bg-glow {
-    position: fixed;
-    width: 600px; height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(59,130,246,.08) 0%, transparent 70%);
-    top: -200px; left: -100px;
-    pointer-events: none;
-    z-index: 0;
-}
-.bg-glow-2 {
-    position: fixed;
-    width: 500px; height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(168,85,247,.06) 0%, transparent 70%);
-    bottom: -150px; right: -100px;
-    pointer-events: none;
-    z-index: 0;
-}
+/* ── Animated background ── */
+.bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
+.blob { position: absolute; border-radius: 50%; width: 900px; height: 900px; top: -20%; left: -15%; background: radial-gradient(circle, rgba(0,102,255,.18) 0%, rgba(80,0,220,.10) 50%, transparent 75%); filter: blur(90px); animation: drift 18s infinite alternate ease-in-out; }
+.blob-2 { position: absolute; border-radius: 50%; width: 800px; height: 800px; bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(0,200,255,.15) 0%, rgba(0,102,255,.08) 60%, transparent 80%); filter: blur(110px); animation: drift 22s infinite alternate-reverse ease-in-out; }
+@keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(5%,5%) scale(1.08); } }
 
 /* ── NAV ── */
-nav {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: .75rem 2rem;
-    background: rgba(8,11,16,.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-}
-.nav-logo {
-    font-family: var(--mono);
-    font-size: .95rem; font-weight: 600;
-    color: var(--text);
-    display: flex; align-items: center; gap: 10px;
-    text-decoration: none;
-}
-.nav-logo-mark {
-    width: 28px; height: 28px; border-radius: 6px;
-    background: var(--blue); display: flex; align-items: center; justify-content: center;
-}
-.nav-logo-mark [data-lucide] { width: 14px; height: 14px; color: #fff; stroke-width: 2.5; }
-.nav-logo-sub { color: var(--text-dim); font-size: .75rem; font-weight: 400; }
-.nav-center { display: flex; gap: 2px; }
-.nav-pill {
-    padding: 5px 14px; border-radius: 6px; font-size: .78rem; font-weight: 600;
-    color: var(--text-dim); background: transparent; border: none; cursor: pointer;
-    font-family: var(--sans); transition: .18s; display: flex; align-items: center; gap: 6px;
-}
-.nav-pill.active, .nav-pill:hover { background: var(--surface-2); color: var(--text); }
-.nav-pill [data-lucide] { width: 13px; height: 13px; }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.status-pill {
-    display: flex; align-items: center; gap: 6px;
-    padding: 5px 12px; border-radius: 20px;
-    background: var(--green-dim); border: 1px solid rgba(16,185,129,.2);
-    font-size: .72rem; font-weight: 600; color: var(--green); font-family: var(--mono);
-}
-.live-dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
-    animation: pulse-green 2s infinite;
-}
-@keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(16,185,129,.5); }
-    70% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
-    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-}
-.btn-post {
-    display: flex; align-items: center; gap: 7px;
-    padding: 7px 16px; border-radius: var(--r);
-    background: var(--blue); color: #fff;
-    font-size: .82rem; font-weight: 700; border: none; cursor: pointer;
-    font-family: var(--sans); transition: .2s;
-}
-.btn-post:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 16px var(--blue-glow); }
+nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+.logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+.logo span { color: var(--blue); }
+.nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+.nav-link { font-size: .82rem; font-weight: 600; color: var(--text-dim); text-decoration: none; white-space: nowrap; transition: color .18s; }
+.nav-link:hover { color: var(--blue); }
+.nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.badge-live { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,185,122,.12); color: #00b97a; font-size: .72rem; font-weight: 700; letter-spacing: .06em; border-radius: 20px; padding: .3rem .7rem; text-transform: uppercase; border: 1px solid rgba(0,185,122,.25); text-decoration: none; }
+.ping-dot { width: 7px; height: 7px; background: #00b97a; border-radius: 50%; display: inline-block; animation: ping 2s ease-in-out infinite; }
+@keyframes ping { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5} }
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: .3rem; }
+@media (max-width: 820px) { .nav-menu { display: none; } .nav-toggle { display: flex; } .nav-menu.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(255,255,255,.97); backdrop-filter: blur(20px); padding: 1rem; gap: 14px; border-bottom: 1px solid rgba(0,0,0,.08); } }
+.nav-pill { padding: 5px 14px; border-radius: 6px; font-size: .78rem; font-weight: 600; color: var(--text-dim); background: transparent; border: none; cursor: pointer; font-family: var(--sans); transition: .18s; display: flex; align-items: center; gap: 6px; }
+.nav-pill.active, .nav-pill:hover { background: var(--blue-dim); color: var(--blue); }
+.nav-pill [data-lucide], .nav-pill svg { width: 13px; height: 13px; }
+.btn-post { display: flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: var(--r); background: var(--blue); color: #fff; font-size: .82rem; font-weight: 700; border: none; cursor: pointer; font-family: var(--sans); transition: .2s; }
+.btn-post:hover { background: #0052cc; transform: translateY(-1px); box-shadow: 0 4px 16px var(--blue-glow); }
 .btn-post [data-lucide] { width: 13px; height: 13px; }
 
 /* ── LAYOUT ── */
@@ -153,7 +84,7 @@ nav {
 .sidebar {
     border-right: 1px solid var(--border);
     padding: 1.5rem 1rem;
-    background: rgba(13,17,23,.6);
+    background: rgba(255,255,255,.45);
     overflow-y: auto;
 }
 .sidebar-section { margin-bottom: 2rem; }
@@ -194,7 +125,7 @@ nav {
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    background: rgba(13,17,23,.4);
+    background: rgba(255,255,255,.65);
     backdrop-filter: blur(10px);
     position: sticky; top: 0; z-index: 10;
 }
@@ -275,28 +206,7 @@ nav {
 .job-card-footer-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
 .read-more-btn { background: none; border: none; cursor: pointer; font-size: .74rem; font-weight: 600; color: var(--blue); font-family: var(--sans); padding: 0; display: none; }
 @media (max-width: 700px) { .read-more-btn { display: inline; } }
-.job-card-    /* ── Nav ── */
-    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
-    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
-    .logo span { color: var(--blue); }
-    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
-    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
-    .nav-link:hover { color: var(--blue); }
-    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
-    @media (max-width: 680px) {
-        nav { position: relative; flex-wrap: wrap; }
-        .nav-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 1.2rem 1.5rem; background: rgba(255,255,255,.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
-        .nav-menu.open { display: flex; }
-        .nav-toggle { display: flex; }
-    }
-    /* ── Footer ── */
-    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
-    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
-    .footer-brand { flex: 0 0 220px; }
-    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
-    .footer-dot { color: var(--blue); }
-    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+.job-card-
     .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
     .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
     .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
@@ -330,7 +240,7 @@ nav {
 /* ── DETAIL PANEL ── */
 .detail-panel {
     border-left: 1px solid var(--border);
-    background: rgba(13,17,23,.7);
+    background: rgba(255,255,255,.6);
     overflow-y: auto;
     position: sticky;
     top: 53px;
@@ -450,7 +360,7 @@ nav {
 .modal-overlay {
     display: none;
     position: fixed; inset: 0; z-index: 500;
-    background: rgba(0,0,0,.75);
+    background: rgba(0,0,0,.4);
     backdrop-filter: blur(8px);
     align-items: center; justify-content: center;
     padding: 1rem;
@@ -567,7 +477,7 @@ nav {
 .claim-modal-overlay {
     display: none;
     position: fixed; inset: 0; z-index: 500;
-    background: rgba(0,0,0,.75);
+    background: rgba(0,0,0,.4);
     backdrop-filter: blur(8px);
     align-items: center; justify-content: center;
     padding: 1rem;
@@ -606,7 +516,7 @@ nav {
 
 /* ── TICKER ── */
 .ticker {
-    background: rgba(59,130,246,.06); border-bottom: 1px solid rgba(59,130,246,.12);
+    background: rgba(0,102,255,.04); border-bottom: 1px solid rgba(0,102,255,.08);
     padding: 6px 2rem; display: flex; gap: 2rem; overflow: hidden;
     font-family: var(--mono); font-size: .72rem; color: var(--text-dim);
     white-space: nowrap;
@@ -626,8 +536,8 @@ nav {
 .tip { position: relative; display: inline-flex; align-items: center; }
 .tip-icon { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(99,102,241,.12); color: #818cf8; cursor: help; margin-left: 5px; flex-shrink: 0; font-size: .65rem; font-weight: 800; border: 1px solid rgba(99,102,241,.2); transition: background .2s; }
 .tip-icon:hover { background: rgba(99,102,241,.25); }
-.tip-box { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 260px; background: #0d1117; color: rgba(255,255,255,.88); font-size: .76rem; font-weight: 400; line-height: 1.6; padding: .8rem 1rem; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.4); z-index: 500; pointer-events: none; border: 1px solid rgba(255,255,255,.08); }
-.tip-box::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #0d1117; }
+.tip-box { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 260px; background: #0d0d12; color: rgba(255,255,255,.9); font-size: .76rem; font-weight: 400; line-height: 1.6; padding: .8rem 1rem; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.25); z-index: 500; pointer-events: none; border: 1px solid rgba(255,255,255,.1); }
+.tip-box::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #0d0d12; }
 .tip-box strong { color: #fff; display: block; margin-bottom: .25rem; }
 .tip.active .tip-box { display: block; }
 @media (hover: hover) { .tip:hover .tip-box { display: block; } }
@@ -646,7 +556,7 @@ nav {
     @keyframes ping-ring { 0% { transform: translate(-50%, -50%) scale(1); opacity: .8; } 80%, 100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; } }
     .badge-live { display: flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 40px; font-size: .72rem; font-weight: 600; color: #444 !important; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.75); text-decoration: none !important; }
     /* Marketplace sub-nav */
-    .mkt-subnav { background: rgba(13,17,23,.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(16px); position: sticky; top: 57px; z-index: 200; overflow: visible; }
+    .mkt-subnav { background: rgba(255,255,255,.8); border-bottom: 1px solid var(--border); backdrop-filter: blur(16px); position: sticky; top: 57px; z-index: 90; overflow: visible; }
     .mkt-subnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; }
     .mkt-pills { display: flex; gap: 4px; flex-shrink: 0; overflow-x: auto; }
     .nav-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; background: transparent; border: none; color: var(--text-dim); font-family: var(--sans); font-size: .8rem; font-weight: 600; cursor: pointer; transition: background .15s, color .15s; white-space: nowrap; }
@@ -660,15 +570,22 @@ nav {
     .track-wrap button:hover { color: var(--text); }
     @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 
+    /* ── Marketplace sub-nav ── */
+    .mkt-subnav { background: rgba(255,255,255,.8); border-bottom: 1px solid var(--border); backdrop-filter: blur(16px); position: sticky; top: 57px; z-index: 90; overflow: visible; }
+    .mkt-subnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; }
+    .mkt-pills { display: flex; gap: 4px; flex-shrink: 0; overflow-x: auto; }
+    .mkt-subnav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .track-wrap { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r); padding: 0 10px; height: 32px; }
+    .track-wrap input { background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .75rem; width: 120px; }
+    .track-wrap button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--sans); font-size: .72rem; font-weight: 600; white-space: nowrap; }
+    .track-wrap button:hover { color: var(--blue); }
+    @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 </style>
 </head>
 <body>
 
-<div class="bg-grid"></div>
-<div class="bg-glow"></div>
-<div class="bg-glow-2"></div>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
 
-<!-- NAV -->
 <nav>
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
@@ -680,7 +597,7 @@ nav {
         <a class="nav-link" href="/enterprise/">Pro</a>
     </div>
     <div class="nav-right">
-        <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener" style="text-decoration:none;">
+        <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
             <span class="ping-dot"></span> Live on XRPL
         </a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
@@ -717,11 +634,11 @@ nav {
                 <button class="btn-post" id="post-btn-main" onclick="togglePostMenu()">
                     <i data-lucide="plus"></i> Post <i data-lucide="chevron-down" style="width:11px;height:11px;margin-left:2px;"></i>
                 </button>
-                <div id="post-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:10px;min-width:160px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:200;">
-                    <button onclick="closePostMenu();openPostModal('jobboard')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                <div id="post-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;min-width:160px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:200;">
+                    <button onclick="closePostMenu();openPostModal('jobboard')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(0,0,0,.04)'" onmouseout="this.style.background='transparent'">
                         <i data-lucide="clipboard-list" style="width:13px;height:13px;color:#f59e0b;"></i> Post to Job Board <span style="font-size:.72rem;color:#10b981;margin-left:4px;">Free</span>
                     </button>
-                    <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:#e2e8f0;font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='#131920'" onmouseout="this.style.background='transparent'">
+                    <button onclick="closePostMenu();openPostModal('service')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(0,0,0,.04)'" onmouseout="this.style.background='transparent'">
                         <i data-lucide="zap" style="width:13px;height:13px;color:#3b82f6;"></i> List a Skill <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">$0.10/mo</span>
                     </button>
                 </div>
@@ -1181,7 +1098,7 @@ nav {
                     <label for="jb-nft-issuer-search">Required Issuer Wallet Address</label>
                     <div style="position:relative;">
                         <input type="text" id="jb-nft-issuer-search" placeholder="Search company name or paste wallet address..." oninput="gleifSearch(this.value,'jb-nft-issuer-results','jb-nft-issuer')" autocomplete="off" style="width:100%;">
-                        <div id="jb-nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0d1117;border:1px solid rgba(255,255,255,.12);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+                        <div id="jb-nft-issuer-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.1);"></div>
                         <input type="hidden" id="jb-nft-issuer">
                     </div>
                 </div>
