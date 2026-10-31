@@ -401,7 +401,14 @@
         .agents-cta-row { flex-direction: column; }
         .agents-cta-btn { justify-content: center; width: 100%; }
     }
-    </style>
+    
+    /* ── Mobile: disable expensive blob/blur effects ── */
+    @media (max-width: 680px) {
+        .blob, .blob-2 { display: none; }
+        .bg { background: linear-gradient(160deg, #f0f4ff 0%, #edf0ff 100%); }
+        nav { background: rgba(255,255,255,.97); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid rgba(0,0,0,.08); }
+    }
+</style>
 
 </head>
 <body>

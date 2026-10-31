@@ -393,7 +393,14 @@
     .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 1.1rem; }
     .page-lead { font-size: 1.05rem; color: var(--text-muted); max-width: 620px; margin-bottom: 0; line-height: 1.7; }
     h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -.025em; line-height: 1.1; color: var(--text); margin-bottom: 1rem; text-wrap: balance; }
-    </style>
+    
+    /* ── Mobile: disable expensive blob/blur effects ── */
+    @media (max-width: 680px) {
+        .blob, .blob-2 { display: none; }
+        .bg { background: linear-gradient(160deg, #f0f4ff 0%, #edf0ff 100%); }
+        nav { background: rgba(255,255,255,.97); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid rgba(0,0,0,.08); }
+    }
+</style>
 
 </head>
 <body>

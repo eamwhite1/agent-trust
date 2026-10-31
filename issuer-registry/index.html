@@ -194,6 +194,13 @@ footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 3rem 5%
     .footer-brand { flex: none; }
     .footer-cols { gap: 1.5rem; }
 }
+
+    /* ── Mobile: disable expensive blob/blur effects ── */
+    @media (max-width: 680px) {
+        .blob, .blob-2 { display: none; }
+        .bg { background: linear-gradient(160deg, #f0f4ff 0%, #edf0ff 100%); }
+        nav { background: rgba(255,255,255,.97); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid rgba(0,0,0,.08); }
+    }
 </style>
 </head>
 <body>

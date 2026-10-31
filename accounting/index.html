@@ -200,6 +200,13 @@
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .footer-bottom { border-color: rgba(255,255,255,.06); } }
     :root[data-theme="dark"] .footer-bottom { border-color: rgba(255,255,255,.06); }
     .footer-bottom a { color: var(--blue); text-decoration: none; }
+
+    /* ── Mobile: disable expensive blob/blur effects ── */
+    @media (max-width: 680px) {
+        .blob, .blob-2 { display: none; }
+        .bg { background: linear-gradient(160deg, #f0f4ff 0%, #edf0ff 100%); }
+        nav { background: rgba(255,255,255,.97); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid rgba(0,0,0,.08); }
+    }
 </style>
 </head>
 <body>
