@@ -95,75 +95,79 @@
         100% { transform: scale(1); }
     }
 
-    /* Left-rail timeline */
-    .steps-wrap {
-        display: grid;
-        grid-template-columns: 48px 1fr;
-        gap: 0 1.25rem;
-        position: relative;
+    /* Left-rail timeline — one row per step */
+    .steps-wrap { display: flex; flex-direction: column; }
+
+    .step-row {
+        display: flex;
+        gap: 1.25rem;
+        align-items: stretch;
     }
 
-    /* The continuous rail line */
-    .rail {
+    /* Rail column: dot + connector line below */
+    .step-rail {
         display: flex;
         flex-direction: column;
         align-items: center;
-        position: relative;
-    }
-    .rail-line {
-        position: absolute;
-        top: 0; bottom: 0;
-        left: 50%;
-        width: 2px;
-        transform: translateX(-50%);
-        background: linear-gradient(to bottom, var(--blue-border) 0%, rgba(0,102,255,.06) 100%);
-    }
-    /* Animated marker that slides down when a step unlocks */
-    .rail-marker {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%) translateY(0);
-        width: 12px; height: 12px;
-        border-radius: 50%;
-        background: var(--blue);
-        box-shadow: 0 0 0 4px rgba(0,102,255,.18);
-        z-index: 2;
-        transition: top .55s cubic-bezier(.4,0,.2,1);
-        top: 0;
-    }
-    .rail-marker.pulse {
-        animation: marker-pulse .6s ease-out;
-    }
-    @keyframes marker-pulse {
-        0%   { box-shadow: 0 0 0 0 rgba(0,102,255,.55); }
-        60%  { box-shadow: 0 0 0 10px rgba(0,102,255,.0); }
-        100% { box-shadow: 0 0 0 4px rgba(0,102,255,.18); }
-    }
-
-    /* Step node dots on the rail */
-    .rail-dot {
-        position: relative; z-index: 1;
-        width: 12px; height: 12px; border-radius: 50%;
-        background: rgba(0,102,255,.2);
-        border: 2px solid rgba(0,102,255,.35);
-        transition: background .3s, border-color .3s, transform .3s;
         flex-shrink: 0;
+        width: 28px;
     }
-    .rail-dot.active {
-        background: var(--blue);
-        border-color: var(--blue);
-        transform: scale(1.2);
+    .step-dot {
+        width: 28px; height: 28px; border-radius: 50%;
+        border: 2px solid rgba(0,102,255,.25);
+        background: rgba(0,102,255,.07);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background .3s, border-color .3s, box-shadow .3s;
+        position: relative; z-index: 1;
+        margin-top: 1.4rem; /* align with card top padding */
     }
-    .rail-dot.done {
-        background: var(--green);
-        border-color: var(--green);
-        transform: scale(1);
+    .step-dot::after {
+        content: '';
+        width: 8px; height: 8px; border-radius: 50%;
+        background: rgba(0,102,255,.3);
+        transition: background .3s;
     }
-    /* Spacer between dots */
-    .rail-spacer { flex: 1; }
+    /* Connector line below dot, fills remaining row height */
+    .step-connector {
+        width: 2px;
+        flex: 1;
+        background: linear-gradient(to bottom, rgba(0,102,255,.18), rgba(0,102,255,.05));
+        margin-top: 4px;
+        margin-bottom: 0;
+        min-height: 16px;
+    }
+    /* Last row has no connector */
+    .step-row:last-child .step-connector { display: none; }
 
-    /* Card column */
+    /* Active step: glowing blue dot */
+    .step-row.active .step-dot {
+        border-color: var(--blue);
+        background: var(--blue-dim);
+        box-shadow: 0 0 0 5px rgba(0,102,255,.12);
+        animation: dot-arrive .5s ease-out;
+    }
+    .step-row.active .step-dot::after { background: var(--blue); }
+    @keyframes dot-arrive {
+        0%   { box-shadow: 0 0 0 0 rgba(0,102,255,.5); }
+        50%  { box-shadow: 0 0 0 8px rgba(0,102,255,.08); }
+        100% { box-shadow: 0 0 0 5px rgba(0,102,255,.12); }
+    }
+
+    /* Done step: green */
+    .step-row.done .step-dot {
+        border-color: var(--green);
+        background: var(--green-dim);
+        box-shadow: none;
+    }
+    .step-row.done .step-dot::after { background: var(--green); }
+    .step-row.done .step-connector {
+        background: linear-gradient(to bottom, rgba(0,185,122,.3), rgba(0,102,255,.05));
+    }
+
+    /* Card */
     .step {
+        flex: 1;
         background: var(--glass);
         backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
@@ -172,9 +176,8 @@
         margin-bottom: 1rem;
         overflow: hidden;
         transition: opacity .3s;
-        grid-column: 2;
     }
-    .step.locked { opacity: .5; pointer-events: none; }
+    .step.locked { opacity: .45; pointer-events: none; }
     .step-header { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem 1.75rem 1rem; }
     .step-num {
         width: 34px; height: 34px; border-radius: 50%;
@@ -185,9 +188,11 @@
     }
     .step.done .step-num { background: var(--green); }
 
-    @media (max-width: 600px) {
-        .steps-wrap { grid-template-columns: 28px 1fr; gap: 0 .75rem; }
-        .rail-line, .rail-marker, .rail-dot { left: 50%; }
+    @media (max-width: 540px) {
+        .step-row { gap: .75rem; }
+        .step-rail { width: 20px; }
+        .step-dot { width: 20px; height: 20px; }
+        .step-dot::after { width: 6px; height: 6px; }
     }
     .step-title { font-size: 1rem; font-weight: 700; margin-bottom: .2rem; }
     .step-desc { font-size: .84rem; color: var(--text-muted); line-height: 1.55; }
@@ -329,22 +334,9 @@
 
     <div class="steps-wrap" id="steps-wrap">
 
-    <!-- Left rail -->
-    <div class="rail" id="steps-rail" aria-hidden="true">
-        <div class="rail-line"></div>
-        <div class="rail-marker" id="rail-marker"></div>
-        <div class="rail-dot active" id="rail-dot-1"></div>
-        <div class="rail-spacer" id="rail-sp-1"></div>
-        <div class="rail-dot" id="rail-dot-2"></div>
-        <div class="rail-spacer" id="rail-sp-2"></div>
-        <div class="rail-dot" id="rail-dot-3"></div>
-        <div class="rail-spacer" id="rail-sp-3"></div>
-        <div class="rail-dot" id="rail-dot-4"></div>
-        <div class="rail-spacer" id="rail-sp-4"></div>
-        <div class="rail-dot" id="rail-dot-5"></div>
-    </div>
-
     <!-- Step 1: Create wallets -->
+    <div class="step-row active" id="row-1">
+        <div class="step-rail" aria-hidden="true"><div class="step-dot" id="dot-1"></div><div class="step-connector"></div></div>
     <div class="step" id="step-1">
         <div class="step-header">
             <div class="step-icon-wrap" id="num-1"><i data-lucide="wallet" style="width:18px;height:18px"></i></div>
@@ -362,8 +354,11 @@
             <div id="err-1" class="error-banner"></div>
         </div>
     </div>
+    </div><!-- /row-1 -->
 
     <!-- Step 2: Lock escrow -->
+    <div class="step-row" id="row-2">
+        <div class="step-rail" aria-hidden="true"><div class="step-dot" id="dot-2"></div><div class="step-connector"></div></div>
     <div class="step locked" id="step-2">
         <div class="step-header">
             <div class="step-icon-wrap" id="num-2"><i data-lucide="lock" style="width:18px;height:18px"></i></div>
@@ -381,8 +376,11 @@
             <div id="err-2" class="error-banner"></div>
         </div>
     </div>
+    </div><!-- /row-2 -->
 
     <!-- Step 3: Submit work -->
+    <div class="step-row" id="row-3">
+        <div class="step-rail" aria-hidden="true"><div class="step-dot" id="dot-3"></div><div class="step-connector"></div></div>
     <div class="step locked" id="step-3">
         <div class="step-header">
             <div class="step-icon-wrap" id="num-3"><i data-lucide="send" style="width:18px;height:18px"></i></div>
@@ -407,8 +405,11 @@
             <div id="err-3" class="error-banner"></div>
         </div>
     </div>
+    </div><!-- /row-3 -->
 
     <!-- Step 4: Result -->
+    <div class="step-row" id="row-4">
+        <div class="step-rail" aria-hidden="true"><div class="step-dot" id="dot-4"></div><div class="step-connector"></div></div>
     <div class="step locked" id="step-4">
         <div class="step-header">
             <div class="step-icon-wrap" id="num-4"><i data-lucide="bot" style="width:18px;height:18px"></i></div>
@@ -422,8 +423,11 @@
             <div id="retry-row" style="display:none;margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;"></div>
         </div>
     </div>
+    </div><!-- /row-4 -->
 
     <!-- Step 5: Payment -->
+    <div class="step-row" id="row-5">
+        <div class="step-rail" aria-hidden="true"><div class="step-dot" id="dot-5"></div><div class="step-connector"></div></div>
     <div class="step locked" id="step-5">
         <div class="step-header">
             <div class="step-icon-wrap" id="num-5"><i data-lucide="circle-check" style="width:18px;height:18px"></i></div>
@@ -436,6 +440,7 @@
             <div id="step5-content"></div>
         </div>
     </div>
+    </div><!-- /row-5 -->
 
     </div><!-- /steps-wrap -->
 
@@ -538,26 +543,18 @@ function hideErr(n) {
 function unlock(n) {
     const el = document.getElementById('step-' + n);
     if (el) el.classList.remove('locked');
-    // Animate rail marker to the newly unlocked step's dot
-    const dot = document.getElementById('rail-dot-' + n);
-    const marker = document.getElementById('rail-marker');
-    const rail = document.getElementById('steps-rail');
-    if (dot && marker && rail) {
-        const railTop = rail.getBoundingClientRect().top;
-        const dotTop  = dot.getBoundingClientRect().top;
-        marker.style.top = (dotTop - railTop + dot.offsetHeight / 2 - marker.offsetHeight / 2) + 'px';
-        dot.classList.add('active');
-        marker.classList.remove('pulse');
-        void marker.offsetWidth; // reflow to re-trigger animation
-        marker.classList.add('pulse');
+    const row = document.getElementById('row-' + n);
+    if (row) {
+        row.classList.remove('done');
+        row.classList.add('active');
     }
 }
 
 function markDone(n) {
     const step = document.getElementById('step-' + n);
     if (step) step.classList.add('done');
-    const dot = document.getElementById('rail-dot-' + n);
-    if (dot) { dot.classList.remove('active'); dot.classList.add('done'); }
+    const row = document.getElementById('row-' + n);
+    if (row) { row.classList.remove('active'); row.classList.add('done'); }
 }
 
 function addTimeline(label, explorerUrl, green) {
@@ -830,17 +827,6 @@ async function startRefund(btn) {
     }
 }
 
-// Initialise rail marker at step 1 dot after layout settles
-window.addEventListener('load', () => {
-    const dot = document.getElementById('rail-dot-1');
-    const marker = document.getElementById('rail-marker');
-    const rail = document.getElementById('steps-rail');
-    if (dot && marker && rail) {
-        const railTop = rail.getBoundingClientRect().top;
-        const dotTop  = dot.getBoundingClientRect().top;
-        marker.style.top = (dotTop - railTop + dot.offsetHeight / 2 - marker.offsetHeight / 2) + 'px';
-    }
-});
 </script>
 </body>
 </html>
