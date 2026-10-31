@@ -76,31 +76,32 @@ body {
 }
 
 /* ── Layout ── */
-.wrap { max-width: 660px; margin: 0 auto; padding: 3rem 1rem 4rem; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 3rem 5% 4rem; }
 
 /* ── Page header ── */
 .page-eyebrow {
-  font-size: .7rem;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .72rem;
   font-weight: 700;
-  letter-spacing: .14em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--blue);
-  margin-bottom: .75rem;
+  margin-bottom: 1.1rem;
 }
 h1 {
   font-family: 'DM Serif Display', serif;
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-size: clamp(2rem, 5vw, 2.9rem);
   font-weight: 400;
-  letter-spacing: -.02em;
-  line-height: 1.15;
-  margin-bottom: .6rem;
+  letter-spacing: -.025em;
+  line-height: 1.1;
+  margin-bottom: 1rem;
   text-wrap: balance;
 }
 .page-sub {
-  font-size: .93rem;
+  font-size: 1.05rem;
   color: var(--muted);
-  line-height: 1.65;
-  max-width: 520px;
+  line-height: 1.7;
+  max-width: 620px;
   margin-bottom: 2.5rem;
 }
 
@@ -455,7 +456,7 @@ canvas#gauge {
 
 <div class="wrap">
 
-  <div class="page-eyebrow">Wallet Score</div>
+  <div class="page-eyebrow"><i data-lucide="shield-check"></i> Wallet Score</div>
   <h1>The reputation layer for XRPL agents</h1>
   <p class="page-sub">Open, free-to-query trust scores for any XRPL wallet — 11 independent signals including sanctions screening, on-chain ownership proof, identity KYC, escrow completion history, and peer ratings. Used by agents, marketplaces, and protocols as shared discovery infrastructure.</p>
 
