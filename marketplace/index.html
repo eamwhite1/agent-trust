@@ -44,7 +44,7 @@
 
 body {
     font-family: var(--sans);
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
@@ -659,10 +659,19 @@ nav {
     .track-wrap button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--sans); font-size: .72rem; font-weight: 600; white-space: nowrap; }
     .track-wrap button:hover { color: var(--text); }
     @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
+        /* ── Animated background ── */
+        .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
+        @media (prefers-color-scheme: dark) { .bg { background: var(--bg); } }
+        :root[data-theme="dark"] .bg { background: var(--bg); }
+        .blob { position: absolute; border-radius: 50%; width: 900px; height: 900px; top: -20%; left: -15%; background: radial-gradient(circle, rgba(0,102,255,.18) 0%, rgba(80,0,220,.10) 50%, transparent 75%); filter: blur(90px); animation: drift 18s infinite alternate ease-in-out; }
+        .blob-2 { position: absolute; border-radius: 50%; width: 800px; height: 800px; bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(0,200,255,.15) 0%, rgba(0,102,255,.08) 60%, transparent 80%); filter: blur(110px); animation: drift 22s infinite alternate-reverse ease-in-out; }
+        @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(5%,5%) scale(1.08); } }
+
 </style>
 </head>
 <body>
 
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
 <div class="bg-grid"></div>
 <div class="bg-glow"></div>
 <div class="bg-glow-2"></div>

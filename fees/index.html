@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://www.cryptovault.co.uk/fees/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap&family=DM+Serif+Display:ital@0;1" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
     :root {
         --bg: #fafafa;
@@ -39,7 +39,7 @@
         --border: rgba(255,255,255,.08);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
+    body { margin: 0; background: transparent; color: var(--text); font-family: "IBM Plex Sans", system-ui, sans-serif; line-height: 1.65; }
     .wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -94,9 +94,68 @@
     .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: .8rem; }
     .footer-links a { color: var(--text-muted); text-decoration: none; }
     .footer-links a:hover { color: var(--blue); }
+
+    /* ── Blob background ── */
+    .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: #0d0d12; } }
+    :root[data-theme="dark"] .bg { background: #0d0d12; }
+    .blob { position: absolute; border-radius: 50%; width: 900px; height: 900px; top: -20%; left: -15%; background: radial-gradient(circle, rgba(0,102,255,.18) 0%, rgba(80,0,220,.10) 50%, transparent 75%); filter: blur(90px); animation: drift 18s infinite alternate ease-in-out; }
+    .blob-2 { position: absolute; border-radius: 50%; width: 800px; height: 800px; bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(0,200,255,.15) 0%, rgba(0,102,255,.08) 60%, transparent 80%); filter: blur(110px); animation: drift 22s infinite alternate-reverse ease-in-out; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(5%,5%) scale(1.08); } }
+    /* ── Nav ── */
+    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--blue); }
+    .nav-menu { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .nav-link { font-size: .82rem; font-weight: 600; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color .18s; }
+    .nav-link:hover { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .badge-live { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,185,122,.12); color: #00b97a; font-size: .72rem; font-weight: 700; letter-spacing: .06em; border-radius: 20px; padding: .3rem .7rem; text-transform: uppercase; border: 1px solid rgba(0,185,122,.25); }
+    .ping-dot { width: 7px; height: 7px; background: #00b97a; border-radius: 50%; display: inline-block; animation: ping 2s ease-in-out infinite; }
+    @keyframes ping { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5} }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: .3rem; }
+    @media (max-width: 820px) { .nav-menu { display: none; } .nav-toggle { display: flex; } .nav-menu.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(255,255,255,.97); backdrop-filter: blur(20px); padding: 1rem; gap: 14px; border-bottom: 1px solid rgba(0,0,0,.08); } }
+    @media (max-width: 680px) { .blob, .blob-2 { display: none; } }
+    /* ── Standard footer ── */
+    footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
+    .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .footer-brand { flex: 0 0 220px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; letter-spacing: -.02em; color: var(--text); }
+    .footer-dot { color: var(--blue); }
+    .footer-tagline { font-size: .78rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; max-width: 180px; }
+    .footer-cols { display: flex; gap: 2.5rem; flex: 1; flex-wrap: wrap; }
+    .footer-col { display: flex; flex-direction: column; gap: .5rem; min-width: 140px; }
+    .footer-col h4 { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text); margin-bottom: .25rem; }
+    .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: var(--blue); }
+    .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
+    .footer-bottom a { color: var(--blue); text-decoration: none; }
+    @media (max-width: 640px) { .footer-inner { flex-direction: column; gap: 2rem; } .footer-brand { flex: none; } .footer-cols { gap: 1.5rem; } }
 </style>
 </head>
 <body>
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
+
+<nav>
+    <a class="logo" href="/">AgentTrust<span>.</span></a>
+    <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/how-it-works/">How it Works</a>
+        <a class="nav-link" href="/use-cases/">Use Cases</a>
+        <a class="nav-link" href="/roadmap/">Roadmap</a>
+        <a class="nav-link" href="/guides/">Guides</a>
+        <a class="nav-link" href="/agents/">For Agents</a>
+        <a class="nav-link" href="/enterprise/">Pro</a>
+    </div>
+    <div class="nav-right">
+        <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener" style="text-decoration:none;">
+            <span class="ping-dot"></span> Live on XRPL
+        </a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+                onclick="document.getElementById('nav-menu').classList.toggle('open')">
+            &#9776;
+        </button>
+    </div>
+</nav>
 <div class="wrap">
     <a class="back" href="/">← AgentTrust</a>
 
@@ -169,19 +228,49 @@
         </div>
     </div>
 
-    <footer>
-        <div class="footer-links">
-            <a href="/">Home</a>
-            <a href="/testnet/">Testnet sandbox (free)</a>
+</div><!-- /wrap -->
 
-
-            <a href="/trust-model/">Trust Model</a>
-            <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
-            <a href="/compliance/">Compliance</a>
-            <a href="/terms/">Terms</a>
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
+            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
         </div>
-    </footer>
-</div>
+        <div class="footer-cols">
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="/how-it-works/">How it Works</a>
+                <a href="/use-cases/">Use Cases</a>
+                <a href="/roadmap/">Roadmap</a>
+                <a href="/agents/">For Agents</a>
+                <a href="/enterprise/">Pro</a>
+                <a href="/marketplace/">Marketplace</a>
+                <a href="/wallet-score/">Wallet Score</a>
+            </div>
+            <div class="footer-col">
+                <h4>Developers</h4>
+                <a href="/testnet/">Testnet sandbox (free)</a>
+                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
+                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="/guides/">Guides</a>
+                <a href="/fees/">Fees &amp; Limits</a>
+                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
+                <a href="/audit/">Audit Report</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="/compliance/">Compliance</a>
+                <a href="/trust-model/">Trust Model</a>
+                <a href="/terms/">Terms</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
+    </div>
+</footer>
 
 <script>
 const API = "https://mcp.cryptovault.co.uk/fees";

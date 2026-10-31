@@ -30,7 +30,7 @@
     * { box-sizing: border-box; }
     body {
         margin: 0;
-        background: var(--bg);
+        background: transparent;
         color: var(--text);
         font-family: "IBM Plex Sans", system-ui, sans-serif;
         line-height: 1.65;
@@ -140,10 +140,19 @@
     .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
     .footer-bottom a { color: var(--blue); text-decoration: none; }
     @media (max-width: 680px) { .footer-inner { flex-direction: column; gap: 2rem; } .footer-brand { flex: none; } .footer-cols { gap: 1.5rem; } }
+        /* ── Animated background ── */
+        .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
+        @media (prefers-color-scheme: dark) { .bg { background: var(--bg); } }
+        :root[data-theme="dark"] .bg { background: var(--bg); }
+        .blob { position: absolute; border-radius: 50%; width: 900px; height: 900px; top: -20%; left: -15%; background: radial-gradient(circle, rgba(0,102,255,.18) 0%, rgba(80,0,220,.10) 50%, transparent 75%); filter: blur(90px); animation: drift 18s infinite alternate ease-in-out; }
+        .blob-2 { position: absolute; border-radius: 50%; width: 800px; height: 800px; bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(0,200,255,.15) 0%, rgba(0,102,255,.08) 60%, transparent 80%); filter: blur(110px); animation: drift 22s infinite alternate-reverse ease-in-out; }
+        @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(5%,5%) scale(1.08); } }
+
 </style>
 </head>
 <body>
 
+<div class="bg"><div class="blob"></div><div class="blob-2"></div></div>
 <nav>
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
