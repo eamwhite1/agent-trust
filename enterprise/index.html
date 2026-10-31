@@ -440,12 +440,17 @@
             </div>
             <div class="xaman-amount" id="xaman-amount"></div>
             <div class="xaman-rate" id="xaman-rate">Loading live rate…</div>
+            <button class="btn-primary" id="xaman-generate-btn" onclick="generateXamanQR()" style="margin:0.5rem auto 0.25rem;display:block;"><i data-lucide="qr-code"></i> Generate QR code</button>
             <div class="xaman-qr-wrap" id="xaman-qr-wrap">
                 <img class="xaman-qr" id="xaman-qr" src="" alt="Scan with Xaman" style="display:none;">
             </div>
             <a class="xaman-deeplink" id="xaman-deeplink" href="#" target="_blank" style="display:none;"><i data-lucide="smartphone"></i> Open in Xaman</a>
-            <div class="xaman-status" id="xaman-status">Generating QR code…</div>
-            <p class="xaman-hint">Scan with Xaman on mobile, or tap Open in Xaman. Payment activates your annual Pro subscription.</p>
+            <div class="xaman-status" id="xaman-status"></div>
+            <div id="xaman-pending-notice" style="display:none;text-align:center;margin-top:0.75rem;">
+                <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:.5rem;">Payment received — sign in with Google to activate your subscription.</p>
+                <a href="/auth/google?return=subscription" class="btn-primary" style="display:inline-flex;gap:.4rem;align-items:center;"><i data-lucide="log-in"></i> Sign in with Google</a>
+            </div>
+            <p class="xaman-hint">Select your currency, generate a QR code, then scan with Xaman. Payment activates your annual Pro subscription.</p>
         </div>
     </div>
 
@@ -455,7 +460,7 @@
         <p>The Pro dashboard is live — create escrow templates, issue agent API keys, manage vaults, and view the full audit trail. $199/year after a 30-day free trial — no payment to start.</p>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
             <a href="https://app.cryptovault.co.uk/dashboard/" class="btn-primary"><i data-lucide="zap"></i> Try it free for 30 days</a>
-            <button class="btn-xaman" onclick="startXamanPayment()"><i data-lucide="zap"></i> Buy Pro with Xaman</button>
+            <button class="btn-xaman" onclick="openXamanModal()"><i data-lucide="zap"></i> Buy Pro with Xaman</button>
             <a href="/trust-model/" class="btn-ghost">Read the trust model <i data-lucide="arrow-right"></i></a>
         </div>
 
@@ -527,22 +532,45 @@
         document.getElementById('cur-rlusd').classList.toggle('active', cur === 'RLUSD');
     };
 
-    window.startXamanPayment = async function() {
+    window.openXamanModal = function() {
         const modal = document.getElementById('xaman-modal');
         const statusEl = document.getElementById('xaman-status');
         const rateEl = document.getElementById('xaman-rate');
         const amountEl = document.getElementById('xaman-amount');
         const qrEl = document.getElementById('xaman-qr');
         const dlEl = document.getElementById('xaman-deeplink');
+        const pendingEl = document.getElementById('xaman-pending-notice');
+        const genBtn = document.getElementById('xaman-generate-btn');
 
-        // Reset state
+        clearInterval(_pollTimer);
         modal.style.display = 'flex';
+        statusEl.textContent = '';
+        rateEl.textContent = '';
+        amountEl.textContent = '';
+        qrEl.style.display = 'none';
+        dlEl.style.display = 'none';
+        pendingEl.style.display = 'none';
+        genBtn.style.display = 'block';
+        selectCurrency('XRP');
+        lucide.createIcons();
+    };
+
+    window.generateXamanQR = async function() {
+        const statusEl = document.getElementById('xaman-status');
+        const rateEl = document.getElementById('xaman-rate');
+        const amountEl = document.getElementById('xaman-amount');
+        const qrEl = document.getElementById('xaman-qr');
+        const dlEl = document.getElementById('xaman-deeplink');
+        const pendingEl = document.getElementById('xaman-pending-notice');
+        const genBtn = document.getElementById('xaman-generate-btn');
+
+        genBtn.style.display = 'none';
         statusEl.textContent = 'Generating payment request…';
         rateEl.textContent = '';
         amountEl.textContent = '';
         qrEl.style.display = 'none';
         dlEl.style.display = 'none';
-        lucide.createIcons();
+        pendingEl.style.display = 'none';
 
         try {
             const res = await fetch(`${API}/subscribe/xaman`, {
@@ -551,8 +579,7 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({currency: _currency})
             });
-            if (res.status === 401) { statusEl.textContent = 'Please sign in to your Pro account first.'; return; }
-            if (!res.ok) { statusEl.textContent = 'Could not create payment — please try again.'; return; }
+            if (!res.ok) { statusEl.textContent = 'Could not create payment — please try again.'; genBtn.style.display = 'block'; return; }
             const data = await res.json();
 
             if (_currency === 'RLUSD') {
@@ -571,6 +598,7 @@
             _startPolling(data.uuid);
         } catch (e) {
             statusEl.textContent = 'Network error — please try again.';
+            genBtn.style.display = 'block';
         }
     };
 
@@ -586,9 +614,15 @@
                     clearInterval(_pollTimer);
                     statusEl.textContent = '✅ Payment confirmed — your Pro subscription is active!';
                     setTimeout(() => { closeXamanModal(); location.reload(); }, 2500);
+                } else if (data.status === 'pending_account') {
+                    clearInterval(_pollTimer);
+                    statusEl.textContent = '';
+                    document.getElementById('xaman-pending-notice').style.display = 'block';
+                    lucide.createIcons();
                 } else if (data.status === 'expired') {
                     clearInterval(_pollTimer);
-                    statusEl.textContent = 'QR expired — please click the button again to retry.';
+                    statusEl.textContent = 'QR expired — please try again.';
+                    document.getElementById('xaman-generate-btn').style.display = 'block';
                 } else if (data.status === 'amount_mismatch') {
                     clearInterval(_pollTimer);
                     statusEl.textContent = 'Amount mismatch — please contact support.';
