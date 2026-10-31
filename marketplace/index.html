@@ -112,15 +112,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
 }
 .filter-btn.active .filter-count { background: var(--blue-dim); color: var(--blue); }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.stat-card {
-    background: var(--glass); border: 1px solid var(--glass-border);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    border-radius: var(--r); padding: .75rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,.04);
-}
-.stat-val { font-family: var(--mono); font-size: 1.1rem; font-weight: 600; color: var(--text); }
-.stat-lbl { font-size: .68rem; color: var(--text-dim); margin-top: 2px; }
 
 /* ── MAIN ── */
 .main { overflow-y: auto; background: transparent; }
@@ -515,18 +506,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
 .empty-state [data-lucide] { width: 40px; height: 40px; opacity: .2; margin: 0 auto 1rem; display: block; }
 .empty-state p { font-size: .88rem; }
 
-/* ── TICKER ── */
-.ticker {
-    background: rgba(0,102,255,.04); border-bottom: 1px solid rgba(0,102,255,.08);
-    padding: 6px 2rem; display: flex; gap: 2rem; overflow: hidden;
-    font-family: var(--mono); font-size: .72rem; color: var(--text-dim);
-    white-space: nowrap;
-}
-.ticker-item { display: flex; align-items: center; gap: 7px; }
-.ticker-item .t-label { color: var(--text-muted); }
-.ticker-item .t-val { color: var(--text); font-weight: 600; }
-.ticker-item .t-green { color: var(--green); }
-.ticker-item .t-blue  { color: var(--blue); }
 
 /* ── SCROLLBARS ── */
 ::-webkit-scrollbar { width: 5px; }
@@ -550,7 +529,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
 @media (max-width: 720px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    .ticker { display: none; }
 }
     .ping-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
     .ping-dot::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; transform: translate(-50%, -50%) scale(1); border-radius: 50%; background: rgba(34,197,94,.35); animation: ping-ring 1.8s ease-out infinite; opacity: 0; }
@@ -670,15 +648,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
     </div>
 </div>
 
-<!-- TICKER -->
-<div class="ticker" id="ticker">
-    <div class="ticker-item"><span class="t-label">XRP/USD</span><span class="t-val t-blue" id="tick-xrp">—</span></div>
-    <div class="ticker-item"><span class="t-label">Currency</span><span class="t-val t-green">XRP</span></div>
-    <div class="ticker-item"><span class="t-label">Protocol Fee</span><span class="t-val">$0.10 <span class="t-blue" id="tick-fee">—</span></span></div>
-    <div class="ticker-item"><span class="t-label">Active Escrows</span><span class="t-val" id="tick-escrows">—</span></div>
-    <div class="ticker-item"><span class="t-label">Total Paid Out</span><span class="t-val t-green" id="tick-paid">—</span></div>
-    <div class="ticker-item"><span class="t-label">Avg Score</span><span class="t-val" id="tick-score">—</span></div>
-</div>
 
 <!-- MAIN LAYOUT -->
 <div class="layout">
@@ -733,27 +702,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
             </button>
         </div>
 
-        <div class="sidebar-section">
-            <span class="sidebar-label">Network Stats</span>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-val t-green" id="stat-live">—</div>
-                    <div class="stat-lbl">Live jobs</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val t-blue" id="stat-paid">—</div>
-                    <div class="stat-lbl">Paid out</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-pass">—</div>
-                    <div class="stat-lbl">Pass rate</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-avg">—</div>
-                    <div class="stat-lbl">Avg score</div>
-                </div>
-            </div>
-        </div>
 
         <div class="sidebar-section">
             <span class="sidebar-label">Live Activity</span>
@@ -1292,7 +1240,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
     .detail-panel { display: none; }
-    .ticker { display: none; }
     nav { padding: .75rem 1rem; }
     .nav-center { gap: 2px; }
     .nav-pill { padding: 5px 10px; font-size: .73rem; }
@@ -1572,10 +1519,7 @@ async function loadXrpPrice() {
         const res  = await fetch(`${REFEREE_URL}/xrp/price`);
         const data = await res.json();
         xrpPriceUsd = data.usd;
-        if (xrpPriceUsd) {
-            document.getElementById("tick-xrp").textContent  = `$${xrpPriceUsd.toFixed(4)}`;
-            document.getElementById("tick-fee").textContent  = `(≈ $${(0.1 * xrpPriceUsd).toFixed(3)})`;
-        }
+        // xrpPriceUsd set for internal use (fee display, bounty USD values)
     } catch(e) {}
 }
 
@@ -1595,8 +1539,6 @@ async function loadJobs() {
     filteredJobs = [...allJobs];
     renderJobs();
     updateCounts();
-    updateStats();
-    updateTicker();
 }
 
 async function loadServices() {
@@ -2263,24 +2205,6 @@ function updateCounts() {
     if (jc) jc.textContent = `${openJobs.length} open job${openJobs.length !== 1 ? "s" : ""} · bid to apply`;
 }
 
-function updateStats() {
-    const open = allJobs.filter(j => j.status?.toUpperCase() === "OPEN");
-    const total = open.reduce((s, j) => s + Number(j.bounty), 0);
-    const rate  = xrpPriceUsd || 0.3;
-    document.getElementById("stat-live").textContent  = open.length;
-    document.getElementById("stat-paid").textContent  = `$${(total * rate).toFixed(0)}`;
-    document.getElementById("stat-pass").textContent  = "82%";
-    document.getElementById("stat-avg").textContent   = "74/100";
-}
-
-function updateTicker() {
-    const open  = allJobs.filter(j => j.status?.toUpperCase() === "OPEN");
-    const total = open.reduce((s, j) => s + Number(j.bounty), 0);
-    const rate  = xrpPriceUsd || 0.3;
-    document.getElementById("tick-escrows").textContent = open.length;
-    document.getElementById("tick-paid").textContent    = `$${(total * rate).toFixed(0)}`;
-    document.getElementById("tick-score").textContent   = "74/100";
-}
 
 // ---------------------------------------------------------------------------
 // ACTIVITY FEED
@@ -2430,8 +2354,6 @@ async function loadOpenJobs() {
     filteredJobs = [...allJobs];
     renderJobs();
     updateCounts();
-    updateStats();
-    updateTicker();
 }
 
 
