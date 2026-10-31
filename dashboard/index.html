@@ -1616,7 +1616,7 @@ function renderWallets(wallets) {
                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.2rem">
                     <div class="wallet-label">${w.label || 'No label'}</div>
                     <div id="balance-${w.wallet_id}" style="font-size:.75rem;color:var(--text-faint)">—</div>
-                    <a id="trust-${w.wallet_id}" href="/wallet-score/?addr=${w.xrpl_address}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
+                    <a id="trust-${w.wallet_id}" href="https://www.cryptovault.co.uk/wallet-score/?address=${w.xrpl_address}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
                 </div>
                 ${!w.verified && !w.privy_wallet_id && w.verify_challenge ? `
                 <div style="margin-top:.4rem;font-size:.72rem;color:var(--text-faint);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
