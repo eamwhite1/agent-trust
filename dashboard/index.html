@@ -1616,6 +1616,7 @@ function renderWallets(wallets) {
                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.2rem">
                     <div class="wallet-label">${w.label || 'No label'}</div>
                     <div id="balance-${w.wallet_id}" style="font-size:.75rem;color:var(--text-faint)">—</div>
+                    <a id="trust-${w.wallet_id}" href="/wallet-score/?addr=${w.xrpl_address}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
                 </div>
                 ${!w.verified && !w.privy_wallet_id && w.verify_challenge ? `
                 <div style="margin-top:.4rem;font-size:.72rem;color:var(--text-faint);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
@@ -1644,6 +1645,7 @@ function renderWallets(wallets) {
     wallets.forEach(w => {
         loadDelegations(w.wallet_id);
         loadWalletBalance(w.wallet_id, w.xrpl_address);
+        loadWalletScore(w.wallet_id, w.xrpl_address);
     });
 }
 
@@ -1670,6 +1672,22 @@ async function loadWalletBalance(walletId, address) {
     } catch {
         el.textContent = '';
     }
+}
+
+async function loadWalletScore(walletId, address) {
+    const el = document.getElementById(`trust-${walletId}`);
+    if (!el) return;
+    try {
+        const res = await fetch(`https://mcp.cryptovault.co.uk/wallet/score/${encodeURIComponent(address)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const score = data.score_100 ?? data.score ?? null;
+        if (score === null) return;
+        const label = score >= 60 ? 'Established' : score >= 30 ? 'Moderate' : 'Low Trust';
+        const color = score >= 60 ? 'var(--green)' : score >= 30 ? 'var(--amber)' : 'var(--red)';
+        el.textContent = `⬡ ${score} ${label}`;
+        el.style.color = color;
+    } catch { /* silently skip */ }
 }
 
 let withdrawWalletId = null;
