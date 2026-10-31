@@ -246,7 +246,7 @@
         .flow-section { margin: 1.5rem 0 4rem; }
         .flow-title { font-family: 'DM Serif Display', serif; font-size: 2.6rem; font-weight: 400; letter-spacing: -.03em; text-align: center; margin-bottom: .8rem; }
         .flow-subtitle { text-align: center; color: var(--text-muted); font-size: 1rem; margin-bottom: 3.5rem; }
-        .flow-diagram { position: relative; display: grid; grid-template-columns: 1fr 48px 1fr 48px 1fr 48px 1fr 48px 1fr; align-items: center; gap: 0; padding: 2.5rem; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 28px; box-shadow: var(--shadow); overflow: hidden; }
+        .flow-diagram { position: relative; display: grid; grid-template-columns: 1fr 48px 1fr 48px 1fr 48px 1fr 48px 1fr; align-items: start; gap: 0; padding: 2.5rem; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 28px; box-shadow: var(--shadow); overflow: hidden; }
         .flow-diagram::before { content: ''; position: absolute; inset: 0; z-index: 0; background-image: linear-gradient(rgba(0,102,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,102,255,.04) 1px, transparent 1px); background-size: 32px 32px; border-radius: inherit; }
         .flow-node { position: relative; z-index: 1; text-align: center; animation: node-fade-in .6s ease both; }
         .flow-node:nth-child(1) { animation-delay: .1s; } .flow-node:nth-child(3) { animation-delay: .3s; } .flow-node:nth-child(5) { animation-delay: .5s; } .flow-node:nth-child(7) { animation-delay: .7s; } .flow-node:nth-child(9) { animation-delay: .9s; }
@@ -263,7 +263,7 @@
         .flow-node-label { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .2rem; }
         .flow-node-title { font-size: .92rem; font-weight: 700; color: var(--text); line-height: 1.3; }
         .flow-node-sub { font-size: .74rem; color: var(--text-muted); margin-top: .25rem; line-height: 1.45; }
-        .flow-arrow { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; }
+        .flow-arrow { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; padding-top: 18px; }
         .flow-arrow svg { width: 36px; overflow: visible; }
         .flow-arrow-line { stroke: rgba(0,102,255,.3); stroke-width: 1.5; stroke-dasharray: 6 4; animation: dash-move 1.8s linear infinite; }
         .flow-arrow-head { fill: rgba(0,102,255,.5); }
@@ -447,28 +447,28 @@
                 <div class="flow-icon-wrap buyer"><i data-lucide="briefcase"></i></div>
                 <div class="flow-node-label">Step 1</div>
                 <div class="flow-node-title">Buyer Locks Funds</div>
-                <div class="flow-node-sub">Buyer pays a $0.10 protocol fee, then locks the agreed amount in XRPL crypto-condition escrow. Neither party can touch it.</div>
+                <div class="flow-node-sub">Buyer pays a $0.10 fee and locks the agreed XRP in XRPL crypto-condition escrow. Neither party can move it.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap lock"><i data-lucide="shield"></i></div>
                 <div class="flow-node-label">Step 2</div>
                 <div class="flow-node-title">Seller Gets to Work</div>
-                <div class="flow-node-sub">Seller receives a unique receipt code by email. They look up the job spec and submit their completed work via the Seller tab.</div>
+                <div class="flow-node-sub">Seller receives a unique receipt code, looks up the job spec, and submits their completed work via the Seller tab.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap ai"><i data-lucide="cpu"></i></div>
                 <div class="flow-node-label">Step 3</div>
                 <div class="flow-node-title">Verified Against Requirements</div>
-                <div class="flow-node-sub">Proof gates check on-chain facts (NFT, domain, credential) automatically. If an AI audit is configured, Gemini scores the submission against the task spec and issues PASS or FAIL with written feedback.</div>
+                <div class="flow-node-sub">Proof gates verify on-chain facts automatically. An AI audit (Gemini) scores the submission against the task spec and issues PASS or FAIL with written feedback.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
                 <div class="flow-icon-wrap key"><i data-lucide="zap"></i></div>
                 <div class="flow-node-label">Step 4</div>
                 <div class="flow-node-title">Referee Releases Payment</div>
-                <div class="flow-node-sub">On PASS, the referee auto-submits EscrowFinish on-chain. No manual action needed from either party. Optionally, buyers can set a 1–24 h <a href="/challenges/" style="color:var(--blue)">challenge window</a> to review the verdict before payment releases.</div>
+                <div class="flow-node-sub">On PASS, the referee auto-submits EscrowFinish on-chain — no action needed. Buyers can optionally set a <a href="/challenges/" style="color:var(--blue)">challenge window</a> to review before funds release.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
