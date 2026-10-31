@@ -946,6 +946,7 @@
 
                 <!-- Step 2: pay fee -->
                 <div id="create-fee-step" style="display:none">
+                    <div id="free-audit-banner" style="display:none;margin-bottom:.85rem;padding:.6rem .9rem;border-radius:8px;background:var(--green-dim);border:1px solid rgba(0,185,122,.25);font-size:.82rem;font-weight:600;color:var(--green)"></div>
                     <div id="fee-preview-box" style="margin-bottom:1rem;padding:.75rem 1rem;border-radius:8px;background:var(--blue-dim);border:1px solid var(--blue-border);font-size:.82rem">
                         <div style="font-weight:700;margin-bottom:.4rem;color:var(--blue)">Fee breakdown</div>
                         <div id="fee-preview-rows" style="color:var(--text-muted)"><span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Loading…</div>
@@ -2399,8 +2400,58 @@ async function loadFeePreview() {
         }
         if (f.accepted_assets) rows.push(`<div style="color:var(--text-faint);margin-top:.35rem">Accepted: ${escapeHtml(f.accepted_assets.join(', '))}</div>`);
         box.innerHTML = rows.join('');
+
+        // Show free audit banner and determine if we can skip Xaman (F2e/f)
+        const remaining = account?.free_escrows_remaining ?? 0;
+        const banner = document.getElementById('free-audit-banner');
+        const payBtn = document.getElementById('ce-pay-btn');
+        const feeDesc = payBtn?.previousElementSibling;
+        if (remaining > 0) {
+            banner.textContent = `${remaining} free escrow${remaining === 1 ? '' : 's'} remaining on this account — no fee required.`;
+            banner.style.display = '';
+            if (payBtn) {
+                payBtn.innerHTML = '<i data-lucide="zap"></i> Create escrow (free)';
+                payBtn.onclick = ceUseFreeEscrow;
+                lucide.createIcons({ nodes: [payBtn] });
+            }
+            if (feeDesc) feeDesc.style.display = 'none';
+        } else {
+            banner.textContent = 'No free escrows left — $0.10 per escrow.';
+            banner.style.display = '';
+            banner.style.background = 'var(--amber-dim, rgba(245,158,11,.1))';
+            banner.style.borderColor = 'rgba(245,158,11,.25)';
+            banner.style.color = 'var(--amber, #d97706)';
+        }
     } catch {
         box.innerHTML = 'Protocol fee: $0.10 · Consensus: +$0.25 · Extra attempts: +$0.05 each';
+    }
+}
+
+async function ceUseFreeEscrow() {
+    const btn = document.getElementById('ce-pay-btn');
+    btn.disabled = true;
+    document.getElementById('ce-fee-status').textContent = 'Creating vault…';
+    // Pick first account wallet as buyer if not already set
+    if (!ceState.buyerAddress && enterpriseWallets.length) {
+        ceState.buyerAddress = enterpriseWallets[0];
+    }
+    ceState.feeHash = null; // no fee
+    try {
+        await ceGenerateVault();
+    } catch(e) {
+        // 402 = pool exhausted or daily cap — fall back to Xaman fee step
+        if (e.status === 402) {
+            // Refresh account to update counter
+            try { account = await (await fetch(`${API}/enterprise/me`, { credentials: 'include' })).json(); } catch {}
+            document.getElementById('ce-fee-status').textContent = 'Free escrows used up — please pay the $0.10 fee via Xaman.';
+            btn.innerHTML = '<i data-lucide="zap"></i> Open Xaman to pay fee';
+            btn.onclick = cePayFee;
+            lucide.createIcons({ nodes: [btn] });
+            btn.disabled = false;
+        } else {
+            document.getElementById('ce-fee-status').textContent = '❌ ' + (e.message || 'Error');
+            btn.disabled = false;
+        }
     }
 }
 
@@ -2577,11 +2628,20 @@ async function ceGenerateVault() {
         };
         const res  = await fetch(`${API}/escrow/generate`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json();
-        if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
+        if (!res.ok) {
+            const err = new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
+            err.status = res.status;
+            throw err;
+        }
         ceState.setupData = data;
+        // Re-fetch account to update free_escrows_remaining counter
+        if (!ceState.feeHash) {
+            try { account = await (await fetch(`${API}/enterprise/me`, { credentials: 'include' })).json(); } catch {}
+        }
         ceSetStep(3);
         document.getElementById('ce-sign-status').textContent = 'Vault created. Click below to sign the EscrowCreate in Xaman.';
     } catch(e) {
+        if (e.status) throw e; // re-throw 402 etc. to ceUseFreeEscrow handler
         document.getElementById('ce-fee-status').textContent = '❌ ' + e.message;
         document.getElementById('ce-pay-btn').disabled = false;
     }

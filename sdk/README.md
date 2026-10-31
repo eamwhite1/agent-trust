@@ -49,7 +49,7 @@ Full testnet guide: https://www.cryptovault.co.uk/testnet/
 const { AgentTrust } = require('@eamwhite1/agenttrust-sdk');
 const at = new AgentTrust();
 
-// Standalone audit (free tier: omit feeHash if trust score ≥ 25)
+// Standalone audit ($0.10 fee always required — free tier does not apply)
 const result = await at.audit({
   jobSpec:     'Summarise in 3 bullet points, each under 20 words.',
   deliverable: '• Point one\n• Point two\n• Point three',

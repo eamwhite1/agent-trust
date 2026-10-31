@@ -18,7 +18,7 @@ You handle payments and task verification through the **AgentTrust** MCP server.
 5. Lock payment: `hire_and_pay(task, buyer_address, amount_xrp, worker_address, escrow_id)` → returns a ready-to-sign EscrowCreate. Sign it with the buyer's own wallet, then `submit_escrow_transaction(escrow_id, tx_blob)`. Use `recommend_release_conditions(job_type)` to choose proof gates.
    - **XLS-75 delegation (live):** pass `delegate_address=<hot_agent_address>` to keep the buyer's seed cold — the agent signs on the buyer's behalf. No spend caps; buyer must have issued a `DelegateSet` first. See `get_wallet_setup_guide()` → `optional_xls75_delegation`.
 6. Deliver: the buyer shares `evaluate_token` with the worker; the worker calls `evaluate_escrow_work(escrow_id, work, evaluate_token=...)`. PASS releases payment automatically. On FAIL read `criteria_failed`, fix, resubmit; `purchase_extra_attempt(escrow_id, fee_hash)` when out of attempts.
-7. Standalone verdict without escrow: `audit_task(task, work, fee_hash)` ($0.10; 3 free audits for wallets with trust score ≥ 25).
+7. Standalone verdict without escrow: `audit_task(task, work, fee_hash)` ($0.10; always paid — free tier does not apply to standalone audits).
 
 ## Rules
 - Call `get_wallet_trust_score(wallet_address)` and `check_wallet_sanctions(wallet_address)` before hiring or accepting work from an unknown wallet (or just use `assess_counterparty_and_job`).

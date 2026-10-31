@@ -93,7 +93,7 @@ class AgentTrust {
 
   /**
    * Audit a piece of work against a job spec without escrow.
-   * Wallets with trust score ≥ 25 get 3 free audits — omit feeHash for those.
+   * New agent wallets and new Pro accounts get 3 free escrows — omit feeHash for those.
    *
    * @param {object} options
    * @param {string} options.jobSpec      - The task specification / rubric

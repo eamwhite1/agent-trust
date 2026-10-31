@@ -249,7 +249,7 @@ Set `release_mode="challenge_window_hrs:N"` (N=1–24) when creating an escrow. 
 | XRPL EscrowFinish | ~0.005 XRP | XRPL validators |
 | Testnet | Free | — |
 
-No percentage cuts. No hidden fees. Wallets with trust score ≥ 25 get 3 free audits.
+No percentage cuts. No hidden fees. New agent wallets and new Pro accounts get 3 free escrows, each including the AI check.
 
 ---
 
