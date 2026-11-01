@@ -69,7 +69,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
 .nav-link:hover { color: var(--blue); }
 .nav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 .nav-toggle { display: none; background: none; border: none; cursor: pointer; color: var(--text); padding: .3rem; }
-@media (min-width: 821px) { .nav-post-mobile { display: none; } }
 @media (max-width: 820px) { .nav-menu { display: none; } .nav-toggle { display: flex; } .badge-live { display: none; } .nav-menu.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(255,255,255,.97); backdrop-filter: blur(20px); padding: 1rem; gap: 14px; border-bottom: 1px solid rgba(0,0,0,.08); } }
 .nav-pill { padding: 5px 14px; border-radius: 6px; font-size: .78rem; font-weight: 600; color: var(--text-dim); background: transparent; border: none; cursor: pointer; font-family: var(--sans); transition: .18s; display: flex; align-items: center; gap: 6px; }
 .nav-pill.active, .nav-pill:hover { background: var(--blue-dim); color: var(--blue); }
@@ -549,7 +548,7 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
     .track-wrap input { background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .75rem; width: 120px; }
     .track-wrap button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--sans); font-size: .72rem; font-weight: 600; white-space: nowrap; }
     .track-wrap button:hover { color: var(--text); }
-    @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } .btn-post { display: none; } }
+    @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 
     /* ── Site footer ── */
     footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
@@ -580,7 +579,7 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
     .track-wrap input { background: transparent; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: .75rem; width: 120px; }
     .track-wrap button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: var(--sans); font-size: .72rem; font-weight: 600; white-space: nowrap; }
     .track-wrap button:hover { color: var(--blue); }
-    @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } .btn-post { display: none; } }
+    @media (max-width: 680px) { .mkt-subnav { top: 0; } .track-wrap { display: none; } .mkt-subnav-inner { padding: 0 1rem; } }
 </style>
 </head>
 <body>
@@ -598,7 +597,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
         <a class="nav-link" href="/enterprise/">Pro</a>
         <a class="nav-link" href="/marketplace/">Marketplace</a>
         <a class="nav-link" href="/wallet-score/">Wallet Score</a>
-        <button class="nav-link nav-post-mobile" onclick="document.getElementById('nav-menu').classList.remove('open'); openPostModal('jobboard')" style="background:none;border:none;cursor:pointer;font-family:inherit;padding:0;color:var(--blue);font-weight:700;">+ Post a Job</button>
     </div>
     <div class="nav-right">
         <a class="badge-live" href="https://xrpl.org" target="_blank" rel="noopener">
