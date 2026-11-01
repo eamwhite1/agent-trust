@@ -1807,7 +1807,7 @@ async function issuerSearch(query, resultsId, targetId, wrapId, rgb) {
                         <input type="text" placeholder="rXXX… wallet address"
                             style="width:100%;font-size:.78rem;padding:5px 8px;border-radius:6px;background:#fff;border:1px solid rgba(168,85,247,.4);color:var(--text);box-sizing:border-box;"
                             oninput="applyManualIssuerWallet(this.value)">
-                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;">Or ask them to register: <a href="https://www.cryptovault.co.uk/marketplace/claim.html" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
+                        <div style="font-size:.7rem;color:var(--text-muted);margin-top:6px;">Or ask them to register: <a href="https://agenttrustxrpl.com/marketplace/claim.html" target="_blank" style="color:#818cf8;text-decoration:none;">AgentTrust Issuer Registry →</a></div>
                     </div>`;
                 resultsEl.style.display = "block";
                 return;
@@ -2122,9 +2122,9 @@ async function selectOcResult(companyRef, name, targetId, resultsId, knownWallet
     if (statusEl) {
         const subject = encodeURIComponent(`${name} — join the AgentTrust Trusted Issuer Registry`);
         const body = encodeURIComponent(
-            `Hi,\n\nI'm setting up a payment escrow on AgentTrust (https://www.cryptovault.co.uk) and would like to require proof of a ${name}-issued NFT.\n\n` +
+            `Hi,\n\nI'm setting up a payment escrow on AgentTrust (https://agenttrustxrpl.com) and would like to require proof of a ${name}-issued NFT.\n\n` +
             `To make this possible, ${name} would need to register its XRPL wallet address in the AgentTrust Trusted Issuer Registry — it only takes a few minutes:\n\n` +
-            `https://www.cryptovault.co.uk/marketplace#issuers\n\n` +
+            `https://agenttrustxrpl.com/marketplace#issuers\n\n` +
             `Once registered, buyers anywhere on AgentTrust can verify your NFTs automatically, and your wallet will be discoverable by name.\n\nThanks`
         );
         statusEl.innerHTML = `
