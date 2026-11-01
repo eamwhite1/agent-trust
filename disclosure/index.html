@@ -121,6 +121,7 @@
         .blob-2 { position: absolute; border-radius: 50%; width: 800px; height: 800px; bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(0,200,255,.15) 0%, rgba(0,102,255,.08) 60%, transparent 80%); filter: blur(110px); animation: drift 22s infinite alternate-reverse ease-in-out; }
         @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(5%,5%) scale(1.08); } }
 
+@media (max-width: 720px) { .blob, .blob-2 { display: none; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
