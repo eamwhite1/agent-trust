@@ -50,7 +50,7 @@ jobs:
           (async () => {
             const browser = await chromium.launch({ args: ['--no-sandbox'] });
             const page = await browser.newPage();
-            await page.goto('https://www.cryptovault.co.uk/fees/');
+            await page.goto('https://agenttrustxrpl.com/fees/');
             await page.waitForTimeout(4000);
             const text = await page.evaluate(() => document.body.innerText);
             await browser.close();
