@@ -2859,7 +2859,8 @@ async function ceSign() {
             Condition: d.condition.toUpperCase(),
         };
         if (d.cancel_after_ripple) escrowTx.CancelAfter = d.cancel_after_ripple;
-        const res  = await fetch(`${API}/xumm/create-payload`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ txjson: escrowTx }) });
+        escrowTx.Account = ceState.buyerAddress;
+        const res  = await fetch(`${API}/xumm/create-payload`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ txjson: escrowTx, account: ceState.buyerAddress }) });
         const data = await res.json();
         if (!data.nextUrl) throw new Error('Xaman did not return a sign URL.');
         window.open(data.nextUrl, '_blank');

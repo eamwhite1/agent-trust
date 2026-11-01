@@ -41,6 +41,8 @@ jobs:
         with:
           node-version: '20'
       - run: npm install playwright
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
       - name: Check /fees/ renders without undefined/NaN/score>=
         run: |
           node -e "
