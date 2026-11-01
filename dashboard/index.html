@@ -404,7 +404,7 @@
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <a class="sidebar-logo" href="https://www.cryptovault.co.uk">AgentTrust<span>.</span><span style="font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--blue);color:#fff;border-radius:4px;padding:1px 5px;vertical-align:middle;font-family:'DM Sans',sans-serif;margin-left:.4rem">Pro</span></a>
+        <a class="sidebar-logo" href="https://agenttrustxrpl.com">AgentTrust<span>.</span><span style="font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--blue);color:#fff;border-radius:4px;padding:1px 5px;vertical-align:middle;font-family:'DM Sans',sans-serif;margin-left:.4rem">Pro</span></a>
         <nav class="sidebar-nav">
             <button class="nav-item active" onclick="showPage('escrows')" id="nav-escrows">
                 <i data-lucide="shield-check"></i> Audit Trail
@@ -508,7 +508,7 @@
                 </div>
                 <div id="privy-status" style="font-size:.78rem;margin-top:.6rem;display:none"></div>
                 <p style="font-size:.75rem;color:var(--text-faint);margin-top:.75rem">
-                    Fund your new address with at least 1 XRP to activate it on-ledger. <a href="https://www.cryptovault.co.uk/privy-wallet/" target="_blank" style="color:var(--blue)">Learn more →</a>
+                    Fund your new address with at least 1 XRP to activate it on-ledger. <a href="https://agenttrustxrpl.com/privy-wallet/" target="_blank" style="color:var(--blue)">Learn more →</a>
                 </p>
             </div>
 
@@ -587,7 +587,7 @@
                         </div>
                     </div>
                 </div>
-                <a href="https://www.cryptovault.co.uk/privy-wallet/" target="_blank" style="display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:var(--blue)">Full funding guide →</a>
+                <a href="https://agenttrustxrpl.com/privy-wallet/" target="_blank" style="display:block;text-align:center;margin-top:1rem;font-size:.78rem;color:var(--blue)">Full funding guide →</a>
             </div>
         </div>
 
@@ -1669,7 +1669,7 @@ function renderWallets(wallets) {
                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.2rem">
                     <div class="wallet-label">${escapeHtml(w.label || 'No label')}</div>
                     <div id="balance-${w.wallet_id}" style="font-size:.75rem;color:var(--text-faint)">—</div>
-                    <a id="trust-${w.wallet_id}" href="https://www.cryptovault.co.uk/wallet-score/?address=${encodeURIComponent(w.xrpl_address)}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
+                    <a id="trust-${w.wallet_id}" href="https://agenttrustxrpl.com/wallet-score/?address=${encodeURIComponent(w.xrpl_address)}" target="_blank" rel="noopener" style="font-size:.72rem;font-weight:600;color:var(--text-faint);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;" data-tip="Wallet trust score (11 signals)">⬡ —</a>
                 </div>
                 ${!w.verified && !w.privy_wallet_id && w.verify_challenge ? `
                 <div style="margin-top:.4rem;font-size:.72rem;color:var(--text-faint);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
@@ -2859,7 +2859,8 @@ async function ceSign() {
             Condition: d.condition.toUpperCase(),
         };
         if (d.cancel_after_ripple) escrowTx.CancelAfter = d.cancel_after_ripple;
-        const res  = await fetch(`${API}/xumm/create-payload`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ txjson: escrowTx }) });
+        escrowTx.Account = ceState.buyerAddress;
+        const res  = await fetch(`${API}/xumm/create-payload`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ txjson: escrowTx, account: ceState.buyerAddress }) });
         const data = await res.json();
         if (!data.nextUrl) throw new Error('Xaman did not return a sign URL.');
         window.open(data.nextUrl, '_blank');

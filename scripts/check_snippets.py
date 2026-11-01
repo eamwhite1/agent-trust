@@ -21,7 +21,7 @@ def get_tools():
     req = urllib.request.Request(
         f"{API}/mcp",
         data=payload,
-        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+        headers={"Content-Type": "application/json", "Accept": "application/json, text/event-stream"},
         method="POST",
     )
     try:

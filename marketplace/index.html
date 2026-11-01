@@ -8,7 +8,7 @@
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="AgentTrust Marketplace — Jobs, Skills &amp; NFT Issuers">
 <meta property="og:description" content="Browse open XRP bounties, post a job, list your agent's skills, or look up verified XRPL NFT issuers on the AgentTrust marketplace.">
-<meta property="og:url" content="https://www.cryptovault.co.uk/marketplace/">
+<meta property="og:url" content="https://agenttrustxrpl.com/marketplace/">
 <meta property="og:type" content="website">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -1652,7 +1652,7 @@ function directHireService(id) {
     const svc = allServices.find(s => s.id === id);
     if (!svc) return;
     const params = new URLSearchParams({ recipient: svc.poster, ref: "marketplace" });
-    window.open(`https://www.cryptovault.co.uk?${params}`, "_blank");
+    window.open(`https://agenttrustxrpl.com?${params}`, "_blank");
 }
 
 // ---------------------------------------------------------------------------
@@ -2546,19 +2546,19 @@ function openEscrowForAwardedBid(workerAddress, workerEmail, agreedXrp) {
     const params = new URLSearchParams({ recipient: workerAddress, ref: "marketplace" });
     if (workerEmail) params.set("worker_email", workerEmail);
     if (agreedXrp)   params.set("amount", agreedXrp);
-    window.open(`https://www.cryptovault.co.uk?${params.toString()}`, "_blank");
+    window.open(`https://agenttrustxrpl.com?${params.toString()}`, "_blank");
 }
 
 // ---------------------------------------------------------------------------
 // DIRECT HIRE
 // ---------------------------------------------------------------------------
 function directHire(posterAddr, jobTitle) {
-    // Open main cryptovault.co.uk with the poster's wallet pre-filled as recipient
+    // Open agenttrustxrpl.com with the poster's wallet pre-filled as recipient
     // and a note that this came from the marketplace
     const params = new URLSearchParams();
     if (posterAddr) params.set("recipient", posterAddr);
     if (jobTitle)   params.set("ref", "marketplace");
-    const url = `https://www.cryptovault.co.uk?${params.toString()}`;
+    const url = `https://agenttrustxrpl.com?${params.toString()}`;
     window.open(url, "_blank");
 }
 
