@@ -4,7 +4,7 @@
  * Node.js SDK for AgentTrust — job marketplace, trust scoring,
  * XRPL crypto-condition escrow, and AI-verified payment release.
  *
- * https://www.cryptovault.co.uk
+ * https://agenttrustxrpl.com
  * MCP server (40+ tools): https://mcp.cryptovault.co.uk/mcp/
  */
 

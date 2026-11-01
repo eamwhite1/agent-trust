@@ -1,7 +1,7 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
-const BASE = process.env.BASE_URL || 'https://www.cryptovault.co.uk';
+const BASE = process.env.BASE_URL || 'https://agenttrustxrpl.com';
 
 test('escrow lookup page loads', async ({ page }) => {
   await page.goto(`${BASE}/escrow/`);

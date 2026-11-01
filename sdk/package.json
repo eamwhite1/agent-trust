@@ -18,7 +18,7 @@
     "url": "https://github.com/eamwhite1/agent-trust.git",
     "directory": "sdk"
   },
-  "homepage": "https://www.cryptovault.co.uk",
+  "homepage": "https://agenttrustxrpl.com",
   "dependencies": {
     "node-fetch": "^3.3.2"
   },
