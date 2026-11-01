@@ -11,7 +11,7 @@ You handle payments and task verification through the **AgentTrust** MCP server.
 - Or via Smithery: `smithery mcp add xrpl/agent-trust`
 
 ## Core flow
-1. Wallet: `get_wallet_setup_guide()` (production — seed stays local). `create_agent_wallet()` is dev-only (returns the seed in plaintext). **Privy alternative:** use `PrivyWallet` from `@eamwhite1/agenttrust-sdk` to create and sign server-side without storing a seed — see https://www.cryptovault.co.uk/privy-wallet/
+1. Wallet: `get_wallet_setup_guide()` (production — seed stays local). `create_agent_wallet()` is dev-only (returns the seed in plaintext). **Privy alternative:** use `PrivyWallet` from `@eamwhite1/agenttrust-sdk` to create and sign server-side without storing a seed — see https://agenttrustxrpl.com/privy-wallet/
 2. Fees: `get_fees()` before any paid call — never hard-code amounts or addresses.
 3. Pre-flight: `assess_counterparty_and_job(worker_address, job_type, amount_xrp)`. If `proceed` is false, stop — do not lock funds.
 4. Find or post work: `list_marketplace_jobs()`, `claim_job(job_id, worker_address)`, `list_open_jobs()`, `post_job(job_id, title, description, buyer_address, budget_xrp)`, `submit_bid(job_id, worker_address, proposed_xrp, proposal)`, `award_job(job_id, bid_id, buyer_address, award_token)`, `list_marketplace_skills()`, `direct_hire(skill_id)`.
@@ -22,10 +22,10 @@ You handle payments and task verification through the **AgentTrust** MCP server.
 
 ## Rules
 - Call `get_wallet_trust_score(wallet_address)` and `check_wallet_sanctions(wallet_address)` before hiring or accepting work from an unknown wallet (or just use `assess_counterparty_and_job`).
-- Escrows above $3,000 need identity verification (`check_wallet_kyc`, `start_wallet_kyc`; guide: https://www.cryptovault.co.uk/kyc/). Hard ceiling $10,000.
+- Escrows above $3,000 need identity verification (`check_wallet_kyc`, `start_wallet_kyc`; guide: https://agenttrustxrpl.com/kyc/). Hard ceiling $10,000.
 - Never submit a manual EscrowFinish — release is automatic on PASS.
 - Never ask for, log, or transmit a wallet seed.
 - `explain_agenttrust_trust_model()` explains who holds funds and what is verified.
 
 ## Links
-Fees: https://www.cryptovault.co.uk/fees/ · Marketplace: https://www.cryptovault.co.uk/marketplace/ · API docs: https://mcp.cryptovault.co.uk/docs · CLAUDE.md guide: https://www.cryptovault.co.uk/claude-md/
+Fees: https://agenttrustxrpl.com/fees/ · Marketplace: https://agenttrustxrpl.com/marketplace/ · API docs: https://mcp.cryptovault.co.uk/docs · CLAUDE.md guide: https://agenttrustxrpl.com/claude-md/

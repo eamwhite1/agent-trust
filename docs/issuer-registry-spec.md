@@ -5,8 +5,8 @@
 **Authors:** AgentTrust / cryptovault.co.uk  
 **Published:** 2026-06-06  
 **Updated:** 2026-09-15  
-**Canonical URL:** https://www.cryptovault.co.uk/docs/issuer-registry-spec.md  
-**Discovery:** https://www.cryptovault.co.uk/.well-known/xrpl-issuer-registry  
+**Canonical URL:** https://agenttrustxrpl.com/docs/issuer-registry-spec.md  
+**Discovery:** https://agenttrustxrpl.com/.well-known/xrpl-issuer-registry  
 **Live Registry:** https://mcp.cryptovault.co.uk/nft/issuers  
 
 ---
@@ -172,7 +172,7 @@ GET /nft/issuers
 ```json
 {
   "issuers": [ /* array of issuer records */ ],
-  "register_url": "https://www.cryptovault.co.uk/marketplace#issuers",
+  "register_url": "https://agenttrustxrpl.com/marketplace#issuers",
   "register_api": "https://mcp.cryptovault.co.uk/nft/issuers"
 }
 ```
@@ -220,7 +220,7 @@ The feed includes `Cache-Control: public, max-age=300` and `ETag` headers for mi
 ```json
 {
   "spec_version": "1.1.0",
-  "spec": "https://www.cryptovault.co.uk/docs/issuer-registry-spec.md",
+  "spec": "https://agenttrustxrpl.com/docs/issuer-registry-spec.md",
   "generated_at": "2026-06-06T12:00:00Z",
   "pagination": {
     "page": 1,
@@ -290,7 +290,7 @@ Any MCP-compatible AI agent can install this server and use the registry to reso
 The registry can be discovered from any domain by fetching:
 
 ```
-GET https://www.cryptovault.co.uk/.well-known/xrpl-issuer-registry
+GET https://agenttrustxrpl.com/.well-known/xrpl-issuer-registry
 ```
 
 This returns a JSON document pointing to the live API and this specification:
@@ -298,7 +298,7 @@ This returns a JSON document pointing to the live API and this specification:
 ```json
 {
   "registry_api": "https://mcp.cryptovault.co.uk/nft/issuers",
-  "spec": "https://www.cryptovault.co.uk/docs/issuer-registry-spec.md",
+  "spec": "https://agenttrustxrpl.com/docs/issuer-registry-spec.md",
   "version": "1.0.0",
   "mcp_endpoint": "https://mcp.cryptovault.co.uk/mcp"
 }
@@ -326,7 +326,7 @@ GET https://mcp.cryptovault.co.uk/.well-known/xrpl-issuer-registry
 
 ## 10. Contributing
 
-- **Register your organisation:** https://www.cryptovault.co.uk/marketplace#issuers
+- **Register your organisation:** https://agenttrustxrpl.com/marketplace#issuers
 - **API source:** https://github.com/eamwhite1/xrpl-referee
 - **Frontend source:** https://github.com/eamwhite1/agent-trust
 - **Standards discussion:** Open an issue on either repository

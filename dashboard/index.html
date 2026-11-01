@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow" />
 <title>AgentTrust Pro</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -2813,7 +2814,7 @@ async function ceGenerateVault() {
                 require_line_items:   document.getElementById('ce-inv-items').value === 'yes',
             } : undefined,
         };
-        const res  = await fetch(`${API}/escrow/generate`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const res  = await fetch(`${API}/escrow/generate`, { method: 'POST', credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json();
         if (!res.ok) {
             const err = new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
