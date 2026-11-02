@@ -27,8 +27,6 @@ User-agent: YouBot
 Allow: /
 Disallow: /challenge/
 
-User-agent: SmitheryBot
-Allow: /
 Disallow: /challenge/
 
 Sitemap: https://agenttrustxrpl.com/sitemap.xml

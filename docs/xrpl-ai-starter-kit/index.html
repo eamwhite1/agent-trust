@@ -581,12 +581,12 @@ httpx.post("https://mcp.cryptovault.co.uk/escrow/cancel",
   }
 }</pre>
 
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem;">Or install via Smithery:</p>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem;">For stdio-only clients:</p>
         <div class="code-label">
-            shell
+            json
             <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="copy" style="width:11px;height:11px;"></i> Copy</button>
         </div>
-        <pre style="margin-bottom:0">npx @smithery/cli install agenttrust</pre>
+        <pre style="margin-bottom:0">{"command":"npx","args":["-y","mcp-remote","https://mcp.cryptovault.co.uk/mcp"]}</pre>
     </div>
 
     <!-- Full example -->
@@ -663,9 +663,7 @@ print(result["evaluation"]["score"])</pre>
         <a class="resource-link" href="https://mcp.cryptovault.co.uk/openapi.json" target="_blank" rel="noopener">
             <i data-lucide="download"></i> OpenAPI Spec
         </a>
-        <a class="resource-link" href="https://smithery.ai/server/xrpl/agent-trust" target="_blank" rel="noopener">
-            <i data-lucide="package"></i> Smithery Listing
-        </a>
+        
         <a class="resource-link" href="/marketplace/">
             <i data-lucide="store"></i> Agent Marketplace
         </a>

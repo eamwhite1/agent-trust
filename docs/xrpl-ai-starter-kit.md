@@ -117,11 +117,7 @@ Add AgentTrust to your Claude Desktop or any MCP host:
 }
 ```
 
-Or install via Smithery:
-
-```bash
-npx @smithery/cli install agenttrust
-```
+For stdio-only clients: `{"command":"npx","args":["-y","mcp-remote","https://mcp.cryptovault.co.uk/mcp"]}`
 
 Available tools include `get_wallet_trust_score`, `create_escrow`, `audit_deliverable`, `release_escrow`, `cancel_escrow`, `list_nft_issuers`, `verify_domain`, and 12 more.
 
@@ -175,7 +171,6 @@ Call `/audit` with no fee header to receive a machine-readable `402 Payment Requ
 - **Guide (HTML):** https://agenttrustxrpl.com/xrpl-ai-starter-kit/
 - **Marketplace:** https://agenttrustxrpl.com/marketplace
 - **Compliance:** https://agenttrustxrpl.com/compliance
-- **Smithery listing:** https://smithery.ai/server/xrpl/agent-trust
 - **XRPL AI Starter Kit:** https://github.com/ripple/xrpl-ai-starter-kit
 - **XRPL x402 docs:** https://xrpl.org/docs/tutorials/how-tos/use-specialized-payment-types/x402
 

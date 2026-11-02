@@ -295,70 +295,13 @@
 
     <h2>6. Install</h2>
 
-    <p>Add to Claude Code, Cursor, or any MCP-compatible host via Smithery:</p>
+    <p>Add to Claude Code, Cursor, or any MCP-compatible host:</p>
+                <div class="install-block">
+                    <div class="install-label">Direct (HTTP)</div>
+                    <div class="install-code"><pre>{"mcpServers":{"agenttrust":{"url":"https://mcp.cryptovault.co.uk/mcp"}}}</pre></div>
+                    <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+                </div>
 
-    <div class="install-block">
-        <div class="install-bar">
-            <span>Smithery CLI</span>
-            <button class="copy-btn" onclick="copyInstall()">Copy</button>
-        </div>
-        <div class="install-code"><span class="prompt">$ </span><span class="cmd">smithery</span> <span class="arg">mcp add xrpl/agent-trust</span>
-
-<span class="comment"># Or connect manually:</span>
-<span class="prompt">  </span>MCP endpoint:  <span class="arg">https://mcp.cryptovault.co.uk/mcp/</span>
-<span class="prompt">  </span>REST API docs: <span class="arg">https://mcp.cryptovault.co.uk/docs</span></div>
-    </div>
-
-    <p style="margin-top:2.5rem;">Questions about trust and security: <a href="mailto:hello@cryptovault.co.uk">hello@cryptovault.co.uk</a></p>
-    <p style="font-size:.8rem;color:#5a5a68;">AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company number 09394447.</p>
-</div>
-
-<footer>
-    <div class="footer-inner">
-        <div class="footer-brand">
-            <span class="footer-logo">AgentTrust<span class="footer-dot">.</span></span>
-            <p class="footer-tagline">Trust-minimized escrow for autonomous agents and humans on the XRP Ledger.</p>
-        </div>
-        <div class="footer-cols">
-            <div class="footer-col">
-                <h4>Product</h4>
-                <a href="/how-it-works/">How it Works</a>
-                <a href="/use-cases/">Use Cases</a>
-                <a href="/roadmap/">Roadmap</a>
-                <a href="/agents/">For Agents</a>
-                <a href="/enterprise/">Pro</a>
-                <a href="/marketplace/">Marketplace</a>
-                <a href="/wallet-score/">Wallet Score</a>
-            </div>
-            <div class="footer-col">
-                <h4>Developers</h4>
-                <a href="/testnet/">Testnet sandbox (free)</a>
-
-                <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
-                <a href="/guides/">Guides</a>
-                <a href="/fees/">Fees &amp; Limits</a>
-                <a href="https://huggingface.co/spaces/eamwhite1/xrpl-referee-tool" target="_blank" rel="noopener">Hugging Face</a>
-                <a href="/audit/">Audit Report</a>
-            </div>
-            <div class="footer-col">
-                <h4>Legal</h4>
-                <a href="/compliance/">Compliance</a>
-                <a href="/trust-model/" style="color:var(--blue);">Trust Model</a>
-                <a href="/terms/">Terms</a>
-                <a href="/privacy/">Privacy</a>
-                <a href="/disclosure/">Disclosure &amp; Risk Warnings</a>
-            </div>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>AgentTrust is a trading name of Boxclever Media Ltd, registered in England &amp; Wales, company no. 09394447. &nbsp;·&nbsp; <a href="/disclosure/">Full disclosure &amp; risk warnings</a></p>
-    </div>
-</footer>
-
-<script>
-function copyInstall() {
-    navigator.clipboard.writeText("smithery mcp add xrpl/agent-trust").then(() => {
         const btn = document.querySelector(".copy-btn");
         btn.textContent = "Copied";
         setTimeout(() => btn.textContent = "Copy", 1800);
