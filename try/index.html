@@ -392,7 +392,11 @@
         <div class="step-body">
             <textarea id="work-input" rows="3" maxlength="500" placeholder="HELLO AGENT">HELLO AGENT</textarea>
             <p style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem">Hint: change it to anything else to see what happens when work fails.</p>
-            <div style="margin-top:1rem">
+            <label style="display:flex;align-items:center;gap:.5rem;margin-top:.85rem;font-size:.85rem;cursor:pointer;user-select:none">
+                <input type="checkbox" id="use-ai" checked style="width:15px;height:15px;cursor:pointer">
+                Also ask the AI referee <span style="font-size:.75rem;color:var(--text-muted)">(Gemini Flash — free, advisory)</span>
+            </label>
+            <div style="margin-top:.75rem">
                 <button class="btn btn-primary" id="btn-submit" onclick="step3()">
                     <i data-lucide="send" style="width:16px;height:16px"></i> Check the work
                 </button>
@@ -411,7 +415,7 @@
             <div class="step-icon-wrap" id="num-4"><i data-lucide="bot" style="width:18px;height:18px"></i></div>
             <div>
                 <div class="step-title">The referee checks the work</div>
-                <div class="step-desc">The automated gate checks the submission against the task criteria. A match is a PASS; anything else is a FAIL with feedback.</div>
+                <div class="step-desc">The automated gate checks the submission against the task criteria. If the AI checkbox is ticked, the free Gemini Flash referee also gives an opinion — advisory only, never overrides the gate.</div>
             </div>
         </div>
         <div class="step-body">
@@ -663,7 +667,8 @@ async function step3() {
     hideErr(3);
     setStatus(3, 'running', 'Checking work against task criteria…');
     try {
-        const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, JSON.stringify({work}));
+        const useAi = document.getElementById('use-ai')?.checked ?? true;
+        const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, JSON.stringify({work, use_ai: useAi}));
         attemptsRemaining = d.attempts_remaining ?? (attemptsRemaining - 1);
         setStatus(3, d.verdict === 'PASS' ? 'ok' : 'err', d.verdict === 'PASS' ? 'Work accepted!' : 'Work rejected.');
         renderVerdict(d);
@@ -693,6 +698,19 @@ function renderVerdict(d) {
     if (score != null) html += `<div class="verdict-score">Score: ${score} / 100</div>`;
     if (d.summary) html += `<div class="verdict-summary">${escHtml(d.summary)}</div>`;
     criteria.forEach(c => {
+        if (c.type === 'ai') {
+            const ok = (c.verdict||'').toUpperCase() === 'PASS';
+            const skip = (c.verdict||'').toUpperCase() === 'SKIP';
+            html += `<div class="criteria-row" style="border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
+                <span class="${skip ? '' : (ok ? 'criteria-result-pass' : 'criteria-result-fail')}" style="${skip?'color:var(--text-muted)':''}">🤖</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">AI referee (${escHtml(c.model||'Gemini')}${c.cached?' · cached':''})</div>
+                    <div>${skip ? '<em>Not available this session</em>' : (ok ? 'PASS' : 'FAIL')}</div>
+                    ${c.reason ? `<div class="criteria-reasoning">${escHtml(c.reason)}</div>` : ''}
+                </div>
+            </div>`;
+            return;
+        }
         const ok = (c.verdict||c.result||'').toUpperCase() === 'PASS';
         html += `<div class="criteria-row">
             <span class="${ok ? 'criteria-result-pass' : 'criteria-result-fail'}">${ok ? '✓' : '✗'}</span>
