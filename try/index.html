@@ -241,11 +241,9 @@
     }
     .verdict-pass { background: rgba(0,185,122,.07); border-color: rgba(0,185,122,.3); }
     .verdict-fail { background: rgba(229,55,61,.06); border-color: rgba(229,55,61,.25); }
-    .verdict-held { background: rgba(217,119,6,.06); border-color: rgba(217,119,6,.3); }
     .verdict-label { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; }
     .verdict-pass .verdict-label { color: var(--green); }
     .verdict-fail .verdict-label { color: var(--red); }
-    .verdict-held .verdict-label { color: var(--amber); }
     .verdict-score { font-size: .82rem; color: var(--text-muted); margin-bottom: .75rem; }
     .verdict-summary { font-size: .9rem; margin-bottom: 1rem; }
     .criteria-row { display: flex; gap: .75rem; padding: .5rem 0; border-top: 1px solid rgba(0,0,0,.06); font-size: .83rem; }
@@ -394,10 +392,9 @@
         <div class="step-body">
             <textarea id="work-input" rows="3" maxlength="500" placeholder="HELLO AGENT">HELLO AGENT</textarea>
             <p style="font-size:.75rem;color:var(--text-muted);margin-top:.35rem">Hint: change it to anything else to see what happens when work fails.</p>
-            <!-- G1: Updated checkbox label -->
             <label style="display:flex;align-items:center;gap:.5rem;margin-top:.85rem;font-size:.85rem;cursor:pointer;user-select:none">
                 <input type="checkbox" id="use-ai" checked style="width:15px;height:15px;cursor:pointer">
-                Also ask the AI referee <span style="font-size:.75rem;color:var(--text-muted)">(free, limited per visitor, test XRP only)</span>
+                Also ask the AI referee <span style="font-size:.75rem;color:var(--text-muted)">(Gemini Flash — free, advisory)</span>
             </label>
             <div style="margin-top:.75rem">
                 <button class="btn btn-primary" id="btn-submit" onclick="step3()">
@@ -418,8 +415,7 @@
             <div class="step-icon-wrap" id="num-4"><i data-lucide="bot" style="width:18px;height:18px"></i></div>
             <div>
                 <div class="step-title">The referee checks the work</div>
-                <!-- G2: Updated step-4 description -->
-                <div class="step-desc">Code checks run first. If you ticked the AI referee, it then judges the same job. Payment releases only if every check passes.</div>
+                <div class="step-desc">The automated gate checks the submission against the task criteria. If the AI checkbox is ticked, the free Gemini Flash referee also gives an opinion — advisory only, never overrides the gate.</div>
             </div>
         </div>
         <div class="step-body">
@@ -674,9 +670,7 @@ async function step3() {
         const useAi = document.getElementById('use-ai')?.checked ?? true;
         const d = await apiPost(`${API}/testnet/try/${encodeURIComponent(sid)}/submit`, JSON.stringify({work, use_ai: useAi}));
         attemptsRemaining = d.attempts_remaining ?? (attemptsRemaining - 1);
-        // G4: verdict as string; fallback if object
-        const verdictStr = typeof d.verdict === 'object' ? (d.verdict && d.verdict.verdict) : d.verdict;
-        setStatus(3, verdictStr === 'PASS' ? 'ok' : 'err', verdictStr === 'PASS' ? 'Work accepted!' : 'Work checked.');
+        setStatus(3, d.verdict === 'PASS' ? 'ok' : 'err', d.verdict === 'PASS' ? 'Work accepted!' : 'Work rejected.');
         renderVerdict(d);
         markDone(3);
         unlock(4);
@@ -691,78 +685,41 @@ function escHtml(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// G4: renderVerdict — handles PASS, FAIL, HELD, ERROR
 function renderVerdict(d) {
-    // G4: verdict as string; fallback if object
-    const verdict = typeof d.verdict === 'object' ? (d.verdict && d.verdict.verdict) : (d.verdict || 'UNKNOWN');
-    const pass = verdict === 'PASS';
-    const held = verdict === 'HELD';
-    const error = verdict === 'ERROR';
+    const pass = d.verdict === 'PASS';
     const score = d.score != null ? d.score : null;
     const criteria = Array.isArray(d.criteria) ? d.criteria : [];
-    const ai = d.ai || {};
 
-    // G5: HELD uses neutral class verdict-held (not verdict-fail)
-    let cardClass = 'verdict-fail';
-    if (pass) cardClass = 'verdict-pass';
-    else if (held) cardClass = 'verdict-held';
-
-    let html = `<div class="verdict-card ${cardClass}" data-verdict="${escHtml(verdict)}">
-        <div class="verdict-label">`;
-
-    if (pass) {
-        html += `<i data-lucide="check-circle" style="width:20px;height:20px"></i> PASS`;
-    } else if (held) {
-        html += `<i data-lucide="pause-circle" style="width:20px;height:20px"></i> Held — not released`;
-    } else if (error) {
-        html += `<i data-lucide="alert-circle" style="width:20px;height:20px"></i> Something went wrong — nothing was released`;
-    } else {
-        html += `<i data-lucide="x-circle" style="width:20px;height:20px"></i> FAIL`;
-    }
-    html += `</div>`;
-
-    if (score != null && !held && !error) html += `<div class="verdict-score">Score: ${score} / 100</div>`;
-    if (d.summary) html += `<div class="verdict-summary">${escHtml(d.summary)}</div>`;
-
-    // G4: HELD — show ai.message
-    if (held && ai.message) {
-        html += `<div class="verdict-summary" style="color:var(--amber)">${escHtml(ai.message)}</div>`;
-    }
-
-    // G4: ai.status skipped_gate_failed
-    if (ai.status === 'skipped_gate_failed') {
-        html += `<div class="criteria-row" style="border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
-            <span style="color:var(--text-muted)">🤖</span>
-            <div><div style="font-size:.8rem;color:var(--text-muted)">AI referee</div>
-            <div style="font-size:.82rem">Code check failed, so the AI was not asked.</div></div>
+    let html = `<div class="verdict-card ${pass ? 'verdict-pass' : 'verdict-fail'}" data-verdict="${pass?'PASS':'FAIL'}">
+        <div class="verdict-label">
+            <i data-lucide="${pass ? 'check-circle' : 'x-circle'}" style="width:20px;height:20px"></i>
+            ${pass ? 'PASS' : 'FAIL'}
         </div>`;
-    }
-
-    // G4: Render one row per criteria[] item (code then AI)
+    if (score != null) html += `<div class="verdict-score">Score: ${score} / 100</div>`;
+    if (d.summary) html += `<div class="verdict-summary">${escHtml(d.summary)}</div>`;
     criteria.forEach(c => {
         if (c.type === 'ai') {
-            const ok = (c.verdict || c.result || '').toUpperCase() === 'PASS';
-            html += `<div class="criteria-row" style="border-top:1px dashed rgba(0,0,0,.08);padding-top:.5rem;margin-top:.25rem">
-                <span class="${ok ? 'criteria-result-pass' : 'criteria-result-fail'}">🤖</span>
+            const ok = (c.verdict||'').toUpperCase() === 'PASS';
+            const skip = (c.verdict||'').toUpperCase() === 'SKIP';
+            html += `<div class="criteria-row" style="border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
+                <span class="${skip ? '' : (ok ? 'criteria-result-pass' : 'criteria-result-fail')}" style="${skip?'color:var(--text-muted)':''}">🤖</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">AI referee${c.model ? ' (' + escHtml(c.model) + ')' : ''}${c.cached ? ' &middot; <span style="font-size:.72rem;background:rgba(0,102,255,.08);color:var(--blue);padding:1px 5px;border-radius:4px">cached</span>' : ''}</div>
-                    <div>${ok ? 'PASS' : 'FAIL'}</div>
-                    ${c.reasoning || c.reason ? `<div class="criteria-reasoning">${escHtml(c.reasoning || c.reason)}</div>` : ''}
+                    <div style="font-size:.8rem;color:var(--text-muted)">AI referee (${escHtml(c.model||'Gemini')}${c.cached?' · cached':''})</div>
+                    <div>${skip ? '<em>Not available this session</em>' : (ok ? 'PASS' : 'FAIL')}</div>
+                    ${c.reason ? `<div class="criteria-reasoning">${escHtml(c.reason)}</div>` : ''}
                 </div>
             </div>`;
             return;
         }
-        // code / judgment criterion
-        const ok = (c.verdict || c.result || '').toUpperCase() === 'PASS';
+        const ok = (c.verdict||c.result||'').toUpperCase() === 'PASS';
         html += `<div class="criteria-row">
             <span class="${ok ? 'criteria-result-pass' : 'criteria-result-fail'}">${ok ? '✓' : '✗'}</span>
             <div>
-                <div>${escHtml(c.description || c.id || '')}</div>
+                <div>${escHtml(c.description||'')} </div>
                 ${c.reasoning ? `<div class="criteria-reasoning">${escHtml(c.reasoning)}</div>` : ''}
             </div>
         </div>`;
     });
-
     html += '</div>';
 
     document.getElementById('verdict').innerHTML = html;
@@ -773,21 +730,10 @@ function renderVerdict(d) {
     retryRow.style.display = 'flex';
     retryRow.innerHTML = '';
 
-    // G4: showStep5Pass only when verdict === "PASS" and release info exists
-    if (pass && (d.release_tx_hash || d.release_status === 'pending' || d.release_explorer_url)) {
+    if (pass) {
         showStep5Pass(d);
         document.getElementById('cta').style.display = 'block';
-    } else if (held) {
-        // G4: HELD — show "Try again" button, no step5
-        if (attemptsRemaining > 0) {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-secondary';
-            btn.innerHTML = `<i data-lucide="rotate-ccw" style="width:15px;height:15px"></i> Try again (${attemptsRemaining} attempt${attemptsRemaining===1?'':'s'} left)`;
-            btn.onclick = () => { document.getElementById('btn-submit').disabled = false; unlock(3); retryRow.style.display = 'none'; };
-            retryRow.appendChild(btn);
-            lucide.createIcons();
-        }
-    } else if (!pass) {
+    } else {
         if (attemptsRemaining > 0) {
             const btn = document.createElement('button');
             btn.className = 'btn btn-primary';
@@ -804,7 +750,7 @@ function renderVerdict(d) {
         lucide.createIcons();
     }
 
-    addTimeline(`Verdict: ${verdict}${score!=null?' ('+score+'/100)':''}`, null, pass);
+    addTimeline(`Verdict: ${d.verdict}${score!=null?' ('+score+'/100)':''}`, null, pass);
 }
 
 function showStep5Pass(d) {
