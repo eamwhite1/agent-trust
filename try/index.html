@@ -599,7 +599,8 @@ async function apiPost(url, body) {
         try {
             const j = await res.json();
             const detail = j.detail;
-            if (detail?.reason) msg = detail.reason;
+            if (detail?.message) msg = detail.message;
+            else if (detail?.reason) msg = detail.reason;
             else if (detail?.error) msg = detail.error;
             else if (typeof detail === 'string') msg = detail;
         } catch(e2) {}
