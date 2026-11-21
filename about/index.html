@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="color-scheme" content="only light">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://agenttrustxrpl.com/about/" />
@@ -33,15 +34,6 @@
         --radius-md:    16px;
         --radius-sm:    10px;
     }
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-            --text:         #e8eaf6;
-            --text-muted:   #9098b8;
-            --glass:        rgba(30,35,60,0.52);
-            --glass-border: rgba(255,255,255,0.10);
-            --shadow:       0 8px 40px rgba(0,0,0,0.28);
-        }
-    }
     :root[data-theme="dark"] {
         --text:         #e8eaf6;
         --text-muted:   #9098b8;
@@ -56,11 +48,9 @@
         background: #f2f4fb;
         -webkit-font-smoothing: antialiased;
     }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { background: #0e1020; } }
     :root[data-theme="dark"] body { background: #0e1020; }
 
     .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0e1020 0%, #141830 100%); } }
     :root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0e1020 0%, #141830 100%); }
     .blob { position: absolute; border-radius: 50%; width: 900px; height: 900px; top: -20%; left: -15%; background: radial-gradient(circle, rgba(0,102,255,.18) 0%, rgba(80,0,220,.10) 50%, transparent 75%); filter: blur(90px); animation: drift 18s infinite alternate ease-in-out; }
     .blob-2 { position: absolute; border-radius: 50%; width: 800px; height: 800px; bottom: -15%; right: -10%; background: radial-gradient(circle, rgba(0,200,255,.15) 0%, rgba(0,102,255,.08) 60%, transparent 80%); filter: blur(110px); animation: drift 22s infinite alternate-reverse ease-in-out; }

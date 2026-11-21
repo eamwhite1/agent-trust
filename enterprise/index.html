@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="color-scheme" content="only light">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgentTrust Pro — AI Agent Compliance</title>
@@ -79,25 +80,6 @@
         --radius-sm:    8px;
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-            --blue:         #4d94ff;
-            --blue-dim:     rgba(77,148,255,.12);
-            --blue-border:  rgba(77,148,255,.25);
-            --green:        #00d68f;
-            --green-dim:    rgba(0,214,143,.1);
-            --green-border: rgba(0,214,143,.25);
-            --navy:         #e8edf8;
-            --red:          #ff6b70;
-            --red-dim:      rgba(255,107,112,.1);
-            --red-border:   rgba(255,107,112,.25);
-            --text:         #f0f0f8;
-            --text-muted:   #9090a8;
-            --glass:        rgba(30,30,45,0.55);
-            --glass-border: rgba(255,255,255,.1);
-            --shadow:       0 8px 40px rgba(0,0,0,0.25);
-        }
-    }
     :root[data-theme="dark"] {
         --blue:         #4d94ff;
         --blue-dim:     rgba(77,148,255,.12);
@@ -118,18 +100,15 @@
 
     html { scroll-behavior: smooth; }
     body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { background: #0e0e18; } }
     :root[data-theme="dark"] body { background: #0e0e18; }
 
     .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0e0e18 0%, #111128 100%); } }
     :root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0e0e18 0%, #111128 100%); }
     .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
     .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
 
     /* Nav */
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) nav { background: rgba(14,14,24,.6); border-color: rgba(255,255,255,.08); } }
     :root[data-theme="dark"] nav { background: rgba(14,14,24,.6); border-color: rgba(255,255,255,.08); }
     .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--blue); }
@@ -169,7 +148,6 @@
 
     /* Problem strip */
     .problem-strip { padding: 4rem 0; border-top: 1px solid rgba(0,0,0,.06); border-bottom: 1px solid rgba(0,0,0,.06); margin-bottom: 4rem; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .problem-strip { border-color: rgba(255,255,255,.07); } }
     :root[data-theme="dark"] .problem-strip { border-color: rgba(255,255,255,.07); }
     .problem-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--red); margin-bottom: 1.1rem; display: block; }
     .problem-strip h2 { font-family: 'DM Serif Display', serif; font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: -.025em; line-height: 1.2; color: var(--text); margin-bottom: 2.5rem; text-wrap: balance; max-width: 680px; }
@@ -198,7 +176,6 @@
 
     /* How it works */
     .how { padding: 4rem 0; border-top: 1px solid rgba(0,0,0,.06); }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .how { border-color: rgba(255,255,255,.07); } }
     :root[data-theme="dark"] .how { border-color: rgba(255,255,255,.07); }
     .how h2 { font-family: 'DM Serif Display', serif; font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: -.025em; line-height: 1.2; color: var(--text); margin-bottom: 2.5rem; text-wrap: balance; }
     .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
@@ -218,7 +195,6 @@
     .proof-body h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; font-weight: 400; letter-spacing: -.02em; color: var(--text); margin-bottom: .6rem; }
     .proof-body p { font-size: .875rem; color: var(--text-muted); line-height: 1.7; }
     .proof-hash { margin-top: 1rem; font-family: 'Courier New', monospace; font-size: .72rem; color: var(--text-muted); background: rgba(0,0,0,.04); border: 1px solid rgba(0,0,0,.07); border-radius: 6px; padding: .5rem .75rem; overflow-x: auto; white-space: nowrap; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .proof-hash { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); } }
     :root[data-theme="dark"] .proof-hash { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); }
 
     /* CTA */
@@ -231,8 +207,7 @@
     /* Xaman modal */
     .xaman-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 1rem; }
     .xaman-modal { background: var(--card-bg, #fff); border: 1.5px solid var(--glass-border); border-radius: var(--radius-lg); padding: 2rem 1.75rem 1.75rem; max-width: 360px; width: 100%; text-align: center; position: relative; box-shadow: 0 32px 80px rgba(0,0,0,.35); }
-    :root[data-theme="dark"] .xaman-modal, :root:not([data-theme="light"]) @media (prefers-color-scheme: dark) .xaman-modal { background: var(--surface); }
-    .xaman-modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--text); margin: 0 0 .15rem; letter-spacing: -.01em; }
+    :root[data-theme="dark"] .xaman-modal, :root:not([data-theme="light"])    .xaman-modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--text); margin: 0 0 .15rem; letter-spacing: -.01em; }
     .xaman-modal .xaman-subtitle { font-size: .78rem; color: var(--text-muted); margin-bottom: 1.25rem; }
     /* currency picker */
     .xaman-currency-row { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.25rem; }
@@ -253,7 +228,6 @@
 
     /* Footer */
     footer { margin-top: 2rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { border-color: rgba(255,255,255,.07); } }
     :root[data-theme="dark"] footer { border-color: rgba(255,255,255,.07); }
     .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
     .footer-brand { flex: 0 0 220px; }
@@ -267,7 +241,6 @@
     .footer-col a:hover { color: var(--blue); }
     .footer-bottom { border-top: 1px solid rgba(0,0,0,.06); padding-top: 1.25rem; font-size: .74rem; color: var(--text-muted); }
     .footer-bottom a { color: var(--blue); text-decoration: none; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .footer-bottom { border-color: rgba(255,255,255,.06); } }
     :root[data-theme="dark"] .footer-bottom { border-color: rgba(255,255,255,.06); }
     @media (max-width: 680px) { .footer-inner { flex-direction: column; gap: 2rem; } .footer-brand { flex: none; } .footer-cols { gap: 1.5rem; } }
 
