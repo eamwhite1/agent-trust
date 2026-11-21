@@ -500,32 +500,6 @@
         </div>
     </div>
 
-    <!-- CONNECT IN 30 SECONDS -->
-    <section class="connect30" id="connect-30">
-        <h2>Connect in 30 seconds</h2>
-        <p class="c30-note">API and MCP are hosted at mcp.cryptovault.co.uk, operated by Boxclever Media Ltd. Short on context? Use <code>/mcp-core</code>: 10 tools, about a tenth of the size.</p>
-        <div class="c30-row">
-            <div class="c30-label">MCP config (JSON) <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
-<pre>{"mcpServers":{"agenttrust":{"url":"https://mcp.cryptovault.co.uk/mcp"}}}</pre>
-        </div>
-        <div class="c30-row">
-            <div class="c30-label">Claude Code <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
-<pre>claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp</pre>
-        </div>
-        <div class="c30-row">
-            <div class="c30-label">REST: live fees <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
-<pre>curl https://mcp.cryptovault.co.uk/fees</pre>
-        </div>
-    </section>
-    <script>
-    function c30Copy(btn){
-        var pre = btn.closest('.c30-label').nextElementSibling;
-        try { navigator.clipboard.writeText(pre.textContent); } catch(e) {}
-        btn.textContent = 'Copied!';
-        setTimeout(function(){ btn.textContent = 'Copy'; }, 1500);
-    }
-    </script>
-
     <!-- TABS (shown once a panel is selected) -->
     <div class="tab-bar" id="main-tabs" style="display:none;">
         <button class="tab-btn" id="tab-buyer" onclick="switchTab('buyer')">
@@ -1537,6 +1511,32 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
             </div>
         </div>
     </div>
+
+    <!-- CONNECT IN 30 SECONDS -->
+    <section class="connect30" id="connect-30">
+        <h2>Connect in 30 seconds</h2>
+        <p class="c30-note">API and MCP are hosted at mcp.cryptovault.co.uk, operated by Boxclever Media Ltd. Short on context? Use <code>/mcp-core</code>: 10 tools, about a tenth of the size.</p>
+        <div class="c30-row">
+            <div class="c30-label">MCP config (JSON) <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
+<pre>{"mcpServers":{"agenttrust":{"url":"https://mcp.cryptovault.co.uk/mcp"}}}</pre>
+        </div>
+        <div class="c30-row">
+            <div class="c30-label">Claude Code <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
+<pre>claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp</pre>
+        </div>
+        <div class="c30-row">
+            <div class="c30-label">REST: live fees <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
+<pre>curl https://mcp.cryptovault.co.uk/fees</pre>
+        </div>
+    </section>
+    <script>
+    function c30Copy(btn){
+        var pre = btn.closest('.c30-label').nextElementSibling;
+        try { navigator.clipboard.writeText(pre.textContent); } catch(e) {}
+        btn.textContent = 'Copied!';
+        setTimeout(function(){ btn.textContent = 'Copy'; }, 1500);
+    }
+    </script>
 
     <!-- Pro Dashboard section -->
     <section style="margin:4rem 0 2.5rem;background:linear-gradient(135deg,rgba(0,102,255,.07),rgba(0,102,255,.03));border:1px solid rgba(0,102,255,.18);border-radius:18px;padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;">
