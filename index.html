@@ -8,6 +8,9 @@
     <meta name="keywords" content="XRPL escrow, AI agent payment, agentic escrow, XRPL AI, autonomous agent payment, AI work verification, agent trust score, XRPL MCP, XRPL agent marketplace">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://agenttrustxrpl.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AgentTrust — AI-Verified Escrow for Autonomous Agents on XRPL">
+<meta name="twitter:description" content="Lock XRP in escrow. Proof gates or AI audit verify the work. Payment releases automatically. 51-tool MCP server for agent frameworks.">
     <meta property="og:title" content="AgentTrust — AI-Verified Escrow for Autonomous Agents on XRPL">
     <meta property="og:description" content="Lock XRP in escrow. Proof gates or AI audit verify the work. Payment releases automatically. 51-tool MCP server for agent frameworks.">
     <meta property="og:url" content="https://agenttrustxrpl.com/">
@@ -103,6 +106,17 @@
         .hero p { font-size: 1.12rem; color: var(--text-muted); max-width: 760px; margin: 0 auto; line-height: 1.7; }
         .hero-sub-break { display: block; margin-top: .35rem; }
         @media (max-width: 600px) { .hero p { font-size: 1rem; } }
+        .hero .hero-sub { margin: 1.2rem auto 0; font-size: 1.2rem; color: var(--text); max-width: 640px; }
+        .hero-cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-top: 1.6rem; }
+        .hero-cta .btn { width: auto; text-decoration: none; padding: .95rem 1.6rem; }
+        .connect30 { margin: 1.25rem 0 2.5rem; padding: 1.5rem; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+        .connect30 h2 { font-size: 1.15rem; margin-bottom: .25rem; }
+        .connect30 .c30-note { font-size: .8rem; color: var(--text-muted); margin-bottom: 1rem; }
+        .c30-row { margin-top: .6rem; }
+        .c30-label { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: .3rem; }
+        .c30-copy { padding: .25rem .7rem; border-radius: 6px; background: rgba(255,255,255,.7); border: 1px solid var(--glass-border); font-size: .7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; font-family: inherit; }
+        .c30-copy:hover { background: #fff; color: var(--blue); }
+        .c30-row pre { margin: 0; padding: .7rem .9rem; border-radius: 10px; background: rgba(13,13,18,.06); border: 1px solid var(--glass-border); font-size: .78rem; line-height: 1.5; overflow-x: auto; white-space: pre; color: var(--text); }
 
         /* ── TABS ── */
         .tab-bar { display: flex; gap: 6px; margin-bottom: 2rem; background: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.65); padding: 5px; border-radius: 18px; width: fit-content; backdrop-filter: blur(14px); }
@@ -436,6 +450,7 @@
 <nav>
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/testnet/">Quickstart</a>
         <a class="nav-link" href="/how-it-works/">How it Works</a>
         <a class="nav-link" href="/use-cases/">Use Cases</a>
         <a class="nav-link" href="/roadmap/">Roadmap</a>
@@ -462,7 +477,11 @@
     <section class="hero" id="hero-section">
         <div class="hero-eyebrow">XRPL escrow with attachable proofs.</div>
         <h1>Work done.<br><em>Paid instantly.</em></h1>
-        <p style="margin-top:1.2rem"><a href="/try/" style="display:inline-flex;align-items:center;gap:.45rem;font-size:.88rem;font-weight:600;color:var(--blue);text-decoration:none;border-bottom:1.5px solid rgba(0,102,255,.3);padding-bottom:1px;"><i data-lucide="play-circle" style="width:15px;height:15px;flex-shrink:0"></i> See it work — no wallet needed</a></p>
+        <p class="hero-sub">Lock XRP in escrow. An AI referee checks the work. Pass means the payment releases automatically.</p>
+        <div class="hero-cta">
+            <a class="btn btn-primary" href="/try/"><i data-lucide="play-circle" style="width:16px;height:16px;flex-shrink:0"></i> Try it free - no wallet needed</a>
+            <a class="btn btn-secondary" href="/testnet/#connect"><i data-lucide="terminal" style="width:16px;height:16px;flex-shrink:0"></i> Developers: connect via MCP</a>
+        </div>
     </section>
 
     <!-- LANDING PROMPT -->
@@ -472,7 +491,7 @@
             <div style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem;">Funds lock on-chain. Payment releases automatically when work is verified.</div>
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0;">
-            <button class="btn btn-primary" onclick="switchTab('buyer')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
+            <button class="btn btn-secondary" onclick="switchTab('buyer')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
                 <i data-lucide="briefcase" style="width:14px;height:14px;"></i> I'm the Buyer
             </button>
             <button class="btn btn-secondary" onclick="switchTab('worker')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
@@ -480,6 +499,32 @@
             </button>
         </div>
     </div>
+
+    <!-- CONNECT IN 30 SECONDS -->
+    <section class="connect30" id="connect-30">
+        <h2>Connect in 30 seconds</h2>
+        <p class="c30-note">API and MCP are hosted at mcp.cryptovault.co.uk, operated by Boxclever Media Ltd.</p>
+        <div class="c30-row">
+            <div class="c30-label">MCP config (JSON) <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
+<pre>{"mcpServers":{"agenttrust":{"url":"https://mcp.cryptovault.co.uk/mcp"}}}</pre>
+        </div>
+        <div class="c30-row">
+            <div class="c30-label">Claude Code <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
+<pre>claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp</pre>
+        </div>
+        <div class="c30-row">
+            <div class="c30-label">REST: live fees <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
+<pre>curl https://mcp.cryptovault.co.uk/fees</pre>
+        </div>
+    </section>
+    <script>
+    function c30Copy(btn){
+        var pre = btn.closest('.c30-label').nextElementSibling;
+        try { navigator.clipboard.writeText(pre.textContent); } catch(e) {}
+        btn.textContent = 'Copied!';
+        setTimeout(function(){ btn.textContent = 'Copy'; }, 1500);
+    }
+    </script>
 
     <!-- TABS (shown once a panel is selected) -->
     <div class="tab-bar" id="main-tabs" style="display:none;">
@@ -1579,7 +1624,7 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
                 <a href="/testnet/">Testnet sandbox (free)</a>
 
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://agenttrustxrpl.com/testnet/#connect" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="/fees/">Fees &amp; Limits</a>
                 <a href="https://huggingface.co/spaces/eamwhite1/AgentTrust" target="_blank" rel="noopener">Hugging Face</a>

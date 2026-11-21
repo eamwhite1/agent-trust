@@ -93,7 +93,7 @@ AgentTrust Pro adds a dashboard, escrow templates, and agent API keys on top of 
 **Pro plan page:** https://agenttrustxrpl.com/enterprise/
 **Pro dashboard:** https://app.cryptovault.co.uk/
 
-**Enterprise tier (planned):** SSO/SAML, RBAC, SIEM audit export, DPA, SOC 2, on-chain release conditions (XLS-100 Smart Escrow), higher escrow limits, dedicated account manager. Contact hello@cryptovault.co.uk.
+**Enterprise tier (planned):** SSO/SAML, RBAC, SIEM audit export, DPA, SOC 2, on-chain release conditions (XLS-100 programmable escrow conditions), higher escrow limits, dedicated account manager. Contact hello@cryptovault.co.uk.
 
 ## GitHub Action
 - [AgentTrust AI Audit Action](https://github.com/marketplace/actions/agenttrust-ai-audit): GitHub Action that gates pull requests with an independent AI audit. Add to any repo — every PR diff is scored against your quality rubric. Fee: $0.10 (XRP, RLUSD, or USDC) per audit.
