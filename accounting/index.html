@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="color-scheme" content="only light">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accounting Software — AgentTrust</title>
@@ -41,26 +42,6 @@
         --code-border:  rgba(13,13,18,.09);
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-            --blue:         #4d94ff;
-            --blue-dim:     rgba(77,148,255,.12);
-            --blue-border:  rgba(77,148,255,.25);
-            --green:        #00d68f;
-            --green-dim:    rgba(0,214,143,.1);
-            --green-border: rgba(0,214,143,.25);
-            --amber:        #F59E0B;
-            --amber-dim:    rgba(245,158,11,.1);
-            --amber-border: rgba(245,158,11,.25);
-            --text:         #f0f0f8;
-            --text-muted:   #9090a8;
-            --glass:        rgba(30,30,45,0.55);
-            --glass-border: rgba(255,255,255,.1);
-            --shadow:       0 8px 40px rgba(0,0,0,0.25);
-            --code-bg:      rgba(255,255,255,.06);
-            --code-border:  rgba(255,255,255,.1);
-        }
-    }
     :root[data-theme="dark"] {
         --blue:         #4d94ff;
         --blue-dim:     rgba(77,148,255,.12);
@@ -83,20 +64,15 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
 
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) body { background: #0e0e18; }
-    }
     :root[data-theme="dark"] body { background: #0e0e18; }
 
     .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); overflow: hidden; transform: translateZ(0); will-change: transform; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0e0e18 0%, #111128 100%); } }
     :root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0e0e18 0%, #111128 100%); }
     .blob { position: absolute; border-radius: 50%; width: 800px; height: 800px; top: -15%; left: -10%; background: radial-gradient(circle, rgba(0,102,255,.14) 0%, rgba(80,0,220,.07) 55%, transparent 75%); filter: blur(90px); }
     .blob-2 { position: absolute; border-radius: 50%; width: 700px; height: 700px; bottom: -10%; right: -5%; background: radial-gradient(circle, rgba(0,200,255,.11) 0%, rgba(0,102,255,.06) 60%, transparent 80%); filter: blur(110px); }
 
     /* Nav */
     nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 1rem 5%; background: rgba(255,255,255,.5); backdrop-filter: blur(28px); border-bottom: 1px solid rgba(255,255,255,.55); }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) nav { background: rgba(14,14,24,.6); border-color: rgba(255,255,255,.08); } }
     :root[data-theme="dark"] nav { background: rgba(14,14,24,.6); border-color: rgba(255,255,255,.08); }
     .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; letter-spacing: -.02em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--blue); }
@@ -187,7 +163,6 @@
 
     /* Footer */
     footer { margin-top: 4rem; border-top: 1px solid rgba(0,0,0,.07); padding: 3rem 5% 2rem; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer { border-color: rgba(255,255,255,.07); } }
     :root[data-theme="dark"] footer { border-color: rgba(255,255,255,.07); }
     .footer-inner { display: flex; gap: 3rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
     .footer-brand { flex: 0 0 220px; }
@@ -200,7 +175,6 @@
     .footer-col a { font-size: .8rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
     .footer-col a:hover { color: var(--blue); }
     .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-top: 1.5rem; border-top: 1px solid rgba(0,0,0,.06); }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .footer-bottom { border-color: rgba(255,255,255,.06); } }
     :root[data-theme="dark"] .footer-bottom { border-color: rgba(255,255,255,.06); }
     .footer-bottom a { color: var(--blue); text-decoration: none; }
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="color-scheme" content="only light">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="https://agenttrustxrpl.com/issuer-registry/" />
@@ -39,16 +40,6 @@
     --radius-sm:    8px;
     --border:       rgba(0,0,0,.08);
 }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --text:         #e8e8f0;
-        --text-muted:   #9090a8;
-        --glass:        rgba(30,30,46,0.6);
-        --glass-border: rgba(255,255,255,0.10);
-        --shadow:       0 8px 40px rgba(0,0,0,0.25);
-        --border:       rgba(255,255,255,.08);
-    }
-}
 :root[data-theme="dark"] {
     --text:         #e8e8f0;
     --text-muted:   #9090a8;
@@ -60,11 +51,9 @@
 
 html { scroll-behavior: smooth; }
 body { font-family: 'DM Sans', sans-serif; color: var(--text); background: #f2f4fb; min-height: 100vh; line-height: 1.65; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { background: #0f0f1a; } }
 :root[data-theme="dark"] body { background: #0f0f1a; }
 
 .bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #ffffff 0%, #edf0ff 100%); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bg { background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%); } }
 :root[data-theme="dark"] .bg { background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%); }
 .blob { position: fixed; border-radius: 50%; width: 700px; height: 700px; top: -10%; right: -5%; background: radial-gradient(circle, rgba(0,102,255,.10) 0%, transparent 70%); filter: blur(100px); pointer-events: none; }
 
@@ -117,11 +106,6 @@ input, select, textarea {
     background: rgba(255,255,255,.55); border: 1.5px solid var(--border);
     border-radius: var(--radius-sm); color: var(--text); outline: none;
     transition: border-color .18s, box-shadow .18s;
-}
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) input,
-    :root:not([data-theme="light"]) select,
-    :root:not([data-theme="light"]) textarea { background: rgba(255,255,255,.06); }
 }
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] select,

@@ -25,20 +25,6 @@
     --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg:        #0d0f14;
-        --surface:   #161a22;
-        --border:    #252b36;
-        --text:      #e8ecf3;
-        --muted:     #8891a0;
-        --blue-dim:  #1e2a4a;
-        --green-dim: #0d2018;
-        --amber-dim: #2a1f08;
-        --red-dim:   #2a1010;
-        --purple-dim:#1e1530;
-    }
-}
 :root[data-theme="dark"] {
     --bg:        #0d0f14;
     --surface:   #161a22;
@@ -274,6 +260,7 @@ tr:hover td { background: var(--bg); }
 </style>
 
 <header>
+<meta name="color-scheme" content="only light">
     <div class="header-brand">
         AgentTrust<span class="badge-admin">Admin</span>
     </div>

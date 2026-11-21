@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="color-scheme" content="only light">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
@@ -11,9 +12,6 @@
 :root {
     --bg: #fafafa; --text: #0d0d12; --text-muted: #5a5a68;
     --blue: #0066ff; --border: rgba(0,0,0,.08); --surface: #fff;
-}
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg:#0d0d12;--text:#f0f0f5;--text-muted:#8888a0;--border:rgba(255,255,255,.08);--surface:#16161e; }
 }
 :root[data-theme="dark"] { --bg:#0d0d12;--text:#f0f0f5;--text-muted:#8888a0;--border:rgba(255,255,255,.08);--surface:#16161e; }
 * { box-sizing: border-box; }
