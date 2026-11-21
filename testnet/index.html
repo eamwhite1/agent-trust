@@ -6,6 +6,9 @@
 <title>Testnet Guide — AgentTrust</title>
 <meta name="description" content="Try the full AgentTrust escrow flow for free on XRPL Testnet — no fees, no real XRP, AI audit included. Three MCP calls and you're done.">
 <meta name="robots" content="index, follow">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Testnet Guide — AgentTrust">
+<meta name="twitter:description" content="Try the full AgentTrust escrow flow for free on XRPL Testnet — no fees, no real XRP.">
 <meta property="og:title" content="Testnet Guide — AgentTrust">
 <meta property="og:description" content="Try the full AgentTrust escrow flow for free on XRPL Testnet — no fees, no real XRP.">
 <meta property="og:url" content="https://agenttrustxrpl.com/testnet/">
@@ -156,6 +159,7 @@
 <nav>
     <a class="logo" href="/">AgentTrust<span>.</span></a>
     <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="/testnet/">Quickstart</a>
         <a class="nav-link" href="/how-it-works/">How it Works</a>
         <a class="nav-link" href="/use-cases/">Use Cases</a>
         <a class="nav-link" href="/roadmap/">Roadmap</a>
@@ -325,7 +329,7 @@ const { tx_blob } = wallet.sign(tx_dict);
     </div>
 
     <!-- MCP client -->
-    <div class="card">
+    <div class="card" id="connect">
         <div class="card-pad">
             <span class="section-label">Connect an MCP client</span>
             <h2>Works with any MCP-compatible tool</h2>
@@ -449,7 +453,7 @@ agenttrust = MCPServerAdapter({"url": "https://mcp.cryptovault.co.uk/mcp", "tran
                 <a href="/testnet/">Testnet sandbox (free)</a>
 
                 <a href="https://mcp.cryptovault.co.uk/docs" target="_blank" rel="noopener">API Docs</a>
-                <a href="https://mcp.cryptovault.co.uk/mcp/" target="_blank" rel="noopener">MCP Server</a>
+                <a href="https://agenttrustxrpl.com/testnet/#connect" target="_blank" rel="noopener">MCP Server</a>
                 <a href="/guides/">Guides</a>
                 <a href="/fees/">Fees &amp; Limits</a>
                 <a href="/audit/">Audit Report</a>
