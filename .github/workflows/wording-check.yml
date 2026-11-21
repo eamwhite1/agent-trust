@@ -4,7 +4,7 @@ jobs:
   check-wording:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: No score>=25 / 3-free-audits / free-standalone / JS template leaks
         run: |
           hits=$(grep -rniE \
@@ -36,17 +36,17 @@ jobs:
   fees-render-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
-      - run: npm install playwright
+          node-version: '22'
+      - run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
       - name: Check /fees/ renders without undefined/NaN/score>=
         run: |
           node -e "
-          const { chromium } = require('playwright');
+          const { chromium } = require('@playwright/test');
           (async () => {
             const browser = await chromium.launch({ args: ['--no-sandbox'] });
             const page = await browser.newPage();
