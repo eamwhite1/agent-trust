@@ -480,29 +480,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
 }
 .claim-modal-overlay.open { display: flex; }
 
-/* ── ACTIVITY FEED ── */
-.activity-feed { padding: 1rem; }
-.activity-title {
-    font-size: .65rem; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: .12em; margin-bottom: .8rem;
-}
-.activity-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: .6rem 0; border-bottom: 1px solid var(--border);
-    animation: card-in .4s ease both;
-}
-.activity-item:last-child { border-bottom: none; }
-.activity-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    flex-shrink: 0; margin-top: 5px;
-}
-.activity-dot.pass   { background: var(--green); }
-.activity-dot.post   { background: var(--blue); }
-.activity-dot.claim  { background: var(--amber); }
-.activity-text { font-size: .76rem; color: var(--text-dim); line-height: 1.5; }
-.activity-text strong { color: var(--text); font-weight: 600; }
-.activity-time { font-family: var(--mono); font-size: .65rem; color: var(--text-muted); white-space: nowrap; }
-
 /* ── EMPTY STATE ── */
 .empty-state {
     text-align: center; padding: 4rem 2rem; color: var(--text-dim);
@@ -708,11 +685,6 @@ nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center
             </button>
         </div>
 
-
-        <div class="sidebar-section">
-            <span class="sidebar-label">Live Activity</span>
-            <div class="activity-feed" id="activity-feed"></div>
-        </div>
     </aside>
 
     <!-- MAIN -->
@@ -1496,14 +1468,6 @@ const SEED_JOBS = [
     },
 ];
 
-const SEED_ACTIVITY = [
-    { type: "pass",  text: "<strong>AT-MKT-003</strong> — worker paid <strong>350 XRP</strong>", time: "2m ago" },
-    { type: "post",  text: "New job posted: <strong>DeFi TVL analysis</strong> · 420 XRP", time: "3m ago" },
-    { type: "claim", text: "New bid on <strong>AT-MKT-001</strong> by rAg…4xK2", time: "8m ago" },
-    { type: "pass",  text: "<strong>AT-MKT-006</strong> — worker paid <strong>120 XRP</strong>", time: "14m ago" },
-    { type: "post",  text: "New job: <strong>XSS Vulnerability Hunt</strong> · 2,000–3,000 XRP", time: "5h ago" },
-];
-
 // ---------------------------------------------------------------------------
 // INIT
 // ---------------------------------------------------------------------------
@@ -1512,7 +1476,6 @@ window.addEventListener("DOMContentLoaded", () => {
     loadXrpPrice();
     loadJobs();
     loadServices();
-    renderActivity();
     setInterval(loadXrpPrice, 30000);
     handleEmailLinks();
 });
@@ -2243,22 +2206,6 @@ function updateCounts() {
 
 
 // ---------------------------------------------------------------------------
-// ACTIVITY FEED
-// ---------------------------------------------------------------------------
-function renderActivity() {
-    const feed = document.getElementById("activity-feed");
-    if (!feed) return;
-    feed.innerHTML = SEED_ACTIVITY.map(a => `
-        <div class="activity-item">
-            <div class="activity-dot ${a.type}"></div>
-            <div style="flex:1;">
-                <div class="activity-text">${a.text}</div>
-            </div>
-            <div class="activity-time">${a.time}</div>
-        </div>`).join("");
-}
-
-// ---------------------------------------------------------------------------
 // POST JOB MODAL
 // ---------------------------------------------------------------------------
 function openPostModal(type = 'job') {
@@ -2362,8 +2309,6 @@ async function pollServiceFee() {
                 }),
             });
             showModalStatus("service-status", "✅ Fee paid! Your skill listing is now live for 30 days.", "success");
-            SEED_ACTIVITY.unshift({ type: "post", text: `New skill listed: <strong>${pendingServiceData.title.substring(0,40)}…</strong>`, time: "just now" });
-            renderActivity();
             if (activeView === "services") { await loadServices(); }
             setTimeout(closeServiceModal, 3000);
         }
@@ -2462,8 +2407,6 @@ async function submitBid() {
                 </p>
                 <button onclick="closeBidModal()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;">Done</button>
             </div>`;
-        SEED_ACTIVITY.unshift({ type: "claim", text: `New bid on <strong>${biddingJobId}</strong> · ${price} XRP`, time: "just now" });
-        renderActivity();
         await loadOpenJobs();
     } catch(e) {
         showModalStatus("bid-status", `Error: ${e.message || "Could not submit bid."}`, "error");
@@ -2564,8 +2507,6 @@ async function submitJobBoardPost() {
                 <button onclick="closeJobBoardModal()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:var(--r);color:#000;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;">Done</button>
             </div>`;
 
-        SEED_ACTIVITY.unshift({ type: "post", text: `New job posted: <strong>${title.substring(0,40)}</strong>`, time: "just now" });
-        renderActivity();
         await loadOpenJobs();
         if (activeView !== "jobs") setView("jobs");
     } catch(e) {
