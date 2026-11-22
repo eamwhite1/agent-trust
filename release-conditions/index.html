@@ -272,6 +272,12 @@ footer { margin-top: 4rem; border-top: 1px solid var(--border); padding: 3rem 5%
                 <td>$0.25</td>
             </tr>
             <tr>
+                <td>Output a program can fully test: an exact answer, a pattern, a hash, or a JSON shape</td>
+                <td><span class="mode-pill pill-gate">Code gates</span></td>
+                <td><code>criteria</code> of <code>type: "code"</code>; add <code>require_ai_audit: false</code> to skip the AI</td>
+                <td>$0.10</td>
+            </tr>
+            <tr>
                 <td>NFT trade, domain proof, or verifiable credential — fully machine-checkable</td>
                 <td><span class="mode-pill pill-gate">Proof gate only</span></td>
                 <td><code>require_ai_audit: false</code> + at least one proof gate param</td>
@@ -351,13 +357,50 @@ create_escrow_vault(
     <hr class="divider">
 
     <!-- MODE 3: Proof gate only -->
+    <!-- Code gates -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon icon-gate"><i data-lucide="code" style="width:18px;height:18px;"></i></div>
+            <h2>Code gates (plain-code checks)</h2>
+        </div>
+
+        <p>A code gate tests the submitted work itself with plain code, so the result is the same every time and costs no AI call. Add them as <code>criteria</code> entries of <code>type: "code"</code>. They run after any proof gates and before the AI referee; if one fails, the submission is rejected there with a plain-English reason and the AI is never asked.</p>
+
+        <ul>
+            <li><strong>Exact match (<code>exact_match</code>)</strong> — the work must equal <code>expected_value</code>. Use for a known answer or code.</li>
+            <li><strong>Pattern (<code>regex</code>)</strong> — the work must match <code>pattern</code> (up to 100 characters). Use for format or length rules.</li>
+            <li><strong>Hash (<code>sha256_of</code>)</strong> — the SHA-256 of the work must equal <code>expected_hash</code>. Use for a file or data you can fingerprint in advance.</li>
+            <li><strong>JSON schema (<code>json_schema</code>)</strong> — the work must be JSON that validates against <code>schema</code>. Use for structured data deliveries.</li>
+        </ul>
+
+        <pre><code><span class="comment"># Code gate only: pay when the delivered JSON has the required shape</span>
+create_escrow_vault(
+    task_description=<span class="val">"Return the price list as JSON with a 'items' array"</span>,
+    buyer_address=<span class="val">"rBuyerXXX"</span>,
+    worker_address=<span class="val">"rWorkerXXX"</span>,
+    amount_xrp=<span class="val">15.0</span>,
+    escrow_id=<span class="val">"AT-CODE-004"</span>,
+    <span class="key">require_ai_audit</span>=<span class="val">False</span>,            <span class="comment"># allowed because every criterion is a code gate</span>
+    <span class="key">criteria</span>=[{<span class="val">"id"</span>: <span class="val">"shape"</span>, <span class="val">"type"</span>: <span class="val">"code"</span>, <span class="val">"gate"</span>: <span class="val">"json_schema"</span>,
+              <span class="val">"description"</span>: <span class="val">"Valid JSON with an items array"</span>,
+              <span class="val">"schema"</span>: {<span class="val">"type"</span>: <span class="val">"object"</span>, <span class="val">"required"</span>: [<span class="val">"items"</span>]}}],
+)</code></pre>
+
+        <div class="callout info">
+            <span class="callout-icon"><i data-lucide="info" style="width:16px;height:16px;color:var(--blue);"></i></span>
+            <div>Code gates can only say whether the work matches a rule, not whether it is good. Keep the AI on (the default) when quality matters: the gates run first, then the AI judges what is left. The AI can be turned off only when every criterion is a code gate, or a proof gate is set.</div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
     <div class="section">
         <div class="section-header">
             <div class="section-icon icon-gate"><i data-lucide="key" style="width:18px;height:18px;"></i></div>
             <h2>Proof gate only (no AI)</h2>
         </div>
 
-        <p>For fully machine-verifiable deliverables, there is nothing for an AI to evaluate — the on-chain condition is the deliverable. Set <code>require_ai_audit: false</code> to skip the AI call entirely and release on cryptographic verification alone. This requires at least one proof gate to be configured.</p>
+        <p>For fully machine-verifiable deliverables, there is nothing for an AI to evaluate — the on-chain condition is the deliverable. Set <code>require_ai_audit: false</code> to skip the AI call entirely and release on cryptographic verification alone. This requires at least one proof gate (or code-gate-only criteria, below) to be configured.</p>
 
         <ul>
             <li><strong>NFT ownership (<code>require_nft_proof</code>)</strong> — payment releases when the worker proves they hold an NFT from a trusted issuer. Use for access tokens, membership NFTs, or certification badges.</li>
