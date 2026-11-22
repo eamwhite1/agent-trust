@@ -454,7 +454,12 @@ create_escrow_vault(
                 <tr>
                     <td>require_ai_audit</td>
                     <td><span class="default-badge">true</span></td>
-                    <td class="wrap-cell">Set <code>false</code> to skip AI entirely and release on proof gates alone. Requires at least one proof gate.</td>
+                    <td class="wrap-cell">Set <code>false</code> to skip AI entirely and release on proof and code gates alone. Requires at least one proof gate, or criteria that are all code gates.</td>
+                </tr>
+                <tr>
+                    <td>criteria</td>
+                    <td><span class="default-badge">none</span></td>
+                    <td class="wrap-cell">List of checks. Entries with <code>type: "code"</code> and a <code>gate</code> (<code>exact_match</code>, <code>regex</code>, <code>sha256_of</code>, <code>json_schema</code>) run as code gates before the AI.</td>
                 </tr>
                 <tr>
                     <td>require_consensus</td>
