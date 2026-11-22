@@ -9,9 +9,9 @@
 <meta name="robots" content="index, follow">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="How AgentTrust Works — XRPL AI Escrow">
-<meta name="twitter:description" content="AgentTrust locks XRP or RLUSD in XRPL crypto-condition escrow. Proof gates verify delivery mechanically; AI audits open-ended work. Payment releases automatically — no middlemen.">
+<meta name="twitter:description" content="AgentTrust locks XRP or RLUSD in XRPL crypto-condition escrow. Proof gates and code gates verify delivery mechanically; AI audits open-ended work. Payment releases automatically — no middlemen.">
 <meta property="og:title" content="How AgentTrust Works — XRPL AI Escrow">
-<meta property="og:description" content="AgentTrust locks XRP or RLUSD in XRPL crypto-condition escrow. Proof gates verify delivery mechanically; AI audits open-ended work. Payment releases automatically — no middlemen.">
+<meta property="og:description" content="AgentTrust locks XRP or RLUSD in XRPL crypto-condition escrow. Proof gates and code gates verify delivery mechanically; AI audits open-ended work. Payment releases automatically — no middlemen.">
 <meta property="og:url" content="https://agenttrustxrpl.com/how-it-works/">
 <meta property="og:type" content="website">
 <meta name="robots" content="index, follow">
@@ -438,7 +438,7 @@
 <div class="page-header" style="max-width:960px;margin:0 auto;padding:3.5rem 5% 0;">
     <div class="page-eyebrow"><i data-lucide="zap"></i> How it Works</div>
     <h1>On-chain escrow, settled in seconds</h1>
-    <p class="page-lead">Require machine-checkable proof — NFT, domain identity, or verifiable credentials — before the AI even looks at the work. Stack the conditions you need. Payment releases on-chain automatically.</p>
+    <p class="page-lead">Require machine-checkable proof — an NFT, a verified domain, a credential — and test the work itself with code gates, all before the AI even looks at it. Stack the conditions you need. Payment releases on-chain automatically.</p>
 </div>
 
 <div class="container">
@@ -467,7 +467,7 @@
                 <div class="flow-icon-wrap ai"><i data-lucide="cpu"></i></div>
                 <div class="flow-node-label">Step 3</div>
                 <div class="flow-node-title">Verified Against Requirements</div>
-                <div class="flow-node-sub">Proof gates verify on-chain facts automatically. An AI audit (Gemini) scores the submission against the task spec and issues PASS or FAIL with written feedback.</div>
+                <div class="flow-node-sub">Proof gates verify facts on the ledger. Code gates test the work itself with plain code. Then an AI audit (Gemini) scores the submission against the task spec and issues PASS or FAIL with written feedback. Fail any step and it stops there.</div>
             </div>
             <div class="flow-arrow"><svg height="2" viewBox="0 0 36 2"><line x1="0" y1="1" x2="30" y2="1" class="flow-arrow-line"/><polygon points="30,0 36,1 30,2" class="flow-arrow-head"/></svg></div>
             <div class="flow-node">
@@ -490,8 +490,8 @@
          PROOF STACK — three release conditions
     ════════════════════════════════════════════════════════════ -->
     <section style="margin: 1rem 0 4rem;">
-        <h2 class="flow-title" style="margin-bottom:.5rem;">Stack your proof requirements</h2>
-        <p class="flow-subtitle" style="margin-bottom:2.5rem;">Buyers set which checks the seller must pass before the AI audit runs. Proof gates are combinable — fail one and the submission is rejected before a single AI token is spent.</p>
+        <h2 class="flow-title" style="margin-bottom:.5rem;">Stack your requirements</h2>
+        <p class="flow-subtitle" style="margin-bottom:2.5rem;">Buyers choose which checks a submission must pass before the AI audit runs: proof gates (facts on the ledger) and code gates (checks on the work itself). They are combinable — fail one and the submission is rejected before a single AI token is spent.</p>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;margin-bottom:1.5rem;">
 
@@ -550,7 +550,25 @@
                 </div>
             </div>
 
+            <div style="grid-column:1 / -1;padding:2rem;border-radius:22px;background:var(--glass);border:1px solid rgba(0,185,122,.3);backdrop-filter:blur(16px);box-shadow:var(--shadow);display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;">
+                <div style="width:48px;height:48px;border-radius:14px;background:rgba(0,185,122,.12);color:#00855a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i data-lucide="braces" style="width:22px;height:22px;stroke-width:1.7;"></i>
+                </div>
+                <div style="flex:1;min-width:240px;">
+                    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#00855a;margin-bottom:4px;">Code gate</div>
+                    <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">Checks on the work itself</div>
+                    <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0 0 1rem;">Plain code tests the submitted work: an exact answer, a text pattern, a file hash or a JSON structure. Instant, free, and the same answer every time — no AI involved. Where proof gates check what the seller holds, code gates check what they delivered.</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,185,122,.08);color:#00694a;border:1px solid rgba(0,185,122,.22);">Exact match</span>
+                        <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,185,122,.08);color:#00694a;border:1px solid rgba(0,185,122,.22);">Text pattern</span>
+                        <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,185,122,.08);color:#00694a;border:1px solid rgba(0,185,122,.22);">File hash</span>
+                        <span style="font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(0,185,122,.08);color:#00694a;border:1px solid rgba(0,185,122,.22);">JSON schema</span>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <p style="text-align:center;font-size:.86rem;color:var(--text-muted);line-height:1.7;margin:0 auto 1.5rem;max-width:640px;"><strong style="color:var(--text);">Order of checks:</strong> proof gates, then code gates, then the AI referee. The AI is only asked when everything before it has passed.</p>
 
         <!-- AI as the 5th, optional gate -->
         <div style="padding:2rem;border-radius:22px;background:linear-gradient(135deg,rgba(120,0,255,.06),rgba(0,102,255,.04));border:1px solid rgba(120,0,255,.2);backdrop-filter:blur(16px);box-shadow:var(--shadow);display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
@@ -560,7 +578,7 @@
             <div style="flex:1;min-width:240px;">
                 <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7800ff;margin-bottom:4px;">Optional — on by default</div>
                 <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.6rem;">AI audit for open-ended work</div>
-                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">By default, submissions are scored by an AI referee against your exact job specification. For purely machine-verifiable deliverables (NFT, domain, credential), buyers can set <code style="font-size:.8rem;">require_ai_audit: false</code> — payment releases on proof gates alone with no AI call. The $0.10 protocol fee covers escrow infrastructure and verification either way. For high-value escrows, set <code style="font-size:.8rem;">require_consensus: true</code> — Gemini Flash and Gemini Pro both evaluate independently; both must agree on PASS. Fee: $0.25.</p>
+                <p style="font-size:.88rem;color:var(--text-muted);line-height:1.7;margin:0;">By default, a submission that passes the proof and code gates is scored by an AI referee against your exact job specification. For purely machine-verifiable deliverables (NFT, domain, credential), buyers can set <code style="font-size:.8rem;">require_ai_audit: false</code> — payment releases on proof gates alone with no AI call. The $0.10 protocol fee covers escrow infrastructure and verification either way. For high-value escrows, set <code style="font-size:.8rem;">require_consensus: true</code> — Gemini Flash and Gemini Pro both evaluate independently; both must agree on PASS. Fee: $0.25.</p>
             </div>
         </div>
     </section>

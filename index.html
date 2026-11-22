@@ -11,9 +11,9 @@
     <link rel="canonical" href="https://agenttrustxrpl.com/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AgentTrust — AI-Verified Escrow for Autonomous Agents on XRPL">
-<meta name="twitter:description" content="Lock XRP in escrow. Proof gates or AI audit verify the work. Payment releases automatically. 51-tool MCP server for agent frameworks.">
+<meta name="twitter:description" content="Lock XRP in escrow. Proof gates, code gates and AI audit verify the work. Payment releases automatically. 51-tool MCP server for agent frameworks.">
     <meta property="og:title" content="AgentTrust — AI-Verified Escrow for Autonomous Agents on XRPL">
-    <meta property="og:description" content="Lock XRP in escrow. Proof gates or AI audit verify the work. Payment releases automatically. 51-tool MCP server for agent frameworks.">
+    <meta property="og:description" content="Lock XRP in escrow. Proof gates, code gates and AI audit verify the work. Payment releases automatically. 51-tool MCP server for agent frameworks.">
     <meta property="og:url" content="https://agenttrustxrpl.com/">
     <meta property="og:type" content="website">
     <script type="application/ld+json">
@@ -110,14 +110,6 @@
         .hero .hero-sub { margin: 1.2rem auto 0; font-size: 1.2rem; color: var(--text); max-width: 640px; }
         .hero-cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-top: 1.6rem; }
         .hero-cta .btn { width: auto; text-decoration: none; padding: .95rem 1.6rem; }
-        .connect30 { margin: 1.25rem 0 2.5rem; padding: 1.5rem; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
-        .connect30 h2 { font-size: 1.15rem; margin-bottom: .25rem; }
-        .connect30 .c30-note { font-size: .8rem; color: var(--text-muted); margin-bottom: 1rem; }
-        .c30-row { margin-top: .6rem; }
-        .c30-label { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: .3rem; }
-        .c30-copy { padding: .25rem .7rem; border-radius: 6px; background: rgba(255,255,255,.7); border: 1px solid var(--glass-border); font-size: .7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; font-family: inherit; }
-        .c30-copy:hover { background: #fff; color: var(--blue); }
-        .c30-row pre { margin: 0; padding: .7rem .9rem; border-radius: 10px; background: rgba(13,13,18,.06); border: 1px solid var(--glass-border); font-size: .78rem; line-height: 1.5; overflow-x: auto; white-space: pre; color: var(--text); }
 
         /* ── TABS ── */
         .tab-bar { display: flex; gap: 6px; margin-bottom: 2rem; background: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.65); padding: 5px; border-radius: 18px; width: fit-content; backdrop-filter: blur(14px); }
@@ -477,7 +469,7 @@
     <section class="hero" id="hero-section">
         <div class="hero-eyebrow">XRPL escrow with attachable proofs.</div>
         <h1>Work done.<br><em>Paid instantly.</em></h1>
-        <p class="hero-sub">Lock XRP in escrow. An AI referee checks the work. Pass means the payment releases automatically.</p>
+        <p class="hero-sub">Lock XRP in escrow. Proof gates, code gates and an AI referee check the work. Pass means the payment releases automatically.</p>
         <div class="hero-cta">
             <a class="btn btn-primary" href="/try/"><i data-lucide="play-circle" style="width:16px;height:16px;flex-shrink:0"></i> Try it free - no wallet needed</a>
             <a class="btn btn-secondary" href="/testnet/#connect"><i data-lucide="terminal" style="width:16px;height:16px;flex-shrink:0"></i> Developers: connect via MCP</a>
@@ -813,7 +805,7 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                         </div>
                         <div>
                             <div style="font-size:.83rem;font-weight:700;color:var(--text);">Trust Requirements</div>
-                            <div style="font-size:.73rem;color:var(--text-muted);">Optional — require NFT, domain, or credential proof from seller</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);">Optional — proof gates: require NFT, domain, or credential proof from the seller</div>
                         </div>
                     </div>
                     <i data-lucide="chevron-down" style="width:15px;height:15px;color:var(--text-muted);flex-shrink:0;transition:transform .2s;" class="details-chevron"></i>
@@ -959,6 +951,10 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                         </button>
                     </div>
                     <input type="hidden" id="proof-policy-value" value="ALL">
+                </div>
+
+                <div style="margin-top:.6rem;padding:.6rem .8rem;border-radius:10px;background:rgba(0,102,255,.05);border:1px solid rgba(0,102,255,.14);font-size:.74rem;color:var(--text-muted);line-height:1.55;">
+                    <strong style="color:var(--text);">Code gates.</strong> You can also require the work itself to pass a check done by plain code: an exact match, a text pattern, a file hash or a JSON schema. They run after the proof gates and before the AI, and cost nothing. Set them in the <a href="/dashboard/" style="color:var(--blue);">Pro Dashboard</a> or through the API.
                 </div>
 
             </details>
@@ -1511,32 +1507,6 @@ submit_and_wait(finish_tx, client, YOUR_WALLET)</code></pre>
             </div>
         </div>
     </div>
-
-    <!-- CONNECT IN 30 SECONDS -->
-    <section class="connect30" id="connect-30">
-        <h2>Connect in 30 seconds</h2>
-        <p class="c30-note">API and MCP are hosted at mcp.cryptovault.co.uk, operated by Boxclever Media Ltd. Short on context? Use <code>/mcp-core</code>: 10 tools, about a tenth of the size.</p>
-        <div class="c30-row">
-            <div class="c30-label">MCP config (JSON) <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
-<pre>{"mcpServers":{"agenttrust":{"url":"https://mcp.cryptovault.co.uk/mcp"}}}</pre>
-        </div>
-        <div class="c30-row">
-            <div class="c30-label">Claude Code <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
-<pre>claude mcp add --transport http agenttrust https://mcp.cryptovault.co.uk/mcp</pre>
-        </div>
-        <div class="c30-row">
-            <div class="c30-label">REST: live fees <button class="c30-copy" onclick="c30Copy(this)">Copy</button></div>
-<pre>curl https://mcp.cryptovault.co.uk/fees</pre>
-        </div>
-    </section>
-    <script>
-    function c30Copy(btn){
-        var pre = btn.closest('.c30-label').nextElementSibling;
-        try { navigator.clipboard.writeText(pre.textContent); } catch(e) {}
-        btn.textContent = 'Copied!';
-        setTimeout(function(){ btn.textContent = 'Copy'; }, 1500);
-    }
-    </script>
 
     <!-- Pro Dashboard section -->
     <section style="margin:4rem 0 2.5rem;background:linear-gradient(135deg,rgba(0,102,255,.07),rgba(0,102,255,.03));border:1px solid rgba(0,102,255,.18);border-radius:18px;padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;">

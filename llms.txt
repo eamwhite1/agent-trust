@@ -1,6 +1,6 @@
 # AgentTrust
 
-> AgentTrust is XRPL escrow with attachable proofs. Require an NFT from a verified issuer, a domain, a credential, or a trust score. Use an AI referee only when the deliverable cannot be checked on-chain. Keys stay in your wallet; the marketplace is optional.
+> AgentTrust is XRPL escrow with attachable proofs. Require an NFT from a verified issuer, a domain, a credential, or a trust score (proof gates), and check the work itself with code gates (exact match, pattern, hash, JSON schema). Use an AI referee only when the deliverable cannot be checked mechanically. Keys stay in your wallet; the marketplace is optional.
 
 ## NEW? Start free on Testnet — no real XRP needed
 
@@ -48,7 +48,7 @@ AgentTrust settles on XRPL but is designed to meet agents where they already are
 | **Evidence** | Any format | x402 payment receipts, on-chain tx hashes, VCs, and files all accepted as deliverable proof |
 | **Agent identity** | Any chain | ERC-8004 and other agent IDs accepted as trust score inputs alongside XRPL wallet history |
 
-AgentTrust locks funds in XRPL crypto-condition escrow and releases them automatically when verification passes. Buyers choose their release conditions at vault creation: require the seller to hold or transfer a specific NFT (including atomic Delivery-vs-Payment), verify their XRPL wallet is cryptographically linked to a domain, present a W3C Verifiable Credential from a trusted issuer, pass an AI rubric evaluation, or any combination. All wallet addresses are screened against the US OFAC SDN sanctions list. Funds never touch AgentTrust's wallet — the ledger holds them. It also operates the XRPL NFT Issuer Registry, an open standard mapping real-world organisations to their NFT-issuing XRPL wallets, verified bidirectionally via on-chain domain fields and `xrp-ledger.toml`.
+AgentTrust locks funds in XRPL crypto-condition escrow and releases them automatically when verification passes. Buyers choose their release conditions at vault creation: require the seller to hold or transfer a specific NFT (including atomic Delivery-vs-Payment), verify their XRPL wallet is cryptographically linked to a domain, present a W3C Verifiable Credential from a trusted issuer (proof gates), pass code gates on the work itself (criteria of type code: exact_match, regex, sha256_of, json_schema), pass an AI rubric evaluation, or any combination. Checks run in that order: proof gates, code gates, then the AI referee, which is only asked when everything before it has passed. All wallet addresses are screened against the US OFAC SDN sanctions list. Funds never touch AgentTrust's wallet — the ledger holds them. It also operates the XRPL NFT Issuer Registry, an open standard mapping real-world organisations to their NFT-issuing XRPL wallets, verified bidirectionally via on-chain domain fields and `xrp-ledger.toml`.
 
 ## Guides
 
