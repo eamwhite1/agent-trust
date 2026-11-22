@@ -181,6 +181,18 @@
         overflow: hidden;
         transition: opacity .3s;
     }
+    .email-previews { margin-top: 1rem; border: 1px solid var(--blue-border); border-radius: 12px; background: var(--blue-dim); }
+    .email-previews summary { cursor: pointer; padding: .7rem 1rem; font-size: .85rem; font-weight: 700; color: var(--blue); }
+    .email-previews .ep-body { padding: 0 1rem 1rem; display: grid; gap: .9rem; }
+    .email-previews .ep-note { font-size: .8rem; color: var(--text-muted); line-height: 1.55; margin: 0; }
+    .ep-mail { background: #fff; color: #0d0d12; border: 1px solid #dfe3ee; border-radius: 10px; padding: .9rem 1rem; font-size: .84rem; line-height: 1.55; }
+    .ep-meta { font-size: .72rem; color: #5c5c6e; margin-bottom: .5rem; border-bottom: 1px solid #eef0f6; padding-bottom: .45rem; }
+    .ep-meta strong { color: #0d0d12; }
+    .ep-mail h4 { font-size: .98rem; margin: 0 0 .4rem; color: #0d0d12; }
+    .ep-mail p { margin: 0 0 .5rem; }
+    .ep-code { display: inline-block; font-family: 'Courier New', monospace; font-weight: 800; background: #f0f4ff; border: 1px solid #c8d8ff; border-radius: 8px; padding: .3rem .7rem; color: #0033cc; margin-bottom: .5rem; }
+    .ep-pass { background: #f0faf5; border: 1px solid #00B97A; border-radius: 8px; padding: .5rem .8rem; margin: .5rem 0; color: #0d6644; }
+    .ep-btn { display: inline-block; background: #0066FF; color: #fff; border-radius: 8px; padding: .4rem .9rem; font-weight: 700; font-size: .8rem; }
     .step.locked { opacity: .45; pointer-events: none; }
     .step-header { display: flex; align-items: flex-start; gap: 1rem; padding: 1.5rem 1.75rem 1rem; }
     .step-num {
@@ -380,6 +392,26 @@
             <div id="status-2" class="step-status"></div>
             <div id="links-2"></div>
             <div id="err-2" class="error-banner"></div>
+            <details class="email-previews">
+                <summary>Emails sent at this step</summary>
+                <div class="ep-body">
+                    <p class="ep-note">Test wallets here have no email address, so nothing is sent. This is what real buyers and sellers receive when an escrow is locked.</p>
+                    <div class="ep-mail">
+                        <div class="ep-meta"><strong>To the seller</strong> &middot; Subject: &#128203; You have a new job waiting &mdash; your escrow ID</div>
+                        <h4>You have a new job</h4>
+                        <p>The buyer has locked <strong>5 XRP</strong> in escrow for you. Complete the work, submit your proof, and payment is released automatically on approval &mdash; no further action needed.</p>
+                        <div class="ep-code">Your receipt code</div>
+                        <p><strong>Task brief:</strong> Write one sentence that explains what XRPL escrow is.</p>
+                        <span class="ep-btn">Submit Your Work &rarr;</span>
+                    </div>
+                    <div class="ep-mail">
+                        <div class="ep-meta"><strong>To the buyer</strong> &middot; Subject: &#9989; Escrow confirmed &mdash; your escrow ID</div>
+                        <h4>Payment locked in escrow</h4>
+                        <p>Your payment of <strong>5 XRP</strong> has been locked on the XRP Ledger for your worker. It releases automatically when the work passes verification &mdash; you don't need to do anything else.</p>
+                        <p>Your funds are protected. If no work is submitted by the deadline, funds return to your wallet automatically.</p>
+                    </div>
+                </div>
+            </details>
         </div>
     </div>
     </div><!-- /row-2 -->
@@ -446,6 +478,19 @@
         </div>
         <div class="step-body">
             <div id="step5-content"></div>
+            <details class="email-previews">
+                <summary>Email sent at this step</summary>
+                <div class="ep-body">
+                    <p class="ep-note">Sent to the buyer when the work passes. Test wallets have no email address, so nothing is sent here.</p>
+                    <div class="ep-mail">
+                        <div class="ep-meta"><strong>To the buyer</strong> &middot; Subject: &#9989; Your delivery is ready &mdash; your escrow ID</div>
+                        <h4>Your delivery is ready to collect</h4>
+                        <p>The work for your escrow has passed verification and payment has been automatically released to the seller.</p>
+                        <div class="ep-pass"><strong>&#10003; PASS</strong><br>The referee's written summary appears here.</div>
+                        <span class="ep-btn">Collect Your Delivery &rarr;</span>
+                    </div>
+                </div>
+            </details>
         </div>
     </div>
     </div><!-- /row-5 -->
