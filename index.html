@@ -113,8 +113,9 @@
 
         /* ── TABS ── */
         .tab-bar { display: flex; gap: 6px; margin-bottom: 2rem; background: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.65); padding: 5px; border-radius: 18px; width: fit-content; backdrop-filter: blur(14px); }
-        .tab-btn { display: flex; align-items: center; gap: 8px; padding: 10px 24px; border: none; background: transparent; border-radius: 13px; font-size: .9rem; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: .22s; font-family: inherit; }
-        .tab-btn.active { background: #000; color: #fff; }
+        .tab-btn { display: flex; align-items: center; gap: 8px; padding: 10px 24px; border: 1px solid rgba(13,13,18,.14); background: #fff; border-radius: 13px; font-size: .9rem; font-weight: 600; cursor: pointer; color: #0d0d12; transition: .22s; font-family: inherit; }
+        .tab-btn:not(.active):hover { color: var(--blue); border-color: rgba(0,102,255,.4); }
+        .tab-btn.active { background: #000; border-color: #000; color: #fff; }
 
         /* ── CARD ── */
         .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow); }
@@ -147,6 +148,8 @@
         .btn-primary:hover { background: #1a1a2e; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.2); }
         .btn-secondary { background: rgba(255,255,255,.5); color: var(--text); border: 1px solid var(--glass-border); }
         .btn-secondary:hover { background: rgba(255,255,255,.8); transform: translateY(-2px); }
+        .btn-white { background: #fff; color: #0d0d12; border: 1px solid rgba(13,13,18,.14); box-shadow: 0 1px 3px rgba(13,13,18,.06); }
+        .btn-white:hover { background: #fff; color: var(--blue); border-color: rgba(0,102,255,.4); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(13,13,18,.1); }
         .btn-blue { background: var(--blue); color: #fff; }
         .btn-blue:hover { background: #004ecc; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,102,255,.3); }
         .btn-green { background: var(--green); color: #fff; }
@@ -471,8 +474,8 @@
         <h1>Work done.<br><em>Paid instantly.</em></h1>
         <p class="hero-sub">Lock XRP in escrow. Proof gates, code gates and an AI referee check the work. Pass means the payment releases automatically.</p>
         <div class="hero-cta">
-            <a class="btn btn-primary" href="/try/"><i data-lucide="play-circle" style="width:16px;height:16px;flex-shrink:0"></i> Try it free - no wallet needed</a>
-            <a class="btn btn-secondary" href="/testnet/#connect"><i data-lucide="terminal" style="width:16px;height:16px;flex-shrink:0"></i> Developers: connect via MCP</a>
+            <a class="btn btn-white" href="/try/"><i data-lucide="play-circle" style="width:16px;height:16px;flex-shrink:0"></i> Try it free - no wallet needed</a>
+            <a class="btn btn-white" href="/testnet/#connect"><i data-lucide="terminal" style="width:16px;height:16px;flex-shrink:0"></i> Developers: connect via MCP</a>
         </div>
     </section>
 
@@ -483,10 +486,10 @@
             <div style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem;">Funds lock on-chain. Payment releases automatically when work is verified.</div>
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0;">
-            <button class="btn btn-secondary" onclick="switchTab('buyer')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
+            <button class="btn btn-white" onclick="switchTab('buyer')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
                 <i data-lucide="briefcase" style="width:14px;height:14px;"></i> I'm the Buyer
             </button>
-            <button class="btn btn-secondary" onclick="switchTab('worker')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
+            <button class="btn btn-white" onclick="switchTab('worker')" style="width:auto;padding:.55rem 1.2rem;font-size:.83rem;gap:6px;">
                 <i data-lucide="user-check" style="width:14px;height:14px;"></i> I'm the Seller
             </button>
         </div>
