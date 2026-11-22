@@ -249,7 +249,7 @@
                     <tr><td>rubric</td><td>The AI evaluator's scoring criteria. Write this as you would a contractor brief: what "done" looks like, what would cause a fail.</td></tr>
                     <tr><td>min / max amount (XRP)</td><td>Any escrow created from this template must fall within these bounds. Requests outside the range are rejected.</td></tr>
                     <tr><td>deadline (hours)</td><td>Maximum time from vault creation to work submission. The template default; agents can shorten it but not extend it.</td></tr>
-                    <tr><td>require AI audit</td><td>Whether the AI referee must evaluate before release. On by default. Disable only for fully on-chain proof gates.</td></tr>
+                    <tr><td>require AI audit</td><td>Whether the AI referee must evaluate before release. On by default. Disable only when proof gates or code gates fully verify the work.</td></tr>
                     <tr><td>NFT proof gate</td><td>Require the worker to hold (or transfer) an NFT from a specific issuer before payment releases.</td></tr>
                     <tr><td>Domain gate</td><td>Require the worker's wallet to be cryptographically linked to a specific domain via XRPL domain field.</td></tr>
                     <tr><td>VC gate</td><td>Require a W3C Verifiable Credential from a trusted issuer DID.</td></tr>
