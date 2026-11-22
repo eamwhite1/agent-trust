@@ -978,7 +978,7 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
                                     <span class="tooltip-box">
                                         <strong>AI Audit</strong>
                                         Gemini evaluates the submitted work against your job spec and must return a PASS before payment releases. On by default.<br><br>
-                                        Can only be turned off when at least one proof gate (NFT, domain, or credential) is active — those gates verify delivery mechanically, making the AI step optional. For open-ended or qualitative work, always leave this on.
+                                        Can only be turned off when the checks are fully mechanical: a proof gate (NFT, domain, or credential) or code gates that test the work itself. Those make the AI step optional. For open-ended or qualitative work, always leave this on.
                                     </span>
                                 </span>
                             </div>
@@ -993,7 +993,7 @@ httpx.post(f"https://mcp.cryptovault.co.uk/escrow/AT-XXXX-XXXX/confirm",
 
                 <!-- AI audit disabled warning -->
                 <div id="ai-audit-warning" style="display:none;margin-top:.55rem;padding:.45rem .6rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:7px;font-size:.7rem;color:#f59e0b;line-height:1.45;">
-                    ⚠ AI audit disabled — payment releases on proof gates alone. Only suitable for fully mechanical deliverables.
+                    ⚠ AI audit disabled — payment releases on proof and code gates alone. Only suitable for fully mechanical deliverables.
                 </div>
 
                 <!-- Premium Consensus row — visible when AI audit is on -->
