@@ -868,6 +868,10 @@ function showStep5Pass(d) {
     const content = document.getElementById('step5-content');
     let html = `<p style="color:var(--green);font-weight:600;margin-bottom:.75rem">🎉 Payment released to the worker automatically on PASS.</p>`;
 
+    if (d.ai && d.ai.status === 'not_requested') {
+        html += `<div style="background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:10px;padding:.7rem .9rem;margin-bottom:.75rem;font-size:.85rem;line-height:1.6;color:var(--text)"><strong>Paid on the code check alone.</strong> The code check confirms the format, not whether the sentence is true, so a fluent but wrong answer is paid too. Tick the AI box next time to have the referee judge the meaning, or give the buyer a <a href="/challenges/" style="color:var(--blue)">challenge window</a> to dispute a payout.</div>`;
+    }
+
     const releaseHash = d.release_tx_hash;
     const releaseUrl = d.release_explorer_url || (releaseHash ? explorerTxUrl(releaseHash) : null);
     if (releaseUrl) {
