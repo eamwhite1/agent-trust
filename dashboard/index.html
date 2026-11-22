@@ -748,15 +748,25 @@
                     <!-- Criteria -->
                     <div class="form-section-label">Acceptance criteria <span style="color:var(--text-faint);font-weight:400;text-transform:none;letter-spacing:0;font-size:.8rem">(optional)</span></div>
                     <div id="ce-criteria-list">
-                        <div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem">
-                            <input class="ce-criterion-desc" placeholder="e.g. API returns HTTP 200 with JSON body" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
-                            <select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
-                                <option value="judgment">Judgment</option>
-                                <option value="evidence">Evidence</option>
-                                <option value="code">Code gate</option>
-                            </select>
-                            <button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>
-                        </div>
+                        <div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin-bottom:.4rem">
+        <input class="ce-criterion-desc" placeholder="e.g. API returns HTTP 200 with JSON body" style="flex:1;min-width:0;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
+        <select class="ce-criterion-type" onchange="ceCriterionTypeChanged(this)" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
+            <option value="judgment">Judgment</option>
+            <option value="evidence">Evidence</option>
+            <option value="code">Code gate</option>
+        </select>
+        <button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>
+        <div class="ce-code-fields" style="display:none;flex-basis:100%;gap:.4rem;flex-wrap:wrap">
+            <select class="ce-code-gate" onchange="ceCriterionTypeChanged(this)" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
+                <option value="exact_match">Exact match</option>
+                <option value="regex">Text pattern (regex)</option>
+                <option value="sha256_of">File hash (SHA-256)</option>
+                <option value="json_schema">JSON schema</option>
+            </select>
+            <input class="ce-code-value" placeholder="The exact text the work must equal" spellcheck="false" style="flex:1;min-width:0;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
+            <div class="ce-code-hint" style="flex-basis:100%;font-size:.72rem;color:var(--text-muted);line-height:1.5"></div>
+        </div>
+    </div>
                     </div>
                     <button type="button" class="btn-action" style="margin-top:.3rem;font-size:.75rem" onclick="ceAddCriterion()"><i data-lucide="plus"></i> Add criterion</button>
 
@@ -2770,6 +2780,25 @@ async function ceGenerateVault() {
                 rows.forEach(r => {
                     const desc = r.querySelector('.ce-criterion-desc').value.trim();
                     const type = r.querySelector('.ce-criterion-type').value;
+                    if (type === 'code') {
+                        const gate = r.querySelector('.ce-code-gate').value;
+                        const val  = r.querySelector('.ce-code-value').value.trim();
+                        if (!desc && !val) return;
+                        if (!val) throw new Error('A code gate needs a value: the text, pattern, hash or schema the work is checked against.');
+                        const crit = { type: 'code', gate, description: desc || 'Code gate: ' + gate };
+                        if (gate === 'exact_match') crit.expected_value = val;
+                        else if (gate === 'regex') {
+                            if (val.length > 100) throw new Error('A text pattern can be at most 100 characters.');
+                            crit.pattern = val;
+                        } else if (gate === 'sha256_of') {
+                            if (!/^[0-9a-fA-F]{64}$/.test(val)) throw new Error('A SHA-256 hash is 64 hexadecimal characters.');
+                            crit.expected_hash = val.toLowerCase();
+                        } else {
+                            try { crit.schema = JSON.parse(val); } catch (e) { throw new Error('The JSON schema is not valid JSON.'); }
+                        }
+                        criteria.push(crit);
+                        return;
+                    }
                     if (desc) criteria.push({ description: desc, type });
                 });
                 return criteria.length ? { criteria } : {};
@@ -2903,7 +2932,7 @@ function ceReset() {
     document.getElementById('ce-release-mode').value = 'auto';
     document.getElementById('ce-challenge-hours-group').style.display = 'none';
     // Reset criteria to single empty row
-    document.getElementById('ce-criteria-list').innerHTML = `<div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem"><input class="ce-criterion-desc" placeholder="e.g. API returns HTTP 200 with JSON body" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem"><select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem"><option value="judgment">Judgment</option><option value="evidence">Evidence</option><option value="code">Code gate</option></select><button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button></div>`;
+    document.getElementById('ce-criteria-list').innerHTML = `<div class="ce-criterion-row" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin-bottom:.4rem">${ceCriterionRowHtml('e.g. API returns HTTP 200 with JSON body')}</div>`;
     // Reset spec links to single input
     const sl = document.getElementById('ce-spec-links');
     sl.innerHTML = '<input class="ce-spec-link" placeholder="https://…" style="width:100%;margin-bottom:.4rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:7px;background:var(--ground);color:var(--text);font-size:.85rem;box-sizing:border-box">';
@@ -2953,18 +2982,48 @@ function showToast(msg) {
 }
 
 // ── Criteria helpers ──
-function ceAddCriterion() {
-    const row = document.createElement('div');
-    row.className = 'ce-criterion-row';
-    row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem';
-    row.innerHTML = `
-        <input class="ce-criterion-desc" placeholder="e.g. Deliverable URL is publicly accessible" style="flex:1;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
-        <select class="ce-criterion-type" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
+function ceCriterionRowHtml(placeholder) {
+    return `
+        <input class="ce-criterion-desc" placeholder="${placeholder}" style="flex:1;min-width:0;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
+        <select class="ce-criterion-type" onchange="ceCriterionTypeChanged(this)" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
             <option value="judgment">Judgment</option>
             <option value="evidence">Evidence</option>
             <option value="code">Code gate</option>
         </select>
-        <button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>`;
+        <button type="button" onclick="this.closest('.ce-criterion-row').remove()" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:.2rem .4rem;font-size:1.1rem;line-height:1">×</button>
+        <div class="ce-code-fields" style="display:none;flex-basis:100%;gap:.4rem;flex-wrap:wrap">
+            <select class="ce-code-gate" onchange="ceCriterionTypeChanged(this)" style="padding:.45rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.8rem">
+                <option value="exact_match">Exact match</option>
+                <option value="regex">Text pattern (regex)</option>
+                <option value="sha256_of">File hash (SHA-256)</option>
+                <option value="json_schema">JSON schema</option>
+            </select>
+            <input class="ce-code-value" placeholder="The exact text the work must equal" spellcheck="false" style="flex:1;min-width:0;padding:.45rem .65rem;border:1px solid var(--border);border-radius:6px;background:var(--ground);color:var(--text);font-size:.85rem">
+            <div class="ce-code-hint" style="flex-basis:100%;font-size:.72rem;color:var(--text-muted);line-height:1.5"></div>
+        </div>
+    `;
+}
+
+function ceCriterionTypeChanged(el) {
+    const row = el.closest('.ce-criterion-row');
+    const isCode = row.querySelector('.ce-criterion-type').value === 'code';
+    row.querySelector('.ce-code-fields').style.display = isCode ? 'flex' : 'none';
+    const gate = row.querySelector('.ce-code-gate').value;
+    const text = {
+        exact_match: ['The exact text the work must equal', 'The work must equal this text exactly (spaces at either end are ignored).'],
+        regex:       ['Pattern, e.g. ^[A-Z].{20,200}\\.$', 'The work must match this pattern (up to 100 characters).'],
+        sha256_of:   ['64-character SHA-256 hash', 'The SHA-256 hash of the work must equal this value.'],
+        json_schema: ['JSON schema, e.g. {"type":"object","required":["id"]}', 'The work must be JSON that validates against this schema.'],
+    }[gate];
+    row.querySelector('.ce-code-value').placeholder = text[0];
+    row.querySelector('.ce-code-hint').textContent = text[1] + ' Checked by plain code before the AI: free and instant.';
+}
+
+function ceAddCriterion() {
+    const row = document.createElement('div');
+    row.className = 'ce-criterion-row';
+    row.style.cssText = 'display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin-bottom:.4rem';
+    row.innerHTML = ceCriterionRowHtml('e.g. Deliverable URL is publicly accessible');
     document.getElementById('ce-criteria-list').appendChild(row);
 }
 
