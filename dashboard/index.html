@@ -724,6 +724,16 @@
                         <div id="ce-buyer-wallet-hint" style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem"></div>
                     </div>
 
+                    <!-- Test mode -->
+                    <div class="form-group" id="ce-testmode-group" style="display:flex;align-items:flex-start;gap:.6rem">
+                        <input type="checkbox" id="ce-testmode" style="width:auto;margin-top:.2rem" onchange="ceOnTestModeChange()">
+                        <div>
+                            <label for="ce-testmode" style="margin:0;cursor:pointer;font-weight:600">Test mode <span style="font-weight:400;color:var(--text-muted)">&mdash; run this escrow on the XRPL testnet</span></label>
+                            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;line-height:1.5">Same gates, AI check and emails, with free test XRP and no fee. We top up your wallet and the worker address with test XRP. Needs a wallet that signs without Xaman.</div>
+                            <div id="ce-testmode-banner" style="display:none;margin-top:.5rem;padding:.45rem .65rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-size:.78rem;color:#b45309;font-weight:600">TESTNET &mdash; test XRP only, nothing real moves.</div>
+                        </div>
+                    </div>
+
                     <!-- Core job -->
                     <div class="form-section-label">Job details</div>
                     <div class="form-group">
@@ -941,7 +951,7 @@
                         </div>
                     </div>
 
-                    <button class="btn-primary" onclick="ceGoToFee()" style="width:100%;justify-content:center;margin-top:.5rem">Next — Pay fee →</button>
+                    <button class="btn-primary" id="ce-next-btn" onclick="ceGoToFee()" style="width:100%;justify-content:center;margin-top:.5rem">Next — Pay fee →</button>
                 </div>
 
                 <!-- Step 2: pay fee -->
@@ -1236,7 +1246,16 @@ function renderChallengesAgainstMe(escrows) {
     lucide.createIcons();
 }
 
+function testnetBadge(e) {
+    return (e && typeof e === 'object' && e.network === 'testnet')
+        ? ' <span class="status-pill pill-pending" title="Test escrow on the XRPL testnet. Test XRP has no value.">TESTNET</span>' : '';
+}
+
 function statusPill(e) {
+    return statusPillBase(e) + testnetBadge(e);
+}
+
+function statusPillBase(e) {
     const verdict = typeof e === 'object' ? getVerdict(e) : null;
     const status  = typeof e === 'object' ? e.status : e;
     if (status === 'RELEASED' && verdict !== 'FAIL') return `<span class="status-pill pill-pass">Released</span>`;
@@ -1765,6 +1784,7 @@ function ceOnBuyerWalletChange() {
     const isPrivy = opt && opt.dataset.isPrivy === '1';
     ceState.buyerAddress = addr || null;
     ceState.buyerIsPrivy = isPrivy;
+    if (typeof ceOnTestModeChange === 'function') ceOnTestModeChange();
     const hint = document.getElementById('ce-buyer-wallet-hint');
     if (hint) {
         if (!addr) { hint.textContent = ''; }
@@ -2491,6 +2511,44 @@ function applyCreateTemplate() {
     else el.style.display = 'none';
 }
 
+function ceTestMode() {
+    const cb = document.getElementById('ce-testmode');
+    return !!(cb && cb.checked && ceState.buyerIsPrivy);
+}
+
+function ceOnTestModeChange() {
+    const cb = document.getElementById('ce-testmode');
+    if (cb && cb.checked && !ceState.buyerIsPrivy) {
+        cb.checked = false;
+        showToast('Test mode needs a wallet that signs without Xaman. Pick one in "Pay from".');
+    }
+    const on = ceTestMode();
+    document.getElementById('ce-testmode-banner').style.display = on ? '' : 'none';
+    const next = document.getElementById('ce-next-btn');
+    if (next) next.textContent = on ? 'Create test escrow \u2192' : 'Next \u2014 Pay fee \u2192';
+}
+
+async function ceTestnetStart() {
+    showToast('Topping up test wallets…');
+    const worker = document.getElementById('ce-worker').value.trim();
+    try {
+        const res = await fetch(`${API}/enterprise/testnet/fund`, {
+            method: 'POST', credentials: 'include', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ addresses: [ceState.buyerAddress, worker] }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            const d = data.detail || data;
+            showToast(d.reason || d.error || 'Could not top up the test wallets. Try again in a minute.');
+            return;
+        }
+    } catch (e) { showToast('Network error while topping up test wallets.'); return; }
+    ceState.feeHash = null;
+    ceSetStep(2);
+    try { await ceGenerateVault(); }
+    catch (e) { showToast((e && e.message) ? String(e.message).slice(0, 140) : 'Could not create the test escrow.'); ceSetStep(1); }
+}
+
 function ceGoToFee() {
     const label  = document.getElementById('ce-label').value.trim();
     const name   = document.getElementById('ce-buyer-name').value.trim();
@@ -2498,6 +2556,7 @@ function ceGoToFee() {
     const amount = document.getElementById('ce-amount').value;
     const worker = document.getElementById('ce-worker').value.trim();
     if (!label || !name || !task || !amount || !worker) { showToast('Please fill in all required fields (label, your name, task, amount, worker address).'); return; }
+    if (ceTestMode()) { ceTestnetStart(); return; }
     ceSetStep(2);
     loadFeePreview();
 }
@@ -2759,6 +2818,7 @@ async function ceGenerateVault() {
             worker_email:     document.getElementById('ce-worker-email').value.trim() || null,
             amount_xrp:       parseFloat(document.getElementById('ce-amount').value),
             currency:         'XRP',
+            network:          ceTestMode() ? 'testnet' : undefined,
             cancel_after_hrs: parseInt(document.getElementById('ce-deadline').value) || 168,
             template_id:      templateId,
             spec_links:       specLinks.length ? specLinks : undefined,
@@ -2901,6 +2961,7 @@ async function cePollSign(uuid) {
 }
 
 function ceReset() {
+    const _tm = document.getElementById('ce-testmode'); if (_tm) { _tm.checked = false; ceOnTestModeChange(); }
     clearInterval(ceState.feeTimer);
     clearInterval(ceState.signTimer);
     ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null, buyerAddress: null };
