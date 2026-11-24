@@ -394,6 +394,9 @@
             <button class="nav-item" onclick="showPage('create')" id="nav-create">
                 <i data-lucide="plus-circle"></i> Create Escrow
             </button>
+            <button class="nav-item" onclick="showPage('test')" id="nav-test">
+                <i data-lucide="flask-conical"></i> Test Escrow
+            </button>
             <button class="nav-item" onclick="showPage('templates')" id="nav-templates">
                 <i data-lucide="layout-template"></i> Templates
             </button>
@@ -724,15 +727,8 @@
                         <div id="ce-buyer-wallet-hint" style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem"></div>
                     </div>
 
-                    <!-- Test mode -->
-                    <div class="form-group" id="ce-testmode-group" style="display:flex;align-items:flex-start;gap:.6rem">
-                        <input type="checkbox" id="ce-testmode" style="width:auto;margin-top:.2rem" onchange="ceOnTestModeChange()">
-                        <div>
-                            <label for="ce-testmode" style="margin:0;cursor:pointer;font-weight:600">Test mode <span style="font-weight:400;color:var(--text-muted)">&mdash; run this escrow on the XRPL testnet</span></label>
-                            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;line-height:1.5">Same gates, AI check and emails, with free test XRP and no fee. We top up your wallet and the worker address with test XRP. Needs a wallet that signs without Xaman.</div>
-                            <div id="ce-testmode-banner" style="display:none;margin-top:.5rem;padding:.45rem .65rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-size:.78rem;color:#b45309;font-weight:600">TESTNET &mdash; test XRP only, nothing real moves.</div>
-                        </div>
-                    </div>
+                    <!-- Test mode banner (shown on the Test Escrow tab) -->
+                    <div id="ce-testmode-banner" style="display:none;margin-bottom:1rem;padding:.6rem .8rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-size:.8rem;color:#b45309;line-height:1.55"><strong>TESTNET &mdash; test XRP only, nothing real moves.</strong> Same gates, AI check and emails as a real escrow, with no fee. We top up your wallet and the worker address with free test XRP. Needs a wallet that signs without Xaman.</div>
 
                     <!-- Core job -->
                     <div class="form-section-label">Job details</div>
@@ -1106,10 +1102,17 @@ function showApp() {
 }
 
 function showPage(name) {
+    const isTest = name === 'test';
+    const page = isTest ? 'create' : name;
+    if (page === 'create' && !!ceState.testMode !== isTest) {
+        ceReset();
+        ceState.testMode = isTest;
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(`page-${name}`).classList.add('active');
+    document.getElementById(`page-${page}`).classList.add('active');
     document.getElementById(`nav-${name}`).classList.add('active');
+    if (page === 'create') ceApplyTestMode();
     closeSidebar();
 }
 
@@ -1784,7 +1787,6 @@ function ceOnBuyerWalletChange() {
     const isPrivy = opt && opt.dataset.isPrivy === '1';
     ceState.buyerAddress = addr || null;
     ceState.buyerIsPrivy = isPrivy;
-    if (typeof ceOnTestModeChange === 'function') ceOnTestModeChange();
     const hint = document.getElementById('ce-buyer-wallet-hint');
     if (hint) {
         if (!addr) { hint.textContent = ''; }
@@ -2512,20 +2514,22 @@ function applyCreateTemplate() {
 }
 
 function ceTestMode() {
-    const cb = document.getElementById('ce-testmode');
-    return !!(cb && cb.checked && ceState.buyerIsPrivy);
+    return !!ceState.testMode;
 }
 
-function ceOnTestModeChange() {
-    const cb = document.getElementById('ce-testmode');
-    if (cb && cb.checked && !ceState.buyerIsPrivy) {
-        cb.checked = false;
-        showToast('Test mode needs a wallet that signs without Xaman. Pick one in "Pay from".');
-    }
+function ceApplyTestMode() {
     const on = ceTestMode();
-    document.getElementById('ce-testmode-banner').style.display = on ? '' : 'none';
+    const page = document.getElementById('page-create');
+    const h1 = page.querySelector('.page-header h1'), pp = page.querySelector('.page-header p');
+    if (h1) h1.textContent = on ? 'Test Escrow' : 'Create Escrow';
+    if (pp) pp.textContent = on
+        ? 'Try the full flow on the XRPL testnet before you use real XRP. Free, with test XRP that has no value.'
+        : 'Lock XRP in an AI-verified escrow. Funds release automatically on PASS.';
+    const ban = document.getElementById('ce-testmode-banner'); if (ban) ban.style.display = on ? '' : 'none';
     const next = document.getElementById('ce-next-btn');
     if (next) next.textContent = on ? 'Create test escrow \u2192' : 'Next \u2014 Pay fee \u2192';
+    const c2 = document.getElementById('cstep-2');
+    if (c2) c2.innerHTML = '<span class="create-step-num">2</span> ' + (on ? 'Test XRP' : 'Pay fee');
 }
 
 async function ceTestnetStart() {
@@ -2556,7 +2560,10 @@ function ceGoToFee() {
     const amount = document.getElementById('ce-amount').value;
     const worker = document.getElementById('ce-worker').value.trim();
     if (!label || !name || !task || !amount || !worker) { showToast('Please fill in all required fields (label, your name, task, amount, worker address).'); return; }
-    if (ceTestMode()) { ceTestnetStart(); return; }
+    if (ceTestMode()) {
+        if (!ceState.buyerIsPrivy) { showToast('Test escrows need a wallet that signs without Xaman. Pick one in "Pay from".'); return; }
+        ceTestnetStart(); return;
+    }
     ceSetStep(2);
     loadFeePreview();
 }
@@ -2961,10 +2968,10 @@ async function cePollSign(uuid) {
 }
 
 function ceReset() {
-    const _tm = document.getElementById('ce-testmode'); if (_tm) { _tm.checked = false; ceOnTestModeChange(); }
+    const _wasTest = !!(ceState && ceState.testMode);
     clearInterval(ceState.feeTimer);
     clearInterval(ceState.signTimer);
-    ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null, buyerAddress: null };
+    ceState = { feeHash: null, feePayloadUUID: null, feeTimer: null, signTimer: null, setupData: null, receiptCode: null, buyerAddress: null, testMode: _wasTest };
     ceNftMode = 'verify'; cePolicy = 'ALL';
     ['ce-label','ce-buyer-name','ce-task','ce-amount','ce-worker','ce-buyer-email','ce-worker-email',
      'ce-nft-issuer','ce-nft-metadata','ce-domain-val','ce-vc-issuer','ce-vc-type',
